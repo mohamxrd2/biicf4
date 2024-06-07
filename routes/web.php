@@ -89,12 +89,14 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
     Route::post('/recharge-client', [AdminWalletController::class, 'rechargeClientAccount'])->name('recharge.clientaccount');
 
-    //email
-    Route::get('/email/verify', [VerificationController::class, 'verify'])->name('verification.verify');
+  
     //success
     Route::get('/ajouter-client', [UserController::class, 'createPageAdmin'])->name('clients.create');
     Route::post('/ajouter-client', [UserController::class, 'createUserAdmin'])->name('clients.store');
 });
+
+  //email
+Route::get('/email/verify', [VerificationController::class, 'verify'])->name('verification.verify');
 
 Route::get('admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
 Route::post('admin/login', [AdminAuthController::class, 'login']);

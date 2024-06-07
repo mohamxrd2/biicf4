@@ -306,9 +306,6 @@
 
                 <div>
                     <p class="text-center text-md font-medium text-gray-700 mb-3">Nombre de participants: <span class="text-md  text-purple-800">{{ $nbreAchatGroup }}</span></p>
-
-                   
-
                 </div>
 
                 <div class="space-y-3 mb-3 w-full">
