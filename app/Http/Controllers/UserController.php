@@ -268,10 +268,11 @@ class UserController extends Controller
             'qte_service' => $request->type == 'services' ? 'required|string' : 'nullable|string', // Quantité de service requise uniquement pour les services
             'ville' => 'required|string',
             'commune' => 'required|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif', // Modifier les types de fichiers acceptés et la taille maximale si nécessaire
-            'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            'image4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif', // Modifier les types de fichiers acceptés et la taille maximale si nécessaire
+            'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic,heif',
+            'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic,heif',
+            'image4' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic,heif',
+            
             'description' => 'required|string'
         ], [
             // Messages d'erreur personnalisés
