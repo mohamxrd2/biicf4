@@ -30,21 +30,19 @@
                 @endphp
                 @if ($photoCount > 0)
 
-                    <div class="hs-carousel relative overflow-hidden w-full h-screen  rounded-lg">
-                        <div
-                            class="hs-carousel-body absolute top-0 bottom-0 start-0 flex flex-nowrap transition-transform duration-700 opacity-0">
-                            @foreach ([$produit->photoProd1, $produit->photoProd2, $produit->photoProd3, $produit->photoProd4] as $photo)
-                                @if ($photo)
-                                    <div class="hs-carousel-slide">
-                                        <div class="flex justify-center bg-gray-100  dark:bg-neutral-900">
-                                            <img class="w-full h-auto rounded-md  object-cover" src="{{ asset($photo) }}"
-                                                alt="Image">
-                                        </div>
+                <div class="hs-carousel relative overflow-hidden w-full rounded-lg">
+                    <div class="hs-carousel-body flex transition-transform duration-700">
+                        @foreach ([$produit->photoProd1, $produit->photoProd2, $produit->photoProd3, $produit->photoProd4] as $photo)
+                            @if ($photo)
+                                <div class="hs-carousel-slide w-full flex-shrink-0">
+                                    <div class="flex justify-center bg-gray-100 dark:bg-neutral-900">
+                                        <img class="w-full h-auto rounded-md object-cover" src="{{ asset($photo) }}" alt="Image">
                                     </div>
-                                @endif
-                            @endforeach
-                        </div>
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
+                </div>
                 @else
                     <div class="flex justify-center h-full bg-gray-100  dark:bg-neutral-900">
                         <img class="w-full h-full  rounded-md" src="{{ asset('img/noimg.jpeg') }}" alt="Image">
@@ -305,7 +303,8 @@
 
 
                 <div>
-                    <p class="text-center text-md font-medium text-gray-700 mb-3">Nombre de participants: <span class="text-md  text-purple-800">{{ $nbreAchatGroup }}</span></p>
+                    <p class="text-center text-md font-medium text-gray-700 mb-3">Nombre de participants: <span
+                            class="text-md  text-purple-800">{{ $nbreAchatGroup }}</span></p>
                 </div>
 
                 <div class="space-y-3 mb-3 w-full">
@@ -370,8 +369,8 @@
 
         </div>
 
-    
-    
+
+
 
 
 
@@ -408,7 +407,20 @@
 
         function toggleVisibility() {
             const contentDiv = document.getElementById('toggleContent');
-            contentDiv.classList.toggle('hidden');
+
+            if (contentDiv.classList.contains('hidden')) {
+                contentDiv.classList.remove('hidden');
+                // Forcing reflow to enable transition
+                contentDiv.offsetHeight;
+                contentDiv.classList.add('show');
+            } else {
+                contentDiv.classList.remove('show');
+                contentDiv.addEventListener('transitionend', () => {
+                    contentDiv.classList.add('hidden');
+                }, {
+                    once: true
+                });
+            }
         }
 
         // Fonction pour mettre à jour le montant total pour l'achat direct
@@ -519,6 +531,20 @@
             }
         }
     </script>
+
+    <style>
+        #toggleContent {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s ease-out;
+        }
+
+        #toggleContent.show {
+            max-height: 500px;
+            /* Vous pouvez ajuster cette valeur selon la hauteur de votre contenu */
+        }
+
+    </style>
 
 
 
