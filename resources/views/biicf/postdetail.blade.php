@@ -28,13 +28,13 @@
                     }
                 @endphp
                 @if ($photoCount > 0)
-                <div class="hs-carousel relative overflow-hidden w-full min-h-screen rounded-lg">
-                    <div class="hs-carousel-body absolute top-0 flex flex-nowrap transition-transform duration-700 opacity-100">
+                <div class="hs-carousel relative overflow-hidden w-full min-h-96 lg:h-screen  rounded-lg">
+                    <div class="hs-carousel-body absolute top-0 bottom-0 start-0  flex flex-nowrap transition-transform duration-700 opacity-100">
                         @foreach ([$produit->photoProd1, $produit->photoProd2, $produit->photoProd3, $produit->photoProd4] as $photo)
                             @if ($photo)
                                 <div class="hs-carousel-slide w-full flex-shrink-0">
                                     <div class="flex justify-center bg-gray-100 dark:bg-neutral-900">
-                                        <img class="w-full h-auto rounded-md object-contain" src="{{ asset($photo) }}" alt="Image">
+                                        <img class="max-w-full h-auto max-h-[500px] rounded-md object-contain" src="{{ asset($photo) }}" alt="Image">
                                     </div>
                                 </div>
                             @endif
@@ -43,7 +43,7 @@
                 </div>
                 @else
                     <div class="flex justify-center h-full bg-gray-100 dark:bg-neutral-900">
-                        <img class="w-full h-full rounded-md" src="{{ asset('img/noimg.jpeg') }}" alt="Image">
+                        <img class="max-w-full h-auto rounded-md" src="{{ asset('img/noimg.jpeg') }}" alt="Image">
                     </div>
                 @endif
                 @if ($photoCount > 1)
@@ -75,6 +75,8 @@
                 @endif
             </div>
         </div>
+        
+        
         
         
         <!-- Right Side: Product Details -->
