@@ -213,7 +213,7 @@
                             </div>
                             <div class="flex">
                                 <div class="flex p-1 items-center text-xs bg-yellow-100/60 text-yellow-600 rounded">
-                                    <p class="mr-1">{{ $prodUsers }}</p>
+                                    <p class="mr-1">{{ $prodUsersCount }}</p>
                                     <span> Fournisseur</span>
                                 </div>
                             </div>

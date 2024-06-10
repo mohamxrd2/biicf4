@@ -38,8 +38,9 @@ class AppelOffre extends Controller
         $prodUsersCount = $results->pluck('user')->unique('id')->count();
 
         $produitDims = ProduitService::with('user')
-        ->where('statuts', 'Accepté')
-        ->orderBy('created_at', 'desc');
+            ->where('statuts', 'Accepté')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
     
         return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount'));
     }

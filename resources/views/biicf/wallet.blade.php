@@ -221,7 +221,7 @@
                                 <div class="flex items-center">
                                     @if ($transaction->type == 'Depot' || ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId))
                                         <div
-                                            class="bg-gray-200 flex justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4">
+                                            class="bg-gray-200 lg:flex hidden justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4 md:flex">
                                             <svg class="w-4 h-4 text-black font-bold" xmlns="http://www.w3.org/2000/svg"
                                                 fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                 stroke="currentColor">
@@ -231,7 +231,7 @@
                                         </div>
                                     @elseif($transaction->type == 'Reception' && $transaction->receiver_user_id == $userId)
                                         <div
-                                            class="bg-gray-200 flex justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4">
+                                            class="bg-gray-200 lg:flex hidden justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4 md:flex">
                                             <svg class="w-4 h-4 text-black font-bold" xmlns="http://www.w3.org/2000/svg"
                                                 fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                 stroke="currentColor">
@@ -241,7 +241,7 @@
                                         </div>
                                     @elseif ($transaction->type == 'Envoie' && $transaction->sender_user_id == $userId)
                                         <div
-                                            class="bg-gray-200 flex justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4">
+                                            class="bg-gray-200 lg:flex hidden justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4 md:flex">
                                             <svg class="w-4 h-4 text-black font-bold" xmlns="http://www.w3.org/2000/svg"
                                                 fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                 stroke="currentColor">
@@ -251,7 +251,7 @@
                                         </div>
                                     @elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId)
                                         <div
-                                            class="bg-gray-200 flex justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4">
+                                            class="bg-gray-200 lg:flex hidden justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4 md:flex">
                                             <svg class="w-4 h-4 text-black font-bold" xmlns="http://www.w3.org/2000/svg"
                                                 fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                 stroke="currentColor">
