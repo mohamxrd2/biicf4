@@ -329,7 +329,7 @@
 
                 <div class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 w-56 hidden z-10 mt-2 min-w-60 bg-white border border-gray-200 rounded-md p-2"
                     aria-labelledby="hs-dropdown-unstyled">
-                    <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm @if (request()->route()->getName() == 'biicf.post') text-purple-600 font-semibold @else text-gray-500 @endif hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
+                    <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm @if (request()->route()->getName() == 'biicf.post') text-purple-600 font-semibold @else text-gray-800 @endif hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
                         href="{{ route('biicf.post') }}">
 
                         @if (request()->route()->getName() == 'biicf.post') 
@@ -353,7 +353,7 @@
                       
                         Publication
                     </a>
-                    <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm  @if (request()->route()->getName() == 'biicf.conso') text-purple-600 font-semibold @else text-gray-500 @endif hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
+                    <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm  @if (request()->route()->getName() == 'biicf.conso') text-purple-600 font-semibold @else text-gray-800 @endif hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
                         href="{{ route('biicf.conso') }}">
 
                         @if (request()->route()->getName() == 'biicf.conso') 
@@ -373,6 +373,22 @@
                         @endif
                        
                         Consommations
+                    </a>
+
+                    <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm  @if (request()->route()->getName() == 'biicf.appeloffre') text-purple-600 font-semibold @else text-gray-800 @endif hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
+                        href="{{ route('biicf.appeloffre') }}">
+
+                        @if (request()->route()->getName() == 'biicf.appeloffre') 
+                        <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                            <path d="M5.566 4.657A4.505 4.505 0 0 1 6.75 4.5h10.5c.41 0 .806.055 1.183.157A3 3 0 0 0 15.75 3h-7.5a3 3 0 0 0-2.684 1.657ZM2.25 12a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3v-6ZM5.25 7.5c-.41 0-.806.055-1.184.157A3 3 0 0 1 6.75 6h10.5a3 3 0 0 1 2.683 1.657A4.505 4.505 0 0 0 18.75 7.5H5.25Z" />
+                          </svg>
+                        @else
+                        <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 0 0 4.5 9v.878m13.5-3A2.25 2.25 0 0 1 19.5 9v.878m0 0a2.246 2.246 0 0 0-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0 1 21 12v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6c0-.98.626-1.813 1.5-2.122" />
+                          </svg>
+                        @endif
+                       
+                        Appel d'offre
                     </a>
                     <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
                         href="#" data-hs-overlay="#hs-sign-out-alert">
