@@ -368,7 +368,7 @@
 
 
     <!-- Content -->
-    <div class="w-full pt-10  px-6 md:px-8  lg:ps-72 mb-20">
+    <div class="w-full pt-10  px-6 md:px-8  lg:ps-72 mb-24">
         <!-- Page Heading -->
 
         @yield('content')
