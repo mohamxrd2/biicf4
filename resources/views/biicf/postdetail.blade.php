@@ -28,7 +28,7 @@
                     }
                 @endphp
                 @if ($photoCount > 0)
-                <div class="hs-carousel relative overflow-hidden w-full h-screen rounded-lg">
+                <div class="hs-carousel relative overflow-hidden w-full min-h-screen rounded-lg">
                     <div class="hs-carousel-body absolute top-0 flex flex-nowrap transition-transform duration-700 opacity-100">
                         @foreach ([$produit->photoProd1, $produit->photoProd2, $produit->photoProd3, $produit->photoProd4] as $photo)
                             @if ($photo)
