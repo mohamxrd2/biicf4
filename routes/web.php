@@ -1,13 +1,14 @@
 <?php
 
+use App\Http\Controllers\AppelOffre;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsoController;
-use App\Http\Controllers\AdminsController;
 
+use App\Http\Controllers\AdminsController;
+use App\Http\Controllers\AchatGroupController;
 use App\Http\Controllers\AdminAgentController;
 use App\Http\Controllers\AdminChartController;
-use App\Http\Controllers\AchatGroupController;
 use App\Http\Controllers\AchatDirectController;
 use App\Http\Controllers\AdminWalletController;
 use App\Http\Controllers\AdminSettingController;
@@ -152,6 +153,8 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::put('/profile/profile-photo/{user}', [UserController::class, 'updateProfilePhoto'])->name('biicf.updateProfilePhoto');
     Route::put('/profile/update/{user}', [UserController::class, 'updateProfile'])->name('biicf.updateProfile');
     Route::put('/profile/password/{user}', [UserController::class, 'updatePassword'])->name('biicf.updatePassword');
+
+    Route::get('Appel-offre', [AppelOffre::class, 'search'])->name('biicf.appeloffre');
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');
