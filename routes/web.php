@@ -155,6 +155,8 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::put('/profile/password/{user}', [UserController::class, 'updatePassword'])->name('biicf.updatePassword');
 
     Route::get('Appel-offre', [AppelOffre::class, 'search'])->name('biicf.appeloffre');
+
+    Route::post('formumelaire-appel-offre', [AppelOffre::class, 'formAppel'])->name('biicf.form');
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');

@@ -233,19 +233,23 @@
                         </div>
                     @endforeach
 
-                    <div class="w-full text-center">
+                    <form action="{{ route('biicf.form') }}" method="POST">
+                        @csrf
+                        <div class="w-full text-center">
+                            <input type="hidden" name="keyword" id="" value="{{ $keyword }}">
+                            <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
+                            @foreach ($prodUsers as $userId)
+                                <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
+                            @endforeach
+                    
                             <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire un appel d'offre</button>
-                    </div>
+                        </div>
+                    </form>
+                    
 
                 @endif
 
             @endif
-
-
-
-
-
-
 
         </div>
         <div class="lg:col-span-1 lg:block hidden">

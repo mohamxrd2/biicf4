@@ -33,7 +33,10 @@ class AppelOffre extends Controller
     
         $results = $produits->get();
         $resultCount = $results->count();
-        $prodUsers = $results->pluck('user.id')->unique('id');
+
+        $prodUsers = $results->pluck('user.id')->unique()->toArray();
+
+        $lowestPricedProduct = $results->min('prix');;
 
         $prodUsersCount = $results->pluck('user')->unique('id')->count();
 
@@ -42,7 +45,16 @@ class AppelOffre extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
     
-        return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount'));
+        return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
+    }
+
+    public function formAppel(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $lowestPricedProduct = $request->input('lowestPricedProduct');
+        $prodUsers = $request->input('prodUsers');
+
+        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword'));
     }
     
 }

@@ -446,9 +446,6 @@
                             </div>
                         </li>
 
-
-
-
                         <hr>
                         @include('admin.components.nav', [
                             'routeSelf' => 'admin.profile',

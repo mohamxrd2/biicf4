@@ -213,7 +213,7 @@
 
 
 
-    <div class="lg:hidden block fixed bottom-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200">
+    <div class="lg:hidden block fixed bottom-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 z-50">
         <div class="flex justify-around py-2">
             <a href="{{ route('biicf.acceuil') }}" class="flex flex-col items-center @if (request()->route()->getName() == 'biicf.acceuil') text-purple-600 font-semibold @else text-gray-500 @endif dark:text-gray-400">
                 @if (request()->route()->getName() == 'biicf.acceuil')
