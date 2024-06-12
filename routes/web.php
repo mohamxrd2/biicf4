@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AppelOffre;
+use App\Http\Controllers\AppelOffreController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsoController;
@@ -155,9 +155,10 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::put('/profile/update/{user}', [UserController::class, 'updateProfile'])->name('biicf.updateProfile');
     Route::put('/profile/password/{user}', [UserController::class, 'updatePassword'])->name('biicf.updatePassword');
 
-    Route::get('Appel-offre', [AppelOffre::class, 'search'])->name('biicf.appeloffre');
+    Route::get('Appel-offre', [AppelOffreController::class, 'search'])->name('biicf.appeloffre');
+    Route::match(['get', 'post'], 'formumelaire-appel-offre', [AppelOffreController::class, 'formAppel'])->name('biicf.form');
+    Route::post('formumelaire-appel-offre/store', [AppelOffreController::class, 'storeAppel'])->name('biicf.formstore');
 
-    Route::post('formumelaire-appel-offre', [AppelOffre::class, 'formAppel'])->name('biicf.form');
 
 
     Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');

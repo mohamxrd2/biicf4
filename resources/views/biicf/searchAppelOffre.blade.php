@@ -8,6 +8,19 @@
 
         <div class="lg:col-span-2 col-span-3">
 
+            @if (session('success'))
+                <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="bg-red-200 text-red-800 px-4 py-2 rounded-md mb-4">
+                    @foreach ($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
+
             <form action="{{ route('biicf.appeloffre') }}" method="GET" class="max-w-2xl mx-auto">
 
                 <label for="default-search"
@@ -220,6 +233,8 @@
                         </div>
                     </div>
                     @foreach ($results as $result)
+                     <a href="{{ route('biicf.postdet', $result->id) }}">
+
                         <div class="max-w-2xl mx-auto my-3">
 
                             <div class="w-full flex items-center p-4 rounded-xl bg-gray-50 border border-gray-200">
@@ -231,6 +246,9 @@
                                 <p class="text-xl font-semibold ">{{ $result->name }}</p>
                             </div>
                         </div>
+
+                     </a>
+                      
                     @endforeach
 
                     <form action="{{ route('biicf.form') }}" method="POST">
@@ -241,11 +259,12 @@
                             @foreach ($prodUsers as $userId)
                                 <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                             @endforeach
-                    
-                            <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire un appel d'offre</button>
+
+                            <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire un appel
+                                d'offre</button>
                         </div>
                     </form>
-                    
+
 
                 @endif
 

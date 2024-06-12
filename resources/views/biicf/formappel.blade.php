@@ -5,23 +5,23 @@
 @section('content')
 
     <div class=" px-4">
-        <form action="" method="POST">
+       
+
+
+        <form action="{{ route('biicf.formstore') }}" method="POST" enctype="multipart/form-data">
+            @csrf
             <div class="w-full flex flex-col justify-center items-center ">
 
-                {{-- <h1>Nouvelle Vue</h1>
 
-             <!-- Afficher le produit avec le prix le plus bas -->
-              <p>Produit avec le prix le plus bas : {{ $lowestPricedProduct }}</p>
-    
-              <!-- Afficher les IDs des utilisateurs -->
-             <h2>User IDs</h2>
-             <ul>
-            @foreach ($prodUsers as $userId)
-                <li>{{ $userId }}</li>
-            @endforeach
-              </ul> --}}
+
 
                 <h1 class="font-meduim text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
+
+
+                <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
+                @foreach ($prodUsers as $userId)
+                    <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
+                @endforeach
 
 
                 <div class="lg:w-2/3 w-full bg-white rounded-lg p-2 shadow-md mb-4">
@@ -34,15 +34,15 @@
                 <div class="lg:w-2/3 w-full space-y-3  mb-3">
                     <input type="text"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="TNom du produit" value="{{ $keyword }}">
+                        placeholder="Nom du produit" value="{{ $keyword }}" name="productName" required>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <input type="number"
+                    <input type="number" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="Quantité">
+                        placeholder="Quantité" name="quantity">
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <select name="" id=""
+                    <select name="payment" id="" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                         <option value="" selected disabled>Payment</option>
                         <option value="Payment comptant">Payment comptant</option>
@@ -53,9 +53,9 @@
                     </select>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <select name="" id=""
+                    <select name="Livraison" id="" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                        <option value="" selected disabled>Payment</option>
+                        <option value="" selected disabled>Livraison</option>
                         <option value="Oui">Oui</option>
                         <option value="Non">Non</option>
                     </select>
@@ -63,7 +63,7 @@
                 <div date-rangepicker class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
                     <div class="w-1/2 mr-2 relative">
                         <label for="datePicker">Au plus tôt</label>
-                        <input type="date" id="datePickerStart" name="dateTot"
+                        <input type="date" id="datePickerStart" name="dateTot" required
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Sélectionner la date de début">
                     </div>
@@ -72,15 +72,15 @@
 
                     <div class="w-1/2 ml-2 relative">
                         <label for="datePickerEnd" class="mb-1">Au plus tard</label>
-                        <input type="date" id="datePickerEnd" name="dateTard"
+                        <input type="date" id="datePickerEnd" name="dateTard" required
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Sélectionner la date de fin">
                     </div>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <input type="text"
+                    <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="Specificité">
+                        placeholder="Specificité" name="Specificité">
                 </div>
 
                 <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
@@ -125,7 +125,7 @@
 
                     <button type="submit" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3">Envoyé</button>
 
-                    <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white">Groupé</button>
+                    {{-- <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white">Groupé</button> --}}
 
                 </div>
 
