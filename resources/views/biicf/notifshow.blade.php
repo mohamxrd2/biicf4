@@ -166,7 +166,27 @@
         @elseif ($notification->type === 'App\Notifications\OffreNotif')
 
 
-        notif offre groupee
+        <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
+            <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
+                </span>{{ $produtOffre->name }}</h2>
+            
+                <p class="mb-3"><strong>Quantité traité:</strong> [{{ $produtOffre->qteProd_min }} - {{ $produtOffre->qteProd_max }}]</p>
+               
+                <p class="mb-3"><strong>Prix d'artiche:</strong> {{ $produtOffre->prix }} Fcfa
+                </p>
+
+            <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
+                class="mb-3 text-white bg-purple-600 hover:bg-purple-800 text-center py-2 rounded-xl flex justify-center">
+                Voir le produit
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                </svg>
+            </a>
+
+            
+            
+        </div>
 
         
         @endif

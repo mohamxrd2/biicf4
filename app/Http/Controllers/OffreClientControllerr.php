@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Consommation;
-use App\Models\ProduitService;
 use App\Models\User;
-use App\Notifications\OffreNotif;
+use App\Models\Consommation;
 use Illuminate\Http\Request;
+use App\Models\ProduitService;
+use App\Notifications\OffreNotif;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
 class OffreClientControllerr extends Controller
 {
     public function sendoffre(Request $request)
     {
+
+        $user_id = Auth::guard('web')->id();
+        
         // Récupérer l'ID du produit à partir du formulaire
         $produitId = $request->input('produit_id');
 
@@ -22,6 +26,8 @@ class OffreClientControllerr extends Controller
 
         // Requête pour récupérer les IDs des propriétaires des consommations similaires
         $idsProprietaires = Consommation::where('name', $nomProduit)
+            ->where('id_user', '!=', $user_id)
+            ->where('statuts', 'Accepté')
             ->distinct()
             ->pluck('id_user')
             ->toArray();

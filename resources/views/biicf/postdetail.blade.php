@@ -164,7 +164,7 @@
                     data-hs-overlay="#hs-delete-{{ $produit->id }}">Supprimé produit</button>
 
                 <button class="w-full mt-3 bg-green-500 text-white py-2 mr- rounded-xl"
-                    data-hs-overlay="#hs-offre-{{ $produit->id }}">fais une offre(clients potentiels)</button>
+                    data-hs-overlay="#hs-offre-{{ $produit->id }}">fais une offre (clients potentiels)</button>
 
                 <div id="hs-delete-{{ $produit->id }}"
                     class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
@@ -261,7 +261,7 @@
                                         <!-- Champ caché pour l'ID du produit -->
                                         <input type="hidden" name="produit_id" value="{{ $produit->id }}">
 
-                                        <button type="submit"
+                                        <button type="submit" @if($nombreProprietaires == 0) disabled @endif
                                             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
                                             soumettre
                                         </button>

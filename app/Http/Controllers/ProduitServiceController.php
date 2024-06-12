@@ -207,11 +207,15 @@ class ProduitServiceController extends Controller
 
     public function pubDet($id)
     {
+        $userId = Auth::guard('web')->id();
+
         $produit = ProduitService::findOrFail($id);
         $nomProduit = $produit->name;
 
         // 2. Requête pour récupérer les IDs des propriétaires des consommations similaires
         $idsProprietaires = Consommation::where('name', $nomProduit)
+            ->where('id_user', '!=', $userId)
+            ->where('statuts', 'Accepté')
             ->distinct()
             ->pluck('id_user')
             ->toArray();
@@ -223,7 +227,7 @@ class ProduitServiceController extends Controller
             $produit = ProduitService::findOrFail($id);
 
             // Récupérer l'identifiant de l'utilisateur connecté
-            $userId = Auth::guard('web')->id();
+            
 
             // Récupérer le portefeuille de l'utilisateur
             $userWallet = Wallet::where('user_id', $userId)->first();
