@@ -10,6 +10,7 @@ use App\Models\ProduitService;
 use App\Models\NotificationLog;
 use App\Notifications\AchatBiicf;
 use App\Http\Controllers\Controller;
+use App\Models\Consommation;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\AchatGroupBiicf;
 use Illuminate\Support\Facades\Notification;
@@ -206,6 +207,17 @@ class ProduitServiceController extends Controller
 
     public function pubDet($id)
     {
+        $produit = ProduitService::findOrFail($id);
+        $nomProduit = $produit->name;
+
+        // 2. Requête pour récupérer les IDs des propriétaires des consommations similaires
+        $idsProprietaires = Consommation::where('name', $nomProduit)
+            ->distinct()
+            ->pluck('id_user')
+            ->toArray();
+
+        // 3. Compter le nombre d'IDs distincts
+        $nombreProprietaires = count($idsProprietaires);
         try {
             // Trouver le produit ou échouer
             $produit = ProduitService::findOrFail($id);
@@ -263,7 +275,7 @@ class ProduitServiceController extends Controller
             }
 
             // Retourner la vue avec les données récupérées
-            return view('biicf.postdetail', compact('produit', 'userWallet', 'userId', 'id', 'nbreAchatGroup', 'datePlusAncienne', 'tempEcoule', 'sommeQuantite', 'montants', 'userSenders'));
+            return view('biicf.postdetail', compact('produit', 'userWallet', 'userId', 'id', 'nbreAchatGroup', 'datePlusAncienne', 'tempEcoule', 'sommeQuantite', 'montants', 'userSenders', 'idsProprietaires', 'nombreProprietaires'));
         } catch (\Exception $e) {
             // Gérer les exceptions et rediriger avec un message d'erreur
             return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());

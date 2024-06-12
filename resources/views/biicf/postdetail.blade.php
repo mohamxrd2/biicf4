@@ -11,7 +11,8 @@
             <div data-hs-carousel='{
                 "loadingClasses": "opacity-0",
                 "isAutoPlay": true
-               }' class="relative">
+               }'
+                class="relative">
                 @php
                     $photoCount = 0;
                     if ($produit->photoProd1) {
@@ -28,19 +29,21 @@
                     }
                 @endphp
                 @if ($photoCount > 0)
-                <div class="hs-carousel relative overflow-hidden w-full  lg:h-screen h-96 rounded-lg">
-                    <div class="hs-carousel-body absolute top-0 bottom-0 start-0  flex flex-nowrap transition-transform duration-700 opacity-100">
-                        @foreach ([$produit->photoProd1, $produit->photoProd2, $produit->photoProd3, $produit->photoProd4] as $photo)
-                            @if ($photo)
-                                <div class="hs-carousel-slide w-full flex-shrink-0">
-                                    <div class="flex justify-center bg-gray-100 dark:bg-neutral-900">
-                                        <img class="max-w-full h-auto max-h-[500px] rounded-md object-contain" src="{{ asset($photo) }}" alt="Image">
+                    <div class="hs-carousel relative overflow-hidden w-full  lg:h-screen h-96 rounded-lg">
+                        <div
+                            class="hs-carousel-body absolute top-0 bottom-0 start-0  flex flex-nowrap transition-transform duration-700 opacity-100">
+                            @foreach ([$produit->photoProd1, $produit->photoProd2, $produit->photoProd3, $produit->photoProd4] as $photo)
+                                @if ($photo)
+                                    <div class="hs-carousel-slide w-full flex-shrink-0">
+                                        <div class="flex justify-center bg-gray-100 dark:bg-neutral-900">
+                                            <img class="max-w-full h-auto max-h-[500px] rounded-md object-contain"
+                                                src="{{ asset($photo) }}" alt="Image">
+                                        </div>
                                     </div>
-                                </div>
-                            @endif
-                        @endforeach
+                                @endif
+                            @endforeach
+                        </div>
                     </div>
-                </div>
                 @else
                     <div class="flex justify-center h-full bg-gray-100 dark:bg-neutral-900">
                         <img class="max-w-full h-auto rounded-md" src="{{ asset('img/noimg.jpeg') }}" alt="Image">
@@ -50,7 +53,9 @@
                     <button type="button"
                         class="hs-carousel-prev hs-carousel:disabled:opacity-50 disabled:pointer-events-none absolute inset-y-0 start-0 inline-flex justify-center items-center w-[46px] h-full text-gray-800 hover:bg-gray-800/10 rounded-s-lg dark:text-white dark:hover:bg-white/10">
                         <span class="text-2xl" aria-hidden="true">
-                            <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path d="m15 18-6-6 6-6"></path>
                             </svg>
                         </span>
@@ -60,7 +65,9 @@
                         class="hs-carousel-next hs-carousel:disabled:opacity-50 disabled:pointer-events-none absolute inset-y-0 end-0 inline-flex justify-center items-center w-[46px] h-full text-gray-800 hover:bg-gray-800/10 rounded-e-lg dark:text-white dark:hover:bg-white/10">
                         <span class="sr-only">suivant</span>
                         <span class="text-2xl" aria-hidden="true">
-                            <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path d="m9 18 6-6-6-6"></path>
                             </svg>
                         </span>
@@ -68,17 +75,18 @@
                     <div class="hs-carousel-pagination flex justify-center absolute bottom-3 start-0 end-0 space-x-2">
                         @foreach ([$produit->photoProd1, $produit->photoProd2, $produit->photoProd3, $produit->photoProd4] as $photo)
                             @if ($photo)
-                                <span class="hs-carousel-active:bg-purple-700 hs-carousel-active:border-purple-700 size-3 border border-gray-400 rounded-full cursor-pointer dark:border-neutral-600 dark:hs-carousel-active:bg-blue-500 dark:hs-carousel-active:border-blue-500"></span>
+                                <span
+                                    class="hs-carousel-active:bg-purple-700 hs-carousel-active:border-purple-700 size-3 border border-gray-400 rounded-full cursor-pointer dark:border-neutral-600 dark:hs-carousel-active:bg-blue-500 dark:hs-carousel-active:border-blue-500"></span>
                             @endif
                         @endforeach
                     </div>
                 @endif
             </div>
         </div>
-        
-        
-        
-        
+
+
+
+
         <!-- Right Side: Product Details -->
         <div class="lg:h-500px h-auto overflow-y-auto p-4 lg:col-span-2 col-span-5">
             <h2 class="text-3xl font-semibold mb-2">{{ $produit->name }}</h2>
@@ -155,7 +163,8 @@
                 <button class="w-full bg-red-500 text-white py-2 mr- rounded-xl"
                     data-hs-overlay="#hs-delete-{{ $produit->id }}">Supprimé produit</button>
 
-
+                <button class="w-full mt-3 bg-green-500 text-white py-2 mr- rounded-xl"
+                    data-hs-overlay="#hs-offre-{{ $produit->id }}">fais une offre(clients potentiels)</button>
 
                 <div id="hs-delete-{{ $produit->id }}"
                     class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
@@ -208,6 +217,58 @@
                                     <button type="button"
                                         class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                                         data-hs-overlay="#hs-delete-{{ $produit->id }}">
+                                        Annuler
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="hs-offre-{{ $produit->id }}"
+                    class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
+                    <div
+                        class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+                        <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900">
+                            <div class="absolute top-2 end-2">
+                                <button type="button"
+                                    class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-transparent dark:hover:bg-neutral-700"
+                                    data-hs-overlay="#hs-offre-{{ $produit->id }}">
+                                    <span class="sr-only">Close</span>
+                                    <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 6 6 18" />
+                                        <path d="m6 6 12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="p-4 sm:p-10 text-center overflow-y-auto">
+                                <h3 class="mb-2 text-2xl font-bold text-gray-800 dark:text-neutral-200">
+                                    Offre Simple
+                                </h3>
+                                <p class="text-gray-500 dark:text-neutral-500">
+                                    le nombre de clients potentiels sont ({{ $nombreProprietaires }})
+                                </p>
+
+                                <div class="mt-6 flex justify-center gap-x-4">
+                                    <form action="{{ route('biicf.sendoffre', $produit->id) }}" method="POST">
+                                        @csrf
+                                        @method('POST')
+
+                                        <!-- Champ caché pour l'ID du produit -->
+                                        <input type="hidden" name="produit_id" value="{{ $produit->id }}">
+
+                                        <button type="submit"
+                                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
+                                            soumettre
+                                        </button>
+                                    </form>
+                                    <button type="button"
+                                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                                        data-hs-overlay="#hs-offre-{{ $produit->id }}">
                                         Annuler
                                     </button>
                                 </div>
@@ -533,22 +594,23 @@
             max-height: 500px;
             /* Vous pouvez ajuster cette valeur selon la hauteur de votre contenu */
         }
+
         .hs-carousel-body {
-    display: flex;
-    overflow: hidden;
-    max-height: 100%;
-}
+            display: flex;
+            overflow: hidden;
+            max-height: 100%;
+        }
 
-.hs-carousel-slide {
-    flex-shrink: 0;
-    width: 100%;
-}
+        .hs-carousel-slide {
+            flex-shrink: 0;
+            width: 100%;
+        }
 
-.hs-carousel-body img {
-    display: block;
-    max-height: 100%;
-    max-width: 100%;
-}
+        .hs-carousel-body img {
+            display: block;
+            max-height: 100%;
+            max-width: 100%;
+        }
     </style>
 
 

@@ -17,6 +17,7 @@ use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
+use App\Http\Controllers\OffreClientControllerr;
 use App\Http\Controllers\ProduitServiceController;
 
 
@@ -90,7 +91,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
     Route::post('/recharge-client', [AdminWalletController::class, 'rechargeClientAccount'])->name('recharge.clientaccount');
 
-  
+
     //success
     Route::get('/ajouter-client', [UserController::class, 'createPageAdmin'])->name('clients.create');
     Route::post('/ajouter-client', [UserController::class, 'createUserAdmin'])->name('clients.store');
@@ -157,6 +158,9 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('Appel-offre', [AppelOffre::class, 'search'])->name('biicf.appeloffre');
 
     Route::post('formumelaire-appel-offre', [AppelOffre::class, 'formAppel'])->name('biicf.form');
+
+
+    Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');

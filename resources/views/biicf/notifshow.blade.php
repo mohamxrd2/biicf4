@@ -163,7 +163,12 @@
 
                 </div>
             </div>
+        @elseif ($notification->type === 'App\Notifications\OffreNotif')
 
+
+        notif offre groupee
+
+        
         @endif
 
 
