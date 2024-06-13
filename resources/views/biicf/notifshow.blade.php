@@ -303,11 +303,7 @@
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
 
-                                            @foreach ($products as $product)
-                                            <input type="hidden" name="products[]" value="{{ $product }}">
-                                            
-                                        @endforeach
-
+                                        
                                         <button type="submit" id="submitBtn"
                                             class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
                                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"

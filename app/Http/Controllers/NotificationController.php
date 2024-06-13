@@ -68,36 +68,17 @@ class NotificationController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->first();
 
+            
+
+
             $commentCount = $comments->count();
 
             $oldestCommentDate = $oldestComment->created_at;
 
             // Ajouter 5 heures à la date la plus ancienne
             $tempsEcoule = Carbon::parse($oldestCommentDate)->addHours(5);
+
             // $tempEcoule = Carbon::now()->subDays(1); // pour le test
-
-            if (Carbon::now()->greaterThan($tempsEcoule)) {
-                $comment = Comment::where('code_unique', $codeUnique)
-                    ->whereNotNull('prixTrade')
-                    ->orderBy('prixTrade', 'asc') // Assurez-vous qu'il est trié par prixTrade croissant
-                    ->first(); // Utilisez first() pour obtenir seulement le premier résultat avec le prix le plus bas
-
-                // Vérifiez si un commentaire avec un prixTrade non nul a été trouvé
-                if ($comment) {
-                    // Maintenant, $comment contient le commentaire avec le prixTrade le plus bas pour le codeUnique spécifié
-                    // Vous pouvez accéder aux propriétés du commentaire comme ceci :
-                    $prixTradePlusBas = $comment->prixTrade;
-                    $idTrader = $comment->id_trader;
-
-                    // Vous pouvez également récupérer l'utilisateur associé si nécessaire
-                    $user = $comment->user;
-
-                    
-                } else {
-                    // Gérer le cas où aucun commentaire avec un prixTrade non nul n'a été trouvé pour le codeUnique spécifié
-                    
-                }
-            }
 
 
 

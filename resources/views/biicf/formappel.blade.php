@@ -23,10 +23,7 @@
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                 @endforeach
 
-                @foreach ($products as $product)
-                    <input type="hidden" name="products[]" value="{{ $product }}">
-                    
-                @endforeach
+               
 
 
 

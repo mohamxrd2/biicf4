@@ -260,12 +260,7 @@
                                 <input type="hidden" name="prodUsers[]" value="{{ $prodUser }}">
                             @endforeach
 
-                            @foreach ($results as $result)
-
-                             <input type="hidden" name="results[]" value="{{ $result->id }}">
-                                
-                            @endforeach
-
+                          
                             <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire un appel
                                 d'offre</button>
                         </div>
