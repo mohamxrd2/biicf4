@@ -330,6 +330,9 @@
 
                         <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
 
+
+                            @if ($oldestCommentDate)
+
                             <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
                             <div id="countdown"
@@ -339,6 +342,12 @@
                                 <div>-</div>:
                                 <div>-</div>
                             </div>
+                                
+                            @endif
+
+                       
+
+                            
 
 
                         </div>

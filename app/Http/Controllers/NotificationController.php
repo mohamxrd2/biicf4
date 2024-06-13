@@ -52,8 +52,6 @@ class NotificationController extends Controller
         // Vérifier si 'code_unique' existe dans les données de notification
         $codeUnique = $notification->data['code_unique'] ?? null;
 
-       
-
         // Récupérer les commentaires avec code_unique et prixTrade non nul
         $comments = Comment::with('user')
             ->where('code_unique', $codeUnique)
@@ -73,6 +71,9 @@ class NotificationController extends Controller
         // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
         $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addHours(5) : null;
 
+        // Vérifier si $tempsEcoule est écoulé
+        $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+
         // Récupérer le commentaire de l'utilisateur connecté
         $userComment = Comment::with('user')
             ->where('code_unique', $codeUnique)
@@ -82,10 +83,14 @@ class NotificationController extends Controller
         // Compter le nombre de commentaires
         $commentCount = $comments->count();
 
+        // Vérifier si le temps est écoulé
+        if ($isTempsEcoule) {
+            
+        }
+
         return view('biicf.notifshow', compact('notification', 'produtOffre', 'comments', 'commentCount', 'userComment', 'oldestCommentDate', 'tempsEcoule'));
     } catch (\Exception $e) {
         return redirect()->back()->with('error', 'Erreur lors de la récupération de la notification: ' . $e->getMessage());
     }
 }
-
 }
