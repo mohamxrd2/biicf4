@@ -24,7 +24,7 @@
                 <p class="text-md text-slate-400">Mon compte</p>
 
                 <div class="flex justify-between items-center">
-                    <p class="text-3xl text-white font-bold"> {{ $adminWallet->balance }} FCFA</p>
+                    <p class="text-3xl text-white font-bold"> {{ number_format($adminWallet->balance, 2, ',', ' ')    }} FCFA</p>
 
                     <div>
 

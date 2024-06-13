@@ -158,7 +158,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('Appel-offre', [AppelOffreController::class, 'search'])->name('biicf.appeloffre');
     Route::match(['get', 'post'], 'formumelaire-appel-offre', [AppelOffreController::class, 'formAppel'])->name('biicf.form');
     Route::post('formumelaire-appel-offre/store', [AppelOffreController::class, 'storeAppel'])->name('biicf.formstore');
-
+    Route::post('formumelaire-appel-offre/comment', [AppelOffreController::class, 'comment'])->name('biicf.comment');
 
 
     Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');

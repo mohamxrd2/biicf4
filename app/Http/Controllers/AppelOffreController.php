@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\ProduitService;
@@ -61,6 +62,8 @@ class AppelOffreController extends Controller
         $lowestPricedProduct = $request->input('lowestPricedProduct');
         $prodUsers = $request->input('prodUsers');
 
+        $products = $request->input('results');
+
         // Vérifiez que $prodUsers n'est pas null
         if ($prodUsers) {
             // Si c'est une collection, utilisez toArray(), sinon, assurez-vous que c'est un tableau
@@ -69,7 +72,7 @@ class AppelOffreController extends Controller
             // Si $prodUsers est null, initialisez-le comme un tableau vide
             $prodUsers = [];
         }
-        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword'));
+        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'), );
     }
 
     public function storeAppel(Request $request)
@@ -86,12 +89,14 @@ class AppelOffreController extends Controller
                 'dateTot' => 'required|date',
                 'dateTard' => 'required|date',
                 'specificity' => 'nullable|string',
+                'id_prod' => 'id_prod',
                 'image' => 'nullable',
                 'prodUsers' => 'required|array', // Assurez-vous que prodUsers est un tableau
             ]);
 
             $lowestPricedProduct = $request->input('lowestPricedProduct');
             $prodUsers = $request->input('prodUsers');
+            $produits = $request->input('products');
 
             // Vérification que $prodUsers est un tableau non vide
             if (empty($prodUsers)) {
@@ -114,6 +119,7 @@ class AppelOffreController extends Controller
                     'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
                     'id_sender' => $userId,
                     'prodUsers' => $prodUser,
+                    'produits' => $produits, 
                     'lowestPricedProduct' => $lowestPricedProduct,
                     'code_unique' => $codeUnique,
                     'difference' => 'single',
@@ -134,12 +140,19 @@ class AppelOffreController extends Controller
                 if ($owner) {
                     // Envoi de la notification à l'utilisateur
                     Notification::send($owner, new AppelOffre($data));
-                } else {
-                    // Traitement pour gérer le cas où l'utilisateur n'est pas trouvé
-                    // Vous pouvez ajuster le comportement en conséquence
-                    // Par exemple, ignorer cet utilisateur ou enregistrer un log
                 }
+
+                Comment::create([
+                    'prixTrade' => null,
+                    'id_trader' => $prodUser,
+                    'code_unique' => $codeUnique,
+                    'id_prod' => null 
+                ]);
+
+
             }
+
+            
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {
@@ -158,4 +171,27 @@ class AppelOffreController extends Controller
 
         return $code;
     }
+    public function comment(Request $request)
+{
+    // Validation des données du formulaire
+    $request->validate([
+        'prixTrade' => 'required|integer',
+        'id_trader' => 'required|integer|exists:users,id',
+        'code_unique' => 'required|string|exists:comments,code_unique',
+    ]);
+
+    
+    // Création du commentaire
+    Comment::create([
+        'prixTrade' => $request->input('prixTrade'),
+        'id_trader' => $request->input('id_trader'),
+        'code_unique' => $request->input('code_unique'),
+    ]);
+
+    // Redirection avec un message de succès
+    return redirect()->back();
 }
+
+
+}
+

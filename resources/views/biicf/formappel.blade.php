@@ -23,6 +23,13 @@
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                 @endforeach
 
+                @foreach ($products as $product)
+                    <input type="hidden" name="products[]" value="{{ $product }}">
+                    
+                @endforeach
+
+
+
 
                 <div class="lg:w-2/3 w-full bg-white rounded-lg p-2 shadow-md mb-4">
                     <h1 class="text-md font-medium text-slate-900">Prix unitaire max</h1>
@@ -46,10 +53,10 @@
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                         <option value="" selected disabled>Payment</option>
                         <option value="Payment comptant">Payment comptant</option>
-                        <option value="Avance partielle">Avance partielle</option>
-                        <option value="A credit">A credit</option>
-                        <option value="Vente a terme">Vente a terme</option>
-                        <option value="Quotidiennement / garantie de prêt">Quotidiennement / garantie de prêt</option>
+                        <option value="Avance partielle" disabled>Avance partielle</option>
+                        <option value="A credit" disabled>A credit</option>
+                        <option value="Vente a terme" disabled>Vente a terme</option>
+                        <option value="Quotidiennement / garantie de prêt" disabled>Quotidiennement / garantie de prêt</option>
                     </select>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
