@@ -351,7 +351,67 @@
 
             </div>
 
-
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const prixTradeInput = document.getElementById('prixTrade');
+                    const submitBtn = document.getElementById('submitBtn');
+                    const prixTradeError = document.getElementById('prixTradeError');
+        
+                    prixTradeInput.addEventListener('input', function() {
+                        const prixTradeValue = parseFloat(prixTradeInput.value);
+                        const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
+        
+                        if (prixTradeValue > lowestPricedProduct) {
+                            submitBtn.disabled = true;
+                            prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
+                            prixTradeError.classList.remove('hidden');
+                        } else {
+                            submitBtn.disabled = false;
+                            prixTradeError.textContent = '';
+                            prixTradeError.classList.add('hidden');
+                        }
+                    });
+                });
+        
+                // Convertir la date de départ en objet Date JavaScript
+                const startDate = new Date("{{ $oldestCommentDate }}");
+        
+                // Ajouter 5 jours à la date de départ
+                // Ajouter 5 heures à la date de départ
+                startDate.setHours(startDate.getHours() + 5);
+        
+                // Mettre à jour le compte à rebours à intervalles réguliers
+                const countdownTimer = setInterval(updateCountdown, 1000);
+        
+                function updateCountdown() {
+                    // Obtenir la date et l'heure actuelles
+                    const currentDate = new Date();
+        
+                    // Calculer la différence entre la date cible et la date de départ en millisecondes
+                    const difference = startDate.getTime() - currentDate.getTime();
+        
+                    // Convertir la différence en jours, heures, minutes et secondes
+                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        
+                    // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+                    const countdownElement = document.getElementById('countdown');
+                    countdownElement.innerHTML = `
+                    
+                     <div>${hours}h</div>:
+                     <div>${minutes}m</div>:
+                    <div>${seconds}s</div>
+                      `;
+        
+                    // Arrêter le compte à rebours lorsque la date cible est atteinte
+                    if (difference <= 0) {
+                        clearInterval(countdownTimer);
+                        countdownElement.innerHTML = "Temps écoulé !";
+                    }
+                }
+            </script>
         @endif
 
 
@@ -360,66 +420,6 @@
     </div>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const prixTradeInput = document.getElementById('prixTrade');
-            const submitBtn = document.getElementById('submitBtn');
-            const prixTradeError = document.getElementById('prixTradeError');
-
-            prixTradeInput.addEventListener('input', function() {
-                const prixTradeValue = parseFloat(prixTradeInput.value);
-                const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
-
-                if (prixTradeValue > lowestPricedProduct) {
-                    submitBtn.disabled = true;
-                    prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
-                    prixTradeError.classList.remove('hidden');
-                } else {
-                    submitBtn.disabled = false;
-                    prixTradeError.textContent = '';
-                    prixTradeError.classList.add('hidden');
-                }
-            });
-        });
-
-        // Convertir la date de départ en objet Date JavaScript
-        const startDate = new Date("{{ $oldestCommentDate }}");
-
-        // Ajouter 5 jours à la date de départ
-        // Ajouter 5 heures à la date de départ
-        startDate.setHours(startDate.getHours() + 5);
-
-        // Mettre à jour le compte à rebours à intervalles réguliers
-        const countdownTimer = setInterval(updateCountdown, 1000);
-
-        function updateCountdown() {
-            // Obtenir la date et l'heure actuelles
-            const currentDate = new Date();
-
-            // Calculer la différence entre la date cible et la date de départ en millisecondes
-            const difference = startDate.getTime() - currentDate.getTime();
-
-            // Convertir la différence en jours, heures, minutes et secondes
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-            // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-            const countdownElement = document.getElementById('countdown');
-            countdownElement.innerHTML = `
-            
-             <div>${hours}h</div>:
-             <div>${minutes}m</div>:
-            <div>${seconds}s</div>
-              `;
-
-            // Arrêter le compte à rebours lorsque la date cible est atteinte
-            if (difference <= 0) {
-                clearInterval(countdownTimer);
-                countdownElement.innerHTML = "Temps écoulé !";
-            }
-        }
-    </script>
+    
 
 @endsection
