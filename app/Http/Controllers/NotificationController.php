@@ -43,6 +43,12 @@ class NotificationController extends Controller
         // Initialiser la variable produit à null
         $produtOffre = null;
 
+        // Vérifier si 'produit_id' existe dans les données de notification
+        if (isset($notification->data['produit_id'])) {
+            // Récupérer le produit associé à la notification
+            $produtOffre = ProduitService::find($notification->data['produit_id']);
+        }
+
         // Vérifier si 'code_unique' existe dans les données de notification
         $codeUnique = $notification->data['code_unique'] ?? null;
 
