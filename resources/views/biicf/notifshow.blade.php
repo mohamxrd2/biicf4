@@ -197,7 +197,8 @@
 
                         <div class="w-full flex justify-between items-center py-4  border-b-2">
                             <p class="text-md font-semibold">Prix unitaire maximal</p>
-                            <p class="text-md font-medium text-gray-600">{{ number_format($notification->data['lowestPricedProduct'] , 2, ',', ' ') }}
+                            <p class="text-md font-medium text-gray-600">
+                                {{ number_format($notification->data['lowestPricedProduct'], 2, ',', ' ') }}
                             </p>
                         </div>
 
@@ -276,7 +277,8 @@
                                                     <p
                                                         class=" text-base text-black font-medium inline-block dark:text-white">
                                                         {{ $comment->user->name }}</p>
-                                                    <p class="text-sm mt-0.5">{{ number_format($comment->prixTrade, 2, ',', ' ')   }} FCFA</p>
+                                                    <p class="text-sm mt-0.5">
+                                                        {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -294,16 +296,13 @@
                                 <!-- add comment -->
                                 <form action="{{ route('biicf.comment') }}" method="post" id="commentForm">
                                     @csrf
-                                    <div
-                                        class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                        <input type="hidden" name="code_unique"
-                                            value="{{ $userComment->code_unique }}">
+                                    <div class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                        <input type="hidden" name="code_unique" value="{{ $userComment->code_unique }}">
                                         <input type="hidden" name="id_trader" value="{{ $user->id }}">
                                         <input type="number" name="prixTrade" id="prixTrade"
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
-
-                                        
+                                
                                         <button type="submit" id="submitBtn"
                                             class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
                                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
@@ -314,15 +313,11 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="w-full flex justify-center ">
-
-                                        <span id="prixTradeError"
-                                            class="text-red-500 text-sm hidden text-center py-3"></span>
-
+                                    <div class="w-full flex justify-center">
+                                        <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
                                     </div>
-
-
                                 </form>
+                                
 
                             </div>
 
@@ -332,22 +327,16 @@
 
 
                             @if ($oldestCommentDate)
+                                <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
-                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
+                                <div id="countdown"
+                                    class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
 
-                            <div id="countdown"
-                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-                              
-                                <div>-</div>:
-                                <div>-</div>:
-                                <div>-</div>
-                            </div>
-                                
+                                    <div>-</div>:
+                                    <div>-</div>:
+                                    <div>-</div>
+                                </div>
                             @endif
-
-                       
-
-                            
 
 
                         </div>
@@ -365,11 +354,11 @@
                     const prixTradeInput = document.getElementById('prixTrade');
                     const submitBtn = document.getElementById('submitBtn');
                     const prixTradeError = document.getElementById('prixTradeError');
-        
+            
                     prixTradeInput.addEventListener('input', function() {
                         const prixTradeValue = parseFloat(prixTradeInput.value);
                         const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
-        
+            
                         if (prixTradeValue > lowestPricedProduct) {
                             submitBtn.disabled = true;
                             prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
@@ -380,47 +369,81 @@
                             prixTradeError.classList.add('hidden');
                         }
                     });
-                });
-        
-                // Convertir la date de départ en objet Date JavaScript
-                const startDate = new Date("{{ $oldestCommentDate }}");
-        
-                // Ajouter 5 jours à la date de départ
-                // Ajouter 5 heures à la date de départ
-                startDate.setHours(startDate.getHours() + 5);
-        
-                // Mettre à jour le compte à rebours à intervalles réguliers
-                const countdownTimer = setInterval(updateCountdown, 1000);
-        
-                function updateCountdown() {
-                    // Obtenir la date et l'heure actuelles
-                    const currentDate = new Date();
-        
-                    // Calculer la différence entre la date cible et la date de départ en millisecondes
-                    const difference = startDate.getTime() - currentDate.getTime();
-        
-                    // Convertir la différence en jours, heures, minutes et secondes
-                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-        
-                    // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                    const countdownElement = document.getElementById('countdown');
-                    countdownElement.innerHTML = `
-                    
-                     <div>${hours}h</div>:
-                     <div>${minutes}m</div>:
-                    <div>${seconds}s</div>
-                      `;
-        
-                    // Arrêter le compte à rebours lorsque la date cible est atteinte
-                    if (difference <= 0) {
-                        clearInterval(countdownTimer);
-                        countdownElement.innerHTML = "Temps écoulé !";
+            
+                    // Convertir la date de départ en objet Date JavaScript
+                    const startDate = new Date("{{ $oldestCommentDate }}");
+            
+                    // Ajouter 5 heures à la date de départ
+                    startDate.setHours(startDate.getHours() + 5);
+            
+                    // Mettre à jour le compte à rebours à intervalles réguliers
+                    const countdownTimer = setInterval(updateCountdown, 1000);
+            
+                    function updateCountdown() {
+                        // Obtenir la date et l'heure actuelles
+                        const currentDate = new Date();
+            
+                        // Calculer la différence entre la date cible et la date de départ en millisecondes
+                        const difference = startDate.getTime() - currentDate.getTime();
+            
+                        // Convertir la différence en jours, heures, minutes et secondes
+                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            
+                        // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+                        const countdownElement = document.getElementById('countdown');
+                        countdownElement.innerHTML = `
+                            <div>${hours}h</div>:
+                            <div>${minutes}m</div>:
+                            <div>${seconds}s</div>
+                        `;
+            
+                        // Arrêter le compte à rebours lorsque la date cible est atteinte
+                        if (difference <= 0) {
+                            clearInterval(countdownTimer);
+                            countdownElement.innerHTML = "Temps écoulé !";
+                            prixTradeInput.disabled = true; // Désactiver le champ input
+                            prixTradeError.textContent = `Le fournisseur avec le prix le plus bas a été sélectionné !`;
+                            prixTradeError.classList.remove('hidden');
+                        }
                     }
-                }
+                });
             </script>
+            
+        @elseif($notification->type === 'App\Notifications\NegosTerminer')
+            <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
+                <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
+                    </span>{{ $notification->data['name'] }}</h2>
+
+                <p class="mb-3"><strong>Quantité demander:</strong> {{ $notification->data['quantite'] }}
+                </p>
+
+                @php
+                    $prixArticle = $notification->data['quantite'] * $notification->data['prix_trade'];
+
+                @endphp
+
+
+                <p class="mb-3"><strong>Prix d'artiche:</strong> {{ $prixArticle }} Fcfa
+                </p>
+
+                <p class=" font-medium text-sm text-green-600 mb-4">Payement effectué avec succès :)</p>
+
+                <a href="{{ route('biicf.wallet') }}"
+                    class="mb-3 text-white bg-purple-600 hover:bg-purple-800 text-center py-2 rounded-xl flex justify-center">
+                    Voir le porte-feuille
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </a>
+
+
+            </div>
+
+
         @endif
 
 
@@ -429,6 +452,6 @@
     </div>
 
 
-    
+
 
 @endsection
