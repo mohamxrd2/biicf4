@@ -1,24 +1,25 @@
 <?php
 
-use App\Http\Controllers\AppelOffreController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsoController;
-
 use App\Http\Controllers\AdminsController;
+
 use App\Http\Controllers\AchatGroupController;
 use App\Http\Controllers\AdminAgentController;
 use App\Http\Controllers\AdminChartController;
+use App\Http\Controllers\AppelOffreController;
 use App\Http\Controllers\AchatDirectController;
 use App\Http\Controllers\AdminWalletController;
 use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OffreClientControllerr;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
-use App\Http\Controllers\OffreClientControllerr;
 use App\Http\Controllers\ProduitServiceController;
+use App\Http\Controllers\OffreGroupClientController;
 
 
 Route::get('/', function () {
@@ -161,6 +162,9 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('formumelaire-appel-offre/comment', [AppelOffreController::class, 'comment'])->name('biicf.comment');
     
     Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');
+
+    Route::post('offregroupClient/store', [OffreGroupClientController::class, 'sendoffGrp'])->name('biicf.sendoffregrp');
+    Route::post('offregroupClient/comment', [OffreGroupClientController::class, 'commentoffgroup'])->name('biicf.offgrpcomment');
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');

@@ -9,6 +9,7 @@ use App\Models\AchatDirect;
 use App\Models\Transaction;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
+use App\Models\NotificationLog;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
@@ -48,7 +49,7 @@ class NotificationController extends Controller
             // Initialiser la variable produit à null
             $produtOffre = null;
 
-          
+
 
             // Vérifier si 'produit_id' existe dans les données de notification
             if (isset($notification->data['produit_id'])) {
@@ -100,59 +101,81 @@ class NotificationController extends Controller
             $commentCount = $comments->count();
 
             // Vérifier si le temps est écoulé
-         if($notification->type === 'App\Notifications\NegosTerminer' ){
+            if ($notification->type === 'App\Notifications\NegosTerminer') {
 
-            if ($isTempsEcoule) {
-                // Récupérer le commentaire avec le prix le plus bas
-                $lowPriceComment = Comment::where('code_unique', $codeUnique)
-                    ->whereNotNull('prixTrade')
-                    ->orderBy('prixTrade', 'asc')
-                    ->first();
+                if ($isTempsEcoule) {
+                    // Récupérer le commentaire avec le prix le plus bas
+                    $lowPriceComment = Comment::where('code_unique', $codeUnique)
+                        ->whereNotNull('prixTrade')
+                        ->orderBy('prixTrade', 'asc')
+                        ->first();
 
-                if ($lowPriceComment) {
-                    $data = [
-                        'prix_trade' => $lowPriceComment->prixTrade ?? null,
-                        'id_trader' => $lowPriceComment->id_trader ?? null,
-                        'id_prod' => $lowPriceComment->id_prod ?? null,
-                        'quantite' => $notification->data['quantity'] ?? null,
-                        'name' => $notification->data['productName'] ?? 'Produit sans nom'
-                    ];
-
-
-                    $owner = User::find($notification->data['id_sender']);
-                    
-
-                    $prixArticle = $notification->data['quantite'] * $notification->data['prix_trade'];
+                    if ($lowPriceComment) {
+                        $data = [
+                            'prix_trade' => $lowPriceComment->prixTrade ?? null,
+                            'id_trader' => $lowPriceComment->id_trader ?? null,
+                            'id_prod' => $lowPriceComment->id_prod ?? null,
+                            'quantite' => $notification->data['quantity'] ?? null,
+                            'name' => $notification->data['productName'] ?? 'Produit sans nom'
+                        ];
 
 
-                    $ownerWallet = Wallet::where('user_id', $notification->data['id_sender'])->first();
-
-                    $ownerWallet->increment('balance', $prixArticle);
-
-                    $transaction1 = new Transaction();
-                    $transaction1->sender_admin_id = $owner->id;
-                    $transaction1->receiver_user_id = $lowPriceComment->id_trader;
-                    $transaction1->type = 'Reception';
-                    $transaction1->amount = $prixArticle;
-                    $transaction1->save();
-
-                    $transaction2 = new Transaction();
-                    $transaction2->sender_admin_id = $owner->id;
-                    $transaction2->receiver_user_id = $lowPriceComment->id_trader;
-                    $transaction2->type = 'Envoie';
-                    $transaction2->amount = $prixArticle;
-                    $transaction2->save();
+                        $owner = User::find($notification->data['id_sender']);
 
 
-                    // Envoyer la notification à l'utilisateur authentifié
-                    Notification::send($owner, new NegosTerminer($data));
+                        $prixArticle = $notification->data['quantite'] * $notification->data['prix_trade'];
+
+
+                        $ownerWallet = Wallet::where('user_id', $notification->data['id_sender'])->first();
+
+                        $ownerWallet->increment('balance', $prixArticle);
+
+                        $transaction1 = new Transaction();
+                        $transaction1->sender_admin_id = $owner->id;
+                        $transaction1->receiver_user_id = $lowPriceComment->id_trader;
+                        $transaction1->type = 'Reception';
+                        $transaction1->amount = $prixArticle;
+                        $transaction1->save();
+
+                        $transaction2 = new Transaction();
+                        $transaction2->sender_admin_id = $owner->id;
+                        $transaction2->receiver_user_id = $lowPriceComment->id_trader;
+                        $transaction2->type = 'Envoie';
+                        $transaction2->amount = $prixArticle;
+                        $transaction2->save();
+
+
+                        // Envoyer la notification à l'utilisateur authentifié
+                        Notification::send($owner, new NegosTerminer($data));
+                    }
+                }
+            }elseif($notification->type === 'App\Notifications\OffreNotifGroup'){
+                if ($isTempsEcoule) {
+                    // Récupérer le commentaire avec le prix le plus élevé, en cas d'égalité prendre le plus ancien
+                    $highestPricedComment = Comment::where('code_unique', $codeUnique)
+                        ->whereNotNull('prixTrade')
+                        ->orderBy('prixTrade', 'desc')
+                        ->first();
+    
+                    // Récupérer le nom de l'utilisateur ayant fait ce commentaire
+                    if ($highestPricedComment) {
+                        $highestPricedCommentUserName = $highestPricedComment->user->name;
+                    }
+                    // Envoyer la notification
+                    Notification::send($produtOffre->user, new NegosTerminer([
+                        'message' => 'Le commentaire avec le prix le plus élevé a été fait par: ' . $highestPricedCommentUserName,
+                        'produit_id' => $produtOffre->id
+                    ]));
+    
+                    // Enregistrer la notification dans la table NotificationLog
+                    NotificationLog::create(['idProd' => $produtOffre->id]);
                 }
             }
 
-         }
-            
 
-            return view('biicf.notifshow', compact('notification', 'produtOffre', 'comments', 'commentCount', 'userComment', 'oldestCommentDate', 'isTempsEcoule', ));
+
+
+            return view('biicf.notifshow', compact('notification', 'produtOffre', 'comments', 'commentCount', 'userComment', 'oldestCommentDate', 'isTempsEcoule', 'codeUnique'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de la récupération de la notification: ' . $e->getMessage());
         }
