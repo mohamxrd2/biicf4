@@ -5,7 +5,7 @@
 @section('content')
 
     <div class=" px-4">
-       
+
 
 
         <form action="{{ route('biicf.formstore') }}" method="POST" enctype="multipart/form-data">
@@ -23,7 +23,7 @@
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                 @endforeach
 
-               
+
 
 
 
@@ -129,14 +129,22 @@
 
                     <button type="submit" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3">Envoyé</button>
 
-                    {{-- <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white">Groupé</button> --}}
+                </form>
+
+                <form action="">
+
+                    <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white">Groupé</button>
+
+                </form>
+
+
 
                 </div>
 
 
             </div>
 
-        </form>
+
 
     </div>
 

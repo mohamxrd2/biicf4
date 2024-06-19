@@ -616,6 +616,37 @@
                     }
                 }
             </script>
+        @elseif($notification->type === 'App\Notifications\AppelOffreTerminer')
+            <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
+                <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
+                    </span>{{ $notification->data['name'] }}</h2>
+
+                <p class="mb-3"><strong>Quantité demander:</strong> {{ $notification->data['quantite'] }}
+                </p>
+
+                @php
+                    $prixArticle = $notification->data['quantite'] * $notification->data['prix_trade'];
+
+                @endphp
+
+
+                <p class="mb-3"><strong>Prix d'artiche:</strong> {{ $prixArticle }} Fcfa
+                </p>
+
+                <p class=" font-medium text-sm text-green-600 mb-4">Payement effectué avec succès :)</p>
+
+                <a href="{{ route('biicf.wallet') }}"
+                    class="mb-3 text-white bg-purple-600 hover:bg-purple-800 text-center py-2 rounded-xl flex justify-center">
+                    Voir le porte-feuille
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </a>
+
+
+            </div>
 
 
 
