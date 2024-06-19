@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppelOffreGrouper;
 use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -157,6 +158,67 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
+    public function formstoreGroupe(Request $request)
+    {
+        try {
+            $userId = Auth::guard('web')->id();
+
+            // Générer un code unique une seule fois pour tous les utilisateurs
+            $codeunique = $this->genererCodeAleatoire(10);
+
+            // Validate the request data
+            $request->validate([
+                'productName' => 'required|string',
+                'quantity' => 'required|integer',
+                'payment' => 'required|string',
+                'Livraison' => 'required|string',
+                'dateTot' => 'required|date',
+                'dateTard' => 'required|date',
+                'specificity' => 'nullable|string',
+                'id_prod' => 'nullable|string',
+                'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'prodUsers' => 'required|array',
+            ]);
+
+            // Handle file upload
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('images', 'public');
+            }
+
+            // Prepare data for insertion
+            $data = $request->only([
+                'productName',
+                'quantity',
+                'payment',
+                'Livraison',
+                'dateTot',
+                'dateTard',
+                'specificity',
+                'id_prod',
+                'prodUsers'
+            ]);
+
+            // Add the image path if it exists
+            if ($imagePath) {
+                $data['image'] = $imagePath;
+            }
+
+            // Ensure prodUsers is stored as JSON
+            $data['prodUsers'] = json_encode($data['prodUsers']);
+
+            // Add the unique code
+            $data['codeunique'] = $codeunique;
+
+            // Insert data into the table
+            AppelOffreGrouper::create($data);
+
+            return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
+        } catch (\Exception $e) {
+            return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
+        }
+    }
+
 
     private function genererCodeAleatoire($longueur)
     {

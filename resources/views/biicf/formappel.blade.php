@@ -8,34 +8,19 @@
 
 
 
-        <form action="{{ route('biicf.formstore') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('biicf.formstore') }}" method="POST" enctype="multipart/form-data" id="mainForm">
             @csrf
             <div class="w-full flex flex-col justify-center items-center ">
-
-
-
-
                 <h1 class="font-meduim text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
-
-
                 <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
                 @foreach ($prodUsers as $userId)
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                 @endforeach
-
-
-
-
-
-
                 <div class="lg:w-2/3 w-full bg-white rounded-lg p-2 shadow-md mb-4">
                     <h1 class="text-md font-medium text-slate-900">Prix unitaire max</h1>
                     <p class="text-sm">{{ $lowestPricedProduct }} FCFA</p>
                 </div>
-
-
-
-                <div class="lg:w-2/3 w-full space-y-3  mb-3">
+                <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Nom du produit" value="{{ $keyword }}" name="productName" required>
@@ -53,7 +38,8 @@
                         <option value="Avance partielle" disabled>Avance partielle</option>
                         <option value="A credit" disabled>A credit</option>
                         <option value="Vente a terme" disabled>Vente a terme</option>
-                        <option value="Quotidiennement / garantie de prêt" disabled>Quotidiennement / garantie de prêt</option>
+                        <option value="Quotidiennement / garantie de prêt" disabled>Quotidiennement / garantie de prêt
+                        </option>
                     </select>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
@@ -71,9 +57,7 @@
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Sélectionner la date de début">
                     </div>
-
                     <span class="mx-4 text-gray-500 items-center h-full justify-center flex">à</span>
-
                     <div class="w-1/2 ml-2 relative">
                         <label for="datePickerEnd" class="mb-1">Au plus tard</label>
                         <input type="date" id="datePickerEnd" name="dateTard" required
@@ -86,12 +70,10 @@
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Specificité" name="Specificité">
                 </div>
-
                 <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
                     <h3>Ajouter une photo (facultatif)</h3>
-
                     <div class="flex items-center justify-center w-20 z-10" id="floating_photo1">
-                        <div class=" overflow-hidden rounded-md relative w-full">
+                        <div class="overflow-hidden rounded-md relative w-full">
                             <label for="file-upload1"
                                 class="flex flex-col items-center justify-center w-full h-30 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
                                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -101,7 +83,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                                     </svg>
-
                                     <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
                                         <span class="font-semibold">Image</span>
                                     </p>
@@ -116,38 +97,23 @@
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                                 </svg>
-
                             </button>
                         </div>
                     </div>
-
                 </div>
-
                 <div class="lg:w-2/3 w-full flex justify-center">
-
                     <button type="reset" class="px-2 py-1 rounded-md bg-gray-200 mr-3">Annuler</button>
-
-                    <button type="submit" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3">Envoyé</button>
-
-                </form>
-
-                <form action="">
-
-                    <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white">Groupé</button>
-
-                </form>
-
-
-
+                    <button type="submit" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3"
+                        id="submitEnvoie">Envoyé</button>
+                    <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white"
+                        id="submitGroupe">Groupé</button>
                 </div>
-
-
             </div>
+        </form>
 
 
 
     </div>
-
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -199,6 +165,15 @@
             removeButton.classList.add('hidden');
             fileInput.value = ''; // Clear the file input
         }
+
+        document.getElementById('submitEnvoie').addEventListener('click', function() {
+            document.getElementById('mainForm').action = "{{ route('biicf.formstore') }}";
+        });
+
+        document.getElementById('submitGroupe').addEventListener('click', function() {
+            document.getElementById('mainForm').action = "{{ route('biicf.formstoreGroupe') }}"; // Change this to your grouped form store route
+        });
+
     </script>
 
 @endsection

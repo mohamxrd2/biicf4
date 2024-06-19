@@ -248,7 +248,7 @@
                         </div>
 
                      </a>
-                      
+
                     @endforeach
 
                     <form action="{{ route('biicf.form') }}" method="POST">
@@ -260,7 +260,7 @@
                                 <input type="hidden" name="prodUsers[]" value="{{ $prodUser }}">
                             @endforeach
 
-                          
+
                             <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire un appel
                                 d'offre</button>
                         </div>
@@ -270,6 +270,10 @@
                 @endif
 
             @endif
+
+            <div class="w-full my-6 flex items-center justify-center">
+                <p class="text-xl">Résultats pour les appels d'offre groupé</p>
+            </div>
 
         </div>
         <div class="lg:col-span-1 lg:block hidden">
