@@ -117,6 +117,7 @@ class NotificationController extends Controller
                         $owner = User::find($notification->data['id_sender']);
 
                         if ($owner && $data['prix_trade'] && $data['quantite']) {
+
                             $prixArticle = $data['quantite'] * $data['prix_trade'];
 
                             // Trouver les portefeuilles du propriétaire et du trader
@@ -130,19 +131,19 @@ class NotificationController extends Controller
                                 // Incrémenter le portefeuille du propriétaire
                                 $ownerWallet->increment('balance', $prixArticle);
 
-                                // Enregistrer la transaction de réception
+                                // Enregistrer la transaction de envoi
                                 $transaction1 = new Transaction();
-                                $transaction1->sender_admin_id = $owner->id;
+                                $transaction1->sender_user_id = $owner->id;
                                 $transaction1->receiver_user_id = $data['id_trader'];
-                                $transaction1->type = 'Reception';
+                                $transaction1->type = 'Envoie';
                                 $transaction1->amount = $prixArticle;
                                 $transaction1->save();
 
-                                // Enregistrer la transaction d'envoi
+                                // Enregistrer la transaction reception
                                 $transaction2 = new Transaction();
-                                $transaction2->sender_admin_id = $owner->id;
+                                $transaction2->sender_user_id = $owner->id;
                                 $transaction2->receiver_user_id = $data['id_trader'];
-                                $transaction2->type = 'Envoie';
+                                $transaction2->type = 'Reception';
                                 $transaction2->amount = $prixArticle;
                                 $transaction2->save();
 
