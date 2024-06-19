@@ -72,7 +72,7 @@ class AppelOffreController extends Controller
             // Si $prodUsers est null, initialisez-le comme un tableau vide
             $prodUsers = [];
         }
-        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'), );
+        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'),);
     }
 
     public function storeAppel(Request $request)
@@ -119,7 +119,7 @@ class AppelOffreController extends Controller
                     'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
                     'id_sender' => $userId,
                     'prodUsers' => $prodUser,
-                    'produits' => $produits, 
+                    'produits' => $produits,
                     'lowestPricedProduct' => $lowestPricedProduct,
                     'code_unique' => $codeUnique,
                     'difference' => 'single',
@@ -146,13 +146,11 @@ class AppelOffreController extends Controller
                     'prixTrade' => null,
                     'id_trader' => $prodUser,
                     'code_unique' => $codeUnique,
-                    'id_prod' => null 
+                    'id_prod' => null
                 ]);
-
-
             }
 
-            
+
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {
@@ -172,26 +170,23 @@ class AppelOffreController extends Controller
         return $code;
     }
     public function comment(Request $request)
-{
-    // Validation des données du formulaire
-    $request->validate([
-        'prixTrade' => 'required|integer',
-        'id_trader' => 'required|integer|exists:users,id',
-        'code_unique' => 'required|string|exists:comments,code_unique',
-    ]);
+    {
+        // Validation des données du formulaire
+        $request->validate([
+            'prixTrade' => 'required|integer',
+            'id_trader' => 'required|integer|exists:users,id',
+            'code_unique' => 'required|string|exists:comments,code_unique',
+        ]);
 
-    
-    // Création du commentaire
-    Comment::create([
-        'prixTrade' => $request->input('prixTrade'),
-        'id_trader' => $request->input('id_trader'),
-        'code_unique' => $request->input('code_unique'),
-    ]);
 
-    // Redirection avec un message de succès
-    return redirect()->back();
+        // Création du commentaire
+        Comment::create([
+            'prixTrade' => $request->input('prixTrade'),
+            'id_trader' => $request->input('id_trader'),
+            'code_unique' => $request->input('code_unique'),
+        ]);
+
+        // Redirection avec un message de succès
+        return redirect()->back();
+    }
 }
-
-
-}
-

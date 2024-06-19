@@ -296,13 +296,15 @@
                                 <!-- add comment -->
                                 <form action="{{ route('biicf.comment') }}" method="post" id="commentForm">
                                     @csrf
-                                    <div class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                        <input type="hidden" name="code_unique" value="{{ $userComment->code_unique }}">
+                                    <div
+                                        class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                        <input type="hidden" name="code_unique"
+                                            value="{{ $userComment->code_unique }}">
                                         <input type="hidden" name="id_trader" value="{{ $user->id }}">
                                         <input type="number" name="prixTrade" id="prixTrade"
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
-                                
+
                                         <button type="submit" id="submitBtn"
                                             class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
                                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
@@ -314,10 +316,11 @@
                                         </button>
                                     </div>
                                     <div class="w-full flex justify-center">
-                                        <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
+                                        <span id="prixTradeError"
+                                            class="text-red-500 text-sm hidden text-center py-3"></span>
                                     </div>
                                 </form>
-                                
+
 
                             </div>
 
@@ -354,11 +357,11 @@
                     const prixTradeInput = document.getElementById('prixTrade');
                     const submitBtn = document.getElementById('submitBtn');
                     const prixTradeError = document.getElementById('prixTradeError');
-            
+
                     prixTradeInput.addEventListener('input', function() {
                         const prixTradeValue = parseFloat(prixTradeInput.value);
                         const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
-            
+
                         if (prixTradeValue > lowestPricedProduct) {
                             submitBtn.disabled = true;
                             prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
@@ -369,28 +372,28 @@
                             prixTradeError.classList.add('hidden');
                         }
                     });
-            
+
                     // Convertir la date de départ en objet Date JavaScript
                     const startDate = new Date("{{ $oldestCommentDate }}");
-            
+
                     // Ajouter 5 heures à la date de départ
                     startDate.setHours(startDate.getHours() + 5);
-            
+
                     // Mettre à jour le compte à rebours à intervalles réguliers
                     const countdownTimer = setInterval(updateCountdown, 1000);
-            
+
                     function updateCountdown() {
                         // Obtenir la date et l'heure actuelles
                         const currentDate = new Date();
-            
+
                         // Calculer la différence entre la date cible et la date de départ en millisecondes
                         const difference = startDate.getTime() - currentDate.getTime();
-            
+
                         // Convertir la différence en jours, heures, minutes et secondes
                         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-            
+
                         // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
                         const countdownElement = document.getElementById('countdown');
                         countdownElement.innerHTML = `
@@ -398,7 +401,7 @@
                             <div>${minutes}m</div>:
                             <div>${seconds}s</div>
                         `;
-            
+
                         // Arrêter le compte à rebours lorsque la date cible est atteinte
                         if (difference <= 0) {
                             clearInterval(countdownTimer);
@@ -411,240 +414,209 @@
                 });
             </script>
         @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
-        <div class="grid grid-cols-2 gap-4 p-4">
-            <div class="lg:col-span-1 col-span-2">
+            <div class="grid grid-cols-2 gap-4 p-4">
+                <div class="lg:col-span-1 col-span-2">
 
-                <h2 class="text-3xl font-semibold mb-2">{{ $notification->data['produit_name'] }}</h2>
+                    <h2 class="text-3xl font-semibold mb-2">{{ $notification->data['produit_name'] }}</h2>
 
-                <div class="w-full gap-y-2  mt-4">
+                    <div class="w-full gap-y-2  mt-4">
 
-                    <div class="w-full flex justify-between items-center py-4  border-b-2">
-                        <p class="text-md font-semibold">Prix unitaire maximal</p>
-                        <p class="text-md font-medium text-gray-600">
-                            {{ number_format($notification->data['produit_prix'], 2, ',', ' ') }}
-                        </p>
-                    </div>
-
-                    @if ($notification->data['produit_livraison'])
                         <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Livraison</p>
+                            <p class="text-md font-semibold">Prix unitaire maximal</p>
                             <p class="text-md font-medium text-gray-600">
-                                {{ $notification->data['produit_livraison'] }}</p>
-                        </div>
-                    @endif
-
-                </div>
-
-
-
-            </div>
-
-            <div class="lg:col-span-1 col-span-2">
-
-                <div class="p-4">
-                    <div class="tempsecoule"></div>
-                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                        uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-
-
-                        <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-
-
-
-                            <!-- comments -->
-                            <div
-                                class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-
-
-
-                                @if ($commentCount == 0)
-
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <p class="text-gray-800"> Aucune offre n'a été soumise</p>
-                                    </div>
-                                @else
-                                    @foreach ($comments as $comment)
-                                        <div class="flex items-center gap-3 relative">
-
-                                            <img src="{{ asset($comment->user->photo) }}" alt=""
-                                                class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-
-                                            <div class="flex-1">
-                                                <p
-                                                    class=" text-base text-black font-medium inline-block dark:text-white">
-                                                    {{ $comment->user->name }}</p>
-                                                <p class="text-sm mt-0.5">
-                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                            </div>
-                                        </div>
-                                    @endforeach
-
-
-                                @endif
-
-
-
-
-
-                            </div>
-
-
-
-                            <!-- add comment -->
-                            <form action="{{ route('biicf.offgrpcomment') }}" method="post" id="commentForm">
-                                @csrf
-                                <div
-                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    <input type="hidden" name="code_unique" value="{{ $codeUnique }}">
-                                    <input type="hidden" name="id_trader" value="{{ $user->id }}">
-                                    <input type="number" name="prixTrade" id="prixTrade"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Faire une offre..." required>
-
-
-                                    <button type="submit" id="submitBtn"
-                                        class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                        <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                            viewBox="0 0 18 20">
-                                            <path
-                                                d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="w-full flex justify-center ">
-
-                                    <span id="prixTradeError"
-                                        class="text-red-500 text-sm hidden text-center py-3"></span>
-
-                                </div>
-
-
-                            </form>
-
-
+                                {{ number_format($notification->data['produit_prix'], 2, ',', ' ') }}
+                            </p>
                         </div>
 
-                    </div>
-
-                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-
-
-                        @if ($oldestCommentDate)
-                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
-
-                            <div id="countdown"
-                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                                <div>-</div>:
-                                <div>-</div>:
-                                <div>-</div>
+                        @if ($notification->data['produit_livraison'])
+                            <div class="w-full flex justify-between items-center py-4  border-b-2">
+                                <p class="text-md font-semibold">Livraison</p>
+                                <p class="text-md font-medium text-gray-600">
+                                    {{ $notification->data['produit_livraison'] }}</p>
                             </div>
                         @endif
+
                     </div>
+
+
+
+                </div>
+
+                <div class="lg:col-span-1 col-span-2">
+
+                    <div class="p-4">
+                        <div class="tempsecoule"></div>
+                        <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
+                            uk-sticky="media: 1024; end: #js-oversized; offset: 80">
+
+
+
+                            <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
+
+
+
+                                <!-- comments -->
+                                <div
+                                    class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
+
+
+
+                                    @if ($commentCount == 0)
+
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <p class="text-gray-800"> Aucune offre n'a été soumise</p>
+                                        </div>
+                                    @else
+                                        @foreach ($comments as $comment)
+                                            <div class="flex items-center gap-3 relative">
+
+                                                <img src="{{ asset($comment->user->photo) }}" alt=""
+                                                    class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
+
+                                                <div class="flex-1">
+                                                    <p
+                                                        class=" text-base text-black font-medium inline-block dark:text-white">
+                                                        {{ $comment->user->name }}</p>
+                                                    <p class="text-sm mt-0.5">
+                                                        {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
+                                                </div>
+                                            </div>
+                                        @endforeach
+
+
+                                    @endif
+
+
+
+
+
+                                </div>
+
+
+
+                                <!-- add comment -->
+                                <form action="{{ route('biicf.offgrpcomment') }}" method="post" id="commentForm">
+                                    @csrf
+                                    <div
+                                        class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                        <input type="hidden" name="code_unique" value="{{ $codeUnique }}">
+                                        <input type="hidden" name="id_trader" value="{{ $user->id }}">
+                                        <input type="number" name="prixTrade" id="prixTrade"
+                                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                            placeholder="Faire une offre..." required>
+
+
+                                        <button type="submit" id="submitBtn"
+                                            class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                                viewBox="0 0 18 20">
+                                                <path
+                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="w-full flex justify-center ">
+
+                                        <span id="prixTradeError"
+                                            class="text-red-500 text-sm hidden text-center py-3"></span>
+
+                                    </div>
+
+
+                                </form>
+
+
+                            </div>
+
+                        </div>
+
+                        <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+
+
+                            @if ($oldestCommentDate)
+                                <span class=" mb-2">Temps restant pour cette negociatiation</span>
+
+                                <div id="countdown"
+                                    class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
+
+                                    <div>-</div>:
+                                    <div>-</div>:
+                                    <div>-</div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
 
-        </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const prixTradeInput = document.getElementById('prixTrade');
+                    const submitBtn = document.getElementById('submitBtn');
+                    const prixTradeError = document.getElementById('prixTradeError');
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const prixTradeInput = document.getElementById('prixTrade');
-                const submitBtn = document.getElementById('submitBtn');
-                const prixTradeError = document.getElementById('prixTradeError');
+                    prixTradeInput.addEventListener('input', function() {
+                        const prixTradeValue = parseFloat(prixTradeInput.value);
+                        const produit_prix = parseFloat('{{ $notification->data['produit_prix'] }}');
 
-                prixTradeInput.addEventListener('input', function() {
-                    const prixTradeValue = parseFloat(prixTradeInput.value);
-                    const produit_prix = parseFloat('{{ $notification->data['produit_prix'] }}');
-
-                    if (prixTradeValue < produit_prix) {
-                        submitBtn.disabled = true;
-                        prixTradeError.textContent = 'Le prix  doit  etre superieur ' + produit_prix;
-                        prixTradeError.classList.remove('hidden');
-                    } else {
-                        submitBtn.disabled = false;
-                        prixTradeError.textContent = '';
-                        prixTradeError.classList.add('hidden');
-                    }
+                        if (prixTradeValue < produit_prix) {
+                            submitBtn.disabled = true;
+                            prixTradeError.textContent = 'Le prix  doit  etre superieur ' + produit_prix;
+                            prixTradeError.classList.remove('hidden');
+                        } else {
+                            submitBtn.disabled = false;
+                            prixTradeError.textContent = '';
+                            prixTradeError.classList.add('hidden');
+                        }
+                    });
                 });
-            });
 
-            // Convertir la date de départ en objet Date JavaScript
-            const startDate = new Date("{{ $oldestCommentDate }}");
+                // Convertir la date de départ en objet Date JavaScript
+                const startDate = new Date("{{ $oldestCommentDate }}");
 
-            // Ajouter 5 jours à la date de départ
-            // Ajouter 5 heures à la date de départ
-            startDate.setHours(startDate.getHours() + 5);
+                // Ajouter 5 jours à la date de départ
+                // Ajouter 5 heures à la date de départ
+                startDate.setHours(startDate.getHours() + 5);
 
-            // Mettre à jour le compte à rebours à intervalles réguliers
-            const countdownTimer = setInterval(updateCountdown, 1000);
+                // Mettre à jour le compte à rebours à intervalles réguliers
+                const countdownTimer = setInterval(updateCountdown, 1000);
 
-            function updateCountdown() {
-                // Obtenir la date et l'heure actuelles
-                const currentDate = new Date();
+                function updateCountdown() {
+                    // Obtenir la date et l'heure actuelles
+                    const currentDate = new Date();
 
-                // Calculer la différence entre la date cible et la date de départ en millisecondes
-                const difference = startDate.getTime() - currentDate.getTime();
+                    // Calculer la différence entre la date cible et la date de départ en millisecondes
+                    const difference = startDate.getTime() - currentDate.getTime();
 
-                // Convertir la différence en jours, heures, minutes et secondes
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                    // Convertir la différence en jours, heures, minutes et secondes
+                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-                // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                const countdownElement = document.getElementById('countdown');
-                countdownElement.innerHTML = `
+                    // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+                    const countdownElement = document.getElementById('countdown');
+                    countdownElement.innerHTML = `
 
-                 <div>${hours}h</div>:
-                 <div>${minutes}m</div>:
-                <div>${seconds}s</div>
-                  `;
+                     <div>${hours}h</div>:
+                     <div>${minutes}m</div>:
+                     <div>${seconds}s</div>
+                    `;
 
-                // Arrêter le compte à rebours lorsque la date cible est atteinte
-                if (difference <= 0) {
-                    clearInterval(countdownTimer);
-                    countdownElement.innerHTML = "Temps écoulé !";
+                    // Arrêter le compte à rebours lorsque la date cible est atteinte
+                    if (difference <= 0) {
+                        clearInterval(countdownTimer);
+                        countdownElement.innerHTML = "Temps écoulé !";
 
-                    // Afficher la variable en rouge avec une phrase dans la div avec la classe "tempsecoule"
+                        // Afficher la variable en rouge avec une phrase dans la div avec la classe "tempsecoule"
 
+                    }
                 }
-            }
-        </script>
-            
-        @elseif($notification->type === 'App\Notifications\NegosTerminer')
-            <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
-                <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
-                    </span>{{ $notification->data['name'] }}</h2>
+            </script>
 
-                <p class="mb-3"><strong>Quantité demander:</strong> {{ $notification->data['quantite'] }}
-                </p>
-
-                @php
-                    $prixArticle = $notification->data['quantite'] * $notification->data['prix_trade'];
-
-                @endphp
-
-
-                <p class="mb-3"><strong>Prix d'artiche:</strong> {{ $prixArticle }} Fcfa
-                </p>
-
-                <p class=" font-medium text-sm text-green-600 mb-4">Payement effectué avec succès :)</p>
-
-                <a href="{{ route('biicf.wallet') }}"
-                    class="mb-3 text-white bg-purple-600 hover:bg-purple-800 text-center py-2 rounded-xl flex justify-center">
-                    Voir le porte-feuille
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                    </svg>
-                </a>
-
-
-            </div>
 
 
         @endif

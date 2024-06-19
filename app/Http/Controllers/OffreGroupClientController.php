@@ -69,8 +69,6 @@ class OffreGroupClientController extends Controller
                 'prixTrade' => 'required|integer',
                 'id_trader' => 'required|integer|exists:users,id',
                 'code_unique' => 'required|string',
-            ], [
-                'code_unique.exists' => 'Le code unique sélectionné est invalide.',
             ]);
 
             // Création du commentaire

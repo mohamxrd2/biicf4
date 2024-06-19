@@ -227,7 +227,7 @@ class ProduitServiceController extends Controller
             $produit = ProduitService::findOrFail($id);
 
             // Récupérer l'identifiant de l'utilisateur connecté
-            
+
 
             // Récupérer le portefeuille de l'utilisateur
             $userWallet = Wallet::where('user_id', $userId)->first();
@@ -240,8 +240,7 @@ class ProduitServiceController extends Controller
             // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
             $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
             $tempEcoule = Carbon::now()->addDays(5);
-            // Vérifier si la date la plus ancienne + 5 jours est dépassée
-            //$tempEcoule = Carbon::now()->subDays(1); // pour le test
+
 
             // Initialiser les variables pour la vue
             $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');

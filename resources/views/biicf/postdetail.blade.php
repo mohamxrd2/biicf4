@@ -399,7 +399,7 @@
                         disabled>Envoyé</button>
                 </div>
             </form>
-
+            
             <!-- Formulaire pour l'achat groupé -->
             <form action="{{ route('achatG.store', ['id' => $id]) }}"
                 class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md" id="formAchatGroup"
