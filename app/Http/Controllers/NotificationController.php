@@ -78,7 +78,7 @@ class NotificationController extends Controller
             $oldestCommentDate = $oldestComment ? $oldestComment->created_at : null;
 
             // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
-            $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addHours(0) : null;
+            $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addHours(1) : null;
 
             // Vérifier si $tempsEcoule est écoulé
             $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();

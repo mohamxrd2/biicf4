@@ -126,7 +126,7 @@ class AppelOffreController extends Controller
         $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
 
         // Ajouter 0 heures à la date la plus ancienne, s'il y en a une
-        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addHours(0) : null;
+        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addHours(1) : null;
 
         // Vérifier si le temps est écoulé
         $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
