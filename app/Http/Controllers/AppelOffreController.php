@@ -100,6 +100,17 @@ class AppelOffreController extends Controller
         return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'));
     }
 
+    public function detailoffre(Request $request)
+    {
+        try {
+            $userId = Auth::guard('web')->id();
+
+
+            return view('biicf.ajoutoffre');
+        } catch (\Exception $e) {
+            return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
+        }
+    }
     public function storeAppel(Request $request)
     {
         try {
@@ -242,7 +253,7 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
-    
+
 
 
     private function genererCodeAleatoire($longueur)

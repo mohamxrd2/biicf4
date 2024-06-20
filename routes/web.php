@@ -98,7 +98,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/ajouter-client', [UserController::class, 'createUserAdmin'])->name('clients.store');
 });
 
-  //email
+//email
 Route::get('/email/verify', [VerificationController::class, 'verify'])->name('verification.verify');
 
 Route::get('admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
@@ -161,7 +161,12 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('formumelaire-appel-offre/store', [AppelOffreController::class, 'storeAppel'])->name('biicf.formstore');
     Route::post('formumelaire-appel-offre/comment', [AppelOffreController::class, 'comment'])->name('biicf.comment');
     Route::post('formumelaire-appel-offregroupe/store', [AppelOffreController::class, 'formstoreGroupe'])->name('biicf.formstoreGroupe');
-    //ajout de quantite sur offre grouper
+
+    // Route pour afficher les détails de l'offre et ajouter des quantités
+    Route::get('formumelaire-appel-offregroupe', [AppelOffreController::class, 'detailoffre'])->name('biicf.detailoffre');
+
+    // Route pour stocker l'ajout de quantités à l'offre
+    Route::post('formumelaire-appel-offregroupe/storeoffre', [AppelOffreController::class, 'storeoffre'])->name('biicf.storeoffre');
 
     Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');
 

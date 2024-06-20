@@ -272,15 +272,9 @@
 
             <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
                 <h1 class="text-2xl font-bold text-center">Résultats pour les appels d'offre groupé</h1>
-
-                {{-- <p class="text-sm italic text-gray-500 mt-5 text-center">Tapez le nom du produit de la barre de
-                    recherche et pour verifier s'il y'a des appels d'offres groupés et permettre au different fournisseur de
-                    discuter sur le
-                    prix afin que vous ayez le meilleur prix.</p> --}}
-
             </div>
             @foreach ($appelOffreGroup as $appel)
-                <a href="{{ route('biicf.postdet', $result->id) }}">
+                <a href="{{ route('biicf.detailoffre') }}">
 
                     <div class="max-w-2xl mx-auto my-3">
                         <div class="w-full flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
@@ -291,9 +285,9 @@
                             </div>
                             <div class="flex items-center">
                                 <div class="h-10 w-10 mr-4">
-                                    <img class="w-full h-full rounded-md object-cover"
+                                    {{-- <img class="w-full h-full rounded-md object-cover"
                                         src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
-                                        alt="">
+                                        alt=""> --}}
                                 </div>
                                 <p class="text-xl font-semibold mr-10">{{ $appel }}</p>
                             </div>
@@ -318,6 +312,7 @@
 
 
         </div>
+
         <div class="lg:col-span-1 lg:block hidden">
             <div class="flex flex-col ">
 
@@ -412,8 +407,9 @@
         // Convertir la date de départ en objet Date JavaScript
         const startDate = new Date("{{ $datePlusAncienne }}");
 
-        // Ajouter 5 jours à la date de départ
-        startDate.setDate(startDate.getDate() + 5);
+        // Ajout d'une heure à la date de départ
+        startDate.setHours(startDate.getHours() + 5);
+
 
         // Mettre à jour le compte à rebours à intervalles réguliers
         const countdownTimer = setInterval(updateCountdown, 1000);
@@ -434,11 +430,11 @@
             // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
             const countdownElement = document.getElementById('countdown');
             countdownElement.innerHTML = `
-     <div>${days}j</div>:
-     <div>${hours}h</div>:
-     <div>${minutes}m</div>:
-    <div>${seconds}s</div>
-      `;
+           <div>${days}j</div>:
+           <div>${hours}h</div>:
+           <div>${minutes}m</div>:
+           <div>${seconds}s</div>
+            <`;
 
             // Arrêter le compte à rebours lorsque la date cible est atteinte
             if (difference <= 0) {
