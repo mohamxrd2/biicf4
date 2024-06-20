@@ -55,7 +55,7 @@ class AppelOffreController extends Controller
 
 
         // Récupérer les noms des produits des offres groupées
-        $appelOffreGroup = AppelOffreGrouper::all(); // Récupère toutes les offres groupées
+        $appelOffreGroup = AppelOffreGrouper::whereNotNull('productName')->get();
         $appelOffreGroupcount = AppelOffreGrouper::count(); // Compte le nombre total d'offres groupées
 
 
@@ -97,8 +97,18 @@ class AppelOffreController extends Controller
             return response()->json(['error' => 'Offre non trouvée'], 404);
         }
 
-        // Récupérer le code unique de l'offre groupée
+
+
+        // Récupérer les variables
         $codesUniques = $appelOffreGroup->codeunique;
+        $dateTot = $appelOffreGroup->dateTot;
+        $dateTard = $appelOffreGroup->dateTard;
+        $productName = $appelOffreGroup->productName;
+        $quantity = $appelOffreGroup->quantity;
+        $payment = $appelOffreGroup->payment;
+        $livraison = $appelOffreGroup->livraison;
+        $payment = $appelOffreGroup->payment;
+        $specificity = $appelOffreGroup->specificity;
 
         // Récupérer les utilisateurs associés à l'offre groupée
         $prodUsersJson = $appelOffreGroup->prodUsers;
@@ -121,19 +131,26 @@ class AppelOffreController extends Controller
         // Vérifier si le temps est écoulé
         $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
 
+
+        // Compter le nombre distinct d'utilisateurs pour le code unique
+        $appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)
+            ->distinct('user_id')
+            ->count('user_id');
+
         // Boucle sur chaque utilisateur pour envoyer la notification
         foreach ($prodUsers as $prodUser) {
             $data = [
-                'dateTot' => $request->dateTot,
-                'dateTard' => $request->dateTard,
-                'productName' => $request->productName,
-                'quantity' => $request->quantity,
-                'payment' => $request->payment,
-                'Livraison' => $request->livraison,
-                'specificity' => $request->specificity,
+                'dateTot' => $dateTot,
+                'dateTard' => $dateTard,
+                'productName' => $productName,
+                'quantity' => $quantity,
+                'payment' => $payment,
+                'Livraison' => $livraison,
+                'specificity' => $specificity,
                 'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
                 'id_sender' => $userId,
                 'prodUsers' => $prodUser,
+                'sumquantite' => $sumquantite,
                 'code_unique' => $codesUniques,
             ];
 
@@ -164,7 +181,7 @@ class AppelOffreController extends Controller
         }
 
         // Passer les variables à la vue (si nécessaire)
-        return view('biicf.ajoutoffre', compact('userId', 'appelOffreGroup', 'datePlusAncienne', 'tempEcoule', 'sumquantite'));
+        return view('biicf.ajoutoffre', compact('userId', 'appelOffreGroup', 'datePlusAncienne', 'tempEcoule', 'sumquantite', 'appelOffreGroupcount'));
     }
 
 

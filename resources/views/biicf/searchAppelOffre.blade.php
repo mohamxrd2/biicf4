@@ -288,17 +288,17 @@
                                         Participants: #
                                     </button>
                                 </div>
-                                <div class="flex items-center ">
+                                <div class="flex items-center justify-center">
                                     <div class="h-10 w-10 mr-4">
                                         {{-- <img class="w-full h-full rounded-md object-cover"
                                         src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
                                         alt=""> --}}
                                     </div>
-                                    <p class="text-xl font-semibold mr-10">{{ $appel->productName }}</p>
+                                    <p class="text-xl font-semibold">{{ $appel->productName }}</p>
                                 </div>
-
                             </div>
                         </div>
+
 
 
 

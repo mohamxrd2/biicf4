@@ -134,6 +134,12 @@
 
                     </div>
 
+                    <div class="flex justify-between items-center mb-4 w-full">
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded">
+                            Participants: {{$appelOffreGroupcount}}
+                        </button>
+                    </div>
+
 
 
                 </div>

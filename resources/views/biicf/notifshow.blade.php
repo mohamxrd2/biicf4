@@ -198,7 +198,7 @@
                         <div class="w-full flex justify-between items-center py-4  border-b-2">
                             <p class="text-md font-semibold">Prix unitaire maximal</p>
                             <p class="text-md font-medium text-gray-600">
-                                {{ number_format($notification->data['lowestPricedProduct'], 2, ',', ' ') }}
+                                {{ isset($notification->data['lowestPricedProduct']) ? number_format($notification->data['lowestPricedProduct'], 2, ',', ' ') : (isset($notification->data['sumquantite']) ? number_format($notification->data['sumquantite'], 2, ',', ' ') : '') }}
                             </p>
                         </div>
 
