@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\ProduitService;
 use App\Notifications\AppelOffre;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
@@ -54,7 +55,28 @@ class AppelOffreController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
+
+        // Récupérer les noms des produits des offres groupées
+        $appelOffreGroup = AppelOffreGrouper::pluck('productName');
+
+        // Récupérer tous les codes uniques
+        $codesUniques = AppelOffreGrouper::pluck('codeunique');
+
+        // Initialiser un tableau pour stocker les dates les plus anciennes
+        $datesPlusAnciennes = [];
+
+        // Itérer sur chaque code unique pour récupérer la date la plus ancienne
+        foreach ($codesUniques as $codeUnique) {
+            $datePlusAncienne = AppelOffreGrouper::where('codeunique', $codeUnique)->min('created_at');
+            $datesPlusAnciennes[$codeUnique] = $datePlusAncienne;
+        }
+
+        // Ajouter une heure à l'heure actuelle pour obtenir le temps écoulé
+        $tempEcoule = Carbon::now()->addHour();
+
+
+
+        return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct', 'appelOffreGroup', 'datePlusAncienne', 'tempEcoule'));
     }
 
     public function formAppel(Request $request)
@@ -73,7 +95,9 @@ class AppelOffreController extends Controller
             // Si $prodUsers est null, initialisez-le comme un tableau vide
             $prodUsers = [];
         }
-        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'),);
+
+
+        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'));
     }
 
     public function storeAppel(Request $request)
@@ -218,6 +242,7 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
+    
 
 
     private function genererCodeAleatoire($longueur)

@@ -233,22 +233,21 @@
                         </div>
                     </div>
                     @foreach ($results as $result)
-                     <a href="{{ route('biicf.postdet', $result->id) }}">
+                        <a href="{{ route('biicf.postdet', $result->id) }}">
 
-                        <div class="max-w-2xl mx-auto my-3">
+                            <div class="max-w-2xl mx-auto my-3">
 
-                            <div class="w-full flex items-center p-4 rounded-xl bg-gray-50 border border-gray-200">
-                                <div class="h-10 w-10 mr-2 ">
-                                    <img class="w-full h-full rounded-md  object-cover"
-                                        src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
-                                        alt="">
+                                <div class="w-full flex items-center p-4 rounded-xl bg-gray-50 border border-gray-200">
+                                    <div class="h-10 w-10 mr-2 ">
+                                        <img class="w-full h-full rounded-md  object-cover"
+                                            src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
+                                            alt="">
+                                    </div>
+                                    <p class="text-xl font-semibold ">{{ $result->name }}</p>
                                 </div>
-                                <p class="text-xl font-semibold ">{{ $result->name }}</p>
                             </div>
-                        </div>
 
-                     </a>
-
+                        </a>
                     @endforeach
 
                     <form action="{{ route('biicf.form') }}" method="POST">
@@ -271,9 +270,52 @@
 
             @endif
 
-            <div class="w-full my-6 flex items-center justify-center">
-                <p class="text-xl">Résultats pour les appels d'offre groupé</p>
+            <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
+                <h1 class="text-2xl font-bold text-center">Résultats pour les appels d'offre groupé</h1>
+
+                {{-- <p class="text-sm italic text-gray-500 mt-5 text-center">Tapez le nom du produit de la barre de
+                    recherche et pour verifier s'il y'a des appels d'offres groupés et permettre au different fournisseur de
+                    discuter sur le
+                    prix afin que vous ayez le meilleur prix.</p> --}}
+
             </div>
+            @foreach ($appelOffreGroup as $appel)
+                <a href="{{ route('biicf.postdet', $result->id) }}">
+
+                    <div class="max-w-2xl mx-auto my-3">
+                        <div class="w-full flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
+                            <div class="flex justify-between items-center mb-4">
+                                <button class="bg-blue-500 text-white px-4 py-2 rounded">
+                                    Participants: #
+                                </button>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 mr-4">
+                                    <img class="w-full h-full rounded-md object-cover"
+                                        src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
+                                        alt="">
+                                </div>
+                                <p class="text-xl font-semibold mr-10">{{ $appel }}</p>
+                            </div>
+                            <div id="countdown-container" class="absolute bottom-4 right-4 flex flex-col items-center">
+                                <span class="mb-2">Temps restant</span>
+                                <div id="countdown"
+                                    class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100 p-3 rounded-xl w-auto">
+                                    <div>-</div>:
+                                    <div>-</div>:
+                                    <div>-</div>:
+                                    <div>-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                </a>
+            @endforeach
+
 
         </div>
         <div class="lg:col-span-1 lg:block hidden">
@@ -365,5 +407,45 @@
 
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+    <script>
+        // Convertir la date de départ en objet Date JavaScript
+        const startDate = new Date("{{ $datePlusAncienne }}");
+
+        // Ajouter 5 jours à la date de départ
+        startDate.setDate(startDate.getDate() + 5);
+
+        // Mettre à jour le compte à rebours à intervalles réguliers
+        const countdownTimer = setInterval(updateCountdown, 1000);
+
+        function updateCountdown() {
+            // Obtenir la date et l'heure actuelles
+            const currentDate = new Date();
+
+            // Calculer la différence entre la date cible et la date de départ en millisecondes
+            const difference = startDate.getTime() - currentDate.getTime();
+
+            // Convertir la différence en jours, heures, minutes et secondes
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+            // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.innerHTML = `
+     <div>${days}j</div>:
+     <div>${hours}h</div>:
+     <div>${minutes}m</div>:
+    <div>${seconds}s</div>
+      `;
+
+            // Arrêter le compte à rebours lorsque la date cible est atteinte
+            if (difference <= 0) {
+                clearInterval(countdownTimer);
+                countdownElement.innerHTML = "Temps écoulé !";
+            }
+        }
+    </script>
 
 @endsection
