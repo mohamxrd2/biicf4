@@ -163,7 +163,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('formumelaire-appel-offregroupe/store', [AppelOffreController::class, 'formstoreGroupe'])->name('biicf.formstoreGroupe');
 
     // Route pour afficher les détails de l'offre et ajouter des quantités
-    Route::get('formumelaire-appel-offregroupe', [AppelOffreController::class, 'detailoffre'])->name('biicf.detailoffre');
+    Route::get('formumelaire-appel-offregroupe/{id}', [AppelOffreController::class, 'detailoffre'])->name('biicf.detailoffre');
 
     // Route pour stocker l'ajout de quantités à l'offre
     Route::post('formumelaire-appel-offregroupe/storeoffre', [AppelOffreController::class, 'storeoffre'])->name('biicf.storeoffre');

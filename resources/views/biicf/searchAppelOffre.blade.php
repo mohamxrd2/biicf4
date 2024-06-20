@@ -270,45 +270,42 @@
 
             @endif
 
-            <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
-                <h1 class="text-2xl font-bold text-center">Résultats pour les appels d'offre groupé</h1>
-            </div>
-            @foreach ($appelOffreGroup as $appel)
-                <a href="{{ route('biicf.detailoffre') }}">
+            @if ($appelOffreGroupcount == 0)
+                <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
+                    <h1 class="text-2xl font-bold text-center">Aucune offre groupé </h1>
+                </div>
+            @else
+                <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
+                    <h1 class="text-2xl font-bold text-center">Résultats pour les appels d'offre groupé</h1>
+                </div>
+                @foreach ($appelOffreGroup as $appel)
+                    <a href="{{ route('biicf.detailoffre', ['id' => $appel->id]) }}">
 
-                    <div class="max-w-2xl mx-auto my-3">
-                        <div class="w-full flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
-                            <div class="flex justify-between items-center mb-4">
-                                <button class="bg-blue-500 text-white px-4 py-2 rounded">
-                                    Participants: #
-                                </button>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 mr-4">
-                                    {{-- <img class="w-full h-full rounded-md object-cover"
+                        <div class="max-w-2xl mx-auto my-3">
+                            <div class="w-full flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
+                                <div class="flex justify-between items-center mb-4">
+                                    <button class="bg-blue-500 text-white px-4 py-2 rounded">
+                                        Participants: #
+                                    </button>
+                                </div>
+                                <div class="flex items-center ">
+                                    <div class="h-10 w-10 mr-4">
+                                        {{-- <img class="w-full h-full rounded-md object-cover"
                                         src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
                                         alt=""> --}}
+                                    </div>
+                                    <p class="text-xl font-semibold mr-10">{{ $appel->productName }}</p>
                                 </div>
-                                <p class="text-xl font-semibold mr-10">{{ $appel }}</p>
-                            </div>
-                            <div id="countdown-container" class="absolute bottom-4 right-4 flex flex-col items-center">
-                                <span class="mb-2">Temps restant</span>
-                                <div id="countdown"
-                                    class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100 p-3 rounded-xl w-auto">
-                                    <div>-</div>:
-                                    <div>-</div>:
-                                    <div>-</div>:
-                                    <div>-</div>
-                                </div>
+
                             </div>
                         </div>
-                    </div>
 
 
 
 
-                </a>
-            @endforeach
+                    </a>
+                @endforeach
+            @endif
 
 
         </div>
@@ -403,45 +400,6 @@
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
-    <script>
-        // Convertir la date de départ en objet Date JavaScript
-        const startDate = new Date("{{ $datePlusAncienne }}");
 
-        // Ajout d'une heure à la date de départ
-        startDate.setHours(startDate.getHours() + 5);
-
-
-        // Mettre à jour le compte à rebours à intervalles réguliers
-        const countdownTimer = setInterval(updateCountdown, 1000);
-
-        function updateCountdown() {
-            // Obtenir la date et l'heure actuelles
-            const currentDate = new Date();
-
-            // Calculer la différence entre la date cible et la date de départ en millisecondes
-            const difference = startDate.getTime() - currentDate.getTime();
-
-            // Convertir la différence en jours, heures, minutes et secondes
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-            // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-            const countdownElement = document.getElementById('countdown');
-            countdownElement.innerHTML = `
-           <div>${days}j</div>:
-           <div>${hours}h</div>:
-           <div>${minutes}m</div>:
-           <div>${seconds}s</div>
-            <`;
-
-            // Arrêter le compte à rebours lorsque la date cible est atteinte
-            if (difference <= 0) {
-                clearInterval(countdownTimer);
-                countdownElement.innerHTML = "Temps écoulé !";
-            }
-        }
-    </script>
 
 @endsection

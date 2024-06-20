@@ -22,8 +22,13 @@ class AppelOffreGrouper extends Model
         'id_prod',
         'image',
         'prodUsers',
-        'codeunique' // Add the new column here
+        'codeunique', // Add the new column here
+        'user_id'
     ];
+    public function User()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     // Optionally, if you want prodUsers to be cast to an array automatically
     protected $casts = [

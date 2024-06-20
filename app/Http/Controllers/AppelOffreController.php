@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Notification;
 
 class AppelOffreController extends Controller
 {
-    //
-
     public function search(Request $request)
     {
         $userId = Auth::guard('web')->id();
@@ -57,26 +55,12 @@ class AppelOffreController extends Controller
 
 
         // Récupérer les noms des produits des offres groupées
-        $appelOffreGroup = AppelOffreGrouper::pluck('productName');
-
-        // Récupérer tous les codes uniques
-        $codesUniques = AppelOffreGrouper::pluck('codeunique');
-
-        // Initialiser un tableau pour stocker les dates les plus anciennes
-        $datesPlusAnciennes = [];
-
-        // Itérer sur chaque code unique pour récupérer la date la plus ancienne
-        foreach ($codesUniques as $codeUnique) {
-            $datePlusAncienne = AppelOffreGrouper::where('codeunique', $codeUnique)->min('created_at');
-            $datesPlusAnciennes[$codeUnique] = $datePlusAncienne;
-        }
-
-        // Ajouter une heure à l'heure actuelle pour obtenir le temps écoulé
-        $tempEcoule = Carbon::now()->addHour();
+        $appelOffreGroup = AppelOffreGrouper::all(); // Récupère toutes les offres groupées
+        $appelOffreGroupcount = AppelOffreGrouper::count(); // Compte le nombre total d'offres groupées
 
 
 
-        return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct', 'appelOffreGroup', 'datePlusAncienne', 'tempEcoule'));
+        return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct',  'appelOffreGroup', 'appelOffreGroupcount'));
     }
 
     public function formAppel(Request $request)
@@ -100,17 +84,111 @@ class AppelOffreController extends Controller
         return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'));
     }
 
-    public function detailoffre(Request $request)
+    public function detailoffre(Request $request, $id)
     {
-        try {
-            $userId = Auth::guard('web')->id();
+        // Récupérer l'ID de l'utilisateur connecté
+        $userId = Auth::guard('web')->id();
 
+        // Récupérer l'offre groupée par son ID
+        $appelOffreGroup = AppelOffreGrouper::find($id);
 
-            return view('biicf.ajoutoffre');
-        } catch (\Exception $e) {
-            return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
+        // Vérifier si l'offre groupée existe
+        if (!$appelOffreGroup) {
+            return response()->json(['error' => 'Offre non trouvée'], 404);
         }
+
+        // Récupérer le code unique de l'offre groupée
+        $codesUniques = $appelOffreGroup->codeunique;
+
+        // Récupérer les utilisateurs associés à l'offre groupée
+        $prodUsersJson = $appelOffreGroup->prodUsers;
+
+        // Décoder la chaîne JSON en tableau PHP
+        $prodUsers = json_decode($prodUsersJson, true);
+
+        // Récupérer la date la plus ancienne pour le code unique
+        $datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
+
+        // Ajouter une heure à l'heure actuelle pour obtenir le temps écoulé
+        $tempEcoule = Carbon::now()->addHour();
+
+        // Calculer la somme des quantités pour le code unique actuel
+        $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
+
+        // Ajouter 0 heures à la date la plus ancienne, s'il y en a une
+        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addHours(0) : null;
+
+        // Vérifier si le temps est écoulé
+        $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+
+        // Boucle sur chaque utilisateur pour envoyer la notification
+        foreach ($prodUsers as $prodUser) {
+            $data = [
+                'dateTot' => $request->dateTot,
+                'dateTard' => $request->dateTard,
+                'productName' => $request->productName,
+                'quantity' => $request->quantity,
+                'payment' => $request->payment,
+                'Livraison' => $request->livraison,
+                'specificity' => $request->specificity,
+                'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
+                'id_sender' => $userId,
+                'prodUsers' => $prodUser,
+                'code_unique' => $codesUniques,
+            ];
+
+            // Vérification que toutes les clés nécessaires sont présentes
+            $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
+            foreach ($requiredKeys as $key) {
+                if (!array_key_exists($key, $data)) {
+                    throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
+                }
+            }
+
+            // Récupération de l'utilisateur destinataire
+            $owner = User::find($prodUser);
+
+            // Vérification si l'utilisateur existe
+            if ($owner) {
+                // Envoi de la notification à l'utilisateur
+                Notification::send($owner, new AppelOffre($data));
+            }
+
+            // Création du commentaire
+            Comment::create([
+                'prixTrade' => null,
+                'id_trader' => $prodUser,
+                'code_unique' => $codesUniques,
+                'id_prod' => null
+            ]);
+        }
+
+        // Passer les variables à la vue (si nécessaire)
+        return view('biicf.ajoutoffre', compact('userId', 'appelOffreGroup', 'datePlusAncienne', 'tempEcoule', 'sumquantite'));
     }
+
+
+
+    public function storeoffre(Request $request)
+
+    {
+        // Valider les données du formulaire
+        $validatedData = $request->validate([
+            'codeUnique' => 'required|string',
+            'userId' => 'required|integer',
+            'quantite' => 'required|integer'
+        ]);
+
+        // Créer un nouvel enregistrement dans la table offregroupe
+        $offregroupe = new AppelOffreGrouper();
+        $offregroupe->codeunique = $validatedData['codeUnique'];
+        $offregroupe->user_id = $validatedData['userId'];
+        $offregroupe->quantity = $validatedData['quantite'];
+        $offregroupe->save();
+
+        return redirect()->back()->with('success', 'offre soumis avec success');
+    }
+
     public function storeAppel(Request $request)
     {
         try {
@@ -193,9 +271,11 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
+
     public function formstoreGroupe(Request $request)
     {
         try {
+            // Récupérer l'ID de l'utilisateur connecté
             $userId = Auth::guard('web')->id();
 
             // Générer un code unique une seule fois pour tous les utilisateurs
@@ -221,40 +301,36 @@ class AppelOffreController extends Controller
                 $imagePath = $request->file('image')->store('images', 'public');
             }
 
-            // Prepare data for insertion
-            $data = $request->only([
-                'productName',
-                'quantity',
-                'payment',
-                'Livraison',
-                'dateTot',
-                'dateTard',
-                'specificity',
-                'id_prod',
-                'prodUsers'
-            ]);
+            // Create a new instance of the model
+            $offre = new AppelOffreGrouper();
+
+            // Assign values
+            $offre->productName = $request->input('productName');
+            $offre->lowestPricedProduct = $request->input('lowestPricedProduct');
+            $offre->quantity = $request->input('quantity');
+            $offre->payment = $request->input('payment');
+            $offre->Livraison = $request->input('Livraison');
+            $offre->dateTot = $request->input('dateTot');
+            $offre->dateTard = $request->input('dateTard');
+            $offre->specificity = $request->input('specificity');
+            $offre->id_prod = $request->input('id_prod');
+            $offre->prodUsers = json_encode($request->input('prodUsers'));
+            $offre->codeunique = $codeunique;
+            $offre->user_id = $userId;
 
             // Add the image path if it exists
             if ($imagePath) {
-                $data['image'] = $imagePath;
+                $offre->image = $imagePath;
             }
 
-            // Ensure prodUsers is stored as JSON
-            $data['prodUsers'] = json_encode($data['prodUsers']);
-
-            // Add the unique code
-            $data['codeunique'] = $codeunique;
-
-            // Insert data into the table
-            AppelOffreGrouper::create($data);
+            // Save the model
+            $offre->save();
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
-
-
 
     private function genererCodeAleatoire($longueur)
     {
