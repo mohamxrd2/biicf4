@@ -647,7 +647,153 @@
 
 
             </div>
+            @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
+            <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
 
+                <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre du produit:
+                        {{ $notification->data['produit_name'] }}</span></h2>
+
+                <p class="mb-3"><strong>Quantité: </strong> {{ $sommeQuantites }}
+                </p>
+
+                <p class="mb-3"><strong>Nombre de participant: </strong> {{ $nombreParticp }}
+                </p>
+
+                <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
+                    class="mb-3 text-blue-700 hover:underline flex">
+                    Voir le produit
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </a>
+
+                <form action="{{ route('biicf.addquantity') }}" method="POST">
+                    @csrf
+                    <div class="flex">
+                        <input type="number"
+                            class="py-3 px-4 block w-full mr-3 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Ajouter une quantité" name="quantite" id="quantiteInput">
+                        <input type="hidden" name="name" value="{{ $notification->data['produit_name'] }}">
+                        <input type="hidden" name="produit_id" value="{{ $notification->data['produit_id'] }}">
+
+                        <input type="hidden" name="code_unique" value="{{ $notification->data['code_unique'] }}">
+
+                        <button type="submit" class="bg-purple-500 text-white px-4 rounded-md"
+                            id="submitBtn">Ajouter</button>
+
+                    </div>
+
+                </form>
+
+                <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+
+
+
+                    <span class=" my-2">Temps restant pour vous ajouter</span>
+
+                    <div id="countdown"
+                        class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
+
+                        <div>-</div>:
+                        <div>-</div>:
+                        <div>-</div>
+                    </div>
+
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const quantiteInput = document.getElementById('quantiteInput');
+                        const submitBtn = document.getElementById('submitBtn');
+
+                        // Convertir la date de départ en objet Date JavaScript
+                        const startDate = new Date("{{ $oldestNotificationDate }}");
+                        startDate.setHours(startDate.getHours() + 5);
+
+                        // Mettre à jour le compte à rebours à intervalles réguliers
+                        const countdownTimer = setInterval(updateCountdown, 1000);
+
+                        function updateCountdown() {
+                            const currentDate = new Date();
+                            const difference = startDate.getTime() - currentDate.getTime();
+
+                            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                            const countdownElement = document.getElementById('countdown');
+                            countdownElement.innerHTML = `
+                                <div>${hours}h</div>:
+                                <div>${minutes}m</div>:
+                                <div>${seconds}s</div>
+                            `;
+
+                            if (difference <= 0) {
+                                clearInterval(countdownTimer);
+                                countdownElement.innerHTML = "Temps écoulé !";
+
+                                // Désactiver le champ de saisie et le bouton
+                                quantiteInput.disabled = true;
+                                submitBtn.disabled = true;
+                            }
+                        }
+                    });
+                </script>
+
+            </div>
+        @elseif ($notification->type === 'App\Notifications\OffreNegosDone')
+            <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
+
+                <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
+                    </span>{{ $produit->name }}</h2>
+                <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantite'] }}</p>
+
+                <p class="mb-3"><strong>Prix d'artiche:</strong>{{  number_format($prixArticleNegos, 2, ',', ' ') }} Fcfa
+                </p>
+
+                <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
+                    class="mb-3 bg-blue-700 text-white justify-center rounded-xl py-1 flex">
+                    Voir le produit de base
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </a>
+
+                <div class=" w-full gap-2 ">
+
+
+                    @if ($notification->reponse)
+                        <div class="w-full bg-gray-300 border p-2 rounded-md">
+                            <p class="text-md font-medium text-center">Réponse envoyée</p>
+                        </div>
+                    @else
+                        <form id="form-accepter" action="{{ route('biicf.offNAccept') }}" method="POST" >
+                            @csrf
+
+                            <input type="hidden" value="{{ $prixArticleNegos }}" name="prixarticle">
+                            <input type="hidden" value="{{ $produit->user_id }}" name="id_trader">
+                            <input type="hidden" value="{{ $notification->id }}" name="notifId">
+                     
+
+                            <!-- Bouton accepter -->
+                            <button id="btn-accepter" type="submit"
+                                class="px-4 py-1 w-full text-white bg-green-500 rounded-xl hover:bg-green-700">
+                                Accepter
+                            </button>
+                        </form>
+
+                 
+
+                    @endif
+
+                </div>
+
+
+            </div>
 
 
         @endif

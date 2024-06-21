@@ -303,6 +303,78 @@
                                 </div>
                             </div>
                         </a>
+                   
+
+                    @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
+                        <a href="{{ route('notification.show', $notification->id) }}">
+                            <div class="flex w-full">
+
+                                <div class="w-16 h-16 overflow-hidden mr-3">
+                                    <svg class="w-full text-yellow-300" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd"
+                                            d="M19.5 21a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-5.379a.75.75 0 0 1-.53-.22L11.47 3.66A2.25 2.25 0 0 0 9.879 3H4.5a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h15Zm-6.75-10.5a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25v2.25a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V10.5Z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+
+                                </div>
+
+                                <div class="flex flex-col justify-between w-full">
+                                    <div class="flex justify-between items-center w-full">
+                                        <h3 class="text-md font-semibold">{{ $notification->data['produit_name'] }}</h3>
+                                        <p class="text-[12px] text-gray-400 text-right">
+                                            {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                        </p>
+                                    </div>
+                                    <div class="flex justify-between items-center w-full h-full">
+                                        <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous etes ciblé pour une
+                                            offre groupé. Cliquez pour participer à la négociation</p>
+                                        @if ($notification->read_at == null)
+                                            <div class="w-10 flex justify-center items-center">
+                                                <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+
+
+                        </a>
+                    @elseif ($notification->type === 'App\Notifications\OffreNegosDone')
+                        <a href="{{ route('notification.show', $notification->id) }}">
+                            @php
+                                $produit = ProduitService::find($notification->data['produit_id']);
+                            @endphp
+                            <div class="flex w-full">
+                                <div class=" w-16 h-16  overflow-hidden mr-3">
+                                    <img src="{{ asset($produit->photoProd1) }}" alt="Product Image"
+                                        class="w-full h-full object-cover">
+                                </div>
+
+                                <div class="flex flex-col justify-between w-full">
+                                    <div class="flex justify-between items-center w-full">
+                                        <h3 class="text-md font-semibold">{{ $produit->name }}</h3>
+                                        <p class="text-[12px] text-gray-400 text-right">
+                                            {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                        </p>
+                                    </div>
+                                    <div class="flex justify-between items-center w-full h-full">
+                                        <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous avez reçu une offre
+                                            de ce produit !</p>
+                                        @if ($notification->read_at == null)
+                                            <div class="w-10 flex justify-center items-center">
+                                                <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </a>
                     @endif
 
                 </div>

@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\OffreNegos;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsoController;
-use App\Http\Controllers\AdminsController;
 
+use App\Http\Controllers\AdminsController;
 use App\Http\Controllers\AchatGroupController;
 use App\Http\Controllers\AdminAgentController;
 use App\Http\Controllers\AdminChartController;
@@ -172,6 +173,11 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 
     Route::post('offregroupClient/store', [OffreGroupClientController::class, 'sendoffGrp'])->name('biicf.sendoffregrp');
     Route::post('offregroupClient/comment', [OffreGroupClientController::class, 'commentoffgroup'])->name('biicf.offgrpcomment');
+
+    Route::post('offreneg/store', [OffreNegos::class, 'store'])->name('biicf.sendoffreneg');
+    Route::post('offreneg/ajouter', [OffreNegos::class, 'add' ])->name('biicf.addquantity');
+
+    Route::post('offreneg/accepeter', [OffreNegos::class, 'accepter'])->name('biicf.offNAccept');
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');
