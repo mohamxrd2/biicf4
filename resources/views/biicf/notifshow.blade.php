@@ -93,9 +93,6 @@
                     @endif
 
                 </div>
-
-
-
             </div>
         @elseif ($notification->type === 'App\Notifications\AchatBiicf')
             <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
@@ -777,7 +774,7 @@
                             <input type="hidden" value="{{ $prixArticleNegos }}" name="prixarticle">
                             <input type="hidden" value="{{ $produit->user_id }}" name="id_trader">
                             <input type="hidden" value="{{ $notification->id }}" name="notifId">
-                     
+
 
                             <!-- Bouton accepter -->
                             <button id="btn-accepter" type="submit"
@@ -786,7 +783,7 @@
                             </button>
                         </form>
 
-                 
+
 
                     @endif
 

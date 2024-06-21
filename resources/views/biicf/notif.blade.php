@@ -254,7 +254,7 @@
                                     <div class="flex justify-between items-center w-full h-full">
                                         <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous etes ciblé pour un
                                             appel
-                                            OFFRE GROUPER; cliquez pour participer à la négociation</p>
+                                            OFFRE NEGOCIER; cliquez pour participer à la négociation</p>
                                         @if ($notification->read_at == null)
                                             <div class="w-10 flex justify-center items-center">
                                                 <span class="w-2 h-2 rounded-full bg-purple-700"></span>
@@ -303,7 +303,7 @@
                                 </div>
                             </div>
                         </a>
-                   
+
 
                     @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
                         <a href="{{ route('notification.show', $notification->id) }}">

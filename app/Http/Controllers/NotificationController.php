@@ -53,6 +53,11 @@ class NotificationController extends Controller
 
             // Initialiser la variable produit à null
             $produtOffre = null;
+            $oldestNotificationDate = null;
+            $sommeQuantites = null;
+            $nombreParticp = null;
+            $produit = null;
+            $prixArticleNegos = null;
 
             // Vérifier si 'produit_id' existe dans les données de notification
             if (isset($notification->data['produit_id'])) {
@@ -201,59 +206,59 @@ class NotificationController extends Controller
             }elseif ($notification->type === 'App\Notifications\OffreNegosNotif') {
                 $prixArticleNegos = null;
                 $uniqueCode = $notification->data['code_unique'];
-            
+
                 $notificationsNegos = DatabaseNotification::where('type', 'App\Notifications\OffreNegosNotif')
                     ->where(function ($query) use ($uniqueCode) {
                         $query->where('data->code_unique', $uniqueCode);
                     })
                     ->get();
-            
+
                 $oldestNotificationDate = $notificationsNegos->min('created_at');
-            
+
                 $tempsEcoule = $oldestNotificationDate ? Carbon::parse($oldestNotificationDate)->addHours(5) : null;
-            
+
                 // Vérifier si $tempsEcoule est écoulé
                 $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
-            
+
                 $sommeQuantites = OffreGroupe::where('code_unique', $uniqueCode)
                     ->sum('quantite');
-            
+
                 $nombreParticp = OffreGroupe::where('code_unique', $uniqueCode)
                     ->distinct('user_id')
                     ->count();
                 $produit = ProduitService::find($notification->data['produit_id']);
-            
+
                 if ($isTempsEcoule) {
                     $data = [
                         'quantite' => $sommeQuantites,
                         'produit_id' => $notification->data['produit_id'],
                         'produit_name' => $notification->data['produit_name']
                     ];
-            
+
                     // Recherchez le produit associé à l'ID de produit
-                    
-            
+
+
                     if ($produit) {
                         // Récupérer le user_id du produit
                         $user_id = $produit->user_id;
-            
+
                         // Utiliser $user_id comme nécessaire
                     } else {
                         // Gérer le cas où le produit n'est pas trouvé
                         Log::error('Produit non trouvé pour l\'ID: ' . $notification->data['produit_id']);
                         return redirect()->back()->with('error', 'Produit non trouvé pour l\'ID spécifié.');
                     }
-            
+
                     $idsProprietaires = Consommation::where('name', $notification->data['produit_name'])
                         ->where('id_user', '!=', $produit->user_id)
                         ->where('statuts', 'Accepté')
                         ->distinct()
                         ->pluck('id_user')
                         ->toArray();
-            
+
                     foreach ($idsProprietaires as $conso) {
                         $owner = User::find($conso);
-            
+
                         if ($owner) {
                             Notification::send($owner, new OffreNegosDone($data));
                         } else {
@@ -264,15 +269,15 @@ class NotificationController extends Controller
             }
              elseif ($notification->type === 'App\Notifications\OffreNegosDone') {
                 $produit = ProduitService::find($notification->data['produit_id']);
-    
+
                 $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
             }
-    
+
             return view('biicf.notifshow', compact(
                 'notification', 'produtOffre', 'comments', 'commentCount', 'userComment', 'oldestCommentDate',
-                'isTempsEcoule', 'codeUnique', 'oldestNotificationDate', 'sommeQuantites', 'nombreParticp', 'produit', 'prixArticleNegos', 
+                'isTempsEcoule', 'codeUnique', 'oldestNotificationDate', 'sommeQuantites', 'nombreParticp', 'produit', 'prixArticleNegos',
             ));
-            
+
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de la récupération de la notification: ' . $e->getMessage());
         }
