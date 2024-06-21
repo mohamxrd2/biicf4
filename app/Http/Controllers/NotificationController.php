@@ -262,8 +262,6 @@ class NotificationController extends Controller
 
                     if($differance){
 
-                        
-                        
                         foreach ($idsProprietaires as $conso) {
                             $owner = User::find($conso);
                 
@@ -274,14 +272,8 @@ class NotificationController extends Controller
                             }
                         }
                         
-
-
-                        
-
                     }else{
 
-                        
-                
                         foreach ($idsProprietaires as $conso) {
                             $owner = User::find($conso);
                 

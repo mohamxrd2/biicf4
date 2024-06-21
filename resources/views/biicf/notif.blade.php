@@ -2,6 +2,10 @@
 
 @section('title', 'Notification')
 
+@php
+    use App\Models\ProduitService;
+@endphp
+
 @section('content')
     <!-- Afficher les messages de succès -->
     @if (session('success'))
