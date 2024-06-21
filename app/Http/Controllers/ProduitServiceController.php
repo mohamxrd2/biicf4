@@ -245,7 +245,7 @@ class ProduitServiceController extends Controller
 
             // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
             $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
-            $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addDays(0) : null;
+            $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
 
             // Vérifier si le temps est écoulé
             $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();

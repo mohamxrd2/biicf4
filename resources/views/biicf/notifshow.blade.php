@@ -2,6 +2,12 @@
 
 @section('title', 'Details notification')
 
+@php
+
+    use App\Models\ProduitService;
+
+@endphp
+
 @section('content')
 
 
