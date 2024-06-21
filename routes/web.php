@@ -176,8 +176,10 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 
     Route::post('offreneg/store', [OffreNegos::class, 'store'])->name('biicf.sendoffreneg');
     Route::post('offreneg/ajouter', [OffreNegos::class, 'add' ])->name('biicf.addquantity');
-
     Route::post('offreneg/accepeter', [OffreNegos::class, 'accepter'])->name('biicf.offNAccept');
+
+    Route::post('offrenegroup', [OffreNegos::class, 'offregroupneg'])->name('biicf.offregroupneg');
+
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');

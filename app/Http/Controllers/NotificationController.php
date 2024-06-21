@@ -12,6 +12,7 @@ use App\Models\Consommation;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
 use App\Models\NotificationLog;
+use App\Notifications\AppelOffre;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +54,12 @@ class NotificationController extends Controller
 
             // Initialiser la variable produit à null
             $produtOffre = null;
+
+            $oldestNotificationDate = null;
+            $sommeQuantites = null;
+            $nombreParticp = null;
+            $produit = null;
+            $prixArticleNegos = null;
 
             // Vérifier si 'produit_id' existe dans les données de notification
             if (isset($notification->data['produit_id'])) {
@@ -201,6 +208,10 @@ class NotificationController extends Controller
             }elseif ($notification->type === 'App\Notifications\OffreNegosNotif') {
                 $prixArticleNegos = null;
                 $uniqueCode = $notification->data['code_unique'];
+
+                $offreGroupeExistante = OffreGroupe::where('code_unique', $uniqueCode)->first();
+
+                $differance = $offreGroupeExistante->differance;
             
                 $notificationsNegos = DatabaseNotification::where('type', 'App\Notifications\OffreNegosNotif')
                     ->where(function ($query) use ($uniqueCode) {
@@ -210,7 +221,7 @@ class NotificationController extends Controller
             
                 $oldestNotificationDate = $notificationsNegos->min('created_at');
             
-                $tempsEcoule = $oldestNotificationDate ? Carbon::parse($oldestNotificationDate)->addHours(5) : null;
+                $tempsEcoule = $oldestNotificationDate ? Carbon::parse($oldestNotificationDate)->addHours(0) : null;
             
                 // Vérifier si $tempsEcoule est écoulé
                 $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
@@ -229,10 +240,6 @@ class NotificationController extends Controller
                         'produit_id' => $notification->data['produit_id'],
                         'produit_name' => $notification->data['produit_name']
                     ];
-            
-                    // Recherchez le produit associé à l'ID de produit
-                    
-            
                     if ($produit) {
                         // Récupérer le user_id du produit
                         $user_id = $produit->user_id;
@@ -251,21 +258,51 @@ class NotificationController extends Controller
                         ->pluck('id_user')
                         ->toArray();
             
-                    foreach ($idsProprietaires as $conso) {
-                        $owner = User::find($conso);
-            
-                        if ($owner) {
-                            Notification::send($owner, new OffreNegosDone($data));
-                        } else {
-                            Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                    // Recherchez le produit associé à l'ID de produit
+
+                    if($differance){
+
+                        
+                        
+                        foreach ($idsProprietaires as $conso) {
+                            $owner = User::find($conso);
+                
+                            if ($owner) {
+                                Notification::send($owner, new AppelOffre(['quantity' => $sommeQuantites, 'productName' => $notification->data['produit_name'], 'prodUsers' => $user_id]));
+                            } else {
+                                Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                            }
                         }
+                        
+
+
+                        
+
+                    }else{
+
+                        
+                
+                        foreach ($idsProprietaires as $conso) {
+                            $owner = User::find($conso);
+                
+                            if ($owner) {
+                                Notification::send($owner, new OffreNegosDone($data));
+                            } else {
+                                Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                            }
+                        }
+
                     }
+                    
+            
+                   
                 }
             }
              elseif ($notification->type === 'App\Notifications\OffreNegosDone') {
                 $produit = ProduitService::find($notification->data['produit_id']);
     
                 $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
+
             }
     
             return view('biicf.notifshow', compact(

@@ -218,6 +218,8 @@
                             </div>
                         @endif
 
+                        
+
                         @if ($notification->data['specificity'])
                             <div class="w-full flex justify-between items-center py-4  border-b-2">
                                 <p class="text-md font-semibold">Specificité</p>
@@ -225,16 +227,26 @@
                             </div>
                         @endif
 
+                       @if (notification->data['dateTot'])
 
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Date au plus tôt</p>
-                            <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTot'] }}</p>
-                        </div>
+                       <div class="w-full flex justify-between items-center py-4  border-b-2">
+                        <p class="text-md font-semibold">Date au plus tôt</p>
+                        <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTot'] }}</p>
+                    </div>
+                           
+                       @endif
+                        
+
+                        @if ($notification->data['dateTard'])
 
                         <div class="w-full flex justify-between items-center py-4  border-b-2">
                             <p class="text-md font-semibold">Date au plus tard</p>
                             <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTard'] }}</p>
                         </div>
+                            
+                        @endif
+
+                      
 
 
                     </div>
@@ -674,7 +686,7 @@
                     <div class="flex">
                         <input type="number"
                             class="py-3 px-4 block w-full mr-3 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Ajouter une quantité" name="quantite" id="quantiteInput">
+                            placeholder="Ajouter une quantité" name="quantite" id="quantiteInput" required>
                         <input type="hidden" name="name" value="{{ $notification->data['produit_name'] }}">
                         <input type="hidden" name="produit_id" value="{{ $notification->data['produit_id'] }}">
 
