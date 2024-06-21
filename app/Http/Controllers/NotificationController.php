@@ -86,7 +86,7 @@ class NotificationController extends Controller
             $oldestCommentDate = $oldestComment ? $oldestComment->created_at : null;
 
             // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
-            $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addHours(1) : null;
+            $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addMinutes(1) : null;
 
             // Vérifier si $tempsEcoule est écoulé
             $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
@@ -174,6 +174,12 @@ class NotificationController extends Controller
                 }
             } elseif ($notification->type === 'App\Notifications\OffreNotifGroup') {
 
+                $comments = Comment::with('user')
+                ->where('code_unique', $codeUnique)
+                ->whereNotNull('prixTrade')
+                ->orderBy('prixTrade', 'desc')
+                ->get();
+
                 if ($isTempsEcoule) {
                     // Récupérer le commentaire avec le prix le plus élevé, en cas d'égalité prendre le plus ancien
                     $highestPricedComment = Comment::where('code_unique', $codeUnique)
@@ -203,7 +209,7 @@ class NotificationController extends Controller
                         NotificationLog::create(['idProd' => $produtOffre->id]);
                     }
                 }
-            }elseif ($notification->type === 'App\Notifications\OffreNegosNotif') {
+            } elseif ($notification->type === 'App\Notifications\OffreNegosNotif') {
                 $prixArticleNegos = null;
                 $uniqueCode = $notification->data['code_unique'];
 
@@ -215,7 +221,7 @@ class NotificationController extends Controller
 
                 $oldestNotificationDate = $notificationsNegos->min('created_at');
 
-                $tempsEcoule = $oldestNotificationDate ? Carbon::parse($oldestNotificationDate)->addHours(5) : null;
+                $tempsEcoule = $oldestNotificationDate ? Carbon::parse($oldestNotificationDate)->addMinutes(1) : null;
 
                 // Vérifier si $tempsEcoule est écoulé
                 $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
@@ -266,18 +272,27 @@ class NotificationController extends Controller
                         }
                     }
                 }
-            }
-             elseif ($notification->type === 'App\Notifications\OffreNegosDone') {
+            } elseif ($notification->type === 'App\Notifications\OffreNegosDone') {
                 $produit = ProduitService::find($notification->data['produit_id']);
 
                 $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
             }
 
             return view('biicf.notifshow', compact(
-                'notification', 'produtOffre', 'comments', 'commentCount', 'userComment', 'oldestCommentDate',
-                'isTempsEcoule', 'codeUnique', 'oldestNotificationDate', 'sommeQuantites', 'nombreParticp', 'produit', 'prixArticleNegos',
+                'notification',
+                'produtOffre',
+                'comments',
+                'commentCount',
+                'userComment',
+                'oldestCommentDate',
+                'isTempsEcoule',
+                'codeUnique',
+                'oldestNotificationDate',
+                'sommeQuantites',
+                'nombreParticp',
+                'produit',
+                'prixArticleNegos',
             ));
-
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de la récupération de la notification: ' . $e->getMessage());
         }
