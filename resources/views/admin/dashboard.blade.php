@@ -6,20 +6,15 @@
     <!-- Dans votre fichier de vue de tableau de bord -->
 
     @auth('admin')
-        @if (Auth::guard('admin')->user()->admin_type == 'agent')
-            <!-- Contenu spécifique à l'agent -->
-         
-            <!-- Autres éléments spécifiques à l'agent -->
-
-            @include('admin.dashboard.dashbord_agent')
-            @else
-            <!-- Contenu spécifique à l'administrateur général -->
-            
-            <!-- Autres éléments spécifiques à l'administrateur général -->
-
-            @include('admin.dashboard.dashbord_admin')
+        @if (auth()->guard('admin')->user()->admin_type == 'agent')
+            <!-- Éléments spécifiques à l'agent -->
+            <livewire:dashboard-agent :lazy="true" />
+        @else
+            <!-- Éléments spécifiques à l'administrateur général -->
+            <livewire:dashboard-admin :lazy="true" />
         @endif
     @endauth
+
 
 
 

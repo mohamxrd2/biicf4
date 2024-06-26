@@ -25,8 +25,6 @@ class ConsommationFactory extends Factory
             'jourAch_cons' => $this->faker->dayOfWeek,
             'qualif_serv' => $this->faker->randomElement(['Qualif A', 'Qualif B', 'Qualif C']),
             'specialité' => $this->faker->randomElement(['Specialite A', 'Specialite B', 'Specialite C']),
-            'description' => $this->faker->words(4, true), // Limite de 4 mots
-            'zoneAct' => $this->faker->words(4, true), // Limite de 4 mots
             'villeCons' => $this->faker->city,
         ];
     }

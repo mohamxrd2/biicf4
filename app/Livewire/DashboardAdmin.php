@@ -1,20 +1,24 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Livewire;
 
-use App\Models\User;
 use App\Models\Admin;
-use App\Models\Wallet;
 use App\Models\ProduitService;
+use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
-class AdminDashboardController extends Controller
+class DashboardAdmin extends Component
 {
-    public function index()
+    public function placeholder()
     {
-        //Admin//////
+        return view('admin.components.placeholder');
+    }
+    public function render()
+    {
+        sleep(1);
 
-        // Nombre total de clients
         $totalClients = User::count();
 
         // Nombre total de produits et de services
@@ -57,7 +61,8 @@ class AdminDashboardController extends Controller
             ->count();
 
 
-        return view('admin.dashboard', [
+
+        return view('livewire.dashboard-admin', [
             'totalClients' => $totalClients,
             'totalProducts' => $totalProducts,
             'totalServices' => $totalServices,

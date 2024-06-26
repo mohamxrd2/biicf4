@@ -118,14 +118,14 @@
                                 </td>
                                 <td class="px-6 py-4">{{ $user->phone }}</td>
 
-                               
+
                                 <td class="px-6 py-4">
                                     <span
                                         class="bg-{{ $user->last_seen >= now()->subMinutes(2) ? 'green' : 'red' }}-500 text-white py-1 px-3 rounded-md">
                                         {{ $user->last_seen >= now()->subMinutes(2) ? 'Online' : 'Offline' }}
                                     </span>
                                 </td>
-                                
+
                             </tr>
                         @endforeach
                     @endif

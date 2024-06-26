@@ -60,9 +60,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
     Route::delete('/services/{services}', [ProduitServiceController::class, 'destroyService'])->name('admin.services.destroy');
 
-    Route::delete('/consommation-produit/{id}', [ConsoController::class, 'destroyConsprod'])->name('admin.consprod.destroy');
 
-    Route::delete('/consommation-service/{id}', [ConsoController::class, 'destroyConsserv'])->name('admin.consserv.destroy');
 
     Route::put('/profile/update/{admin}', [AdminsController::class, 'updateProfile'])->name('admin.updateProfile');
     Route::put('/profile/password/{admin}', [AdminsController::class, 'updatePassword'])->name('admin.updatePassword');
@@ -78,7 +76,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/produit/{id}', [UserController::class, 'etat'])->name('produit.etat');
 
 
-    Route::get('/consommation/{slug}', [UserController::class, 'consoShow'])->name('consommation.consoShow');
+    Route::get('/consommation/{id}', [UserController::class, 'consoShow'])->name('consommation.consoShow');
 
     Route::post('/consommation/{id}', [UserController::class, 'consoEtat'])->name('consommation.consoEtat');
 
