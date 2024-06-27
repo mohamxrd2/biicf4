@@ -17,14 +17,19 @@ class DashboardAgent extends Component
     public function render()
     {
         sleep(1);
+
         //  l'agent connecté
         $adminId = Auth::guard('admin')->id();
+
         // Portefeuille de l'agent
         $adminWallet = Wallet::where('admin_id', $adminId)->first();
+
         // Récupérer les utilisateurs ayant le même admin_id que l'agent
         $usersWithSameAdminId = User::where('admin_id', $adminId)->get();
+
         // Nombre total d'utilisateurs ayant le même admin_id que l'agent
         $userCount = User::where('admin_id', $adminId)->count();
+
         $productsCount  = ProduitService::with('user')
             ->whereHas('user', function ($query) use ($adminId) {
                 $query->where('admin_id', $adminId);

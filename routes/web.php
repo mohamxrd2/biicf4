@@ -32,12 +32,16 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/statistique', [AdminChartController::class, 'index'])->name('admin.statistique');
     Route::get('/porte-feuille', [AdminWalletController::class, 'index'])->name('admin.porte-feuille');
+    //liste des agents
     Route::get('/agent', [AdminAgentController::class, 'index'])->name('admin.agent');
     Route::get('/client', [UserController::class, 'listUserAdmin'])->name('admin.client');
+
+    //publication des produits et services
     Route::get('/produits', [ProduitServiceController::class, 'adminProduct'])->name('admin.produits');
     Route::get('/services', [ProduitServiceController::class, 'adminService'])->name('admin.services');
-    Route::get('/consommation-produit', [ConsoController::class, 'adminConsProd'])->name('admin.conso-produit');
 
+    //liste des consommation produits et services
+    Route::get('/consommation-produit', [ConsoController::class, 'adminConsProd'])->name('admin.conso-produit');
     Route::get('/consommation-service', [ConsoController::class, 'adminConsServ'])->name('admin.conso-service');
 
     Route::get('/profile', function () {
