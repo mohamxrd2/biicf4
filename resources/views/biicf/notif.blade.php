@@ -3,9 +3,7 @@
 @section('title', 'Notification')
 
 @php
-
     use App\Models\ProduitService;
-
 @endphp
 
 @section('content')
@@ -31,7 +29,7 @@
                 Notifications
                 @if ($unreadCount)
                     <span
-                        class="absolute top-2 right-[-6px] w-4 h-4 text-[11px] font-semibold text-center flex items-center justify-center bg-red-700 text-white rounded-full transform translate-x-1/2 -translate-y-1/2 ">{{ $unreadCount }}</span>
+                        class="absolute top-2 right-[-6px] w-4 h-4 text-[11px] font-semibold text-center flex items-center justify-center bg-red-700 text-white rounded-full transform translate-x-1/2 -translate-y-1/2 p-2">{{ $unreadCount }}</span>
                 @endif
 
             </h1>
@@ -272,8 +270,41 @@
                         </a>
                     @elseif($notification->type === 'App\Notifications\NegosTerminer')
                         {{-- a ameliore le front --}}
-                        {{ $notification->data['offre']['message'] }}
-                        {{ $notification->data['offre']['produit_id'] }}
+
+                        <a href="{{ route('notification.show', $notification->id) }}" class="">
+                            <div class="flex w-full">
+                                <div class="w-16 h-16 overflow-hidden mr-3">
+
+
+
+                                    <svg class="w-full text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
+                                    </svg>
+
+
+                                </div>
+
+                                <div class="flex flex-col justify-between w-full">
+                                    <p class="text-[12px] text-gray-400 text-right">
+                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                    </p>
+                                    <div class="flex justify-between items-center w-full h-full">
+                                        <p class="text-sm text-slate-500 l max-w-1/2 font-normal">
+                                            {{ $notification->data['offre']['message'] }}</p>
+                                        @if ($notification->read_at == null)
+                                            <div class="w-10 flex justify-center items-center">
+                                                <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                            </div>
+                                        @endif
+                                    </div>
+
+
+                                </div>
+                            </div>
+                        </a>
+
                     @elseif($notification->type === 'App\Notifications\AppelOffreTerminer')
                         <a href="{{ route('notification.show', $notification->id) }}" class="">
                             <div class="flex w-full">

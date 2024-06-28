@@ -54,7 +54,7 @@
                 <div class="flex gap-2">
 
 
-                    @if ($notification->reponse == 'accepte' || $notification->reponse == 'refuser')
+                    @if ($notification->reponse)
                         <div class="w-full bg-gray-300 border p-2 rounded-md">
                             <p class="text-md font-medium text-center">Réponse envoyée</p>
                         </div>
@@ -78,23 +78,28 @@
                             </button>
                         </form>
 
-                        <form id="form-refuser" action="{{ route('achatG.refuser') }}" method="POST">
+                        <form id="form-accepter" action="{{ route('achatG.refuser') }}" method="POST">
                             @csrf
-                            <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
+
                             @foreach ($notification->data['userSender'] as $userId)
                                 <input type="hidden" name="userSender[]" value="{{ $userId }}">
                             @endforeach
+
+                            <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
                             <input type="hidden" name="message" value="refus de produit">
                             <input type="hidden" name="idProd" value="{{ $notification->data['idProd'] }}">
                             <input type="hidden" name="notifId" value="{{ $notification->id }}">
 
                             <button id="btn-refuser" type="submit"
-                                class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+                                class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">
+                                Refuser
+                            </button>
                         </form>
 
                     @endif
 
                 </div>
+
             </div>
         @elseif ($notification->type === 'App\Notifications\AchatBiicf')
             <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
@@ -129,7 +134,7 @@
 
                         </div>
                     @else
-                        <form id="form-accepter" action="{{ route('achatD.accepter') }}" method="POST">
+                        <form action="{{ route('achatD.accepter') }}" method="POST">
                             @csrf
                             <input type="hidden" name="userSender" value="{{ $notification->data['userSender'] }}">
                             <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
@@ -147,7 +152,7 @@
 
                         </form>
 
-                        <form id="form-refuser" action="{{ route('achatD.refuser') }}" method="POST">
+                        <form action="{{ route('achatD.refuser') }}" method="POST">
                             @csrf
                             <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
                             <input type="hidden" name="userSender" value="{{ $notification->data['userSender'] }}">
@@ -217,6 +222,8 @@
                             </div>
                         @endif
 
+
+
                         @if ($notification->data['specificity'])
                             <div class="w-full flex justify-between items-center py-4  border-b-2">
                                 <p class="text-md font-semibold">Specificité</p>
@@ -224,19 +231,24 @@
                             </div>
                         @endif
 
+                        @if ($notification->data['dateTot'])
+                            <div class="w-full flex justify-between items-center py-4  border-b-2">
+                                <p class="text-md font-semibold">Date au plus tôt</p>
+                                <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTot'] }}</p>
+                            </div>
+                        @endif
 
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Date au plus tôt</p>
-                            <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTot'] }}</p>
-                        </div>
 
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Date au plus tard</p>
-                            <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTard'] }}</p>
-                        </div>
-
+                        @if ($notification->data['dateTard'])
+                            <div class="w-full flex justify-between items-center py-4  border-b-2">
+                                <p class="text-md font-semibold">Date au plus tard</p>
+                                <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTard'] }}</p>
+                            </div>
+                        @endif
 
                     </div>
+
+
 
 
 
@@ -247,6 +259,8 @@
 
                         <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
                             uk-sticky="media: 1024; end: #js-oversized; offset: 80">
+
+
 
 
 
@@ -304,8 +318,8 @@
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
 
-                                        <button type="submit" id="submitBtn"
-                                            class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                        <button type="submit" id="submitBtnAppel"
+                                            class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
                                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
                                                 xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                                                 viewBox="0 0 18 20">
@@ -314,20 +328,16 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="w-full flex justify-center">
-                                        <span id="prixTradeError"
-                                            class="text-red-500 text-sm hidden text-center py-3"></span>
-                                    </div>
                                 </form>
-
 
                             </div>
 
+                            <div class="w-full flex justify-center">
+                                <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
+                            </div>
                         </div>
 
                         <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-
-
                             @if ($oldestCommentDate)
                                 <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
@@ -339,22 +349,16 @@
                                     <div>-</div>
                                 </div>
                             @endif
-
-
                         </div>
-
-
-
                     </div>
 
                 </div>
 
             </div>
-
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtn');
+                    const submitBtn = document.getElementById('submitBtnAppel');
                     const prixTradeError = document.getElementById('prixTradeError');
 
                     prixTradeInput.addEventListener('input', function() {
@@ -376,7 +380,7 @@
                     const startDate = new Date("{{ $oldestCommentDate }}");
 
                     // Ajouter 5 heures à la date de départ
-                    startDate.setHours(startDate.getHours() + 5);
+                    startDate.setMinutes(startDate.getMinutes() + 1);
 
                     // Mettre à jour le compte à rebours à intervalles réguliers
                     const countdownTimer = setInterval(updateCountdown, 1000);
@@ -406,9 +410,12 @@
                             clearInterval(countdownTimer);
                             countdownElement.innerHTML = "Temps écoulé !";
                             prixTradeInput.disabled = true; // Désactiver le champ input
-                            prixTradeError.textContent = `Le fournisseur avec le prix le plus bas a été sélectionné !`;
+                            document.getElementById('submitBtnAppel').hidden = true;
+                            prixTradeError.textContent =
+                                `Le fournisseur avec le prix le plus bas est {{ $lowPriceUserName }} avec {{ $lowPriceAmount }} FCFA!`;
                             prixTradeError.classList.remove('hidden');
                         }
+
                     }
                 });
             </script>
@@ -418,7 +425,7 @@
 
                     <h2 class="text-3xl font-semibold mb-2">{{ $notification->data['produit_name'] }}</h2>
 
-                    <div class="w-full gap-y-2  mt-4">
+                    <div class="w-full gap-y-2  my-4">
 
                         <div class="w-full flex justify-between items-center py-4  border-b-2">
                             <p class="text-md font-semibold">Prix unitaire maximal</p>
@@ -435,7 +442,14 @@
                             </div>
                         @endif
 
+
                     </div>
+
+                    <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
+                        class=" bg-blue-500 text-white p-2 rounded font-medium hover:bg-blue-600  mt-10">
+                        Voir le produit
+                    </a>
+
 
 
 
@@ -506,7 +520,7 @@
 
 
                                         <button type="submit" id="submitBtn"
-                                            class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                            class=" justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
                                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
                                                 xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                                                 viewBox="0 0 18 20">
@@ -515,16 +529,16 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="w-full flex justify-center ">
 
-                                        <span id="prixTradeError"
-                                            class="text-red-500 text-sm hidden text-center py-3"></span>
-
-                                    </div>
 
 
                                 </form>
 
+
+                            </div>
+                            <div class="w-full flex justify-center ">
+
+                                <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
 
                             </div>
 
@@ -578,7 +592,7 @@
 
                 // Ajouter 5 jours à la date de départ
                 // Ajouter 5 heures à la date de départ
-                startDate.setHours(startDate.getHours() + 5);
+                startDate.setMinutes(startDate.getMinutes() + 1);
 
                 // Mettre à jour le compte à rebours à intervalles réguliers
                 const countdownTimer = setInterval(updateCountdown, 1000);
@@ -609,9 +623,19 @@
                     if (difference <= 0) {
                         clearInterval(countdownTimer);
                         countdownElement.innerHTML = "Temps écoulé !";
+                        document.getElementById('prixTrade').disabled = true;
+                        document.getElementById('submitBtn').hidden = true;
 
-                        // Afficher la variable en rouge avec une phrase dans la div avec la classe "tempsecoule"
 
+                        const highestPricedComment = @json($highestPricedComment);
+
+                        if (highestPricedComment && highestPricedComment.user) {
+                            prixTradeError.textContent =
+                                `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
+                        } else {
+                            prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                        }
+                        prixTradeError.classList.remove('hidden');
                     }
                 }
             </script>
@@ -646,7 +670,7 @@
 
 
             </div>
-            @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
+        @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
             <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
 
                 <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre du produit:
@@ -673,7 +697,7 @@
                     <div class="flex">
                         <input type="number"
                             class="py-3 px-4 block w-full mr-3 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Ajouter une quantité" name="quantite" id="quantiteInput">
+                            placeholder="Ajouter une quantité" name="quantite" id="quantiteInput" required>
                         <input type="hidden" name="name" value="{{ $notification->data['produit_name'] }}">
                         <input type="hidden" name="produit_id" value="{{ $notification->data['produit_id'] }}">
 
@@ -709,7 +733,8 @@
 
                         // Convertir la date de départ en objet Date JavaScript
                         const startDate = new Date("{{ $oldestNotificationDate }}");
-                        startDate.setHours(startDate.getHours() + 5);
+                        startDate.setMinutes(startDate.getMinutes() + 1);
+
 
                         // Mettre à jour le compte à rebours à intervalles réguliers
                         const countdownTimer = setInterval(updateCountdown, 1000);
@@ -749,7 +774,7 @@
                     </span>{{ $produit->name }}</h2>
                 <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantite'] }}</p>
 
-                <p class="mb-3"><strong>Prix d'artiche:</strong>{{  number_format($prixArticleNegos, 2, ',', ' ') }} Fcfa
+                <p class="mb-3"><strong>Prix d'artiche:</strong>{{ number_format($prixArticleNegos, 2, ',', ' ') }} Fcfa
                 </p>
 
                 <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
@@ -766,15 +791,15 @@
 
 
                     @if ($notification->reponse)
-                        <div class="w-full bg-gray-300 border p-2 rounded-md">
+                        <div class="w-full bg-gray-300 border py-1 rounded-xl">
                             <p class="text-md font-medium text-center">Réponse envoyée</p>
                         </div>
                     @else
-                        <form id="form-accepter" action="{{ route('biicf.offNAccept') }}" method="POST" >
+                        <form id="form-accepter" action="{{ route('biicf.offNAccept') }}" method="POST">
                             @csrf
 
                             <input type="hidden" value="{{ $prixArticleNegos }}" name="prixarticle">
-                            <input type="hidden" value="{{ $produit->user_id }}" name="id_trader">
+                            <input type="hidden" value="{{ $notification->data['code_unique'] }}" name="code_unique">
                             <input type="hidden" value="{{ $notification->id }}" name="notifId">
 
 
@@ -784,9 +809,6 @@
                                 Accepter
                             </button>
                         </form>
-
-
-
                     @endif
 
                 </div>
@@ -796,8 +818,6 @@
 
 
         @endif
-
-
 
 
     </div>

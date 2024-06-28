@@ -12,6 +12,7 @@ class AppelOffreGrouper extends Model
     protected $table = 'appeloffregrouper';
 
     protected $fillable = [
+        'lowestPricedProduct',
         'productName',
         'quantity',
         'payment',

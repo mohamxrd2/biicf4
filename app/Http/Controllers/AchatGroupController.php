@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Exception;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Transaction;
 use App\Models\AchatGrouper;
+use Illuminate\Http\Request;
 use App\Models\NotificationEd;
 use App\Models\NotificationLog;
 use App\Notifications\RefusAchat;
-use App\Notifications\acceptAchat; // Assurez-vous que le nom est correctement capitalisé ici
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
+use App\Notifications\acceptAchat; // Assurez-vous que le nom est correctement capitalisé ici
 
 class AchatGroupController extends Controller
 {
@@ -26,10 +29,12 @@ class AchatGroupController extends Controller
             'localite' => 'required|string|max:255',
             'userTrader' => 'required|exists:users,id',
             'userSender' => 'required|exists:users,id',
-            'specificite' => 'required|string',
+
             'photoProd' => 'required|string',
             'idProd' => 'required|exists:produit_services,id', // Correction ici, table correcte
         ]);
+
+        $specialite = $request->input('specificite');
 
         // Récupérer l'utilisateur connecté
         $userId = Auth::id();
@@ -63,7 +68,7 @@ class AchatGroupController extends Controller
                 'localite' => $validated['localite'],
                 'userTrader' => $validated['userTrader'],
                 'userSender' => $validated['userSender'],
-                'specificite' => $validated['specificite'],
+                'specificite' => $specialite,
                 'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
             ]);
@@ -86,6 +91,8 @@ class AchatGroupController extends Controller
         }
     }
 
+   
+    
     public function accepter(Request $request)
     {
         // Déboguer les données reçues par la requête
@@ -109,6 +116,8 @@ class AchatGroupController extends Controller
         $message = $validatedData['message'];
         $notifId = $validatedData['notifId'];
         $idProd = $request->input('idProd');
+
+      
 
         // Trouver et mettre à jour la notification
         $notification = NotificationEd::find($notifId);
@@ -187,46 +196,43 @@ class AchatGroupController extends Controller
     }
 
 
-    public function refuser(Request $request)
-    {
-        // Debug: afficher toutes les données de la requête
+public function refuser(Request $request)
+{
+   // Obtenir l'identifiant de l'utilisateur connecté
+    $userId = Auth::guard('web')->id();
 
+    //Valider les données du formulaire
+    $validatedData = $request->validate([
+        'userSender' => 'required|array',
+        'userSender.*' => 'integer|exists:users,id',
+        'montantTotal' => 'required|numeric',
+        'message' => 'required|string',
+        'notifId' => 'required|uuid|exists:notifications,id',
+        'idProd' => 'required|integer|exists:produit_services,id',
+    ]);
 
-        // Récupérer l'identifiant de l'utilisateur connecté
-        $userId = Auth::guard('web')->id();
+    //Extraire les données validées
+    $userSenders = $validatedData['userSender'];
+    $montantTotal = $validatedData['montantTotal'];
+    $message = $validatedData['message'];
+    $notifId = $validatedData['notifId'];
+    $idProd = $validatedData['idProd'];
 
-        // Valider les données du formulaire
-        $validatedData = $request->validate([
-            'userSender' => 'required|array',
-            'userSender.*' => 'integer|exists:users,id',
-            'montantTotal' => 'required|numeric',
-            'message' => 'required|string',
-            'notifId' => 'required|integer|exists:notifications,id',
-            'idProd' => 'required|integer|exists:produit_services,id',
-        ]);
-
-        // Récupérer les données validées
-        $userSenders = $validatedData['userSender'];
-        $montantTotal = $validatedData['montantTotal'];
-        $message = $validatedData['message'];
-        $notifId = $validatedData['notifId'];
-        $idProd = $validatedData['idProd'];
-
+    
+    try {
         // Trouver et mettre à jour la notification
         $notification = NotificationEd::find($notifId);
-        if (!$notification) {
+        if ($notification) {
+            $notification->reponse = 'refuser';
+            $notification->save();
+        } else {
             return redirect()->back()->with('error', 'Notification non trouvée.');
         }
 
-        $notification->reponse = 'refuser';
-        $notification->save();
-
-        // Traitement pour chaque utilisateur ayant envoyé la demande
         foreach ($userSenders as $userSenderId) {
             $userSenderWallet = Wallet::where('user_id', $userSenderId)->first();
-
             if (!$userSenderWallet) {
-                return redirect()->back()->with('error', 'Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
+                throw new Exception('Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
             }
 
             // Ajouter le montant au portefeuille de l'utilisateur
@@ -243,26 +249,31 @@ class AchatGroupController extends Controller
             // Récupérer l'utilisateur destinataire de la notification
             $userSender = User::find($userSenderId);
             if (!$userSender) {
-                return redirect()->back()->with('error', 'Utilisateur ID ' . $userSenderId . ' introuvable.');
+                throw new Exception('Utilisateur ID ' . $userSenderId . ' introuvable.');
             }
 
             // Envoyer la notification de refus
-            try {
-                $notification = new RefusAchat($message);
-                if ($notification && $userSender) {
-                    Notification::send($userSender, $notification);
-                } else {
-                    return redirect()->back()->with('error', 'Erreur lors de l\'envoi de la notification : Utilisateur ou notification non disponibles.');
-                }
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage());
-            }
+            $refusNotification = new RefusAchat($message);
+            Notification::send($userSender, $refusNotification);
         }
-
 
         // Supprimer les logs de notification pour le produit spécifié
         NotificationLog::where('idProd', $idProd)->delete();
 
+        // Commit de la transaction
+        DB::commit();
+
         return redirect()->back()->with('success', 'Refus traité avec succès.');
+    } catch (Exception $e) {
+        // Rollback de la transaction en cas d'erreur
+        DB::rollBack();
+
+        // Log de l'erreur
+        Log::error('Erreur lors du traitement du refus:', ['exception' => $e]);
+
+        return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
     }
+}
+
+
 }

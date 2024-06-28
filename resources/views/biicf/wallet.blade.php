@@ -268,14 +268,15 @@
                                             <h3 class="text-sm font-medium">
                                                 @if ($transaction->senderAdmin)
                                                     {{ $transaction->senderAdmin->name }}
-                                                @elseif($transaction->receiverUser)
-                                                    {{ $transaction->receiverUser->name }}
+                                                @elseif($transaction->senderUser)
+                                                    {{ $transaction->senderUser->name }}
                                                 @endif
                                             </h3>
                                         @elseif ($transaction->type == 'Envoie' && $transaction->sender_user_id == $userId)
                                             <h3 class="text-sm font-medium">
                                                 @if ($transaction->receiverUser)
                                                     {{ $transaction->receiverUser->name }}
+                                                
                                                 @endif
                                             </h3>
                                         @elseif ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId)

@@ -9,5 +9,5 @@ class NotificationLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['idProd'];
+    protected $fillable = ['idProd', 'code_unique'];
 }

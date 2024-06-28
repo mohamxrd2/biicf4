@@ -12,6 +12,7 @@ use App\Models\Consommation;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
 use App\Models\NotificationLog;
+use App\Notifications\AppelOffre;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
@@ -53,11 +54,16 @@ class NotificationController extends Controller
 
             // Initialiser la variable produit à null
             $produtOffre = null;
+            $notificationExists = null;
             $oldestNotificationDate = null;
             $sommeQuantites = null;
             $nombreParticp = null;
             $produit = null;
             $prixArticleNegos = null;
+            $lowPriceComment = null;
+            $lowPriceUserName = null;
+            $lowPriceAmount = null;
+            $highestPricedComment = null;
 
             // Vérifier si 'produit_id' existe dans les données de notification
             if (isset($notification->data['produit_id'])) {
@@ -103,115 +109,188 @@ class NotificationController extends Controller
             // Vérifier si le temps est écoulé /////\\\///////
 
             if ($notification->type === 'App\Notifications\AppelOffre') {
+                Log::info('Notification type is App\Notifications\AppelOffre');
 
-                if ($isTempsEcoule) {
-                    // Récupérer le commentaire avec le prix le plus bas
-                    $lowPriceComment = Comment::where('code_unique', $codeUnique)
-                        ->whereNotNull('prixTrade')
-                        ->orderBy('prixTrade', 'asc')
-                        ->orderBy('created_at', 'desc')
-                        ->first();
+                $notificationExists = NotificationLog::where('code_unique', $codeUnique)->exists();
+                $lowPriceComment = Comment::where('code_unique', $codeUnique)
+                    ->whereNotNull('prixTrade')
+                    ->orderBy('prixTrade', 'asc')
+                    ->orderBy('created_at', 'desc')
+                    ->first();
 
-                    if ($lowPriceComment) {
-                        $data = [
-                            'prix_trade' => $lowPriceComment->prixTrade ?? null,
-                            'id_trader' => $lowPriceComment->id_trader ?? null,
-                            'id_prod' => $lowPriceComment->id_prod ?? null,
-                            'quantite' => $notification->data['quantity'] ?? null,
-                            'name' => $notification->data['productName'] ?? 'Produit sans nom'
-                        ];
+                if ($lowPriceComment) {
+                    Log::info('Low price comment found', ['lowPriceComment' => $lowPriceComment]);
 
-                        // Celui qui a fait l'appel de l'offre
-                        $owner = User::find($notification->data['id_sender']);
+                    $data = [
+                        'prix_trade' => $lowPriceComment->prixTrade ?? null,
+                        'id_trader' => $lowPriceComment->id_trader ?? null,
+                        'id_prod' => $lowPriceComment->id_prod ?? null,
+                        'quantite' => $notification->data['quantity'] ?? null,
+                        'name' => $notification->data['productName'] ?? 'Produit sans nom'
+                    ];
+                    $lowPriceUserName = $lowPriceComment->user->name;
+                    $lowPriceAmount = $lowPriceComment->prixTrade;
 
-                        if ($owner && $data['prix_trade'] && $data['quantite']) {
+                    if ($isTempsEcoule && !$notificationExists) {
+                        Log::info('Time has elapsed and no notification exists', ['code_unique' => $codeUnique]);
 
-                            $prixArticle = $data['quantite'] * $data['prix_trade'];
+                        // Vérifier si 'id_sender' est un tableau ou un seul élément
+                        $idSenders = is_array($notification->data['id_sender']) ? $notification->data['id_sender'] : [$notification->data['id_sender']];
 
-                            // Trouver les portefeuilles du propriétaire et du trader
-                            $ownerWallet = Wallet::where('user_id', $owner->id)->first();
-                            $traderWallet = Wallet::where('user_id', $data['id_trader'])->first();
+                        foreach ($idSenders as $userSender) {
+                            $owner = User::find($userSender);
+                            Log::info('Processing user sender', ['userSender' => $userSender, 'owner' => $owner]);
 
-                            if ($ownerWallet && $traderWallet) {
-                                // Décrémenter le portefeuille du trader
-                                $traderWallet->decrement('balance', $prixArticle);
+                            if ($owner && $data['prix_trade'] && $data['quantite']) {
+                                $prixArticle = $data['quantite'] * $data['prix_trade'];
+                                Log::info('Price article calculated', ['prixArticle' => $prixArticle]);
 
-                                // Incrémenter le portefeuille du propriétaire
-                                $ownerWallet->increment('balance', $prixArticle);
+                                // Trouver les portefeuilles du propriétaire et du trader
+                                $ownerWallet = Wallet::where('user_id', $owner->id)->first();
+                                $traderWallet = Wallet::where('user_id', $data['id_trader'])->first();
+                                Log::info('Wallets found', ['ownerWallet' => $ownerWallet, 'traderWallet' => $traderWallet]);
 
-                                // Enregistrer la transaction de envoi
-                                $transaction1 = new Transaction();
-                                $transaction1->sender_user_id = $owner->id;
-                                $transaction1->receiver_user_id = $data['id_trader'];
-                                $transaction1->type = 'Envoie';
-                                $transaction1->amount = $prixArticle;
-                                $transaction1->save();
+                                if ($ownerWallet && $traderWallet) {
+                                    // Décrémenter le portefeuille du trader
+                                    $traderWallet->decrement('balance', $prixArticle);
 
-                                // Enregistrer la transaction reception
-                                $transaction2 = new Transaction();
-                                $transaction2->sender_user_id = $owner->id;
-                                $transaction2->receiver_user_id = $data['id_trader'];
-                                $transaction2->type = 'Reception';
-                                $transaction2->amount = $prixArticle;
-                                $transaction2->save();
+                                    // Incrémenter le portefeuille du propriétaire
+                                    $ownerWallet->increment('balance', $prixArticle);
 
-                                // Envoyer la notification à l'utilisateur authentifié
-                                Notification::send($owner, new AppelOffreTerminer($data));
+                                    // Enregistrer la transaction d'envoi
+                                    $transaction1 = new Transaction();
+                                    $transaction1->sender_user_id = $owner->id;
+                                    $transaction1->receiver_user_id = $data['id_trader'];
+                                    $transaction1->type = 'Envoie';
+                                    $transaction1->amount = $prixArticle;
+                                    $transaction1->save();
+
+                                    // Enregistrer la transaction de réception
+                                    $transaction2 = new Transaction();
+                                    $transaction2->sender_user_id = $owner->id;
+                                    $transaction2->receiver_user_id = $data['id_trader'];
+                                    $transaction2->type = 'Reception';
+                                    $transaction2->amount = $prixArticle;
+                                    $transaction2->save();
+
+                                    // Envoyer la notification à l'utilisateur authentifié
+                                    Notification::send($owner, new AppelOffreTerminer($data));
+                                    Log::info('Notification sent', ['user' => $owner, 'data' => $data]);
+
+                                    NotificationLog::create(['code_unique' => $codeUnique]);
+                                } else {
+                                    // Gérer le cas où le portefeuille du propriétaire ou du trader n'est pas trouvé
+                                    if (!$ownerWallet) {
+                                        Log::error('Portefeuille non trouvé pour l\'utilisateur ID: ' . $owner->id);
+                                    }
+                                    if (!$traderWallet) {
+                                        Log::error('Portefeuille non trouvé pour le trader ID: ' . $data['id_trader']);
+                                    }
+                                }
                             } else {
-                                // Gérer le cas où le portefeuille du propriétaire ou du trader n'est pas trouvé
-                                if (!$ownerWallet) {
-                                    Log::error('Portefeuille non trouvé pour l\'utilisateur ID: ' . $owner->id);
-                                }
-                                if (!$traderWallet) {
-                                    Log::error('Portefeuille non trouvé pour le trader ID: ' . $data['id_trader']);
-                                }
+                                // Gérer le cas où le propriétaire ou les données requises sont manquants
+                                Log::error('Propriétaire non trouvé ou données manquantes pour userSender ID: ' . $userSender);
                             }
-                        } else {
-                            // Gérer le cas où le propriétaire ou les données requises sont manquants
-                            Log::error('Propriétaire non trouvé ou données manquantes');
                         }
                     }
+                } else {
+                    $lowPriceUserName = 'N/A';
+                    $lowPriceAmount = 0;
                 }
-            } elseif ($notification->type === 'App\Notifications\OffreNotifGroup') {
+            }
+            elseif ($notification->type === 'App\Notifications\OffreNotifGroup') {
+                Log::info('Notification type is OffreNotifGroup');
 
                 $comments = Comment::with('user')
-                ->where('code_unique', $codeUnique)
-                ->whereNotNull('prixTrade')
-                ->orderBy('prixTrade', 'desc')
-                ->get();
+                    ->where('code_unique', $codeUnique)
+                    ->whereNotNull('prixTrade')
+                    ->orderBy('prixTrade', 'desc')
+                    ->get();
+                $oldestComment = Comment::where('code_unique', $codeUnique)
+                    ->whereNotNull('prixTrade')
+                    ->orderBy('created_at', 'desc')
+                    ->first();
 
-                if ($isTempsEcoule) {
-                    // Récupérer le commentaire avec le prix le plus élevé, en cas d'égalité prendre le plus ancien
+                $oldestCommentDate = $oldestComment ? $oldestComment->created_at : null;
+                $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addMinutes(1) : null;
+                $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+
+                Log::info('Oldest comment date', ['oldestCommentDate' => $oldestCommentDate]);
+                Log::info('Temps écoulé', ['tempsEcoule' => $tempsEcoule, 'isTempsEcoule' => $isTempsEcoule]);
+
+                $notificationExists = NotificationLog::where('code_unique', $codeUnique)->exists();
+                Log::info('Notification exists', ['exists' => $notificationExists]);
+
+                if ($isTempsEcoule && !$notificationExists) {
+                    Log::info('Time has elapsed and no notification exists', ['code_unique' => $codeUnique]);
+
                     $highestPricedComment = Comment::where('code_unique', $codeUnique)
                         ->whereNotNull('prixTrade')
                         ->orderBy('prixTrade', 'desc')
                         ->orderBy('created_at', 'asc')
                         ->first();
+                    Log::info('Highest priced comment', ['highestPricedComment' => $highestPricedComment]);
 
-                    // Récupérer l'utilisateur ayant fait ce commentaire
                     if ($highestPricedComment) {
                         $highestPricedCommentUser = $highestPricedComment->user;
                         $highestPricedCommentUserName = $highestPricedCommentUser->name;
+                        Log::info('Highest priced comment user', ['user' => $highestPricedCommentUser]);
 
-                        // Envoyer la notification à cet utilisateur
-                        Notification::send($highestPricedCommentUser, new NegosTerminer([
-                            'message' => 'Félicitations! Vous avez fait le commentaire avec le prix le plus élevé.',
-                            'produit_id' => $produtOffre->id
-                        ]));
+                        $ownerWallet = Wallet::where('user_id', $highestPricedCommentUser->id)->first();
+                        $traderWallet = Wallet::where('user_id', $produtOffre->id)->first();
+                        Log::info('Wallets found', ['ownerWallet' => $ownerWallet, 'traderWallet' => $traderWallet]);
 
-                        // Envoyer la notification au propriétaire du produit
-                        Notification::send($produtOffre->user, new NegosTerminer([
-                            'message' => 'Le commentaire avec le prix le plus élevé a été fait par: ' . $highestPricedCommentUserName,
-                            'produit_id' => $produtOffre->id
-                        ]));
+                        if ($ownerWallet && $traderWallet) {
+                            $ownerWallet->decrement('balance', $highestPricedComment->prixTrade);
+                            $traderWallet->increment('balance', $highestPricedComment->prixTrade);
 
-                        // Enregistrer la notification dans la table NotificationLog
-                        NotificationLog::create(['idProd' => $produtOffre->id]);
+                            $transaction1 = new Transaction();
+                            $transaction1->sender_user_id = $highestPricedCommentUser->id;
+                            $transaction1->receiver_user_id = $produtOffre->id;
+                            $transaction1->type = 'Envoie';
+                            $transaction1->amount = $highestPricedComment->prixTrade;
+                            $transaction1->save();
+
+                            $transaction2 = new Transaction();
+                            $transaction2->sender_user_id = $highestPricedCommentUser->id;
+                            $transaction2->receiver_user_id = $produtOffre->id;
+                            $transaction2->type = 'Reception';
+                            $transaction2->amount = $highestPricedComment->prixTrade;
+                            $transaction2->save();
+
+                            Notification::send($highestPricedCommentUser, new NegosTerminer([
+                                'message' => 'Félicitations! Vous avez fait le commentaire avec le prix le plus élevé avec '. $highestPricedComment->prixTrade .'.',
+                                'produit_id' => $produtOffre->id
+                            ]));
+                            Log::info('Notification sent to highest priced comment user', ['user' => $highestPricedCommentUser]);
+
+                            Notification::send($produtOffre->user, new NegosTerminer([
+                                'message' => 'Le commentaire avec le prix le plus élevé a été fait par: ' . $highestPricedCommentUserName,
+                                'produit_id' => $produtOffre->id
+                            ]));
+                            Log::info('Notification sent to product owner', ['user' => $produtOffre->user]);
+
+                            NotificationLog::create(['code_unique' => $codeUnique]);
+                            Log::info('Notification log created', ['code_unique' => $codeUnique]);
+                        } else {
+                            if (!$ownerWallet) {
+                                Log::error('Portefeuille non trouvé pour l\'utilisateur ID: ' . $highestPricedCommentUser->id);
+                            }
+                            if (!$traderWallet) {
+                                Log::error('Portefeuille non trouvé pour le trader ID: ' . $produtOffre->id);
+                            }
+                        }
+                    } else {
+                        Log::error('Highest priced comment not found for code unique: ' . $codeUnique);
                     }
                 }
-            } elseif ($notification->type === 'App\Notifications\OffreNegosNotif') {
+            }elseif ($notification->type === 'App\Notifications\OffreNegosNotif') {
                 $prixArticleNegos = null;
                 $uniqueCode = $notification->data['code_unique'];
+
+                $offreGroupeExistante = OffreGroupe::where('code_unique', $uniqueCode)->first();
+
+                $differance = $offreGroupeExistante->differance;
 
                 $notificationsNegos = DatabaseNotification::where('type', 'App\Notifications\OffreNegosNotif')
                     ->where(function ($query) use ($uniqueCode) {
@@ -234,16 +313,15 @@ class NotificationController extends Controller
                     ->count();
                 $produit = ProduitService::find($notification->data['produit_id']);
 
-                if ($isTempsEcoule) {
+                $notificationExists = NotificationLog::where('code_unique', $uniqueCode)->exists();
+
+                if ($isTempsEcoule && !$notificationExists) {
                     $data = [
                         'quantite' => $sommeQuantites,
                         'produit_id' => $notification->data['produit_id'],
-                        'produit_name' => $notification->data['produit_name']
+                        'produit_name' => $notification->data['produit_name'],
+                        'code_unique' => $uniqueCode
                     ];
-
-                    // Recherchez le produit associé à l'ID de produit
-
-
                     if ($produit) {
                         // Récupérer le user_id du produit
                         $user_id = $produit->user_id;
@@ -262,23 +340,38 @@ class NotificationController extends Controller
                         ->pluck('id_user')
                         ->toArray();
 
-                    foreach ($idsProprietaires as $conso) {
-                        $owner = User::find($conso);
+                    // Recherchez le produit associé à l'ID de produit
 
-                        if ($owner) {
-                            Notification::send($owner, new OffreNegosDone($data));
-                        } else {
-                            Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                    if ($differance) {
+
+                        foreach ($idsProprietaires as $conso) {
+                            $owner = User::find($conso);
+
+                            if ($owner) {
+                                Notification::send($owner, new AppelOffre(['quantity' => $sommeQuantites, 'productName' => $notification->data['produit_name'], 'prodUsers' => $user_id]));
+                            } else {
+                                Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                            }
+                        }
+                    } else {
+
+                        foreach ($idsProprietaires as $conso) {
+                            $owner = User::find($conso);
+
+                            if ($owner) {
+                                Notification::send($owner, new OffreNegosDone($data));
+                            } else {
+                                Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                            }
                         }
                     }
+                    NotificationLog::create(['code_unique' => $uniqueCode]);
                 }
-            } elseif ($notification->type === 'App\Notifications\OffreNegosDone') {
+            }elseif ($notification->type === 'App\Notifications\OffreNegosDone') {
                 $produit = ProduitService::find($notification->data['produit_id']);
 
                 $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
-            }
-
-            return view('biicf.notifshow', compact(
+            }return view('biicf.notifshow', compact(
                 'notification',
                 'produtOffre',
                 'comments',
@@ -292,6 +385,10 @@ class NotificationController extends Controller
                 'nombreParticp',
                 'produit',
                 'prixArticleNegos',
+                'lowPriceUserName',
+                'lowPriceAmount',
+                'tempsEcoule',
+                'highestPricedComment'
             ));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de la récupération de la notification: ' . $e->getMessage());

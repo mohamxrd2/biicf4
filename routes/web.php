@@ -31,8 +31,6 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     //liste des dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/statistique', [AdminChartController::class, 'index'])->name('admin.statistique');
-    
-    //liste des porte-feuille
     Route::get('/porte-feuille', [AdminWalletController::class, 'index'])->name('admin.porte-feuille');
 
     //liste des agents
@@ -181,9 +179,11 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('offregroupClient/comment', [OffreGroupClientController::class, 'commentoffgroup'])->name('biicf.offgrpcomment');
 
     Route::post('offreneg/store', [OffreNegos::class, 'store'])->name('biicf.sendoffreneg');
-    Route::post('offreneg/ajouter', [OffreNegos::class, 'add'])->name('biicf.addquantity');
-
+    Route::post('offreneg/ajouter', [OffreNegos::class, 'add' ])->name('biicf.addquantity');
     Route::post('offreneg/accepeter', [OffreNegos::class, 'accepter'])->name('biicf.offNAccept');
+
+    Route::post('offrenegroup', [OffreNegos::class, 'offregroupneg'])->name('biicf.offregroupneg');
+
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');

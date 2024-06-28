@@ -142,6 +142,7 @@ class ProduitServiceController extends Controller
         return view('biicf.search', compact('results', 'produits', 'resultCount', 'produitDims'));
     }
 
+    
     public function pubDet($id)
     {
         try {
