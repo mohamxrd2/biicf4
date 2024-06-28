@@ -8,6 +8,7 @@ use Livewire\Component;
 
 class PublicationServices extends Component
 {
+    public $search;
     public function placeholder()
     {
         return view('admin.components.placeholder');
@@ -18,6 +19,11 @@ class PublicationServices extends Component
             ->where('type', 'services')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+
+        $services = ProduitService::latest()
+            ->where('name', 'like', "%{$this->search}%")
+            ->paginate(5);
+
 
         //Agent//////
 

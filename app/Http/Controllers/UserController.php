@@ -173,10 +173,9 @@ class UserController extends Controller
 
     public function pubShow($id)
     {
-        $produits = ProduitService::find($id);
 
 
-        return view('admin.pubVerif', compact('produits'));
+        return view('admin.pubVerif', compact('id'));
     }
 
     public function etat(Request $request, $id)

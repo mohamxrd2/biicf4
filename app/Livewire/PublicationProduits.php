@@ -8,6 +8,8 @@ use Livewire\Component;
 
 class PublicationProduits extends Component
 {
+    public $search = '';
+
     public function placeholder()
     {
         return view('admin.components.placeholder');
@@ -18,7 +20,10 @@ class PublicationProduits extends Component
             ->where('type', 'produits')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
+        $produits = ProduitService::latest()
+            ->where('name', 'like', "%{$this->search}%")
+            ->paginate(5);
+            
         //Agent/////
 
         $prodCount = $produits->count();
@@ -40,6 +45,8 @@ class PublicationProduits extends Component
             })
             ->where('type', 'produits')
             ->count();
+
+
         return view('livewire.publication-produits', [
             'produits' => $produits,
             'adminId' => $adminId,

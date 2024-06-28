@@ -16,48 +16,13 @@ class AdminAgentController extends Controller
     // Contrôleur
     public function index()
     {
-        
+
 
         return view('admin.agent');
     }
 
 
-    public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'username' => 'required|string|unique:admins,username',
-            'password' => 'required|string|min:8',
-            'repeat_password' => 'required|string|same:password',
-            'phone' => 'required|string',
-        ], [
-            'username.unique' => 'Ce nom d\'utilisateur est déjà utilisé.',
-            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères',
-            'repeat_password.same' => 'Les mots de passe ne correspondent pas.',
-        ]);
-
-        try {
-            $admin = new Admin();
-            $admin->name = $validatedData['name'] . ' ' . $validatedData['lastname'];
-            $admin->username = $validatedData['username'];
-            $admin->password = bcrypt($validatedData['password']);
-            $admin->phonenumber = $validatedData['phone'];
-            $admin->admin_type = 'agent';
-            $admin->save();
-
-            // Créer un portefeuille pour l'agent
-            $wallet = new Wallet();
-            $wallet->admin_id = $admin->id;
-            $wallet->balance = 0; // Solde initial
-            $wallet->save();
-
-            return redirect()->route('admin.agent')->with('success', 'Agent ajouté avec succès!');
-        } catch (\Exception $e) {
-            dd($e->getMessage());
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
-        }
-    }
+    
 
     public function destroy(Request $request)
     {

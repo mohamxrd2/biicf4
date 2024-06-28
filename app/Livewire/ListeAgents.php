@@ -7,6 +7,12 @@ use Livewire\Component;
 
 class ListeAgents extends Component
 {
+    public $search = '';
+
+    public function placeholder()
+    {
+        return view('admin.components.placeholder');
+    }
     public function render()
     {
         // Récupérer tous les agents
@@ -23,6 +29,10 @@ class ListeAgents extends Component
             // Ajouter le nombre d'utilisateurs à l'agent
             $agent->userCount = $userCount;
         }
+
+        $agents = Admin::latest()
+        ->where('name', 'like', "%{$this->search}%")
+        ->paginate(5);
 
         return view('livewire.liste-agents', compact('agents', 'totalAgents'));
     }

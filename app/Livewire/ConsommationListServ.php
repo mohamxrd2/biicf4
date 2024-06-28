@@ -10,6 +10,7 @@ class ConsommationListServ extends Component
 {
     use WithPagination;
     public $consommationId = '';
+    public $search = '';
 
     public function delete($id)
     {
@@ -33,6 +34,12 @@ class ConsommationListServ extends Component
     {
         $consommations = Consommation::where('type', 'services')->orderBy('created_at', 'DESC')->paginate(5);
 
-        return view('livewire.consommation-list-serv', ['consommations' => $consommations]);
+        $consommations = Consommation::latest()
+        ->where('name', 'like', "%{$this->search}%")
+        ->paginate(5);
+
+        return view('livewire.consommation-list-serv', [
+            'consommations' => $consommations,
+        ]);
     }
 }

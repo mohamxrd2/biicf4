@@ -1,6 +1,60 @@
 <div wire:poll.15000ms>
+    <div id="resultsContainer"
+        class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">
+        <div>
+            <h1 class="bold" style="font-size: 24px;">Liste des @yield('title')</h1>
+
+        </div>
+        <div class="flex items-center">
+            <label for="table-search" class="sr-only">Search</label>
+            <div class="relative mr-2">
+                <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </div>
+                <input wire:model.live="search" type="text" id="searchInput"
+                    class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Rechercher...">
+            </div>
+
+        </div>
+
+    </div>
 
     <table class="w-full mt-5 text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+
+                <th scope="col" class="px-6 py-3">
+                    nom & photo
+                </th>
+
+
+
+                <th scope="col" class="px-6 py-3">
+                    quantite traité
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Prix
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Statuts
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    utilisateur
+                </th>
+
+                <th scope="col" class="px-6 py-3">
+                    Action
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    date de creation
+                </th>
+            </tr>
+        </thead>
 
         <tbody>
             @if ($prodCount == 0)
@@ -25,16 +79,16 @@
                             class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
                             <a href="{{ route('produit.pubShow', $produit->id) }}" class="flex items-center">
                                 <img class="w-10 h-10 rounded-md"
-                                src="{{ $produit->photoProd1 ? asset($produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                                alt="Jese image">
-                                <div class="ps-3">
+                                    src="{{ $produit->photoProd1 ? asset($produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="Jese image">
+                                <div class="ps-3  hover:underline hover:text-blue-500 cursor-pointer">
                                     <div class="text-base font-semibold">{{ $produit->name }}</div>
                                     <div class="font-normal text-gray-500">{{ $produit->username }}</div>
                                 </div>
 
                             </a>
                         </th>
-                       
+
                         <td class="px-6 py-4">
                             <p class="mb-0"> [{{ $produit->qteProd_min }} - {{ $produit->qteProd_max }}]</p>
                         </td>

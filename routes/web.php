@@ -28,10 +28,11 @@ Route::get('/', function () {
 })->name('index');
 
 Route::prefix('admin')->middleware('admin.auth')->group(function () {
-
+    //liste des dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/statistique', [AdminChartController::class, 'index'])->name('admin.statistique');
     Route::get('/porte-feuille', [AdminWalletController::class, 'index'])->name('admin.porte-feuille');
+
     //liste des agents
     Route::get('/agent', [AdminAgentController::class, 'index'])->name('admin.agent');
     Route::get('/client', [UserController::class, 'listUserAdmin'])->name('admin.client');
@@ -47,9 +48,9 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/profile', function () {
         return view('admin.profile');
     })->name('admin.profile');
+
     Route::get('/reglage', [AdminSettingController::class, 'index'])->name('admin.reglage');
 
-    Route::post('/agent', [AdminAgentController::class, 'store'])->name('admin.agent.store');
     Route::post('/client/storePub', [UserController::class, 'storePub'])->name('admin.client.storePub');
     Route::post('/client/storeCons', [UserController::class, 'storeCons'])->name('admin.client.storeCons');
 
@@ -177,7 +178,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('offregroupClient/comment', [OffreGroupClientController::class, 'commentoffgroup'])->name('biicf.offgrpcomment');
 
     Route::post('offreneg/store', [OffreNegos::class, 'store'])->name('biicf.sendoffreneg');
-    Route::post('offreneg/ajouter', [OffreNegos::class, 'add' ])->name('biicf.addquantity');
+    Route::post('offreneg/ajouter', [OffreNegos::class, 'add'])->name('biicf.addquantity');
 
     Route::post('offreneg/accepeter', [OffreNegos::class, 'accepter'])->name('biicf.offNAccept');
 });
