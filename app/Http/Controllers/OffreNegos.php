@@ -93,12 +93,12 @@ class OffreNegos extends Controller
         $code_unique = $request->input('code_unique');
         $produit_name = $request->input('name');
         $produit_id = $request->input('produit_id'); // Assurez-vous que produit_id est inclus dans le formulaire
-        
+
         $offreGroupeExistante = OffreGroupe::where('code_unique', $code_unique)->first();
 
         $differance = $offreGroupeExistante->differance;
 
-        
+
         // Créer une nouvelle instance de OffreGroupe
         OffreGroupe::create([
             'name' => $produit_name,
@@ -127,13 +127,13 @@ class OffreNegos extends Controller
 
             // Récupérer les données de la requête
             $requiredAmount = $request->input('prixarticle');
-            $id_trader = $request->input('id_trader');
             $notifId = $request->input('notifId');
 
-            // Valider les données reçues
-            if (is_null($requiredAmount) || is_null($id_trader) || is_null($notifId)) {
-                return redirect()->back()->with('error', 'Données manquantes dans la requête.');
-            }
+            $codeUnique = $request->input('code_unique');
+
+            $distinctUserIds = OffreGroupe::where('code_unique', $codeUnique)
+                ->distinct()
+                ->pluck('user_id');
 
             // Rechercher la notification par son identifiant
             $notification = NotificationEd::find($notifId);
@@ -145,20 +145,40 @@ class OffreNegos extends Controller
             $notification->reponse = 'accepte';
             $notification->save();
 
-            // Récupérer le portefeuille du trader
-            $traderWallet = Wallet::where('user_id', $id_trader)->first();
-            if (!$traderWallet) {
-                return redirect()->back()->with('error', 'Portefeuille du trader introuvable.');
+            foreach ($distinctUserIds as $id_trader) {
+
+                if (is_null($requiredAmount) || is_null($id_trader) || is_null($notifId)) {
+                    return redirect()->back()->with('error', 'Données manquantes dans la requête.');
+                }
+
+                $traderWallet = Wallet::where('user_id', $id_trader)->first();
+                if (!$traderWallet) {
+                    return redirect()->back()->with('error', 'Portefeuille du trader introuvable.');
+                }
+
+
+                $traderWallet->increment('balance', $requiredAmount);
+
+
+                $this->createTransaction($userId, $id_trader, 'Reception', $requiredAmount);
             }
 
-            // Effectuer la transaction
-            DB::transaction(function () use ($userWallet, $traderWallet, $requiredAmount, $userId, $id_trader) {
-                $traderWallet->increment('balance', $requiredAmount);
-                $userWallet->decrement('balance', $requiredAmount);
+            $userWallet->decrement('balance', $requiredAmount);
 
-                $this->createTransaction($userId, $id_trader, 'Envoie', $requiredAmount);
-                $this->createTransaction($userId, $id_trader, 'Reception', $requiredAmount);
-            });
+            $this->createTransaction($userId, $id_trader, 'Envoie', $requiredAmount);
+
+
+
+            // Valider les données reçues
+
+
+
+
+            // Récupérer le portefeuille du trader
+
+
+            // Effectuer la transaction
+
 
             return redirect()->back()->with('success', 'Achat accepté.');
         } catch (\Exception $e) {
@@ -187,6 +207,5 @@ class OffreNegos extends Controller
 
     public function offregroupneg()
     {
-       
     }
 }

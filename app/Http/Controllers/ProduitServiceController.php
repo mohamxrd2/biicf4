@@ -205,41 +205,39 @@ class ProduitServiceController extends Controller
         return view('biicf.search', compact('results', 'produits', 'resultCount', 'produitDims'));
     }
 
+    
     public function pubDet($id)
     {
-        $userId = Auth::guard('web')->id();
-
-        $produit = ProduitService::findOrFail($id);
-        $nomProduit = $produit->name;
-
-        // 2. Requête pour récupérer les IDs des propriétaires des consommations similaires
-        $idsProprietaires = Consommation::where('name', $nomProduit)
-            ->where('id_user', '!=', $userId)
-            ->where('statuts', 'Accepté')
-            ->distinct()
-            ->pluck('id_user')
-            ->toArray();
-
-        // 3. Compter le nombre d'IDs distincts
-        $nombreProprietaires = count($idsProprietaires);
-
-        $nomFournisseur = ProduitService::where('name', $nomProduit)
-            ->where('user_id', '!=', $userId)
-            ->where('statuts', 'Accepté')
-            ->distinct()
-            ->pluck('user_id')
-            ->toArray();
-
-        $nomFournisseurCount = count($nomFournisseur);
         try {
-            // Trouver le produit ou échouer
+            // Récupérer le produit ou échouer
             $produit = ProduitService::findOrFail($id);
 
             // Récupérer l'identifiant de l'utilisateur connecté
-            
+            $userId = Auth::guard('web')->id();
 
             // Récupérer le portefeuille de l'utilisateur
             $userWallet = Wallet::where('user_id', $userId)->first();
+
+            // Récupérer les IDs des propriétaires des consommations similaires
+            $idsProprietaires = Consommation::where('name', $produit->name)
+                ->where('id_user', '!=', $userId)
+                ->where('statuts', 'Accepté')
+                ->distinct()
+                ->pluck('id_user')
+                ->toArray();
+
+            // Compter le nombre d'IDs distincts
+            $nombreProprietaires = count($idsProprietaires);
+
+            // Récupérer les fournisseurs pour ce produit
+            $nomFournisseur = ProduitService::where('name', $produit->name)
+                ->where('user_id', '!=', $userId)
+                ->where('statuts', 'Accepté')
+                ->distinct()
+                ->pluck('user_id')
+                ->toArray();
+
+            $nomFournisseurCount = count($nomFournisseur);
 
             // Récupérer le nombre d'achats groupés distincts pour ce produit
             $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
@@ -248,15 +246,14 @@ class ProduitServiceController extends Controller
 
             // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
             $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
-            $tempEcoule = Carbon::now()->addDays(5);
-            // Vérifier si la date la plus ancienne + 5 jours est dépassée
-            //$tempEcoule = Carbon::now()->subDays(1); // pour le test
+            $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
 
-            // Initialiser les variables pour la vue
+            // Vérifier si le temps est écoulé
+            $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+
+            // Récupérer les autres informations nécessaires
             $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');
             $montants = AchatGrouper::where('idProd', $produit->id)->sum('montantTotal');
-            $nameProd = $produit->name;
-            $photoProd = $produit->photoProd1;
             $userSenders = AchatGrouper::where('idProd', $produit->id)
                 ->distinct('userSender')
                 ->pluck('userSender')
@@ -265,14 +262,14 @@ class ProduitServiceController extends Controller
             // Vérifier si une notification a déjà été envoyée pour ce produit
             $notificationExists = NotificationLog::where('idProd', $produit->id)->exists();
 
-            if (Carbon::now()->greaterThan($tempEcoule) && !$notificationExists && $nbreAchatGroup) {
+            if ($isTempsEcoule && !$notificationExists && $nbreAchatGroup) {
                 // Préparer le tableau de données pour la notification
                 $notificationData = [
-                    'nameProd' => $nameProd,
+                    'nameProd' => $produit->name,
                     'quantité' => $sommeQuantite,
                     'montantTotal' => $montants,
                     'userTrader' => $produit->user->id,
-                    'photoProd' => $photoProd,
+                    'photoProd' => $produit->photoProd1,
                     'idProd' => $produit->id,
                     'userSender' => $userSenders
                 ];
@@ -288,7 +285,21 @@ class ProduitServiceController extends Controller
             }
 
             // Retourner la vue avec les données récupérées
-            return view('biicf.postdetail', compact('produit', 'userWallet', 'userId', 'id', 'nbreAchatGroup', 'datePlusAncienne', 'tempEcoule', 'sommeQuantite', 'montants', 'userSenders', 'idsProprietaires', 'nombreProprietaires', 'nomFournisseur', 'nomFournisseurCount'));
+            return view('biicf.postdetail', compact(
+                'produit',
+                'userWallet',
+                'userId',
+                'id',
+                'nbreAchatGroup',
+                'datePlusAncienne',
+                'sommeQuantite',
+                'montants',
+                'userSenders',
+                'idsProprietaires',
+                'nombreProprietaires',
+                'nomFournisseur',
+                'nomFournisseurCount'
+            ));
         } catch (\Exception $e) {
             // Gérer les exceptions et rediriger avec un message d'erreur
             return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());

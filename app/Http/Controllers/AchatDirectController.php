@@ -27,10 +27,12 @@ class AchatDirectController extends Controller
             'localite' => 'required|string|max:255',
             'userTrader' => 'required|exists:users,id',
             'userSender' => 'required|exists:users,id',
-            'specificite' => 'required|string',
             'photoProd' => 'required|string',
             'idProd' => 'required|exists:produit_services,id', // Correction ici, table correcte
         ]);
+
+
+        $specificite = $request->input('specificite');
 
         // Récupérer l'utilisateur connecté
         $userId = Auth::id();
@@ -64,7 +66,7 @@ class AchatDirectController extends Controller
                 'localite' => $validated['localite'],
                 'userTrader' => $validated['userTrader'],
                 'userSender' => $validated['userSender'],
-                'specificite' => $validated['specificite'],
+                'specificite' => $specificite,
                 'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
             ]);

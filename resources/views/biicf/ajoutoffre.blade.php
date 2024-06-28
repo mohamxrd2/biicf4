@@ -32,44 +32,44 @@
 
                 <div class="w-full gap-y-2  mt-4">
 
-                     <div class="w-full flex justify-between items-center py-4  border-b-2">
+                    <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Prix unitaire maximal</p>
                         <p class="text-md font-medium text-gray-600">
-                            {{$appelOffreGroup->lowestPricedProduct }}
+                            {{ $appelOffreGroup->lowestPricedProduct }}
                         </p>
                     </div>
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Quantité total du groupage</p>
-                        <p class="text-md font-medium text-gray-600">{{$sumquantite}}</p>
+                        <p class="text-md font-medium text-gray-600">{{ $sumquantite }}</p>
                     </div>
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Payement</p>
-                        <p class="text-md font-medium text-gray-600">{{$appelOffreGroup->payment }}</p>
+                        <p class="text-md font-medium text-gray-600">{{ $appelOffreGroup->payment }}</p>
                     </div>
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Livraison</p>
-                        <p class="text-md font-medium text-gray-600">{{$appelOffreGroup->Livraison }}</p>
+                        <p class="text-md font-medium text-gray-600">{{ $appelOffreGroup->Livraison }}</p>
                     </div>
 
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Specificité</p>
-                        <p class="text-md font-medium text-gray-600">{{$appelOffreGroup->specificity }}</p>
+                        <p class="text-md font-medium text-gray-600">{{ $appelOffreGroup->specificity }}</p>
                     </div>
 
 
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Date au plus tôt</p>
-                        <p class="text-md font-medium text-gray-600">{{$appelOffreGroup->dateTot }}</p>
+                        <p class="text-md font-medium text-gray-600">{{ $appelOffreGroup->dateTot }}</p>
                     </div>
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Date au plus tard</p>
-                        <p class="text-md font-medium text-gray-600">{{$appelOffreGroup->dateTard }}</p>
+                        <p class="text-md font-medium text-gray-600">{{ $appelOffreGroup->dateTard }}</p>
                     </div>
 
 
@@ -80,13 +80,10 @@
             </div>
             <div class="lg:col-span-1 col-span-2">
 
-                <div class="p-4">
+                <div class="flex flex-col p-4">
 
                     <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
                         uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-
-
                         <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
 
                             <form action="{{ route('biicf.storeoffre') }}" method="post" id="commentForm">
@@ -97,15 +94,13 @@
                                     <input type="hidden" name="userId" value="{{ $userId }}">
                                     <input type="number" name="quantite" id="quantite"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Faire une offre..." required>
+                                        placeholder="Ajouter une quantité..." required>
 
                                     <button type="submit" id="submitBtn"
-                                        class="inline-flex justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                        <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
-                                            <path
-                                                d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                        </svg>
+                                        class=" justify-center p-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                          </svg>
                                     </button>
                                 </div>
                                 <div class="w-full flex justify-center">
@@ -134,10 +129,10 @@
 
                     </div>
 
-                    <div class="flex justify-between items-center mb-4 w-full">
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded">
-                            Participants: {{$appelOffreGroupcount}}
-                        </button>
+                    <div class="text-center mt-6 w-full">
+                        <div class="bg-blue-500 text-white px-4 py-2 rounded">
+                            Participants: {{ $appelOffreGroupcount }}
+                        </div>
                     </div>
 
 
@@ -149,12 +144,12 @@
         </div>
 
         <script>
+            const qteInput = document.getElementById('quantite');
             // Convertir la date de départ en objet Date JavaScript
             const startDate = new Date("{{ $datePlusAncienne }}");
 
-            // Ajout d'une heure à la date de départ
-            startDate.setHours(startDate.getHours() + 1);
-
+            // Ajout d'une minute à la date de départ
+            startDate.setMinutes(startDate.getMinutes() + 1);
 
             // Mettre à jour le compte à rebours à intervalles réguliers
             const countdownTimer = setInterval(updateCountdown, 1000);
@@ -175,15 +170,17 @@
                 // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
                 const countdownElement = document.getElementById('countdown');
                 countdownElement.innerHTML = `
-               <div>${hours}h</div>:
-               <div>${minutes}m</div>:
-               <div>${seconds}s</div>
-                `;
+                  <div>${hours}h</div>:
+                  <div>${minutes}m</div>:
+                  <div>${seconds}s</div>
+                   `;
 
                 // Arrêter le compte à rebours lorsque la date cible est atteinte
                 if (difference <= 0) {
                     clearInterval(countdownTimer);
                     countdownElement.innerHTML = "Temps écoulé !";
+                    document.getElementById('submitBtn').hidden = true;
+                    qteInput.disabled  = true;
                 }
             }
         </script>

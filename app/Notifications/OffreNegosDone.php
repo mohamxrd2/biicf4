@@ -41,6 +41,7 @@ class OffreNegosDone extends Notification
             'produit_id' => $this->offredone['produit_id'],
             'produit_name' => $this->offredone['produit_name'],
             'quantite' => $this->offredone['quantite'],
+            'code_unique' => $this->offredone['code_unique'],
           
         ];
     }

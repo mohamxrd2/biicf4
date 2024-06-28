@@ -270,40 +270,31 @@
 
             @endif
 
-            @if ($appelOffreGroupcount == 0)
-                <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
-                    <h1 class="text-2xl font-bold text-center">Aucune offre groupé </h1>
+            @if ($keyword != '' && $appelOffreGroupcount != 0)
+                <div class="bg-white p-4 flex items-center mt-10 border border-gray-100 rounded-xl shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                    <h1 class="text-xl font-medium text-center ml-4">Résultats pour les appels d'offre groupé</h1>
                 </div>
-            @else
-                <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
-                    <h1 class="text-2xl font-bold text-center">Résultats pour les appels d'offre groupé</h1>
-                </div>
-                @foreach ($appelOffreGroup as $appel)
-                    <a href="{{ route('biicf.detailoffre', ['id' => $appel->id]) }}">
+                @foreach ($groupedByCodeUnique as $codeUnique => $group)
+                <a href="{{ route('biicf.detailoffre', ['id' => $idOffre[$codeUnique]]) }}">
 
-                        <div class="max-w-2xl mx-auto my-3">
-                            <div class="w-full flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
-                                <div class="flex justify-between items-center mb-4">
-                                    <button class="bg-blue-500 text-white px-4 py-2 rounded">
-                                        Participants: #
-                                    </button>
-                                </div>
-                                <div class="flex items-center justify-center">
-                                    <div class="h-10 w-10 mr-4">
-                                        {{-- <img class="w-full h-full rounded-md object-cover"
-                                        src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
-                                        alt=""> --}}
-                                    </div>
-                                    <p class="text-xl font-semibold">{{ $appel->productName }}</p>
-                                </div>
+                    <div class="max-w-2xl mx-auto my-3">
+                        <div
+                            class="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
+                            <p class="text-xl font-semibold">{{ $productNames[$codeUnique] }} </p>
+                            <div class="bg-blue-500 text-white p-1 rounded">
+                                Participants: {{ $participantsCount }}
                             </div>
                         </div>
+                       
+                    </div>
 
-
-
-
-
-                    </a>
+                </a>
+                    
                 @endforeach
             @endif
 
