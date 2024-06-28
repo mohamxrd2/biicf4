@@ -113,8 +113,6 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 
 //////   ////// PLATEFORME //////   ///////////
 
-
-
 Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('acceuil', [ProduitServiceController::class,  'homeBiicf'])->name('biicf.acceuil');
     Route::get('recheche', [ProduitServiceController::class, 'search'])->name('biicf.search');

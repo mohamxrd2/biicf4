@@ -231,7 +231,7 @@
                                                                 class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                                                 placeholder="Commune " />
                                                         </div>
-                                                      
+
                                                         <div class="relative z-0 w-full mb-5 group">
                                                             <textarea id="floating_description" name="description"
                                                                 class="py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
@@ -862,10 +862,10 @@
                                                             <p class="text-gray-500 dark:text-neutral-500">
                                                                 Vous etes sur de supprimé la consommation ?
                                                             </p>
-
+                                                            {{-- {{ route('admin.consprod.destroy', $consommation->id) }} --}}
                                                             <div class="mt-6 flex justify-center gap-x-4">
                                                                 <form
-                                                                    action="{{ route('admin.consprod.destroy', $consommation->id) }}"
+                                                                    action=""
                                                                     method="POST">
                                                                     @csrf
                                                                     @method('DELETE')
