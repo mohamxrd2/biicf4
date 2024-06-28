@@ -2,7 +2,7 @@
     <div id="resultsContainer"
         class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">
         <div>
-            <h1 class="bold" style="font-size: 24px;">Liste des @yield('title')</h1>
+            <h1 class="bold" style="font-size: 24px;">Liste des Produits</h1>
 
         </div>
         <div class="flex items-center">

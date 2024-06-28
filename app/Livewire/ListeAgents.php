@@ -8,34 +8,53 @@ use Livewire\Component;
 class ListeAgents extends Component
 {
     public $search = '';
+    public $confirmingDeletion = null;
+
 
     public function placeholder()
     {
         return view('admin.components.placeholder');
     }
+    public function confirmDeletion($id)
+    {
+        $this->confirmingDeletion = $id;
+    }
+
+    public function cancelDeletion()
+    {
+        $this->confirmingDeletion = null;
+    }
+
+    public function delete($id)
+    {
+        $agent = Admin::findOrFail($id);
+        $agent->delete();
+
+        $this->confirmingDeletion = null;
+        session()->flash('success', 'Agent supprimé avec succès.');
+    }
+
     // public function delete($id)
     // {
-    //    Récupérer l'ID de l'agent à supprimer à partir de la requête
-    //    $agentId = $request->input('agent_id');
+    //     $agent = Admin::find($id);
 
-    //    Rechercher l'agent dans la base de données par son ID
-    //    $agent = Admin::findOrFail($agentId);
+    //     if (!$agent) {
+    //         session()->flash('error', 'agent non trouvée.');
+    //         return;
+    //     }
 
-    //    Supprimer l'agent de la base de données
-    //    $agent->delete();
+    //     $agent->delete();
 
-    //    Rediriger l'utilisateur vers la page appropriée avec un message de succès
-    //    return back()->with('success', 'Agent supprimé avec succès.');
-
-    //     session()->flash('success', 'La consommation a été supprimée avec succès');
+    //     session()->flash('success', 'La agent a été supprimée avec succès');
     // }
     public function render()
     {
         // Récupérer tous les agents
+
         $agents = Admin::where('admin_type', 'agent')
+            ->where('name', 'like', "%{$this->search}%")
             ->orderBy('created_at', 'DESC')
             ->paginate(10);
-
         // Récupérer le nombre total d'agents
         $totalAgents = $agents->count();
 
@@ -46,9 +65,7 @@ class ListeAgents extends Component
             $agent->userCount = $userCount;
         }
 
-        $agents = Admin::latest()
-        ->where('name', 'like', "%{$this->search}%")
-        ->paginate(5);
+
 
         return view('livewire.liste-agents', compact('agents', 'totalAgents'));
     }

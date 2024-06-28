@@ -16,15 +16,13 @@ class PublicationProduits extends Component
     }
     public function render()
     {
-        $produits = ProduitService::with('user')
-            ->where('type', 'produits')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        $produits = ProduitService::latest()
+        
+        $produits = ProduitService::where('type', 'produits')
             ->where('name', 'like', "%{$this->search}%")
-            ->paginate(5);
-            
-        //Agent/////
+            ->orderBy('created_at', 'DESC')
+            ->paginate(10);
+
+        // //Agent/////
 
         $prodCount = $produits->count();
 

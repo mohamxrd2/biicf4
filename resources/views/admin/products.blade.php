@@ -9,7 +9,7 @@
             @include('admin.produit_services.products_agent')
         @else
             <div class=" relative overflow-x-auto  sm:rounded-lg">
-                
+
 
                 @if (session('success'))
                     <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">

@@ -361,8 +361,6 @@ class UserController extends Controller
                 'jour_achat' => 'required|string',
                 'qualificationC' => $request->type == 'services' ? 'required|string' : 'nullable|string',
                 'specialité' => $request->type == 'services' ? 'required|string' : 'nullable|string',
-                'desriptionC' => 'required|string',
-                'zone_activité' => 'required|string',
                 'villeC' => 'required|string',
             ],
             [
@@ -377,8 +375,6 @@ class UserController extends Controller
                 'jour_achat.required' => 'Le jour d\'achat est requis.',
                 'qualificationC.required' => 'La qualification est requise pour les services.',
                 'specialité.required' => 'La spécialité est requise pour les services.',
-                'desriptionC.required' => 'La description est requise.',
-                'zone_activité.required' => 'La zone d\'activité est requise.',
                 'villeC.required' => 'La ville est requise.',
             ]
         );
@@ -396,8 +392,6 @@ class UserController extends Controller
             $consommation->jourAch_cons = $validatedData['jour_achat'];
             $consommation->qualif_serv = $validatedData['qualificationC'];
             $consommation->specialité = $validatedData['specialité'];
-            $consommation->description = $validatedData['desriptionC'];
-            $consommation->zoneAct = $validatedData['zone_activité'];
             $consommation->villeCons = $validatedData['villeC'];
             $consommation->id_user = $userId; // Ajout de l'ID de l'utilisateur
 

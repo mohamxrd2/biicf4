@@ -15,14 +15,13 @@ class PublicationServices extends Component
     }
     public function render()
     {
-        $services = ProduitService::with('user')
-            ->where('type', 'services')
-            ->orderBy('created_at', 'desc')
+
+        $services = ProduitService::where('type', 'services')
+            ->where('name', 'like', "%{$this->search}%")
+            ->orderBy('created_at', 'DESC')
             ->paginate(10);
 
-        $services = ProduitService::latest()
-            ->where('name', 'like', "%{$this->search}%")
-            ->paginate(5);
+
 
 
         //Agent//////
