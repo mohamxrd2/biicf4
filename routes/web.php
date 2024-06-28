@@ -21,7 +21,7 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
-
+use App\Livewire\Wallet;
 
 Route::get('/', function () {
     return view('index');
@@ -31,6 +31,8 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     //liste des dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/statistique', [AdminChartController::class, 'index'])->name('admin.statistique');
+    
+    //liste des porte-feuille
     Route::get('/porte-feuille', [AdminWalletController::class, 'index'])->name('admin.porte-feuille');
 
     //liste des agents
@@ -40,6 +42,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     //publication des produits et services
     Route::get('/produits', [ProduitServiceController::class, 'adminProduct'])->name('admin.produits');
     Route::get('/services', [ProduitServiceController::class, 'adminService'])->name('admin.services');
+
 
     //liste des consommation produits et services
     Route::get('/consommation-produit', [ConsoController::class, 'adminConsProd'])->name('admin.conso-produit');

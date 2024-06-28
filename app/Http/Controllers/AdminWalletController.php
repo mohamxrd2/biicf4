@@ -19,16 +19,6 @@ class AdminWalletController extends Controller
         // Récupérer le portefeuille de l'administrateur connecté
         $adminWallet = Wallet::where('admin_id', $adminId)->first();
 
-        $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
-            ->where(function ($query) use ($adminId) {
-                $query->where('sender_admin_id', $adminId)
-                    ->orWhere('receiver_admin_id', $adminId);
-            })
-            ->orderBy('created_at', 'DESC')
-            ->paginate(10);
-
-        $transacCount = $transactions->count();
-
         // Récupérer les 5 derniers agents
         $agents = Admin::where('admin_type', 'agent')
             ->orderBy('created_at', 'DESC')
@@ -43,7 +33,7 @@ class AdminWalletController extends Controller
 
         $userCount = $users->count();
 
-        return view('admin.wallet', compact('adminWallet', 'transactions', 'transacCount', 'agents', 'users', 'agentCount', 'userCount', 'adminId'));
+        return view('admin.wallet', compact('adminWallet', 'agents', 'users', 'agentCount', 'userCount', 'adminId'));
     }
 
 
@@ -278,17 +268,17 @@ class AdminWalletController extends Controller
     public function indexBiicf()
     {
         $userId = Auth::guard('web')->id();
-    
+
         $userWallet = Wallet::where('user_id', $userId)->first();
-    
+
         // Récupérer les utilisateurs à exclure l'utilisateur authentifié
         $users = User::with('admin')
             ->where('id', '!=', $userId) // Exclure l'utilisateur authentifié
             ->orderBy('created_at', 'DESC')
             ->get();
-    
+
         $userCount = User::where('id', '!=', $userId)->count();
-    
+
         // Récupérer les transactions impliquant l'utilisateur authentifié
         $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
             ->where(function ($query) use ($userId) {
@@ -297,13 +287,13 @@ class AdminWalletController extends Controller
             })
             ->orderBy('created_at', 'DESC')
             ->get();
-    
+
         $transacCount = Transaction::where(function ($query) use ($userId) {
             $query->where('sender_user_id', $userId)
                 ->orWhere('receiver_user_id', $userId);
         })->count();
-    
+
         return view('biicf.wallet', compact('userWallet', 'users', 'userCount', 'transactions', 'transacCount', 'userId'));
     }
-    
+
 }

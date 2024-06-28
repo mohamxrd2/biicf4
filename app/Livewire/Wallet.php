@@ -11,13 +11,57 @@ use Livewire\Component;
 
 class Wallet extends Component
 {
+    public $amount;
+
+    protected $rules = [
+        'amount' => 'required|numeric|min:0',
+    ];
+
+    public function deposit()
+    {
+        $this->validate();
+
+        $adminId = Auth::guard('admin')->id();
+
+        // Créer une nouvelle transaction
+        $transaction = new Transaction();
+        $transaction->receiver_admin_id = $adminId;
+        $transaction->type = 'Depot';
+        $transaction->amount = $this->amount;
+        $transaction->save();
+
+        // Mettre à jour le solde du portefeuille de l'administrateur
+        $adminWallet = AdminWallet::where('admin_id', $adminId)->first();
+        $adminWallet->increment('balance', $this->amount);
+
+        // Réinitialiser le champ du formulaire après le dépôt
+        $this->amount = null;
+
+        // Rediriger avec un message de succès
+        // session()->flash('success', 'Dépôt effectué avec succès.');
+
+        // // Émettre un événement pour mettre à jour les données dans d'autres composants si nécessaire
+        // $this->emit('walletUpdated');
+
+        // // Fermer le modal après dépôt
+        // $this->emit('closeModal');
+
+        $this->resetForm();
+        return redirect()->route('admin.porte-feuille')->with('success', 'Agent ajouté avec succès!');
+    }
+
+    private function resetForm()
+    {
+        $this->amount = '';
+    }
     public function placeholder()
     {
         return view('admin.components.placeholder');
     }
+
     public function render()
     {
-
+        sleep(1);
         $adminId = Auth::guard('admin')->id();
 
         if (!$adminId) {
@@ -27,15 +71,8 @@ class Wallet extends Component
         // Récupérer le portefeuille de l'administrateur connecté
         $adminWallet = AdminWallet::where('admin_id', $adminId)->first();
 
-        $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
-            ->where(function ($query) use ($adminId) {
-                $query->where('sender_admin_id', $adminId)
-                    ->orWhere('receiver_admin_id', $adminId);
-            })
-            ->orderBy('created_at', 'DESC')
-            ->paginate(10);
 
-        $transacCount = $transactions->count();
+
 
         // Récupérer les 5 derniers agents
         $agents = Admin::where('admin_type', 'agent')
@@ -52,6 +89,6 @@ class Wallet extends Component
         $userCount = $users->count();
 
 
-        return view('livewire.wallet', compact('adminWallet', 'transactions', 'transacCount', 'agents', 'users', 'agentCount', 'userCount', 'adminId'));
+        return view('livewire.wallet', compact('adminWallet', 'agents', 'users', 'agentCount', 'userCount', 'adminId'));
     }
 }

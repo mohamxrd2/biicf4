@@ -16,13 +16,11 @@ class AdminAgentController extends Controller
     // Contrôleur
     public function index()
     {
-
-
         return view('admin.agent');
     }
 
 
-    
+
 
     public function destroy(Request $request)
     {

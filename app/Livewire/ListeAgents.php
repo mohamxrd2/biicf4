@@ -13,6 +13,22 @@ class ListeAgents extends Component
     {
         return view('admin.components.placeholder');
     }
+    // public function delete($id)
+    // {
+    //    Récupérer l'ID de l'agent à supprimer à partir de la requête
+    //    $agentId = $request->input('agent_id');
+
+    //    Rechercher l'agent dans la base de données par son ID
+    //    $agent = Admin::findOrFail($agentId);
+
+    //    Supprimer l'agent de la base de données
+    //    $agent->delete();
+
+    //    Rediriger l'utilisateur vers la page appropriée avec un message de succès
+    //    return back()->with('success', 'Agent supprimé avec succès.');
+
+    //     session()->flash('success', 'La consommation a été supprimée avec succès');
+    // }
     public function render()
     {
         // Récupérer tous les agents
