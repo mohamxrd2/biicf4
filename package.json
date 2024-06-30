@@ -20,6 +20,7 @@
         "@preline/stepper": "^2.1.0",
         "laravel-echo": "^1.16.1",
         "preline": "^2.1.0",
-        "pusher-js": "^8.4.0-rc2"
+        "pusher-js": "^8.4.0-rc2",
+        "sweetalert2": "^11.12.1"
     }
 }

@@ -715,43 +715,43 @@
 
 
 
-        // Convertir la date de départ en objet Date JavaScript
-        const startDate = new Date("{{ $datePlusAncienne }}");
+    //     // Convertir la date de départ en objet Date JavaScript
+    //     const startDate = new Date("{{ $datePlusAncienne }}");
 
-        // Ajouter 1 minute à la date de départ
-        startDate.setMinutes(startDate.getMinutes() + 1);
+    //     // Ajouter 1 minute à la date de départ
+    //     startDate.setMinutes(startDate.getMinutes() + 1);
 
-        // Mettre à jour le compte à rebours à intervalles réguliers
-        const countdownTimer = setInterval(updateCountdown, 1000);
+    //     // Mettre à jour le compte à rebours à intervalles réguliers
+    //     const countdownTimer = setInterval(updateCountdown, 1000);
 
-        function updateCountdown() {
-            // Obtenir la date et l'heure actuelles
-            const currentDate = new Date();
+    //     function updateCountdown() {
+    //         // Obtenir la date et l'heure actuelles
+    //         const currentDate = new Date();
 
-            // Calculer la différence entre la date cible et la date de départ en millisecondes
-            const difference = startDate.getTime() - currentDate.getTime();
+    //         // Calculer la différence entre la date cible et la date de départ en millisecondes
+    //         const difference = startDate.getTime() - currentDate.getTime();
 
-            // Convertir la différence en jours, heures, minutes et secondes
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+    //         // Convertir la différence en jours, heures, minutes et secondes
+    //         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    //         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    //         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    //         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-            // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-            const countdownElement = document.getElementById('countdown');
-            countdownElement.innerHTML = `
-        <div>${days}j</div>:
-        <div>${hours}h</div>:
-        <div>${minutes}m</div>:
-        <div>${seconds}s</div>
-    `;
+    //         // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+    //         const countdownElement = document.getElementById('countdown');
+    //         countdownElement.innerHTML = `
+    //     <div>${days}j</div>:
+    //     <div>${hours}h</div>:
+    //     <div>${minutes}m</div>:
+    //     <div>${seconds}s</div>
+    // `;
 
-            // Arrêter le compte à rebours lorsque la date cible est atteinte
-            if (difference <= 0) {
-                clearInterval(countdownTimer);
-                countdownElement.innerHTML = "Temps écoulé !";
-            }
-        }
+    //         // Arrêter le compte à rebours lorsque la date cible est atteinte
+    //         if (difference <= 0) {
+    //             clearInterval(countdownTimer);
+    //             countdownElement.innerHTML = "Temps écoulé !";
+    //         }
+    //     }
     </script>
 
     <style>
