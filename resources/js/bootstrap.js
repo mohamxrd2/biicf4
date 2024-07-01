@@ -28,27 +28,27 @@ window.Echo = new Echo({
     forceTLS: true,
 });
 
-// var channel = window.Echo.channel("my-channel"); // Use 'private-my-channel' for private channels
-// channel.listen(".my-event", function (data) {
-//     alert(JSON.stringify(data));
-// });
+var channel = window.Echo.channel("my-channel"); // Use 'private-my-channel' for private channels
+channel.listen(".my-event", function (data) {
+    alert(JSON.stringify(data));
+});
 
-// const userId = document
-//     .querySelector('meta[name="user-id"]')
-//     // .getAttribute("content");
+const userId = document
+    .querySelector('meta[name="user-id"]')
+    .getAttribute("content");
 
-// window.Echo.private(`App.Models.User.${userId}`).notification(
-//     (notification) => {
-//         console.log(notification);
+window.Echo.private(`App.Models.User.${userId}`).notification(
+    (notification) => {
+        console.log(notification);
 
-//         // Display a SweetAlert2 toast notification
-//         Swal.fire({
-//             toast: true,
-//             position: "top-end",
-//             showConfirmButton: false,
-//             timer: 3000,
-//             icon: "success", // You can change this to 'success', 'error', 'warning', etc.
-//             title: notification.message, // Customize this based on your notification structure
-//         });
-//     }
-// );
+        // Display a SweetAlert2 toast notification
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            icon: "success", // You can change this to 'success', 'error', 'warning', etc.
+            title: notification.message, // Customize this based on your notification structure
+        });
+    }
+);
