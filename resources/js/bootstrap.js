@@ -48,7 +48,8 @@ window.Echo.private(`App.Models.User.${userId}`).notification(
             showConfirmButton: false,
             timer: 3000,
             icon: "success", // You can change this to 'success', 'error', 'warning', etc.
-            title: notification.message, // Customize this based on your notification structure
+            // title: notification.message, // Customize this based on your notification structure
+            title: 'action effectuee avec succes', // Customize this based on your notification structure
         });
     }
 );
