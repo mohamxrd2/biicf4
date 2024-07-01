@@ -21,7 +21,7 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
-use App\Livewire\Wallet;
+use App\Livewire\RechargeAgent;
 
 Route::get('/', function () {
     return view('index');
@@ -31,7 +31,9 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     //liste des dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/statistique', [AdminChartController::class, 'index'])->name('admin.statistique');
+    //route de gestion du wallet
     Route::get('/porte-feuille', [AdminWalletController::class, 'index'])->name('admin.porte-feuille');
+
 
     //liste des agents
     Route::get('/agent', [AdminAgentController::class, 'index'])->name('admin.agent');
@@ -90,12 +92,6 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
     Route::get('/edit-agent/{username}', [UserController::class, 'editAgent'])->name('client.editad');
     Route::post('/edit-agent/{username}', [UserController::class, 'updateAdmin'])->name('update.admin');
-
-    Route::post('/deposit', [AdminWalletController::class, 'deposit'])->name('wallet.deposit');
-
-    Route::post('/recharge-agent', [AdminWalletController::class, 'rechargeAgentAccount'])->name('recharge.account');
-
-    Route::post('/recharge-client', [AdminWalletController::class, 'rechargeClientAccount'])->name('recharge.clientaccount');
 
 
     //success

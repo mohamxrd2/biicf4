@@ -276,7 +276,7 @@
                                             <h3 class="text-sm font-medium">
                                                 @if ($transaction->receiverUser)
                                                     {{ $transaction->receiverUser->name }}
-                                                
+
                                                 @endif
                                             </h3>
                                         @elseif ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId)
@@ -290,7 +290,7 @@
                                             @elseif (
                                                 ($transaction->type == 'Reception' && $transaction->receiver_user_id == $userId) ||
                                                     $transaction->type == 'Depot' ||
-                                                    ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId) 
+                                                    ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId)
                                                     )
                                                 Reception
                                             @elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId)
@@ -312,9 +312,9 @@
                                     <div class="text-sm font-medium text-blue-600 text-end">
                                         {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
                                     </div>
-                                    
+
                                   </div>
-                                   
+
                                 @elseif ($transaction->type == 'Envoie' && $transaction->sender_user_id == $userId)
                                     <div class="text-sm font-medium text-red-500">
                                         -{{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
@@ -336,37 +336,7 @@
             </div>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
 
 
-            const comboBoxItems2 = document.querySelectorAll('[data-hs-combo-box-output-item]');
-            const userIdInput = document.getElementById('user_id');
-
-            comboBoxItems2.forEach(function(item) {
-                item.addEventListener('click', function() {
-                    const userId = item.getAttribute('data-hs-combo-box-output-item');
-                    userIdInput.value = userId;
-                });
-            });
-        });
-
-        document.getElementById('input_somme_envoye').addEventListener('input', function() {
-            let sommeEnvoye = parseFloat(this.value);
-            if (!isNaN(sommeEnvoye)) {
-                let pourcentSomme = sommeEnvoye * 0.01;
-                let sommeRecu = sommeEnvoye - pourcentSomme;
-                // Arrondir à un multiple de 10
-                let sommeRecuArrondi = Math.round(sommeRecu / 5) * 5;
-
-                document.getElementById('input_somme_recu').value = sommeRecuArrondi;
-                document.getElementById('hidden_somme_recu').value = sommeRecuArrondi;
-                document.getElementById('poucent_somme').value = pourcentSomme.toFixed(2);
-            } else {
-                document.getElementById('input_somme_recu').value = '';
-                document.getElementById('hidden_somme_recu').value = '';
-                document.getElementById('poucent_somme').value = '';
-            }
-        });
-    </script>
+    
 @endsection

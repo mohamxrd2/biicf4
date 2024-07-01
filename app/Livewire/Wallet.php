@@ -61,7 +61,6 @@ class Wallet extends Component
 
     public function render()
     {
-        sleep(1);
         $adminId = Auth::guard('admin')->id();
 
         if (!$adminId) {
@@ -90,5 +89,13 @@ class Wallet extends Component
 
 
         return view('livewire.wallet', compact('adminWallet', 'agents', 'users', 'agentCount', 'userCount', 'adminId'));
+    }
+    public function navigateToContact()
+    {
+        $this->dispatch('navigate', 'rechargeAgent');
+    }
+    public function navigateToClient()
+    {
+        $this->dispatch('navigate', 'rechargeClient');
     }
 }
