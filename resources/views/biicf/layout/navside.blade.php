@@ -12,42 +12,9 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- pusher test js  --}}
-
-    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-    <script>
-        Pusher.logToConsole = true;
-        var pusher = new Pusher('62cc68766f2b57fe3aec', {
-            cluster: 'eu'
-        });
-        var channel = pusher.subscribe('my-channel');
-        channel.bind('form-submitted', function(data) {
-            if (data && data.post && data.post.author && data.post.title) {
-                toastr.success('New Post Created', 'Author: ' + data.post.author + '<br>Title: ' + data.post
-                    .title, {
-                        timeOut: 0,
-                        extendedTimeOut: 0,
-                    });
-            } else {
-                console.error('Invalid data structure received:', data);
-            }
-        });
-    </script> --}}
-
-
-
-
-
 </head>
 
 <body class="bg-gray-100">
-
-
-
-
 
     <div id="application-sidebar"
         class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform hidden fixed top-0 start-0 bottom-0 z-[60] w-64 bg-white border-e border-gray-200 pt-7 pb-10 overflow-y-auto lg:block lg:translate-x-0 lg:end-auto lg:bottom-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-slate-700 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 dark:bg-gray-800 dark:border-gray-700">
@@ -501,13 +468,10 @@
 
 
 
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 </body>
 
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script src="{{ asset('js/search.js') }}"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
 
 

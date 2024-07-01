@@ -34,8 +34,6 @@ class NotificationController extends Controller
 
         $unreadCount = $user->unreadNotifications->count();
 
-
-
         return view('biicf.notif', compact('notifications', 'unreadCount'));
     }
     public function show($id)

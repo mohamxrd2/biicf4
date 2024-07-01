@@ -27,7 +27,7 @@
                 <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
                     data-hs-stepper-nav-item='{
           "index": 1
-        }'>
+         }'>
                     <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
                         <span
                             class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
@@ -418,7 +418,7 @@
                                 'placeholder' => 'Code de parrainage (Optionnel)',
                                 // Ajoutez d'autres attributs au besoin
                             ])
-                        
+
 
 
                         </div>

@@ -15,7 +15,7 @@ class UserViewServiceProvider extends ServiceProvider
     {
         //
 
-        
+
     }
 
     /**
