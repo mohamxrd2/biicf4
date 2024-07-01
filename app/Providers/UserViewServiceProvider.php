@@ -33,7 +33,7 @@ class UserViewServiceProvider extends ServiceProvider
 
             // Passer l'utilisateur et le nombre de notifications non lues aux vues
             $view->with('user', $user)
-                 ->with('unreadCount', $unreadCount);
+                ->with('unreadCount', $unreadCount);
         });
     }
 }
