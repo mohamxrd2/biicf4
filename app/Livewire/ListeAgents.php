@@ -31,22 +31,12 @@ class ListeAgents extends Component
         $agent->delete();
 
         $this->confirmingDeletion = null;
-        session()->flash('success', 'Agent supprimé avec succès.');
+
+        // Notification de succès
+        $this->dispatch('swal:toast');
     }
 
-    // public function delete($id)
-    // {
-    //     $agent = Admin::find($id);
 
-    //     if (!$agent) {
-    //         session()->flash('error', 'agent non trouvée.');
-    //         return;
-    //     }
-
-    //     $agent->delete();
-
-    //     session()->flash('success', 'La agent a été supprimée avec succès');
-    // }
     public function render()
     {
         // Récupérer tous les agents
@@ -65,8 +55,12 @@ class ListeAgents extends Component
             $agent->userCount = $userCount;
         }
 
-
-
         return view('livewire.liste-agents', compact('agents', 'totalAgents'));
+    }
+
+
+    public function navigateToaddAgent()
+    {
+        $this->dispatch('navigate', 'addAgents');
     }
 }

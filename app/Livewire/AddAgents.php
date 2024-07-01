@@ -51,7 +51,10 @@ class AddAgents extends Component
         $wallet->save();
 
         $this->resetForm();
-        return redirect()->route('admin.agent')->with('success', 'Agent ajouté avec succès!');
+        // Notification de succès
+        $this->dispatch('swal:toast');
+
+        return redirect()->route('admin.agent');
 
     }
 

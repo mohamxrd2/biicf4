@@ -13,6 +13,7 @@ class TransacWallet extends Component
     public function render()
     {
         $adminId = Auth::guard('admin')->id();
+        
         $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
         ->where(function ($query) use ($adminId) {
             $query->where('sender_admin_id', $adminId)
@@ -20,6 +21,7 @@ class TransacWallet extends Component
         })
         ->orderBy('created_at', 'DESC')
         ->paginate(5);
+
         $transacCount = $transactions->count();
 
         return view('livewire.transac-wallet', compact( 'transactions', 'transacCount', 'adminId'));

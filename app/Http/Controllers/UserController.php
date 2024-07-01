@@ -173,8 +173,6 @@ class UserController extends Controller
 
     public function pubShow($id)
     {
-
-
         return view('admin.pubVerif', compact('id'));
     }
 

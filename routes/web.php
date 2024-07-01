@@ -37,6 +37,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
     //liste des agents
     Route::get('/agent', [AdminAgentController::class, 'index'])->name('admin.agent');
+    //liste des clients
     Route::get('/client', [UserController::class, 'listUserAdmin'])->name('admin.client');
 
     //publication des produits et services
@@ -57,8 +58,6 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/client/storePub', [UserController::class, 'storePub'])->name('admin.client.storePub');
     Route::post('/client/storeCons', [UserController::class, 'storeCons'])->name('admin.client.storeCons');
 
-    Route::delete('/supprimer-agent', [AdminAgentController::class, 'destroy'])->name('admin.agent.destroy');
-
 
     Route::post('/agent/{admin}', [AdminAgentController::class, 'isban'])->name('admin.agent.isban');
 
@@ -75,6 +74,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
     Route::put('/profile/profile-photo/{admin}', [AdminsController::class, 'updateProfilePhoto'])->name('admin.updateProfilePhoto');
 
+    //agent show
     Route::get('/agent/{username}', [AdminAgentController::class, 'show'])->name('agent.show');
 
     Route::get('/client/{username}', [UserController::class, 'show'])->name('client.show');
@@ -84,8 +84,10 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/produit/{id}', [UserController::class, 'etat'])->name('produit.etat');
 
 
+    //consommation show
     Route::get('/consommation/{id}', [UserController::class, 'consoShow'])->name('consommation.consoShow');
 
+    //consommation show
     Route::post('/consommation/{id}', [UserController::class, 'consoEtat'])->name('consommation.consoEtat');
 
 
@@ -173,11 +175,10 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('offregroupClient/comment', [OffreGroupClientController::class, 'commentoffgroup'])->name('biicf.offgrpcomment');
 
     Route::post('offreneg/store', [OffreNegos::class, 'store'])->name('biicf.sendoffreneg');
-    Route::post('offreneg/ajouter', [OffreNegos::class, 'add' ])->name('biicf.addquantity');
+    Route::post('offreneg/ajouter', [OffreNegos::class, 'add'])->name('biicf.addquantity');
     Route::post('offreneg/accepeter', [OffreNegos::class, 'accepter'])->name('biicf.offNAccept');
 
     Route::post('offrenegroup', [OffreNegos::class, 'offregroupneg'])->name('biicf.offregroupneg');
-
 });
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');
