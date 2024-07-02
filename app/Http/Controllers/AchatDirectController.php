@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\RefusAchat;
+use App\Events\MyEvent;
 
 
 class AchatDirectController extends Controller
@@ -88,7 +89,10 @@ class AchatDirectController extends Controller
             // Envoyer la notification au propriétaire du produit
             Notification::send($owner, new AchatBiicf($achat));
 
+            $user = User::find($userId);
 
+            // Diffuser l'événement sur un canal privé
+            event(new MyEvent($user));
 
             return redirect()->back()->with('success', 'Achat passé avec succès.');
         } catch (\Exception $e) {
