@@ -22,39 +22,7 @@
 
 <body class="bg-gray-100">
     {{-- <h1>Laravel Echo with Pusher and SweetAlert2</h1> --}}
-    <script>
-        Pusher.logToConsole = true;
 
-        window.Echo = new Echo({
-            broadcaster: "pusher",
-            key: "cdd50dab9a95edd6da7d",
-            cluster: "eu",
-            forceTLS: true,
-        });
-        const userId = document.querySelector('meta[name="user-id"]').getAttribute("content");
-
-        window.Echo.private(`App.Models.User.${userId}`)
-            .listen('UserEvent', (e) => {
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        if (toast) {
-                            toast.addEventListener('mouseenter', Swal.stopTimer);
-                            toast.addEventListener('mouseleave', Swal.resumeTimer);
-                        }
-                    }
-                });
-
-                Toast.fire({
-                    icon: 'success',
-                    title: e.message
-                });
-            });
-    </script>
 
     <div id="application-sidebar"
         class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform hidden fixed top-0 start-0 bottom-0 z-[60] w-64 bg-white border-e border-gray-200 pt-7 pb-10 overflow-y-auto lg:block lg:translate-x-0 lg:end-auto lg:bottom-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-slate-700 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 dark:bg-gray-800 dark:border-gray-700">
@@ -222,8 +190,6 @@
         </nav>
 
     </div>
-
-
 
     <div class="lg:hidden block fixed bottom-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 z-50">
         <div class="flex justify-around py-2">
@@ -511,9 +477,39 @@
 
 
 
+    <script>
+        Pusher.logToConsole = true;
 
+        window.Echo = new Echo({
+            broadcaster: "pusher",
+            key: "cdd50dab9a95edd6da7d",
+            cluster: "eu",
+            forceTLS: true,
+        });
+        const userId = document.querySelector('meta[name="user-id"]').getAttribute("content");
 
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        window.Echo.private(`App.Models.User.${userId}`)
+            .listen('UserEvent', (e) => {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        if (toast) {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
+                    }
+                });
+
+                Toast.fire({
+                    icon: 'success',
+                    title: e.message
+                });
+            });
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 </body>
 

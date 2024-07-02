@@ -19,10 +19,10 @@ use Carbon\Carbon; // Import de la classe Carbon
 class ProduitServiceController extends Controller
 {
     //
-    
+
     public function adminProduct()
     {
-        
+
         return view('admin.products');
     }
 
@@ -142,7 +142,7 @@ class ProduitServiceController extends Controller
         return view('biicf.search', compact('results', 'produits', 'resultCount', 'produitDims'));
     }
 
-    
+
     public function pubDet($id)
     {
         try {
@@ -235,7 +235,8 @@ class ProduitServiceController extends Controller
                 'idsProprietaires',
                 'nombreProprietaires',
                 'nomFournisseur',
-                'nomFournisseurCount'
+                'nomFournisseurCount',
+                'id'
             ));
         } catch (\Exception $e) {
             // Gérer les exceptions et rediriger avec un message d'erreur

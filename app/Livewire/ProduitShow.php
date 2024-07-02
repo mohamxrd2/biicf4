@@ -9,6 +9,7 @@ class ProduitShow extends Component
 {
     public $id;
     public $produit;
+    
     public function mount($id)
     {
         $this->id = $id;

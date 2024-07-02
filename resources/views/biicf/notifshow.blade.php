@@ -23,7 +23,7 @@
         @endif
 
 
-        @if ($notification->type === 'App\Notifications\AchatGroupBiicf')
+        {{-- @if ($notification->type === 'App\Notifications\AchatGroupBiicf')
 
             <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
 
@@ -817,7 +817,9 @@
             </div>
 
 
-        @endif
+        @endif --}}
+
+        @livewire('notification-show', ['id' => $id])
 
 
     </div>
