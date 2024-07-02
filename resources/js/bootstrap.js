@@ -28,28 +28,40 @@ window.Echo = new Echo({
     forceTLS: true,
 });
 
-var channel = window.Echo.channel("my-channel"); // Use 'private-my-channel' for private channels
+// var channel = window.Echo.channel("my-channel"); // Use 'private-my-channel' for private channels
+// channel.listen(".my-event", function (data) {
+//     alert(JSON.stringify(data));
+// });
+
+// Récupérer l'ID utilisateur depuis la balise <meta>
+const userId = document.querySelector('meta[name="user-id"]').getAttribute("content");
+
+// Écouter les événements sur un canal privé
+const channel = window.Echo.private(`App.Models.User.${userId}`);
+
+// Écouter un événement spécifique
 channel.listen(".my-event", function (data) {
     alert(JSON.stringify(data));
 });
 
-const userId = document
-    .querySelector('meta[name="user-id"]')
-    .getAttribute("content");
 
-window.Echo.private(`App.Models.User.${userId}`).notification(
-    (notification) => {
-        console.log(notification);
+// const userId = document
+//     .querySelector('meta[name="user-id"]')
+//     .getAttribute("content");
 
-        // Display a SweetAlert2 toast notification
-        Swal.fire({
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 3000,
-            icon: "success", // You can change this to 'success', 'error', 'warning', etc.
-            // title: notification.message, // Customize this based on your notification structure
-            title: 'action effectuee avec succes', // Customize this based on your notification structure
-        });
-    }
-);
+// window.Echo.private(`App.Models.User.${userId}`).notification(
+//     (notification) => {
+//         console.log(notification);
+
+//         // Display a SweetAlert2 toast notification
+//         Swal.fire({
+//             toast: true,
+//             position: "top-end",
+//             showConfirmButton: false,
+//             timer: 3000,
+//             icon: "success", // You can change this to 'success', 'error', 'warning', etc.
+//             // title: notification.message, // Customize this based on your notification structure
+//             title: 'action effectuee avec succes', // Customize this based on your notification structure
+//         });
+//     }
+// );
