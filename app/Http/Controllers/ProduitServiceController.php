@@ -236,7 +236,6 @@ class ProduitServiceController extends Controller
                 'nombreProprietaires',
                 'nomFournisseur',
                 'nomFournisseurCount',
-                'id'
             ));
         } catch (\Exception $e) {
             // Gérer les exceptions et rediriger avec un message d'erreur

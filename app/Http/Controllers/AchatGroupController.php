@@ -19,80 +19,79 @@ use App\Notifications\acceptAchat; // Assurez-vous que le nom est correctement c
 
 class AchatGroupController extends Controller
 {
-    public function store(Request $request)
-    {
-        // Valider les données du formulaire
-        $validated = $request->validate([
-            'nameProd' => 'required|string',
-            'quantité' => 'required|integer',
-            'montantTotal' => 'required|numeric',
-            'localite' => 'required|string|max:255',
-            'userTrader' => 'required|exists:users,id',
-            'userSender' => 'required|exists:users,id',
+    // public function store(Request $request)
+    // {
+    //     // Valider les données du formulaire
+    //     $validated = $request->validate([
+    //         'nameProd' => 'required|string',
+    //         'quantité' => 'required|integer',
+    //         'montantTotal' => 'required|numeric',
+    //         'localite' => 'required|string|max:255',
+    //         'userTrader' => 'required|exists:users,id',
+    //         'userSender' => 'required|exists:users,id',
+    //         'photoProd' => 'required|string',
+    //         'idProd' => 'required|exists:produit_services,id', // Correction ici, table correcte
+    //     ]);
 
-            'photoProd' => 'required|string',
-            'idProd' => 'required|exists:produit_services,id', // Correction ici, table correcte
-        ]);
+    //     $specialite = $request->input('specificite');
 
-        $specialite = $request->input('specificite');
+    //     // Récupérer l'utilisateur connecté
+    //     $userId = Auth::id();
 
-        // Récupérer l'utilisateur connecté
-        $userId = Auth::id();
+    //     // Vérifiez si l'utilisateur est authentifié
+    //     if (!$userId) {
+    //         return redirect()->back()->with('error', 'Utilisateur non authentifié.');
+    //     }
 
-        // Vérifiez si l'utilisateur est authentifié
-        if (!$userId) {
-            return redirect()->back()->with('error', 'Utilisateur non authentifié.');
-        }
+    //     // Récupérer le portefeuille de l'utilisateur connecté
+    //     $userWallet = Wallet::where('user_id', $userId)->first();
 
-        // Récupérer le portefeuille de l'utilisateur connecté
-        $userWallet = Wallet::where('user_id', $userId)->first();
+    //     // Vérifier si le portefeuille existe
+    //     if (!$userWallet) {
+    //         return redirect()->back()->with('error', 'Portefeuille introuvable.');
+    //     }
 
-        // Vérifier si le portefeuille existe
-        if (!$userWallet) {
-            return redirect()->back()->with('error', 'Portefeuille introuvable.');
-        }
+    //     $requiredAmount = $validated['montantTotal'];
 
-        $requiredAmount = $validated['montantTotal'];
+    //     // Vérifiez que le portefeuille de l'utilisateur a suffisamment de solde
+    //     if ($userWallet->balance < $requiredAmount) {
+    //         return redirect()->back()->with('error', 'Fonds insuffisants pour effectuer cet achat.');
+    //     }
 
-        // Vérifiez que le portefeuille de l'utilisateur a suffisamment de solde
-        if ($userWallet->balance < $requiredAmount) {
-            return redirect()->back()->with('error', 'Fonds insuffisants pour effectuer cet achat.');
-        }
+    //     try {
+    //         // Créer une nouvelle achat
+    //         $achat = AchatGrouper::create([
+    //             'nameProd' => $validated['nameProd'],
+    //             'quantité' => $validated['quantité'],
+    //             'montantTotal' => $validated['montantTotal'],
+    //             'localite' => $validated['localite'],
+    //             'userTrader' => $validated['userTrader'],
+    //             'userSender' => $validated['userSender'],
+    //             'specificite' => $specialite,
+    //             'photoProd' => $validated['photoProd'],
+    //             'idProd' => $validated['idProd'],
+    //         ]);
 
-        try {
-            // Créer une nouvelle achat
-            $achat = AchatGrouper::create([
-                'nameProd' => $validated['nameProd'],
-                'quantité' => $validated['quantité'],
-                'montantTotal' => $validated['montantTotal'],
-                'localite' => $validated['localite'],
-                'userTrader' => $validated['userTrader'],
-                'userSender' => $validated['userSender'],
-                'specificite' => $specialite,
-                'photoProd' => $validated['photoProd'],
-                'idProd' => $validated['idProd'],
-            ]);
+    //         // Déduire le montant du solde de l'utilisateur
+    //         $userWallet->decrement('balance', $requiredAmount);
 
-            // Déduire le montant du solde de l'utilisateur
-            $userWallet->decrement('balance', $requiredAmount);
-
-            // Enregistrer la transaction pour l'utilisateur connecté
-            $transaction = new Transaction();
-            $transaction->sender_user_id = $userId;
-            $transaction->receiver_user_id = $validated['userTrader'];
-            $transaction->type = 'Gele';
-            $transaction->amount = $validated['montantTotal'];
-            $transaction->save();
+    //         // Enregistrer la transaction pour l'utilisateur connecté
+    //         $transaction = new Transaction();
+    //         $transaction->sender_user_id = $userId;
+    //         $transaction->receiver_user_id = $validated['userTrader'];
+    //         $transaction->type = 'Gele';
+    //         $transaction->amount = $validated['montantTotal'];
+    //         $transaction->save();
 
 
-            return redirect()->back()->with('success', 'Achat passé avec succès.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
-        }
-    }
+    //         return redirect()->back()->with('success', 'Achat passé avec succès.');
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
+    //     }
+    // }
 
-   
-    
+
+
     public function accepter(Request $request)
     {
         // Déboguer les données reçues par la requête
@@ -117,7 +116,7 @@ class AchatGroupController extends Controller
         $notifId = $validatedData['notifId'];
         $idProd = $request->input('idProd');
 
-      
+
 
         // Trouver et mettre à jour la notification
         $notification = NotificationEd::find($notifId);
@@ -218,7 +217,7 @@ public function refuser(Request $request)
     $notifId = $validatedData['notifId'];
     $idProd = $validatedData['idProd'];
 
-    
+
     try {
         // Trouver et mettre à jour la notification
         $notification = NotificationEd::find($notifId);
