@@ -133,16 +133,7 @@ class NotificationShow extends Component
             $this->createTransaction($user->id, $user->parrain, 'Commission', $commission);
         }
     }
-
-    // protected function createTransaction($senderId, $receiverId, $type, $amount)
-    // {
-    //     $transaction = new Transaction();
-    //     $transaction->sender_user_id = $senderId;
-    //     $transaction->receiver_user_id = $receiverId;
-    //     $transaction->type = $type;
-    //     $transaction->amount = $amount;
-    //     $transaction->save();
-    // }
+    
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
     {
         $transaction = new Transaction();
