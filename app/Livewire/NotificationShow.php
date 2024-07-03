@@ -57,8 +57,6 @@ class NotificationShow extends Component
     }
 
 
-
-
     public function accepter()
     {
         $this->validate();
@@ -133,7 +131,7 @@ class NotificationShow extends Component
             $this->createTransaction($user->id, $user->parrain, 'Commission', $commission);
         }
     }
-    
+
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
     {
         $transaction = new Transaction();
