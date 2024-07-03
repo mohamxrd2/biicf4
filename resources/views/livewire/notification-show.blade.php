@@ -1,9 +1,7 @@
 <div>
     @if ($notification->type === 'App\Notifications\AchatGroupBiicf')
 
-        {{-- <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
-
-
+        <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
 
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
                 </span>{{ $notification->data['nameProd'] }}</h2>
@@ -37,15 +35,18 @@
                 @else
                     <form wire:submit.prevent="accepterAGrouper">
                         @csrf
-                        @foreach ($notification->data['userSender'] as $userId)
-                            <input type="hidden" name="userSender[]" value="{{ $userId }}">
+                        @foreach ($notification->data['userSender'] as $index => $userId)
+                            <input type="hidden" name="userSender[]" value="{{ $userId }}"
+                                wire:model="userSender.{{ $index }}">
                         @endforeach
 
-                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}" wire:model="montantTotal">
-                        <input type="hidden" name="idProd" value="{{ $notification->data['idProd'] }}" wire:model="idProd">
-                        <input type="hidden" name="message"
+                        <input type="text" name="montantTotal" value="{{ $notification->data['montantTotal'] }}"
+                            wire:model="montantTotal">
+                        <input type="text" name="idProd" value="{{ $notification->data['idProd'] }}"
+                            wire:model="idProd">
+                        <input type="text" name="message"
                             value="commande de produit en cours /Préparation à la livraison" wire:model="messageA">
-                        <input type="hidden" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
+                        <input type="text" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
 
                         <!-- Bouton accepter -->
                         <button id="btn-accepter" type="submit"
@@ -57,14 +58,18 @@
                     <form wire:submit.prevent="refuserAGrouper">
                         @csrf
 
-                        @foreach ($notification->data['userSender'] as $userId)
-                            <input type="hidden" name="userSender[]" value="{{ $userId }}">
+                        @foreach ($notification->data['userSender'] as $index => $userId)
+                            <input type="hidden" name="userSender[]" value="{{ $userId }}"
+                                wire:model="userSender.{{ $index }}">
                         @endforeach
 
-                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}" wire:model="montantTotal">
-                        <input type="hidden" name="message" value="refus de produit" wire:model="idProd">
-                        <input type="hidden" name="idProd" value="{{ $notification->data['idProd'] }}" wire:model="messageA">
-                        <input type="hidden" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
+                        <input type="text" name="montantTotal" value="{{ $notification->data['montantTotal'] }}"
+                            wire:model="montantTotal">
+                        <input type="text" name="idProd" value="{{ $notification->data['idProd'] }}"
+                            wire:model="idProd">
+                        <input type="text" name="message" value="Achat refuser / Produits plus disponible"
+                            wire:model="messageR">
+                        <input type="text" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
 
                         <button id="btn-refuser" type="submit"
                             class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">
@@ -76,7 +81,7 @@
 
             </div>
 
-        </div> --}}
+        </div>
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:

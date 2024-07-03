@@ -1,4 +1,4 @@
-<div wire:poll.60000ms="verifierEtEnvoyerNotification">
+<div wire:poll.10000ms="verifierEtEnvoyerNotification">
     @if (session('success'))
         <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
             {{ session('success') }}

@@ -122,84 +122,82 @@ class AchatGroupController extends Controller
     }
 
 
-public function refuser(Request $request)
-{
-   // Obtenir l'identifiant de l'utilisateur connecté
-    $userId = Auth::guard('web')->id();
+    public function refuser(Request $request)
+    {
+        // Obtenir l'identifiant de l'utilisateur connecté
+        $userId = Auth::guard('web')->id();
 
-    //Valider les données du formulaire
-    $validatedData = $request->validate([
-        'userSender' => 'required|array',
-        'userSender.*' => 'integer|exists:users,id',
-        'montantTotal' => 'required|numeric',
-        'message' => 'required|string',
-        'notifId' => 'required|uuid|exists:notifications,id',
-        'idProd' => 'required|integer|exists:produit_services,id',
-    ]);
+        //Valider les données du formulaire
+        $validatedData = $request->validate([
+            'userSender' => 'required|array',
+            'userSender.*' => 'integer|exists:users,id',
+            'montantTotal' => 'required|numeric',
+            'message' => 'required|string',
+            'notifId' => 'required|uuid|exists:notifications,id',
+            'idProd' => 'required|integer|exists:produit_services,id',
+        ]);
 
-    //Extraire les données validées
-    $userSenders = $validatedData['userSender'];
-    $montantTotal = $validatedData['montantTotal'];
-    $message = $validatedData['message'];
-    $notifId = $validatedData['notifId'];
-    $idProd = $validatedData['idProd'];
+        //Extraire les données validées
+        $userSenders = $validatedData['userSender'];
+        $montantTotal = $validatedData['montantTotal'];
+        $message = $validatedData['message'];
+        $notifId = $validatedData['notifId'];
+        $idProd = $validatedData['idProd'];
 
 
-    try {
-        // Trouver et mettre à jour la notification
-        $notification = NotificationEd::find($notifId);
-        if ($notification) {
-            $notification->reponse = 'refuser';
-            $notification->save();
-        } else {
-            return redirect()->back()->with('error', 'Notification non trouvée.');
-        }
-
-        foreach ($userSenders as $userSenderId) {
-            $userSenderWallet = Wallet::where('user_id', $userSenderId)->first();
-            if (!$userSenderWallet) {
-                throw new Exception('Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
+        try {
+            // Trouver et mettre à jour la notification
+            $notification = NotificationEd::find($notifId);
+            if ($notification) {
+                $notification->reponse = 'refuser';
+                $notification->save();
+            } else {
+                return redirect()->back()->with('error', 'Notification non trouvée.');
             }
 
-            // Ajouter le montant au portefeuille de l'utilisateur
-            $userSenderWallet->increment('balance', $montantTotal);
+            foreach ($userSenders as $userSenderId) {
+                $userSenderWallet = Wallet::where('user_id', $userSenderId)->first();
+                if (!$userSenderWallet) {
+                    throw new Exception('Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
+                }
 
-            // Créer une transaction
-            $transaction = new Transaction();
-            $transaction->sender_user_id = $userId;
-            $transaction->receiver_user_id = $userSenderId;
-            $transaction->type = 'Reception';
-            $transaction->amount = $montantTotal;
-            $transaction->save();
+                // Ajouter le montant au portefeuille de l'utilisateur
+                $userSenderWallet->increment('balance', $montantTotal);
 
-            // Récupérer l'utilisateur destinataire de la notification
-            $userSender = User::find($userSenderId);
-            if (!$userSender) {
-                throw new Exception('Utilisateur ID ' . $userSenderId . ' introuvable.');
+                // Créer une transaction
+                $transaction = new Transaction();
+                $transaction->sender_user_id = $userId;
+                $transaction->receiver_user_id = $userSenderId;
+                $transaction->type = 'Reception';
+                $transaction->amount = $montantTotal;
+                $transaction->save();
+
+                // Récupérer l'utilisateur destinataire de la notification
+                $userSender = User::find($userSenderId);
+                if (!$userSender) {
+                    throw new Exception('Utilisateur ID ' . $userSenderId . ' introuvable.');
+                }
+
+                // Envoyer la notification de refus
+                $refusNotification = new RefusAchat($message);
+                Notification::send($userSender, $refusNotification);
             }
 
-            // Envoyer la notification de refus
-            $refusNotification = new RefusAchat($message);
-            Notification::send($userSender, $refusNotification);
+            // Supprimer les logs de notification pour le produit spécifié
+            NotificationLog::where('idProd', $idProd)->delete();
+
+            // Commit de la transaction
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Refus traité avec succès.');
+        } catch (Exception $e) {
+            // Rollback de la transaction en cas d'erreur
+            DB::rollBack();
+
+            // Log de l'erreur
+            Log::error('Erreur lors du traitement du refus:', ['exception' => $e]);
+
+            return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
-
-        // Supprimer les logs de notification pour le produit spécifié
-        NotificationLog::where('idProd', $idProd)->delete();
-
-        // Commit de la transaction
-        DB::commit();
-
-        return redirect()->back()->with('success', 'Refus traité avec succès.');
-    } catch (Exception $e) {
-        // Rollback de la transaction en cas d'erreur
-        DB::rollBack();
-
-        // Log de l'erreur
-        Log::error('Erreur lors du traitement du refus:', ['exception' => $e]);
-
-        return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
     }
-}
-
-
 }
