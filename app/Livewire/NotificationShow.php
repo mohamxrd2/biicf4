@@ -10,37 +10,285 @@ use App\Models\AchatDirect;
 use App\Models\OffreGroupe;
 use App\Models\Transaction;
 use App\Models\Consommation;
+use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
 use App\Models\NotificationLog;
+use App\Notifications\acceptAchat;
 use App\Notifications\AppelOffre;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\OffreNegosDone;
 use App\Notifications\AppelOffreTerminer;
+use App\Notifications\RefusAchat;
+use Exception;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\DB;
 
 class NotificationShow extends Component
+
 {
+    public $notification;
     public $id;
     public $prixTrade;
-
+    public $montantTotal;
+    public $userSender;
+    public $messageA="commande de produit en cours /Préparation a la livraison";
+    public $messageR="refus de produit";
+    public $notifId='';
+    public $idProd;
 
     protected $rules = [
-        'prixTrade' => 'required|integer',
+        'montantTotal' => 'required|numeric|min:1',
+        'userSender' => 'required|array',
+        'userSender.*' => 'integer|exists:users,id',
+        'messageA' => 'required|string',
+        'messageR' => 'required|string',
+        'notifId' => 'required|exists:notifications,id',
+        'idProd' => 'required|exists:produit_services,id',
     ];
 
     public function mount($id)
     {
-        $this->id = $id;
+        $this->notification = NotificationEd::findOrFail($id);
+        $this->montantTotal = $this->notification->data['montantTotal'] ?? null;
+        $this->userSender = $this->notification->data['userSender'] ?? null;
+        $this->notifId = $this->notification->id;
+        $this->idProd = $this->notification->data['idProd'] ?? null;
+    }
+    public function accepterAGrouper()
+    {
+        $this->validate();
+
+        $userId = Auth::guard('web')->id();
+        $userWallet = Wallet::where('user_id', $userId)->first();
+
+        try {
+            DB::beginTransaction();
+
+            // Mettre à jour la notification
+            $notification = NotificationEd::find($this->notifId);
+            $notification->reponse = 'accepte';
+            $notification->save();
+
+            // Calculer le pourcentage et le montant total
+            $pourcentSomme = $this->montantTotal * 0.1;
+            $totalSom = $this->montantTotal - $pourcentSomme;
+
+            // Augmenter le solde du portefeuille de l'utilisateur connecté
+            $userWallet->increment('balance', $totalSom);
+
+            // Créer une transaction de réception
+            $this->createTransaction($this->userSender[0], $userId, 'Reception', $totalSom);
+
+            // Traitement pour le parrain du trader
+            $userTrader = User::find($userId);
+            if ($userTrader->parrain) {
+                $commTraderParrain = $pourcentSomme * 0.05;
+                $commTraderParrainWallet = Wallet::where('user_id', $userTrader->parrain)->first();
+                $commTraderParrainWallet->increment('balance', $commTraderParrain);
+                $this->createTransaction($userId, $userTrader->parrain, 'Commission', $commTraderParrain);
+            }
+
+            // Traitement pour chaque utilisateur ayant envoyé la demande
+            foreach ($this->userSender as $userSenderId) {
+                $senderWallet = Wallet::where('user_id', $userSenderId)->first();
+                if (!$senderWallet) {
+                    throw new Exception('Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
+                }
+
+                $senderWallet->increment('balance', $this->montantTotal);
+                $this->createTransaction($userSenderId, $userId, 'Envoie', $this->montantTotal);
+
+                $userSender = User::find($userSenderId);
+                if (!$userSender) {
+                    throw new Exception('Utilisateur ID ' . $userSenderId . ' introuvable.');
+                }
+
+                if ($userSender->parrain) {
+                    $commSenderParrain = $pourcentSomme * 0.05;
+                    $commSenderParrainWallet = Wallet::where('user_id', $userSender->parrain)->first();
+                    if ($commSenderParrainWallet) {
+                        $commSenderParrainWallet->increment('balance', $commSenderParrain);
+                        $this->createTransaction($userSenderId, $userSender->parrain, 'Commission', $commSenderParrain);
+                    } else {
+                        throw new Exception('Portefeuille du parrain pour l\'utilisateur ID ' . $userSender->parrain->id . ' introuvable.');
+                    }
+                }
+
+                // Envoyer la notification d'acceptation
+                Notification::send($userSender, new AcceptAchat($this->messageA));
+            }
+
+            // Supprimer les logs de notification pour le produit spécifié
+            NotificationLog::where('idProd', $this->idProd)->delete();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Action acceptée avec succès');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur lors du traitement de l\'acceptation:', ['exception' => $e]);
+            return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
+        }
+    }
+    public function refuserAGrouper()
+    {
+        $this->validate();
+
+        $userId = Auth::guard('web')->id();
+
+        try {
+            DB::beginTransaction();
+
+            // Mettre à jour la notification
+            $notification = NotificationEd::find($this->notifId);
+            $notification->reponse = 'refuser';
+            $notification->save();
+
+            // Traiter chaque utilisateur ayant envoyé la demande
+            foreach ($this->userSender as $userSenderId) {
+                $userSenderWallet = Wallet::where('user_id', $userSenderId)->first();
+                if (!$userSenderWallet) {
+                    throw new Exception('Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
+                }
+
+                // Ajouter le montant au portefeuille de l'utilisateur
+                $userSenderWallet->increment('balance', $this->montantTotal);
+
+                // Créer une transaction
+                $transaction = new Transaction();
+                $transaction->sender_user_id = $userId;
+                $transaction->receiver_user_id = $userSenderId;
+                $transaction->type = 'Reception';
+                $transaction->amount = $this->montantTotal;
+                $transaction->save();
+
+                // Récupérer l'utilisateur destinataire de la notification
+                $userSender = User::find($userSenderId);
+                if (!$userSender) {
+                    throw new Exception('Utilisateur ID ' . $userSenderId . ' introuvable.');
+                }
+
+                // Envoyer la notification de refus
+                Notification::send($userSender, new RefusAchat($this->messageR));
+            }
+
+            // Supprimer les logs de notification pour le produit spécifié
+            NotificationLog::where('idProd', $this->idProd)->delete();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Refus traité avec succès.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur lors du traitement du refus:', ['exception' => $e]);
+            return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
+        }
+    }
+
+
+
+    public function accepter()
+    {
+        $this->validate();
+
+        $userId = Auth::id();
+        $userWallet = Wallet::where('user_id', $userId)->first();
+        if (!$userWallet) {
+            session()->flash('error', 'Portefeuille introuvable.');
+            return;
+        }
+
+        $notification = NotificationEd::find($this->notification->id);
+        $notification->reponse = 'accepte';
+        $notification->save();
+
+        $userSender = User::find($this->notification->data['userSender']);
+        $requiredAmount = $this->notification->data['montantTotal'];
+        $pourcentSomme  = $requiredAmount * 0.1;
+        $totalSom = $requiredAmount - $pourcentSomme;
+
+        $userTrader = User::find($userId);
+        $this->handleCommission($userTrader, $pourcentSomme, 'Trader');
+        $this->handleCommission($userSender, $pourcentSomme, 'Sender');
+
+        $userWallet->increment('balance', $totalSom);
+        $this->createTransaction($userSender->id, $userId, 'Reception', $totalSom);
+        $this->createTransaction($userSender->id, $userId, 'Envoie', $requiredAmount);
+
+        Notification::send($userSender, new acceptAchat($this->messageA));
+
+        session()->flash('success', 'Achat accepté.');
+        // $this->emit('notificationUpdated');
+    }
+
+    public function refuser()
+    {
+        $this->validate();
+
+        $userId = Auth::id();
+        if (!$userId) {
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
+
+        $notification = NotificationEd::find($this->notification->id);
+        $notification->reponse = 'refuser';
+        $notification->save();
+
+        $userSender = User::find($this->notification->data['userSender']);
+        $requiredAmount = $this->notification->data['montantTotal'];
+        $userWallet = Wallet::where('user_id', $userSender->id)->first();
+        if (!$userWallet) {
+            session()->flash('error', 'Portefeuille introuvable.');
+            return;
+        }
+
+        $userWallet->increment('balance', $requiredAmount);
+        $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
+
+        Notification::send($userSender, new RefusAchat($this->messageR));
+
+        session()->flash('success', 'Achat refusé.');
+        // $this->emit('notificationUpdated');
+    }
+
+    protected function handleCommission($user, $amount, $type)
+    {
+        if ($user->parrain) {
+            $commission = $amount * 0.05;
+            $parrainWallet = Wallet::where('user_id', $user->parrain)->first();
+            $parrainWallet->increment('balance', $commission);
+            $this->createTransaction($user->id, $user->parrain, 'Commission', $commission);
+        }
+    }
+
+    // protected function createTransaction($senderId, $receiverId, $type, $amount)
+    // {
+    //     $transaction = new Transaction();
+    //     $transaction->sender_user_id = $senderId;
+    //     $transaction->receiver_user_id = $receiverId;
+    //     $transaction->type = $type;
+    //     $transaction->amount = $amount;
+    //     $transaction->save();
+    // }
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->save();
     }
 
     public function commentForm()
     {
         // Récupérer l'utilisateur authentifié
-       dd( $this->validate());
+        dd($this->validate());
 
         dd(Comment::create([
             'prixTrade' => $this->prixTrade,

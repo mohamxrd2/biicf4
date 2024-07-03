@@ -146,14 +146,14 @@ class ProduitServiceController extends Controller
     public function pubDet($id)
     {
         try {
-            // Récupérer le produit ou échouer
+            // // Récupérer le produit ou échouer
             $produit = ProduitService::findOrFail($id);
 
             // Récupérer l'identifiant de l'utilisateur connecté
             $userId = Auth::guard('web')->id();
 
-            // Récupérer le portefeuille de l'utilisateur
-            $userWallet = Wallet::where('user_id', $userId)->first();
+            // // Récupérer le portefeuille de l'utilisateur
+            // $userWallet = Wallet::where('user_id', $userId)->first();
 
             // Récupérer les IDs des propriétaires des consommations similaires
             $idsProprietaires = Consommation::where('name', $produit->name)
@@ -163,7 +163,7 @@ class ProduitServiceController extends Controller
                 ->pluck('id_user')
                 ->toArray();
 
-            // Compter le nombre d'IDs distincts
+            // // Compter le nombre d'IDs distincts
             $nombreProprietaires = count($idsProprietaires);
 
             // Récupérer les fournisseurs pour ce produit
@@ -176,62 +176,62 @@ class ProduitServiceController extends Controller
 
             $nomFournisseurCount = count($nomFournisseur);
 
-            // Récupérer le nombre d'achats groupés distincts pour ce produit
-            $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
-                ->distinct('userSender')
-                ->count('userSender');
+            // // Récupérer le nombre d'achats groupés distincts pour ce produit
+            // $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
+            //     ->distinct('userSender')
+            //     ->count('userSender');
 
-            // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
-            $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
-            $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
+            // // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
+            // $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
+            // $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
 
-            // Vérifier si le temps est écoulé
-            $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+            // // Vérifier si le temps est écoulé
+            // $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
 
-            // Récupérer les autres informations nécessaires
-            $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');
-            $montants = AchatGrouper::where('idProd', $produit->id)->sum('montantTotal');
-            $userSenders = AchatGrouper::where('idProd', $produit->id)
-                ->distinct('userSender')
-                ->pluck('userSender')
-                ->toArray();
+            // // Récupérer les autres informations nécessaires
+            // $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');
+            // $montants = AchatGrouper::where('idProd', $produit->id)->sum('montantTotal');
+            // $userSenders = AchatGrouper::where('idProd', $produit->id)
+            //     ->distinct('userSender')
+            //     ->pluck('userSender')
+            //     ->toArray();
 
-            // Vérifier si une notification a déjà été envoyée pour ce produit
-            $notificationExists = NotificationLog::where('idProd', $produit->id)->exists();
+            // // Vérifier si une notification a déjà été envoyée pour ce produit
+            // $notificationExists = NotificationLog::where('idProd', $produit->id)->exists();
 
-            if ($isTempsEcoule && !$notificationExists && $nbreAchatGroup) {
-                // Préparer le tableau de données pour la notification
-                $notificationData = [
-                    'nameProd' => $produit->name,
-                    'quantité' => $sommeQuantite,
-                    'montantTotal' => $montants,
-                    'userTrader' => $produit->user->id,
-                    'photoProd' => $produit->photoProd1,
-                    'idProd' => $produit->id,
-                    'userSender' => $userSenders
-                ];
+            // if ($isTempsEcoule && !$notificationExists && $nbreAchatGroup) {
+            //     // Préparer le tableau de données pour la notification
+            //     $notificationData = [
+            //         'nameProd' => $produit->name,
+            //         'quantité' => $sommeQuantite,
+            //         'montantTotal' => $montants,
+            //         'userTrader' => $produit->user->id,
+            //         'photoProd' => $produit->photoProd1,
+            //         'idProd' => $produit->id,
+            //         'userSender' => $userSenders
+            //     ];
 
-                // Envoyer la notification
-                Notification::send($produit->user, new AchatGroupBiicf($notificationData));
+            //     // Envoyer la notification
+            //     Notification::send($produit->user, new AchatGroupBiicf($notificationData));
 
-                // Enregistrer la notification dans la table NotificationLog
-                NotificationLog::create(['idProd' => $produit->id]);
+            //     // Enregistrer la notification dans la table NotificationLog
+            //     NotificationLog::create(['idProd' => $produit->id]);
 
-                // Supprimer toutes les lignes dans AchatGrouper pour ce produit
-                AchatGrouper::where('idProd', $produit->id)->delete();
-            }
+            //     // Supprimer toutes les lignes dans AchatGrouper pour ce produit
+            //     AchatGrouper::where('idProd', $produit->id)->delete();
+            // }
 
             // Retourner la vue avec les données récupérées
             return view('biicf.postdetail', compact(
                 'produit',
-                'userWallet',
+                // 'userWallet',
                 'userId',
                 'id',
-                'nbreAchatGroup',
-                'datePlusAncienne',
-                'sommeQuantite',
-                'montants',
-                'userSenders',
+                // 'nbreAchatGroup',
+                // 'datePlusAncienne',
+                // 'sommeQuantite',
+                // 'montants',
+                // 'userSenders',
                 'idsProprietaires',
                 'nombreProprietaires',
                 'nomFournisseur',

@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.60000ms="verifierEtEnvoyerNotification">
     @if (session('success'))
         <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
             {{ session('success') }}
@@ -139,116 +139,154 @@
             </div>
         @endif
     </form>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const btnAchatDirect = document.getElementById('btnAchatDirect');
-            const btnAchatGroup = document.getElementById('btnAchatGroup');
-            const formAchatDirect = document.getElementById('formAchatDirect');
-            const formAchatGroup = document.getElementById('formAchatGroup');
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnAchatDirect = document.getElementById('btnAchatDirect');
+        const btnAchatGroup = document.getElementById('btnAchatGroup');
+        const formAchatDirect = document.getElementById('formAchatDirect');
+        const formAchatGroup = document.getElementById('formAchatGroup');
 
-            btnAchatDirect.addEventListener('click', function() {
-                if (formAchatDirect.style.display === 'none' || formAchatDirect.style.display === '') {
-                    formAchatDirect.style.display = 'block';
-                    formAchatGroup.style.display = 'none';
-                } else {
-                    formAchatDirect.style.display = 'none';
-                }
-            });
-
-            btnAchatGroup.addEventListener('click', function() {
-                if (formAchatGroup.style.display === 'none' || formAchatGroup.style.display === '') {
-                    formAchatGroup.style.display = 'block';
-                    formAchatDirect.style.display = 'none';
-                } else {
-                    formAchatGroup.style.display = 'none';
-                }
-            });
+        btnAchatDirect.addEventListener('click', function() {
+            if (formAchatDirect.style.display === 'none' || formAchatDirect.style.display === '') {
+                formAchatDirect.style.display = 'block';
+                formAchatGroup.style.display = 'none';
+            } else {
+                formAchatDirect.style.display = 'none';
+            }
         });
 
-        function toggleVisibility() {
-            const contentDiv = document.getElementById('toggleContent');
-
-            if (contentDiv.classList.contains('hidden')) {
-                contentDiv.classList.remove('hidden');
-                // Forcing reflow to enable transition
-                contentDiv.offsetHeight;
-                contentDiv.classList.add('show');
+        btnAchatGroup.addEventListener('click', function() {
+            if (formAchatGroup.style.display === 'none' || formAchatGroup.style.display === '') {
+                formAchatGroup.style.display = 'block';
+                formAchatDirect.style.display = 'none';
             } else {
-                contentDiv.classList.remove('show');
-                contentDiv.addEventListener('transitionend', () => {
-                    contentDiv.classList.add('hidden');
-                }, {
-                    once: true
-                });
+                formAchatGroup.style.display = 'none';
             }
+        });
+    });
+
+    function toggleVisibility() {
+        const contentDiv = document.getElementById('toggleContent');
+
+        if (contentDiv.classList.contains('hidden')) {
+            contentDiv.classList.remove('hidden');
+            // Forcing reflow to enable transition
+            contentDiv.offsetHeight;
+            contentDiv.classList.add('show');
+        } else {
+            contentDiv.classList.remove('show');
+            contentDiv.addEventListener('transitionend', () => {
+                contentDiv.classList.add('hidden');
+            }, {
+                once: true
+            });
         }
+    }
 
-        // Fonction pour mettre à jour le montant total pour l'achat direct
-        function updateMontantTotalDirect() {
-            const quantityInput = document.getElementById('quantityInput');
-            const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
-            const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
-            const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
-            const quantity = parseInt(quantityInput.value);
-            const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
-            const montantTotalElement = document.getElementById('montantTotal');
-            const errorMessageElement = document.getElementById('errorMessage');
-            const submitButton = document.getElementById('submitButton');
-            const montantTotalInput = document.getElementById('montant_total_input');
+    // Fonction pour mettre à jour le montant total pour l'achat direct
+    function updateMontantTotalDirect() {
+        const quantityInput = document.getElementById('quantityInput');
+        const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
+        const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
+        const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
+        const quantity = parseInt(quantityInput.value);
+        const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
+        const montantTotalElement = document.getElementById('montantTotal');
+        const errorMessageElement = document.getElementById('errorMessage');
+        const submitButton = document.getElementById('submitButton');
+        const montantTotalInput = document.getElementById('montant_total_input');
 
-            const userBalance = {{ $userWallet->balance }};
+        const userBalance = {{ $userWallet->balance }};
 
-            if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
-                errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-                errorMessageElement.classList.remove('hidden');
-                montantTotalElement.innerText = '0 FCFA';
-                submitButton.disabled = true;
-            } else if (montantTotal > userBalance) {
-                errorMessageElement.innerText =
-                    `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-                errorMessageElement.classList.remove('hidden');
-                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                submitButton.disabled = true;
-            } else {
-                errorMessageElement.classList.add('hidden');
-                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-                submitButton.disabled = false;
-            }
+        if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
+            errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
+            errorMessageElement.classList.remove('hidden');
+            montantTotalElement.innerText = '0 FCFA';
+            submitButton.disabled = true;
+        } else if (montantTotal > userBalance) {
+            errorMessageElement.innerText =
+                `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
+            errorMessageElement.classList.remove('hidden');
+            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+            submitButton.disabled = true;
+        } else {
+            errorMessageElement.classList.add('hidden');
+            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+            submitButton.disabled = false;
         }
+    }
 
-        // Fonction pour mettre à jour le montant total pour l'achat groupé
-        function updateMontantTotalGroup() {
-            const quantityInput = document.getElementById('quantityInput1');
-            const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
-            const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
-            const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
-            const quantity = parseInt(quantityInput.value);
-            const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
-            const montantTotalElement = document.getElementById('montantTotal1');
-            const errorMessageElement = document.getElementById('errorMessage1');
-            const submitButton = document.getElementById('submitButton1');
-            const montantTotalInput = document.getElementById('montant_total_input1');
+    // Fonction pour mettre à jour le montant total pour l'achat groupé
+    function updateMontantTotalGroup() {
+        const quantityInput = document.getElementById('quantityInput1');
+        const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
+        const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
+        const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
+        const quantity = parseInt(quantityInput.value);
+        const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
+        const montantTotalElement = document.getElementById('montantTotal1');
+        const errorMessageElement = document.getElementById('errorMessage1');
+        const submitButton = document.getElementById('submitButton1');
+        const montantTotalInput = document.getElementById('montant_total_input1');
 
-            const userBalance = {{ $userWallet->balance }};
+        const userBalance = {{ $userWallet->balance }};
 
-            if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
-                errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-                errorMessageElement.classList.remove('hidden');
-                montantTotalElement.innerText = '0 FCFA';
-                submitButton.disabled = true;
-            } else if (montantTotal > userBalance) {
-                errorMessageElement.innerText =
-                    `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-                errorMessageElement.classList.remove('hidden');
-                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                submitButton.disabled = true;
-            } else {
-                errorMessageElement.classList.add('hidden');
-                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-                submitButton.disabled = false;
-            }
+        if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
+            errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
+            errorMessageElement.classList.remove('hidden');
+            montantTotalElement.innerText = '0 FCFA';
+            submitButton.disabled = true;
+        } else if (montantTotal > userBalance) {
+            errorMessageElement.innerText =
+                `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
+            errorMessageElement.classList.remove('hidden');
+            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+            submitButton.disabled = true;
+        } else {
+            errorMessageElement.classList.add('hidden');
+            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+            submitButton.disabled = false;
         }
-    </script>
-</div>
+    }
+
+    // Convertir la date de départ en objet Date JavaScript
+    const startDate = new Date("{{ $datePlusAncienne }}");
+
+    // Ajouter 5 jours à la date de départ
+    startDate.setMinutes(startDate.getMinutes() + 1);
+
+    // Mettre à jour le compte à rebours à intervalles réguliers
+    const countdownTimer = setInterval(updateCountdown, 1000);
+
+    function updateCountdown() {
+        // Obtenir la date et l'heure actuelles
+        const currentDate = new Date();
+
+        // Calculer la différence entre la date cible et la date de départ en millisecondes
+        const difference = startDate.getTime() - currentDate.getTime();
+
+        // Convertir la différence en jours, heures, minutes et secondes
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+        const countdownElement = document.getElementById('countdown');
+        countdownElement.innerHTML = `
+             <div>${days}j</div>:
+             <div>${hours}h</div>:
+             <div>${minutes}m</div>:
+            <div>${seconds}s</div>
+              `;
+
+        // Arrêter le compte à rebours lorsque la date cible est atteinte
+        if (difference <= 0) {
+            clearInterval(countdownTimer);
+            countdownElement.innerHTML = "Temps écoulé !";
+        }
+    }
+</script>

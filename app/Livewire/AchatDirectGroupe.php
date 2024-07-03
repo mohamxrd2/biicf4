@@ -2,38 +2,28 @@
 
 namespace App\Livewire;
 
-use App\Events\MyEvent;
 use Livewire\Component;
 use App\Models\ProduitService;
+use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\Notification;
+use App\Models\AchatDirect as AchatDirectModel;
+use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Transaction;
-use App\Models\AchatDirect as AchatDirectModel;
+use App\Events\MyEvent;
 use App\Models\AchatGrouper;
 use App\Models\Consommation;
 use App\Models\NotificationLog;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
 use App\Notifications\AchatBiicf;
 use App\Notifications\AchatGroupBiicf;
 use Carbon\Carbon;
-
 
 class AchatDirectGroupe extends Component
 {
     public $id;
     public $produit;
     public $userId;
-    public $userWallet;
-    public $idsProprietaires;
-    public $nombreProprietaires;
-    public $nomFournisseur;
-    public $nomFournisseurCount;
-    public $nbreAchatGroup = "";
-    public $datePlusAncienne;
-    public $sommeQuantite;
-    public $userSenders;
-    public $montants;
     //
     public $quantité = "";
     public $localite = "";
@@ -59,88 +49,16 @@ class AchatDirectGroupe extends Component
 
     public function mount($id)
     {
-        try {
-            $this->id = $id;
-            $this->produit = ProduitService::findOrFail($id);
-            $this->userId = Auth::guard('web')->id();
-            $this->nameProd = $this->produit->name;
-            $this->userSender = $this->userId;
-            $this->userTrader = $this->produit->user->id;
-            $this->photoProd = $this->produit->photoProd1;
-            $this->idProd = $this->produit->id;
-            $this->prix = $this->produit->prix;
-
-            // Récupérer le portefeuille de l'utilisateur
-            $this->userWallet = Wallet::where('user_id', $this->userId)->first();
-
-            // Récupérer les IDs des propriétaires des consommations similaires
-            $this->idsProprietaires = Consommation::where('name', $this->produit->name)
-                ->where('id_user', '!=', $this->userId)
-                ->where('statuts', 'Accepté')
-                ->distinct()
-                ->pluck('id_user')
-                ->toArray();
-            // Compter le nombre d'IDs distincts
-            $this->nombreProprietaires = count($this->idsProprietaires);
-
-            // Récupérer les fournisseurs pour ce produit
-            $this->nomFournisseur = ProduitService::where('name', $this->produit->name)
-                ->where('user_id', '!=', $this->userId)
-                ->where('statuts', 'Accepté')
-                ->distinct()
-                ->pluck('user_id')
-                ->toArray();
-            $this->nomFournisseurCount = count($this->nomFournisseur);
-
-            // Récupérer le nombre d'achats groupés distincts pour ce produit
-            $this->nbreAchatGroup = AchatGrouper::where('idProd', $this->produit->id)
-                ->distinct('userSender')
-                ->count('userSender');
-            // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
-            $this->datePlusAncienne = AchatGrouper::where('idProd', $this->produit->id)->min('created_at');
-            $tempsEcoule = $this->datePlusAncienne ? Carbon::parse($this->datePlusAncienne)->addMinutes(1) : null;
-
-            // Vérifier si le temps est écoulé
-            $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
-
-            // Récupérer les autres informations nécessaires
-            $this->sommeQuantite = AchatGrouper::where('idProd', $this->produit->id)->sum('quantité');
-            $this->montants = AchatGrouper::where('idProd', $this->produit->id)->sum('montantTotal');
-            $this->userSenders = AchatGrouper::where('idProd', $this->produit->id)
-                ->distinct('userSender')
-                ->pluck('userSender')
-                ->toArray();
-            // Vérifier si une notification a déjà été envoyée pour ce produit
-            $notificationExists = NotificationLog::where('idProd', $this->produit->id)->exists();
-
-            if ($isTempsEcoule && !$notificationExists && $this->nbreAchatGroup) {
-                // Préparer le tableau de données pour la notification
-                $notificationData = [
-                    'nameProd' => $this->produit->name,
-                    'quantité' => $this->sommeQuantite,
-                    'montantTotal' => $this->montants,
-                    'userTrader' => $this->produit->user->id,
-                    'photoProd' => $this->produit->photoProd1,
-                    'idProd' => $this->produit->id,
-                    'userSender' => $this->userSenders
-                ];
-
-                // Envoyer la notification
-                Notification::send($this->produit->user, new AchatGroupBiicf($notificationData));
-
-                // Enregistrer la notification dans la table NotificationLog
-                NotificationLog::create(['idProd' => $this->produit->id]);
-
-                // Supprimer toutes les lignes dans AchatGrouper pour ce produit
-                AchatGrouper::where('idProd', $this->produit->id)->delete();
-            }
-        } catch (\Exception $e) {
-            // Gérer les exceptions et rediriger avec un message d'erreur
-            session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
-            return redirect()->back();
-        }
+        $this->id = $id;
+        $this->produit = ProduitService::findOrFail($id);
+        $this->userId = Auth::guard('web')->id();
+        $this->nameProd = $this->produit->name;
+        $this->userSender = $this->userId;
+        $this->userTrader = $this->produit->user->id;
+        $this->photoProd = $this->produit->photoProd1;
+        $this->idProd = $this->produit->id;
+        $this->prix = $this->produit->prix;
     }
-
     public function AchatDirectForm()
     {
         $validated = $this->validate();
@@ -202,7 +120,6 @@ class AchatDirectGroupe extends Component
             session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
     }
-
     public function AchatGroupeForm()
     {
         $validated = $this->validate();
@@ -260,23 +177,97 @@ class AchatDirectGroupe extends Component
             session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
     }
+    public function verifierEtEnvoyerNotification()
+    {
+        $produit = ProduitService::findOrFail($this->id);
 
+        $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
+        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
+        $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+
+        $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
+            ->distinct('userSender')
+            ->count('userSender');
+
+        $notificationExists = NotificationLog::where('idProd', $produit->id)->exists();
+
+        if ($isTempsEcoule && !$notificationExists && $nbreAchatGroup) {
+            $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');            $montants = AchatGrouper::where('idProd', $produit->id)->sum('montantTotal');
+            $userSenders = AchatGrouper::where('idProd', $produit->id)
+                ->distinct('userSender')
+                ->pluck('userSender')
+                ->toArray();
+
+            $notificationData = [
+                'nameProd' => $produit->name,
+                'quantité' => $sommeQuantite,
+                'montantTotal' => $montants,
+                'userTrader' => $produit->user->id,
+                'photoProd' => $produit->photoProd1,
+                'idProd' => $produit->id,
+                'userSender' => $userSenders
+            ];
+
+            Notification::send($produit->user, new AchatGroupBiicf($notificationData));
+
+            NotificationLog::create(['idProd' => $produit->id]);
+            AchatGrouper::where('idProd', $produit->id)->delete();
+        }
+    }
     public function render()
     {
-        return view('livewire.achat-direct-groupe', [
-            'id' => $this->id,
-            'produit' => $this->produit,
-            'userId' => $this->userId, // Passer l'ID de l'utilisateur connecté à la vue
-            'userWallet' => $this->userWallet,
-            'nbreAchatGroup' => $this->nbreAchatGroup,
-            'datePlusAncienne' => $this->datePlusAncienne,
-            'sommeQuantite' => $this->sommeQuantite,
-            'montants' => $this->montants,
-            'userSenders' => $this->userSenders,
-            'idsProprietaires' => $this->idsProprietaires,
-            'nombreProprietaires' => $this->nombreProprietaires,
-            'nomFournisseur' => $this->nomFournisseur,
-            'nomFournisseurCount' => $this->nomFournisseurCount,
-        ]);
+        // Récupérer le produit ou échouer
+        $produit = ProduitService::findOrFail($this->id);
+
+        // Récupérer l'identifiant de l'utilisateur connecté
+        $userId = Auth::guard('web')->id();
+
+        // Récupérer le portefeuille de l'utilisateur
+        $userWallet = Wallet::where('user_id', $userId)->first();
+
+        // Récupérer les IDs des propriétaires des consommations similaires
+        $idsProprietaires = Consommation::where('name', $produit->name)
+            ->where('id_user', '!=', $userId)
+            ->where('statuts', 'Accepté')
+            ->distinct()
+            ->pluck('id_user')
+            ->toArray();
+
+        // Compter le nombre d'IDs distincts
+        $nombreProprietaires = count($idsProprietaires);
+
+        // Récupérer les fournisseurs pour ce produit
+        $nomFournisseur = ProduitService::where('name', $produit->name)
+            ->where('user_id', '!=', $userId)
+            ->where('statuts', 'Accepté')
+            ->distinct()
+            ->pluck('user_id')
+            ->toArray();
+
+        $nomFournisseurCount = count($nomFournisseur);
+
+        // Récupérer le nombre d'achats groupés distincts pour ce produit
+        $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
+            ->distinct('userSender')
+            ->count('userSender');
+
+        // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
+        $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
+        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
+
+
+        $this->verifierEtEnvoyerNotification();
+
+        return view('livewire.achat-direct-groupe', compact(
+            'produit',
+            'userWallet',
+            'userId',
+            'nbreAchatGroup',
+            'datePlusAncienne',
+            'idsProprietaires',
+            'nombreProprietaires',
+            'nomFournisseur',
+            'nomFournisseurCount',
+        ));
     }
 }

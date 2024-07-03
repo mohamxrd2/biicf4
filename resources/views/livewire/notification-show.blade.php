@@ -1,4 +1,4 @@
-<div wire:poll.150ms>
+<div >
     @if ($notification->type === 'App\Notifications\AchatGroupBiicf')
 
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
@@ -35,17 +35,17 @@
                         <p class="text-md font-medium text-center">Réponse envoyée</p>
                     </div>
                 @else
-                    <form id="form-accepter" action="{{ route('achatG.accepter') }}" method="POST">
+                    <form wire:submit.prevent="accepterAGrouper">
                         @csrf
                         @foreach ($notification->data['userSender'] as $userId)
                             <input type="hidden" name="userSender[]" value="{{ $userId }}">
                         @endforeach
 
-                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
-                        <input type="hidden" name="idProd" value="{{ $notification->data['idProd'] }}">
+                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}" wire:model="montantTotal">
+                        <input type="hidden" name="idProd" value="{{ $notification->data['idProd'] }}" wire:model="idProd">
                         <input type="hidden" name="message"
-                            value="commande de produit en cours /Préparation à la livraison">
-                        <input type="hidden" name="notifId" value="{{ $notification->id }}">
+                            value="commande de produit en cours /Préparation à la livraison" wire:model="messageA">
+                        <input type="hidden" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
 
                         <!-- Bouton accepter -->
                         <button id="btn-accepter" type="submit"
@@ -54,17 +54,17 @@
                         </button>
                     </form>
 
-                    <form id="form-accepter" action="{{ route('achatG.refuser') }}" method="POST">
+                    <form wire:submit.prevent="refuserAGrouper">
                         @csrf
 
                         @foreach ($notification->data['userSender'] as $userId)
                             <input type="hidden" name="userSender[]" value="{{ $userId }}">
                         @endforeach
 
-                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
-                        <input type="hidden" name="message" value="refus de produit">
-                        <input type="hidden" name="idProd" value="{{ $notification->data['idProd'] }}">
-                        <input type="hidden" name="notifId" value="{{ $notification->id }}">
+                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}" wire:model="montantTotal">
+                        <input type="hidden" name="message" value="refus de produit" wire:model="idProd">
+                        <input type="hidden" name="idProd" value="{{ $notification->data['idProd'] }}" wire:model="messageA">
+                        <input type="hidden" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
 
                         <button id="btn-refuser" type="submit"
                             class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">
@@ -75,70 +75,7 @@
                 @endif
 
             </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtnAppel');
-                    const prixTradeError = document.getElementById('prixTradeError');
 
-                    prixTradeInput.addEventListener('input', function() {
-                        const prixTradeValue = parseFloat(prixTradeInput.value);
-                        const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
-
-                        if (prixTradeValue > lowestPricedProduct) {
-                            submitBtn.disabled = true;
-                            prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
-                            prixTradeError.classList.remove('hidden');
-                        } else {
-                            submitBtn.disabled = false;
-                            prixTradeError.textContent = '';
-                            prixTradeError.classList.add('hidden');
-                        }
-                    });
-
-                    // Convertir la date de départ en objet Date JavaScript
-                    const startDate = new Date("{{ $oldestCommentDate }}");
-
-                    // Ajouter 5 heures à la date de départ
-                    startDate.setMinutes(startDate.getMinutes() + 1);
-
-                    // Mettre à jour le compte à rebours à intervalles réguliers
-                    const countdownTimer = setInterval(updateCountdown, 1000);
-
-                    function updateCountdown() {
-                        // Obtenir la date et l'heure actuelles
-                        const currentDate = new Date();
-
-                        // Calculer la différence entre la date cible et la date de départ en millisecondes
-                        const difference = startDate.getTime() - currentDate.getTime();
-
-                        // Convertir la différence en jours, heures, minutes et secondes
-                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                        // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                        const countdownElement = document.getElementById('countdown');
-                        countdownElement.innerHTML = `
-                            <div>${hours}h</div>:
-                            <div>${minutes}m</div>:
-                            <div>${seconds}s</div>
-                        `;
-
-                        // Arrêter le compte à rebours lorsque la date cible est atteinte
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            countdownElement.innerHTML = "Temps écoulé !";
-                            prixTradeInput.disabled = true; // Désactiver le champ input
-                            document.getElementById('submitBtnAppel').hidden = true;
-                            prixTradeError.textContent =
-                                `Le fournisseur avec le prix le plus bas est {{ $lowPriceUserName }} avec {{ $lowPriceAmount }} FCFA!`;
-                            prixTradeError.classList.remove('hidden');
-                        }
-
-                    }
-                });
-            </script>
         </div>
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
@@ -173,11 +110,11 @@
 
                     </div>
                 @else
-                    <form action="{{ route('achatD.accepter') }}" method="POST">
+                    <form wire:submit.prevent="accepter">
                         @csrf
                         <input type="hidden" name="userSender" value="{{ $notification->data['userSender'] }}">
                         <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
-                        <input type="hidden" name="message"
+                        <input type="text" name="message" wire:model="messageA"
                             value="commande de produit en cours /Préparation a la livraison">
 
                         <input type="hidden" name="notifId" value="{{ $notification->id }}">
@@ -191,13 +128,13 @@
 
                     </form>
 
-                    <form action="{{ route('achatD.refuser') }}" method="POST">
+                    <form wire:submit.prevent="refuser">
                         @csrf
-                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
-                        <input type="hidden" name="userSender" value="{{ $notification->data['userSender'] }}">
-                        <input type="hidden" name="message" value="refus de produit">
+                        <input type="hidden" name="montantTotal" wire:model="montantTotal" value="{{ $notification->data['montantTotal'] }}">
+                        <input type="hidden" name="userSender" wire:model="userSender"  value="{{ $notification->data['userSender'] }}">
+                        <input type="text" name="message" wire:model="messageR"  value="refus de produit">
 
-                        <input type="hidden" name="notifId" value="{{ $notification->id }}">
+                        <input type="hidden" name="notifId" wire:model="notifId" value="{{ $notification->id }}">
 
                         <button id="btn-refuser" type="submit"
                             class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
@@ -206,7 +143,7 @@
 
             </div>
         </div>
-    
+
 
 
     @endif

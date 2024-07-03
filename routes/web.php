@@ -135,10 +135,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::delete('publication/supprimer/{produit}', [ProduitServiceController::class, 'destroyProductBiicf'])->name('biicf.pubdeleteBiicf');
     //la vue du formulaire
     Route::get('publication/{id}', [ProduitServiceController::class, 'pubDet'])->name('biicf.postdet');
-    //pour passer ca commande
-    Route::post('achatD/store/{id}', [AchatDirectController::class, 'store'])->name('achatD.store');
-    //pour passer ca commande grouper
-    Route::post('achatG/store/{id}', [AchatGroupController::class, 'store'])->name('achatG.store');
+    
 
     Route::get('consommation', [ConsoController::class, 'consoBiicf'])->name('biicf.conso');
     Route::post('consommation/ajouter', [UserController::class, 'storeCons'])->name('biicf.storeCons');

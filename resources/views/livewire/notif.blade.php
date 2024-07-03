@@ -82,7 +82,8 @@
 
                                 <p class="text-sm text-slate-500 l max-w-1/2  font-normal">Vous avez reçu une
                                     commande
-                                    de cet article en achat groupé
+                                    de cet article en
+                                <h1 class="text-[20px] font-bold">achat groupé </h1>
                                 </p>
                                 @if ($notification->read_at == null)
                                     <div class="w-10 flex justify-center items-center">
@@ -151,7 +152,9 @@
                             </div>
                             <div class="flex justify-between items-center w-full h-full">
                                 <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous avez reçu une
-                                    commande de cet article en achat direct</p>
+                                    commande de cet article en
+                                <h1 class="text-[20px] font-bold">achat direct</h1>
+                                </p>
                                 @if ($notification->read_at == null)
                                     <div class="w-10 flex justify-center items-center">
                                         <span class="w-2 h-2 rounded-full bg-purple-700"></span>

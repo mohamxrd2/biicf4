@@ -453,7 +453,78 @@
 
             @livewire('achat-direct-groupe ', ['id' => $id])
 
+            <!-- Formulaire pour l'achat groupé -->
+            {{-- <form action="{{ route('achatG.store', ['id' => $id]) }}"
+                class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md" id="formAchatGroup"
+                style="display: none;" method="POST">
+                @csrf
+                @method('POST')
+                <h1 class="text-xl text-center mb-3">Achat groupé</h1>
 
+
+                <div>
+                    <p class="text-center text-md font-medium text-gray-700 mb-3">Nombre de participants: <span
+                            class="text-md  text-purple-800">{{ $nbreAchatGroup }}</span></p>
+                </div>
+
+                <div class="space-y-3 mb-3 w-full">
+                    <input type="number" id="quantityInput1" name="quantité"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                        placeholder="Quantité" data-min="{{ $produit->qteProd_min }}"
+                        data-max="{{ $produit->qteProd_max }}" oninput="updateMontantTotalGroup()" required>
+                </div>
+
+                <div class="space-y-3 mb-3 w-full">
+                    <input type="text" id="locationInput1" name="localite"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                        placeholder="Lieu de livraison" required>
+                </div>
+
+                <div class="space-y-3 mb-3 w-full">
+                    <input type="text" id="specificite1" name="specificite"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                        placeholder="Specificité (Facultatif)">
+                </div>
+
+                <input type="hidden" name="userTrader" value="{{ $produit->user->id }}">
+                <input type="hidden" name="nameProd" value="{{ $produit->name }}">
+                <input type="hidden" name="userSender" value="{{ $userId }}">
+                <input type="hidden" name="message" value="Un utilisateur veut acheter ce produit">
+                <input type="hidden" name="photoProd" value="{{ $produit->photoProd1 }}">
+                <input type="hidden" name="idProd" value="{{ $produit->id }}">
+
+                <div class="flex justify-between px-4 mb-3 w-full">
+                    <p class="font-semibold text-sm text-gray-500">Prix total:</p>
+                    <p class="text-sm text-purple-600" id="montantTotal1">0 FCFA</p>
+                    <input type="text" name="montantTotal" id="montant_total_input1" hidden>
+                </div>
+
+                <p id="errorMessage1" class="text-sm text-center text-red-500 hidden">Erreur</p>
+
+                <div class="w-full text-center mt-3">
+                    <button type="reset"
+                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-gray-200 text-black hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none">Annulé
+                    </button>
+                    <button type="submit" id="submitButton1"
+                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
+                        disabled>Envoyé
+                    </button>
+                </div>
+
+
+                @if ($nbreAchatGroup > 0 && isset($userId) && isset($produit->user->id) && $userId != $produit->user->id)
+                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+                        <span class="mb-2">Temps restant pour cet achat groupé</span>
+                        <div id="countdown"
+                            class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100 p-3 rounded-xl w-auto">
+                            <div>-</div>:
+                            <div>-</div>:
+                            <div>-</div>:
+                            <div>-</div>
+                        </div>
+                    </div>
+                @endif
+            </form> --}}
         </div>
     </div>
 
