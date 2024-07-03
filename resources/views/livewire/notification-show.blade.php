@@ -1,7 +1,7 @@
 <div >
     @if ($notification->type === 'App\Notifications\AchatGroupBiicf')
 
-        <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
+        {{-- <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
 
 
 
@@ -76,7 +76,7 @@
 
             </div>
 
-        </div>
+        </div> --}}
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
@@ -112,12 +112,12 @@
                 @else
                     <form wire:submit.prevent="accepter">
                         @csrf
-                        <input type="hidden" name="userSender" value="{{ $notification->data['userSender'] }}">
-                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
+                        <input type="text" name="userSender" value="{{ $notification->data['userSender'] }}">
+                        <input type="text" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
                         <input type="text" name="message" wire:model="messageA"
                             value="commande de produit en cours /Préparation a la livraison">
 
-                        <input type="hidden" name="notifId" value="{{ $notification->id }}">
+                        <input type="text" name="notifId" wire:model="notifId" value="{{ $notification->id }}">
 
 
 
@@ -130,11 +130,11 @@
 
                     <form wire:submit.prevent="refuser">
                         @csrf
-                        <input type="hidden" name="montantTotal" wire:model="montantTotal" value="{{ $notification->data['montantTotal'] }}">
-                        <input type="hidden" name="userSender" wire:model="userSender"  value="{{ $notification->data['userSender'] }}">
+                        <input type="text" name="montantTotal" wire:model="montantTotal" value="{{ $notification->data['montantTotal'] }}">
+                        <input type="text" name="userSender" wire:model="userSender"  value="{{ $notification->data['userSender'] }}">
                         <input type="text" name="message" wire:model="messageR"  value="refus de produit">
 
-                        <input type="hidden" name="notifId" wire:model="notifId" value="{{ $notification->id }}">
+                        <input type="text" name="notifId" wire:model="notifId" value="{{ $notification->id }}">
 
                         <button id="btn-refuser" type="submit"
                             class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>

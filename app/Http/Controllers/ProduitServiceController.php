@@ -153,7 +153,7 @@ class ProduitServiceController extends Controller
             $userId = Auth::guard('web')->id();
 
             // // Récupérer le portefeuille de l'utilisateur
-            // $userWallet = Wallet::where('user_id', $userId)->first();
+            $userWallet = Wallet::where('user_id', $userId)->first();
 
             // Récupérer les IDs des propriétaires des consommations similaires
             $idsProprietaires = Consommation::where('name', $produit->name)
@@ -182,7 +182,7 @@ class ProduitServiceController extends Controller
             //     ->count('userSender');
 
             // // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
-            // $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
+            $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
             // $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
 
             // // Vérifier si le temps est écoulé
@@ -224,11 +224,11 @@ class ProduitServiceController extends Controller
             // Retourner la vue avec les données récupérées
             return view('biicf.postdetail', compact(
                 'produit',
-                // 'userWallet',
+                'userWallet',
                 'userId',
                 'id',
                 // 'nbreAchatGroup',
-                // 'datePlusAncienne',
+                'datePlusAncienne',
                 // 'sommeQuantite',
                 // 'montants',
                 // 'userSenders',
