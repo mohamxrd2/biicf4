@@ -35,18 +35,11 @@ class NotificationShow extends Component
     public $prixTrade;
     public $montantTotal;
     public $userSender;
-    public $messageA="commande de produit en cours /Préparation a la livraison";
-    public $messageR="refus de produit";
+    public $messageA = "commande de produit en cours /Préparation a la livraison";
+    public $messageR = "refus de produit";
     public $notifId;
     public $idProd;
 
-    protected $rules = [
-        'montantTotal' => 'required|numeric|min:1',
-        'userSender' => 'required|integer',
-        'messageA' => 'required|string',
-        'messageR' => 'required|string',
-        'notifId' => 'required|exists:notifications,id',
-    ];
 
     public function mount($id)
     {
@@ -59,7 +52,8 @@ class NotificationShow extends Component
 
     public function accepter()
     {
-        $this->validate();
+
+        $this->notification->update(['reponse' => 'accepte']);
 
         $userId = Auth::id();
         $userWallet = Wallet::where('user_id', $userId)->first();
@@ -93,7 +87,7 @@ class NotificationShow extends Component
 
     public function refuser()
     {
-        $this->validate();
+        $this->notification->update(['reponse' => 'refuser']);
 
         $userId = Auth::id();
         if (!$userId) {

@@ -1,4 +1,4 @@
-<div >
+<div>
     @if ($notification->type === 'App\Notifications\AchatGroupBiicf')
 
         {{-- <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
@@ -110,35 +110,15 @@
 
                     </div>
                 @else
-                    <form wire:submit.prevent="accepter">
-                        @csrf
-                        <input type="hidden" name="userSender" value="{{ $notification->data['userSender'] }}">
-                        <input type="hidden" name="montantTotal" value="{{ $notification->data['montantTotal'] }}">
-                        <input type="hidden" name="message" wire:model="messageA"
-                            value="commande de produit en cours /Préparation a la livraison">
-
-                        <input type="hidden" name="notifId" wire:model="notifId" value="{{ $notification->id }}">
+                    <button wire:click="accepter" id="btn-accepter" type="submit"
+                        class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700"
+                        wire:loading.attr="disabled">
+                        Accepter</button>
 
 
-
-                        <!-- Bouton accepter -->
-
-                        <button id="btn-accepter" type="submit"
-                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
-
-                    </form>
-
-                    <form wire:submit.prevent="refuser">
-                        @csrf
-                        <input type="hidden" name="montantTotal" wire:model="montantTotal" value="{{ $notification->data['montantTotal'] }}">
-                        <input type="hidden" name="userSender" wire:model="userSender"  value="{{ $notification->data['userSender'] }}">
-                        <input type="hidden" name="message" wire:model="messageR"  value="refus de produit">
-
-                        <input type="hidden" name="notifId" wire:model="notifId" value="{{ $notification->id }}">
-
-                        <button id="btn-refuser" type="submit"
-                            class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
-                    </form>
+                    <button  wire:click="refuser" id="btn-refuser" type="submit"
+                        class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700"
+                        wire:loading.attr="disabled">Refuser</button>
                 @endif
 
             </div>
@@ -148,4 +128,3 @@
 
     @endif
 </div>
-
