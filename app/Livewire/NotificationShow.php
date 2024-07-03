@@ -35,8 +35,8 @@ class NotificationShow extends Component
     public $prixTrade;
     public $montantTotal;
     public $userSender;
-    public $messageA = "commande de produit en cours /Préparation a la livraison";
-    public $messageR = "refus de produit";
+    public $messageA = "Commande de produit en cours / Préparation a la livraison";
+    public $messageR = "Achat refuser / Produits plus disponible";
     public $notifId;
     public $idProd;
 
