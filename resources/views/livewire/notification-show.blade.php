@@ -102,7 +102,8 @@
                 </svg>
             </a>
 
-            <p class="my-3 text-sm text-gray-500">Vous aurez debité 10% sur le prix de la marchandise</p>
+            <p class="my-3 text-sm text-gray-500">Vous aurez debité 10% sur le prix de la marchandise
+            </p>
             <div class="flex gap-2">
                 @if ($notification->reponse == 'accepte' || $notification->reponse == 'refuser')
                     <div class="w-full bg-gray-300 border p-2 rounded-md">
@@ -113,14 +114,17 @@
                     <button wire:click="accepter" id="btn-accepter" type="submit"
                         class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700"
                         wire:loading.attr="disabled">
-                        Accepter</button>
+                        Accepter
+                    </button>
+
+                    <div wire:loading wire:target="accepter">
+                        En cours...
+                    </div>
 
 
-                    <button  wire:click="refuser" id="btn-refuser" type="submit"
-                        class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700"
-                        wire:loading.attr="disabled">Refuser</button>
+                    <button wire:click="refuser" id="btn-refuser" type="submit"
+                        class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
                 @endif
-
             </div>
         </div>
 

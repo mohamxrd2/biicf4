@@ -43,7 +43,7 @@ class NotificationShow extends Component
 
     public function mount($id)
     {
-        $this->notification = NotificationEd::findOrFail($id);
+        $this->notification = DatabaseNotification::findOrFail($id);;
         $this->montantTotal = $this->notification->data['montantTotal'] ?? null;
         $this->userSender = $this->notification->data['userSender'] ?? null;
         $this->notifId = $this->notification->id;
