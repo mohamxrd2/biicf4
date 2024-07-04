@@ -254,6 +254,7 @@
 
     document.addEventListener('livewire:init', function() {
         Livewire.on('start-timer', () => {
+
             // Convertir la date de départ en objet Date JavaScript
             const startDate = new Date();
 
@@ -293,7 +294,11 @@
             }
             setTimeout(() => {
                 Livewire.dispatch('sendNotification');
+                console.log('Livewire.dispatch("sendNotification") executed after 1 minute');
             }, 60000); // 1 minute
+            Livewire.on('sendNotification', () => {
+                console.log('Event "sendNotification" received');
+            });
         });
     });
 </script>

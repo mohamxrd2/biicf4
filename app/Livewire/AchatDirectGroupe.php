@@ -37,7 +37,7 @@ class AchatDirectGroupe extends Component
     public $idProd;
     public $prix;
 
-    protected $listeners = ['verifierEtEnvoyerNotification'];
+    protected $listeners = ['sendNotification' => 'verifierEtEnvoyerNotification'];
     protected $rules = [
         'nameProd' => 'required|string',
         'quantité' => 'required|integer',
@@ -267,7 +267,7 @@ class AchatDirectGroupe extends Component
         $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
 
 
-        $this->verifierEtEnvoyerNotification();
+        // $this->verifierEtEnvoyerNotification();
 
         return view('livewire.achat-direct-groupe', compact(
             'produit',
