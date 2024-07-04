@@ -18,6 +18,7 @@ use App\Models\NotificationLog;
 use App\Notifications\AchatBiicf;
 use App\Notifications\AchatGroupBiicf;
 use Carbon\Carbon;
+use Livewire\Attributes\On;
 
 class AchatDirectGroupe extends Component
 {
@@ -36,6 +37,7 @@ class AchatDirectGroupe extends Component
     public $idProd;
     public $prix;
 
+    protected $listeners = ['verifierEtEnvoyerNotification'];
     protected $rules = [
         'nameProd' => 'required|string',
         'quantité' => 'required|integer',
@@ -172,11 +174,20 @@ class AchatDirectGroupe extends Component
             $transaction->save();
 
             $this->reset(['quantité', 'localite', 'specificite']);
+
+            $this->dispatch('start-timer');
             session()->flash('success', 'Achat passé avec succès.');
         } catch (\Exception $e) {
             session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
     }
+
+    public function startTimer()
+    {
+        // Rien à faire ici, le timer est géré en JavaScript côté client
+    }
+
+    #[On('sendNotification')]
     public function verifierEtEnvoyerNotification()
     {
         $produit = ProduitService::findOrFail($this->id);
