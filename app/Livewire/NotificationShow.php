@@ -33,7 +33,6 @@ class NotificationShow extends Component
 {
     public $notification;
     public $id;
-    public $prixTrade;
     public $montantTotal;
     public $userSender = [];
     public $messageA = "Commande de produit en cours / Préparation a la livraison";
@@ -42,7 +41,9 @@ class NotificationShow extends Component
     public $idProd;
 
     public $userTrader;
-
+    public $code_unique;
+    public $id_trader;
+    public $prixTrade;
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -62,6 +63,8 @@ class NotificationShow extends Component
         $this->notifId = $this->notification->id;
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->userTrader = $this->notification->data['userTrader'] ?? null;
+        $this->id_trader = Auth::user()->id ?? null;
+        $this->code_unique = $this->notification->data['code_unique'] ?? null;
     }
 
     public function accepterAGrouper()
@@ -236,7 +239,6 @@ class NotificationShow extends Component
         Notification::send($userSender, new livraisonVerif($data));
 
         session()->flash('success', 'Achat accepté.');
-        // $this->emit('notificationUpdated');
     }
 
     private function genererCodeAleatoire($longueur)
@@ -306,11 +308,19 @@ class NotificationShow extends Component
     public function commentForm()
     {
         // Récupérer l'utilisateur authentifié
-        dd($this->validate());
+        $this->validate([
 
-        dd(Comment::create([
+            'id_trader' => 'required|numeric',
+            'code_unique' => 'required|string',
+            'prixTrade' => 'required|numeric',
+
+        ]);
+
+        Comment::create([
             'prixTrade' => $this->prixTrade,
-        ]));
+            'code_unique' => $this->code_unique,
+            'id_trader' => $this->id_trader,
+        ]);
 
         session()->flash('success', 'Commentaire créé avec succès!');
 
@@ -648,7 +658,7 @@ class NotificationShow extends Component
             $produit = ProduitService::find($notification->data['produit_id']);
 
             $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
-        } elseif ($notification->type === 'App\Notifications\livraisonVerif'){
+        } elseif ($notification->type === 'App\Notifications\livraisonVerif') {
             $produit = ProduitService::find($notification->data['id_prod']);
         }
         return view('livewire.notification-show', compact(
