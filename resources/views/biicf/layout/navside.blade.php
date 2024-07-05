@@ -479,7 +479,7 @@
 
 
 
-    <script>
+    {{-- <script>
         Pusher.logToConsole = true;
 
         window.Echo = new Echo({
@@ -511,7 +511,7 @@
                     title: e.message
                 });
             });
-    </script>
+    </script> --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 </body>
 
