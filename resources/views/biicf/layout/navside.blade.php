@@ -5,17 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="user-id" content="{{ auth()->user()->id }}">
     <title>@yield('title')</title>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
-
-    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/laravel-echo/1.11.1/echo.iife.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/alpine.min.js" defer></script>
 
 
@@ -23,7 +17,6 @@
 </head>
 
 <body class="bg-gray-100">
-    {{-- <h1>Laravel Echo with Pusher and SweetAlert2</h1> --}}
 
 
     <div id="application-sidebar"
@@ -479,39 +472,7 @@
 
 
 
-    <script>
-        Pusher.logToConsole = true;
 
-        window.Echo = new Echo({
-            broadcaster: "pusher",
-            key: "cdd50dab9a95edd6da7d",
-            cluster: "eu",
-            forceTLS: true,
-        });
-        const userId = document.querySelector('meta[name="user-id"]').getAttribute("content");
-
-        window.Echo.private(`App.Models.User.${userId}`)
-            .listen('UserEvent', (e) => {
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        if (toast) {
-                            toast.addEventListener('mouseenter', Swal.stopTimer);
-                            toast.addEventListener('mouseleave', Swal.resumeTimer);
-                        }
-                    }
-                });
-
-                Toast.fire({
-                    icon: 'success',
-                    title: e.message
-                });
-            });
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 </body>
 

@@ -132,14 +132,6 @@
     </header>
     <!-- ========== END HEADER ========== -->
 
-    <!-- ========== MAIN CONTENT ========== -->
-    <!-- Sidebar Toggle -->
-
-    <!-- End Sidebar Toggle -->
-
-    <!-- Sidebar -->
-    <!-- Dans votre fichier de vue de tableau de bord -->
-
     @auth('admin')
         @if (Auth::guard('admin')->user()->admin_type == 'agent')
             <div id="application-sidebar"
@@ -561,16 +553,6 @@
         <!-- Page Heading -->
 
         @yield('content')
-
-
-
-
-
-        <!-- ========== FOOTER ========== -->
-
-
-
-
 
         <!-- ========== END FOOTER ========== -->
         <footer class="text-center text-sm text-gray-600 pt-8 pb-11 ">
