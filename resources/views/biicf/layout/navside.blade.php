@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="user-id" content="{{ auth()->user()->id }}">
+    {{-- <meta name="user-id" content="{{ auth()->user()->id }}"> --}}
     <title>@yield('title')</title>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
@@ -479,7 +479,7 @@
 
 
 
-    <script>
+    {{-- <script>
         Pusher.logToConsole = true;
 
         window.Echo = new Echo({
@@ -511,7 +511,7 @@
                     title: e.message
                 });
             });
-    </script>
+    </script> --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 </body>
 
