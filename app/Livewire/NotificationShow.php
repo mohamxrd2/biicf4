@@ -27,6 +27,7 @@ use App\Notifications\OffreNegosDone;
 use App\Notifications\AppelOffreTerminer;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\DatabaseNotification;
+use Livewire\Attributes\On;
 
 class NotificationShow extends Component
 
@@ -44,6 +45,9 @@ class NotificationShow extends Component
     public $code_unique;
     public $id_trader;
     public $prixTrade;
+    public $secondsRemaining = 60; // 60 seconds = 1 minute
+    public $timerInterval;
+    protected $listeners = ['sendNotification' => 'render'];
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -323,9 +327,16 @@ class NotificationShow extends Component
         ]);
 
         session()->flash('success', 'Commentaire créé avec succès!');
+        $this->dispatch('start-timer');
 
         $this->reset(['prixTrade']);
     }
+    public function startTimer()
+    {
+        // Rien à faire ici, le timer est géré en JavaScript côté client
+    }
+
+    #[On('sendNotification')]
     public function render()
     {
         // Récupérer l'utilisateur authentifié
