@@ -51,6 +51,8 @@ class NotificationShow extends Component
 
     public $modalOpen = false;
 
+    public $userFour;
+
     protected $rules = [
         'userSender' => 'required|array',
         'userSender.*' => 'integer|exists:users,id',
@@ -73,6 +75,7 @@ class NotificationShow extends Component
         $this->code_unique = $this->notification->data['code_unique'] ?? null;
         $this->quantite = $this->notification->data['quantité'] ?? null;
         $this->localite = $this->notification->data['localite']?? null; 
+        $this->userFour = User::find($this->notification->data['id_trader']?? null); 
     }
 
     public function accepterAGrouper()
@@ -246,7 +249,13 @@ class NotificationShow extends Component
         ];
 
 
-        Notification::send($userSender, new livraisonVerif($data));
+
+
+        $livreurs = User::where('actor_type', 'livreur')->get();
+
+        foreach ($livreurs as $livreur) {
+            Notification::send($livreur, new livraisonVerif($data));
+        }
 
         session()->flash('success', 'Achat accepté.');
 
@@ -676,6 +685,9 @@ class NotificationShow extends Component
             $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
         } elseif ($notification->type === 'App\Notifications\livraisonVerif') {
             $produit = ProduitService::find($notification->data['id_prod']);
+
+            $userFour = User::find($notification->data['id_trader']);
+            
         }
         return view('livewire.notification-show', compact(
                 'notification',
@@ -696,7 +708,8 @@ class NotificationShow extends Component
             'tempsEcoule',
             'highestPricedComment',
             'user',
-            'nombreLivr'
+            'nombreLivr',
+            'userFour'
         ));
     }
 }
