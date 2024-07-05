@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body>
 
     <div class="h-[100vh] flex justify-center items-center p-4">
@@ -25,7 +27,7 @@
                     @endforeach
                 </div>
             @endif
-    
+
             @if (session('success'))
                 <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
                     {{ session('success') }}
@@ -56,10 +58,10 @@
                         </span>
                         <div
                             class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600">
-    
+
                         </div>
                     </li>
-    
+
                     <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
                         data-hs-stepper-nav-item='{
               "index": 2
@@ -83,7 +85,7 @@
                             class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600">
                         </div>
                     </li>
-    
+
                     <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
                         data-hs-stepper-nav-item='{
                 "index": 3
@@ -107,7 +109,7 @@
                             class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600">
                         </div>
                     </li>
-    
+
                     <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
                         data-hs-stepper-nav-item='{
                 "index": 4
@@ -144,50 +146,51 @@
             }'>
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
-    
+
                                 @include('admin.components.input', [
                                     'type' => 'text',
                                     'name' => 'name',
                                     'placeholder' => 'Nom ou raison social',
                                 ])
-    
+
                                 @include('admin.components.input', [
                                     'type' => 'text',
                                     'name' => 'last-name',
                                     'placeholder' => 'Prénom',
                                 ])
-    
+
                                 @include('admin.components.input', [
                                     'type' => 'text',
                                     'name' => 'username',
                                     'placeholder' => 'Nom d\'utlisateur',
                                 ])
-    
+
                                 @include('admin.components.input', [
                                     'type' => 'password',
                                     'name' => 'password',
                                     'placeholder' => 'Mot de passe',
                                 ])
-    
+
                                 @include('admin.components.input', [
                                     'type' => 'password',
                                     'name' => 'repeat-password',
                                     'placeholder' => 'Confirmer mot de passe',
                                 ])
-    
-    
+
+
                             </div>
-    
+
                         </div>
                         <!-- End First Contnet -->
-    
+
                         <!-- First Contnet -->
                         <div data-hs-stepper-content-item='{
               "index": 2
-            }' style="display: none;">
+            }'
+                            style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
-    
+
                                 @include('admin.components.select', [
                                     'name' => 'user_type',
                                     'title' => 'Type d\'acteur',
@@ -200,26 +203,22 @@
                                         'Menage',
                                     ],
                                 ])
-    
+
                                 @include('admin.components.select', [
                                     'name' => 'user_sexe',
                                     'title' => 'Sexe',
                                     'options' => ['Masculin', 'Feminin'],
                                 ])
-    
                                 @include('admin.components.select', [
                                     'name' => 'user_age',
                                     'title' => 'Tranche d\'age',
                                     'options' => ['Adolescent', 'Jeune', '3ème Age'],
                                 ])
-    
                                 @include('admin.components.select', [
                                     'name' => 'user_status',
                                     'title' => 'Status social',
                                     'options' => ['Salarié', 'Travailleur', 'Autonome', 'Etudiant', 'Sans emploi'],
                                 ])
-    
-    
                                 @include('admin.components.select', [
                                     'name' => 'user_comp_size',
                                     'title' => 'Taille d\'entreprise',
@@ -232,7 +231,6 @@
                                     ],
                                     // Ajoutez d'autres attributs au besoin
                                 ])
-    
                                 @include('admin.components.select', [
                                     'name' => 'user_serv',
                                     'title' => 'Type de service',
@@ -274,7 +272,6 @@
                                     'options' => ['Urbain', 'Rural'],
                                     // Ajoutez d'autres attributs au besoin
                                 ])
-    
                                 @include('admin.components.select', [
                                     'name' => 'user_mena2',
                                     'title' => 'Statut',
@@ -289,18 +286,15 @@
                                     ],
                                     // Ajoutez d'autres attributs au besoin
                                 ])
-    
-    
-    
-    
                             </div>
                         </div>
                         <!-- End First Contnet -->
-    
+
                         <!-- First Contnet -->
                         <div data-hs-stepper-content-item='{
               "index": 3
-            }' style="display: none;">
+            }'
+                            style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
                                 @include('admin.components.select', [
@@ -369,23 +363,23 @@
                                     ],
                                     // Ajoutez d'autres attributs au besoin
                                 ])
-    
-    
+
+
                             </div>
                         </div>
-    
+
                         <!-- First Contnet -->
                         <div data-hs-stepper-content-item='{
                 "index": 4
-              }' style="display: none;">
+              }'
+                            style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
-    
+
                                 @include('admin.components.select', [
                                     'name' => 'country',
                                     'title' => 'Choisissez un pays',
                                     'options' => [],
-    
                                 ])
                                 @include('admin.components.input', [
                                     'name' => 'phone',
@@ -424,16 +418,17 @@
                                     ],
                                 ])
                                 <input type="number"
-                                class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                                placeholder="Code de parrainage (Optionnel)">
+                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                                    placeholder="Code de parrainage (Optionnel)">
                             </div>
                         </div>
                         <!-- End First Contnet -->
-    
+
                         <!-- Final Contnet -->
                         <div data-hs-stepper-content-item='{
               "isFinal": true
-            }' style="display: none;">
+            }'
+                            style="display: none;">
                             <div
                                 class="p-4 h-48 bg-gray-50 flex justify-center items-center border border-dashed border-gray-200 rounded-xl">
                                 <h3>
@@ -442,7 +437,7 @@
                             </div>
                         </div>
                         <!-- End Final Contnet -->
-    
+
                         <!-- Button Group -->
                         <div class="mt-5 flex justify-between items-center gap-x-2">
                             <button type="button"
@@ -479,7 +474,7 @@
                         <!-- End Button Group -->
                     </div>
                     <!-- End Stepper Content -->
-    
+
                 </form>
                 <div class="w-full mt-8 text-center">
                     <p class="mt-2 text-sm text-gray-600">
@@ -490,24 +485,17 @@
                     </p>
 
                 </div>
-            
+
             </div>
             <!-- End Stepper -->
         </div>
 
-      
+
 
     </div>
-
-    
-
-
-    
-
-    
-
 
     <script src="{{ asset('js/country.js') }}"></script>
     <script src="{{ asset('js/select.js') }}"></script>
 </body>
+
 </html>

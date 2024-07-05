@@ -2,10 +2,11 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
+use Exception;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Comment;
+use Livewire\Component;
 use App\Models\AchatDirect;
 use App\Models\OffreGroupe;
 use App\Models\Transaction;
@@ -14,18 +15,18 @@ use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
 use App\Models\NotificationLog;
-use App\Notifications\acceptAchat;
 use App\Notifications\AppelOffre;
+use App\Notifications\RefusAchat;
+use App\Notifications\acceptAchat;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\livraisonVerif;
 use App\Notifications\OffreNegosDone;
 use App\Notifications\AppelOffreTerminer;
-use App\Notifications\RefusAchat;
-use Exception;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Facades\DB;
 
 class NotificationShow extends Component
 
@@ -39,6 +40,8 @@ class NotificationShow extends Component
     public $messageR = "Achat refuser / Produits plus disponible";
     public $notifId;
     public $idProd;
+
+    public $userTrader;
 
 
     protected $rules = [
@@ -58,6 +61,7 @@ class NotificationShow extends Component
         $this->userSender = $this->notification->data['userSender'] ?? [];
         $this->notifId = $this->notification->id;
         $this->idProd = $this->notification->data['idProd'] ?? null;
+        $this->userTrader = $this->notification->data['userTrader'] ?? null;
     }
 
     public function accepterAGrouper()
@@ -208,19 +212,45 @@ class NotificationShow extends Component
         $pourcentSomme  = $requiredAmount * 0.1;
         $totalSom = $requiredAmount - $pourcentSomme;
 
-        $userTrader = User::find($userId);
-        $this->handleCommission($userTrader, $pourcentSomme, 'Trader');
-        $this->handleCommission($userSender, $pourcentSomme, 'Sender');
+        $code_livr = $this->genererCodeAleatoire(10);
 
-        $userWallet->increment('balance', $totalSom);
-        $this->createTransaction($userSender->id, $userId, 'Reception', $totalSom);
-        $this->createTransaction($userSender->id, $userId, 'Envoie', $requiredAmount);
+        // $userTrader = User::find($userId);
+        // $this->handleCommission($userTrader, $pourcentSomme, 'Trader');
+        // $this->handleCommission($userSender, $pourcentSomme, 'Sender');
 
-        Notification::send($userSender, new acceptAchat($this->messageA));
+        // $userWallet->increment('balance', $totalSom);
+        // $this->createTransaction($userSender->id, $userId, 'Reception', $totalSom);
+        // $this->createTransaction($userSender->id, $userId, 'Envoie', $requiredAmount);
+
+        // Notification::send($userSender, new acceptAchat($this->messageA));
+
+        $data = [
+            'id_prod' => $this->notification->data['idProd'],
+            'id_trader' => $this->userTrader,
+            'totalSom' => $requiredAmount,
+            'code_livr' => $code_livr,
+
+        ];
+
+
+        Notification::send($userSender, new livraisonVerif($data));
 
         session()->flash('success', 'Achat accepté.');
         // $this->emit('notificationUpdated');
     }
+
+    private function genererCodeAleatoire($longueur)
+    {
+        $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $code = '';
+
+        for ($i = 0; $i < $longueur; $i++) {
+            $code .= $caracteres[rand(0, strlen($caracteres) - 1)];
+        }
+
+        return $code;
+    }
+
 
     public function refuser()
     {
@@ -618,6 +648,8 @@ class NotificationShow extends Component
             $produit = ProduitService::find($notification->data['produit_id']);
 
             $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
+        } elseif ($notification->type === 'App\Notifications\livraisonVerif'){
+            $produit = ProduitService::find($notification->data['id_prod']);
         }
         return view('livewire.notification-show', compact(
             'notification',

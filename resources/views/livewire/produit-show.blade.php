@@ -100,10 +100,6 @@
                         @endif
 
                     </div>
-                    <!-- End Slider -->
-
-                    <!-- Boutons -->
-
 
                 </div>
 
@@ -114,17 +110,17 @@
                 <div class="mb-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
 
                     @if ($produit->statuts == 'Accepté')
-                        <div class="text-gray-800 bg-gray-200 rounded-md text-center p-1">accepté !</div>
+                        <div class="text-gray-800 bg-gray-200 rounded-md text-center p-1 mb-3">accepté !</div>
                     @else
                         <button wire:click="accepter" class="w-full mb-3">
-                            <div class="text-teal-800 bg-teal-100 rounded-md text-center p-1">accepter</div>
+                            <div class="text-teal-800 bg-teal-100 rounded-md text-center p-1 mb-3">accepter</div>
                         </button>
                     @endif
 
                     @if ($produit->statuts == 'Refusé')
                         <div class="text-gray-800 bg-gray-200 rounded-md text-center p-1">refusé !</div>
                     @else
-                        <button wire:click="refuser" class="w-full mb-3">
+                        <button wire:click="refuser" class="w-full ">
                             <div class="text-teal-800 bg-red-100 rounded-md text-center p-1">refuser</div>
                         </button>
                     @endif
