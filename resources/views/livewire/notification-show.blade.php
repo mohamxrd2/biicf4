@@ -116,21 +116,69 @@
 
                     </div>
                 @else
-                    <button wire:click="accepter" id="btn-accepter" type="submit"
-                        class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700"
-                        wire:loading.attr="disabled">
-                        Accepter
-                    </button>
+                    <div x-data="{ isOpen: false }" x-cloak>
+                        <button @click="isOpen = true"
+                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">
+                            Accepter
+                        </button>
 
-                    <div wire:loading wire:target="accepter">
-                        En cours...
+                        <div x-show="isOpen" id="hs-basic-modal"
+                            class="hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500 fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 overflow-y-auto">
+                            <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+                                <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
+                                    <div class="flex justify-between items-center py-3 px-4 border-b">
+                                        <h3 class="font-bold text-gray-800">
+                                            Envoie au livreur
+                                        </h3>
+                                        <button @click="isOpen = false" class="text-gray-800 hover:text-gray-600">
+                                            <span class="sr-only">Close</span>
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="p-4">
+                                        <p class="text-gray-800">
+                                            @if ($nombreLivr)
+                                                Le nombre de livreur disponible dans cette zone est:
+                                                {{ $nombreLivr }}
+                                            @else
+                                                Aucun livreur dans la zone
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <div class="flex justify-end items-center py-3 px-4 border-t">
+                                        <button @click="isOpen = false"
+                                            class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded mr-2">
+                                            Annuler
+                                        </button>
+                                        <button @click.prevent="isOpen = false; $wire.accepter()"
+                                            @if ($nombreLivr == 0) disabled @endif
+                                            class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
+                                            <span wire:loading.remove>
+                                                Envoie
+                                            </span>
+                                            <span wire:loading>
+                                                En cours...
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
 
 
                     <button wire:click="refuser" id="btn-refuser" type="submit"
                         class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+
                 @endif
             </div>
+
+
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="grid grid-cols-2 gap-4 p-4">
@@ -448,10 +496,6 @@
 
 
                                 @endif
-
-
-
-
 
                             </div>
 
@@ -817,8 +861,6 @@
         </div> --}}
         </div>
     @endif
-
-
 
 
 </div>
