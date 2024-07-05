@@ -55,7 +55,7 @@ class NotificationShow extends Component
 
     public $modalOpen = false;
 
-    public $userFour;
+    public $userFour = null;
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -385,6 +385,7 @@ class NotificationShow extends Component
         $lowPriceUserName = null;
         $lowPriceAmount = null;
         $highestPricedComment = null;
+        $userFour = null;
 
         // Vérifier si 'produit_id' existe dans les données de notification
         if (isset($notification->data['produit_id'])) {
@@ -698,6 +699,9 @@ class NotificationShow extends Component
             $produit = ProduitService::find($notification->data['id_prod']);
 
             $userFour = User::find($notification->data['id_trader']);
+
+
+
             
         }
         return view('livewire.notification-show', compact(
@@ -720,7 +724,7 @@ class NotificationShow extends Component
             'highestPricedComment',
             'user',
             'nombreLivr',
-            'userFour'
+            'userFour',
         ));
     }
 }
