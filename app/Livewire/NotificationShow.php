@@ -49,6 +49,12 @@ class NotificationShow extends Component
     public $timerInterval;
     protected $listeners = ['sendNotification' => 'render'];
 
+    public $quantite;
+
+    public $localite;
+
+    public $modalOpen = false;
+
     protected $rules = [
         'userSender' => 'required|array',
         'userSender.*' => 'integer|exists:users,id',
@@ -69,6 +75,8 @@ class NotificationShow extends Component
         $this->userTrader = $this->notification->data['userTrader'] ?? null;
         $this->id_trader = Auth::user()->id ?? null;
         $this->code_unique = $this->notification->data['code_unique'] ?? null;
+        $this->quantite = $this->notification->data['quantité'] ?? null;
+        $this->localite = $this->notification->data['localite']?? null; 
     }
 
     public function accepterAGrouper()
@@ -235,6 +243,8 @@ class NotificationShow extends Component
             'id_prod' => $this->notification->data['idProd'],
             'id_trader' => $this->userTrader,
             'totalSom' => $requiredAmount,
+            'quantite' => $this->notification->data['quantité'],
+            'localite' =>  $this->notification->data['localite'],
             'code_livr' => $code_livr,
 
         ];
@@ -243,6 +253,9 @@ class NotificationShow extends Component
         Notification::send($userSender, new livraisonVerif($data));
 
         session()->flash('success', 'Achat accepté.');
+
+        $this->modalOpen = false;
+
     }
 
     private function genererCodeAleatoire($longueur)
@@ -406,6 +419,9 @@ class NotificationShow extends Component
         $commentCount = $comments->count();
 
         // Vérifier si le temps est écoulé /////\\\///////
+
+        $nombreLivr = User::where('actor_type', 'livreur')->count();
+
 
         if ($notification->type === 'App\Notifications\AppelOffre') {
             Log::info('Notification type is App\Notifications\AppelOffre');
@@ -673,7 +689,7 @@ class NotificationShow extends Component
             $produit = ProduitService::find($notification->data['id_prod']);
         }
         return view('livewire.notification-show', compact(
-            'notification',
+                'notification',
             'produtOffre',
             'comments',
             'commentCount',
@@ -690,7 +706,8 @@ class NotificationShow extends Component
             'lowPriceAmount',
             'tempsEcoule',
             'highestPricedComment',
-            'user'
+            'user',
+            'nombreLivr'
         ));
     }
 }
