@@ -858,7 +858,7 @@
 
                                     <div class="w-full h-full flex items-center justify-center">
                                         <p class="text-gray-800"> Aucune offre n'a été soumise</p>
-                                    </div>{{$commentCount}}
+                                    </div>{{ $commentCount }}
                                 @else
                                     @foreach ($comments as $comment)
                                         <div class="flex items-center gap-3 relative">
@@ -884,8 +884,10 @@
 
                                 <div
                                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    <input type="hidden" name="code_livr" wire:model="code_livr" value="{{ $notification->data['code_livr'] }}">
-                                    <input type="hidden" name="id_trader" wire:model="id_trader" value="{{ $user->id }}">
+                                    <input type="hidden" name="code_livr" wire:model="code_livr"
+                                        value="{{ $notification->data['code_livr'] }}">
+                                    <input type="hidden" name="id_trader" wire:model="id_trader"
+                                        value="{{ $user->id }}">
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                         placeholder="Faire une offre..." required>
@@ -909,7 +911,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
                                             </svg>
-                                        </svg>
+                                            </svg>
                                     </button>
                                 </div>
                             </form>
@@ -921,7 +923,7 @@
                         </div>
                     </div>
 
-                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+                    {{-- <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
                         @if ($oldestCommentDate)
                             <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
@@ -933,12 +935,31 @@
                                 <div>-</div>
                             </div>
                         @endif
+                    </div> --}}
+                    {{-- <livewire:countdown-component /> --}}
+                    <div>
+                        @if (!$countdownStarted)
+                            nada
+                        @else
+                            <div>
+                                <p>Le compte à rebours a commencé !</p>
+                                <p>Temps restant : <span id="time-remaining">{{ $timeRemaining }}</span></p>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
             </div>
 
-
+            <script>
+                document.addEventListener('livewire:load', function () {
+                    @if($countdownStarted)
+                        setInterval(function() {
+                            @this.call('updateTimeRemaining');
+                        }, 1000);
+                    @endif
+                });
+            </script>
 
             {{-- <script>
             document.addEventListener('DOMContentLoaded', function() {

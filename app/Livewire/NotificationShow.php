@@ -11,6 +11,7 @@ use App\Models\AchatDirect;
 use App\Models\OffreGroupe;
 use App\Models\Transaction;
 use App\Models\Consommation;
+use App\Models\Countdown;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
@@ -57,6 +58,8 @@ class NotificationShow extends Component
 
     public $userFour = null;
     public $code_livr;
+    public $countdownStarted = false;
+    public $timeRemaining = null;
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -82,6 +85,15 @@ class NotificationShow extends Component
         $this->localite = $this->notification->data['localite'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
+        $countdown = Countdown::where('user_id', Auth::id())
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if ($countdown) {
+            $this->countdownStarted = true;
+            $this->updateTimeRemaining();
+        }
     }
 
     public function accepterAGrouper()
@@ -370,15 +382,39 @@ class NotificationShow extends Component
             'id_trader' => $validatedData['id_trader'],
         ]);
 
+        Countdown::create([
+            'user_id' => Auth::id(),
+            'start_time' => now(),
+        ]);
+
+        $this->countdownStarted = true;
+
+
         // Afficher un message de succès
         session()->flash('success', 'Commentaire créé avec succès!');
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
     }
-    public function startTimer()
+
+    public function updateTimeRemaining()
     {
-        // Rien à faire ici, le timer est géré en JavaScript côté client
+        $countdown = Countdown::where('user_id', Auth::id())
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if ($countdown) {
+            $endTime = Carbon::parse($countdown->start_time)->addMinutes(5);
+            $now = Carbon::now();
+
+            if ($now->greaterThan($endTime)) {
+                $this->timeRemaining = '00:00';
+                $this->countdownStarted = false;
+            } else {
+                $this->timeRemaining = $endTime->diff($now)->format('%I:%S');
+            }
+        }
     }
 
     // #[On('sendNotification')]
@@ -722,7 +758,6 @@ class NotificationShow extends Component
             $produit = ProduitService::find($notification->data['id_prod']);
 
             $userFour = User::find($notification->data['id_trader']);
-
         }
         return view('livewire.notification-show', compact(
             'notification',
