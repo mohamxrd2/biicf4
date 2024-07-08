@@ -840,7 +840,7 @@
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Client a livrer </p>
-                    <p class="text-md font-medium text-gray-600">{{ $nameSender->name }}</p>
+                    {{-- <p class="text-md font-medium text-gray-600">{{ $nameSender->name }}</p> --}}
                 </div>
 
             </div>
@@ -891,6 +891,8 @@
                                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
                                     <input type="hidden" name="code_livr" wire:model="code_livr"
                                         value="{{ $notification->data['code_livr'] }}">
+                                    <input type="hidden" name="nameSender" wire:model="nameSender"
+                                        value="{{ $notification->data['userSender']  }}">
                                     <input type="hidden" name="id_trader" wire:model="id_trader"
                                         value="{{ $user->id }}">
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"

@@ -86,7 +86,7 @@ class NotificationShow extends Component
         $this->localite = $this->notification->data['localite'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
-        $this->nameSender = User::find($this->notification->data['userSender']) ?? null;
+        $this->nameSender = $this->notification->data['userSender'] ?? null;
 
         $countdown = Countdown::where('user_id', Auth::id())
             ->where('notified', false)
@@ -373,6 +373,7 @@ class NotificationShow extends Component
         $validatedData = $this->validate([
             'id_trader' => 'required|numeric',
             'code_livr' => 'required|string',
+            'userSender' => 'required|numeric',
             'prixTrade' => 'required|numeric',
         ]);
 
@@ -385,7 +386,9 @@ class NotificationShow extends Component
 
         Countdown::create([
             'user_id' => Auth::id(),
+            'userSender' => $this->userSender,
             'start_time' => now(),
+            'code_unique' => $validatedData['code_livr'],
         ]);
 
         $this->countdownStarted = true;

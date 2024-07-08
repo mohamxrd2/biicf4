@@ -13,10 +13,16 @@ return new class extends Migration
     {
         Schema::create('countdowns', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('userSender');
             $table->timestamp('start_time');
+            $table->string('code_unique');
             $table->boolean('notified')->default(false);
             $table->timestamps();
+
+            // Contraintes de clé étrangère
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('userSender')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

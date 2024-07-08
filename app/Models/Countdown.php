@@ -9,10 +9,14 @@ class Countdown extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'start_time', 'notified'];
+    protected $fillable = ['user_id', 'start_time', 'notified', 'code_unique', 'userSender'];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'userSender');
     }
 }

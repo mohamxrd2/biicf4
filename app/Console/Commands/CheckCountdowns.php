@@ -21,11 +21,12 @@ class CheckCountdowns extends Command
     public function handle()
     {
         $countdowns = Countdown::where('notified', false)
-            ->where('start_time', '<=', now()->subMinutes(5))
+            ->where('start_time', '<=', now()->subMinutes(1))
+            ->with('sender') // Charger la relation userSender
             ->get();
 
         foreach ($countdowns as $countdown) {
-            Notification::send($countdown->user, new CountdownNotification());
+            Notification::send($countdown->sender, new CountdownNotification());
 
             $countdown->update(['notified' => true]);
         }
