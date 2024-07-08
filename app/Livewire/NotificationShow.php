@@ -56,6 +56,7 @@ class NotificationShow extends Component
     public $modalOpen = false;
 
     public $userFour = null;
+    public $code_livr;
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -78,8 +79,9 @@ class NotificationShow extends Component
         $this->id_trader = Auth::user()->id ?? null;
         $this->code_unique = $this->notification->data['code_unique'] ?? null;
         $this->quantite = $this->notification->data['quantité'] ?? null;
-        $this->localite = $this->notification->data['localite']?? null; 
-        $this->userFour = User::find($this->notification->data['id_trader']?? null); 
+        $this->localite = $this->notification->data['localite'] ?? null;
+        $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
+        $this->code_livr = $this->notification->data['code_livr'] ?? null;
     }
 
     public function accepterAGrouper()
@@ -264,7 +266,6 @@ class NotificationShow extends Component
         session()->flash('success', 'Achat accepté.');
 
         $this->modalOpen = false;
-
     }
 
     private function genererCodeAleatoire($longueur)
@@ -353,12 +354,34 @@ class NotificationShow extends Component
 
         $this->reset(['prixTrade']);
     }
+    public function commentFormLivr()
+    {
+        // Valider les données
+        $validatedData = $this->validate([
+            'id_trader' => 'required|numeric',
+            'code_livr' => 'required|string',
+            'prixTrade' => 'required|numeric',
+        ]);
+
+        // Créer un commentaire
+        Comment::create([
+            'prixTrade' => $validatedData['prixTrade'],
+            'code_unique' => $validatedData['code_livr'],
+            'id_trader' => $validatedData['id_trader'],
+        ]);
+
+        // Afficher un message de succès
+        session()->flash('success', 'Commentaire créé avec succès!');
+
+        // Réinitialiser le champ du formulaire
+        $this->reset(['prixTrade']);
+    }
     public function startTimer()
     {
         // Rien à faire ici, le timer est géré en JavaScript côté client
     }
 
-    #[On('sendNotification')]
+    // #[On('sendNotification')]
     public function render()
     {
         // Récupérer l'utilisateur authentifié
@@ -394,7 +417,7 @@ class NotificationShow extends Component
         }
 
         // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $notification->data['code_unique'] ?? $notification->data['Uniquecode'] ?? null;
+        $codeUnique = $notification->data['code_unique'] ?? $notification->data['code_livr'] ?? null;
 
 
         // Récupérer les commentaires avec code_unique et prixTrade non nul
@@ -700,12 +723,9 @@ class NotificationShow extends Component
 
             $userFour = User::find($notification->data['id_trader']);
 
-
-
-            
         }
         return view('livewire.notification-show', compact(
-                'notification',
+            'notification',
             'produtOffre',
             'comments',
             'commentCount',

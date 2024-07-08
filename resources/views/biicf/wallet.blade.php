@@ -22,7 +22,8 @@
         <!-- Balance Summary -->
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="lg:text-3xl text-xl font-semibold">{{ number_format($userWallet->balance, 2, ',', ' ') }} FCFA </h1>
+                <h1 class="lg:text-3xl text-xl font-semibold">{{ number_format($userWallet->balance, 2, ',', ' ') }} FCFA
+                </h1>
                 <p class="text-gray-500">Revenus total</p>
             </div>
             <div class="space-x-2">
@@ -276,12 +277,11 @@
                                             <h3 class="text-sm font-medium">
                                                 @if ($transaction->receiverUser)
                                                     {{ $transaction->receiverUser->name }}
-
                                                 @endif
                                             </h3>
                                         @elseif ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId)
                                             <h3 class="text-sm font-medium">Commission</h3>
-                                        @elseif ($transaction->type == 'Gele' && $transaction->sender_user_id== $userId)
+                                        @elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId)
                                             <h3 class="text-sm font-medium">Gele</h3>
                                         @endif
                                         <p class="text-sm text-gray-500">
@@ -290,11 +290,10 @@
                                             @elseif (
                                                 ($transaction->type == 'Reception' && $transaction->receiver_user_id == $userId) ||
                                                     $transaction->type == 'Depot' ||
-                                                    ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId)
-                                                    )
+                                                    ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId))
                                                 Reception
                                             @elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId)
-                                               Gele pour achat
+                                                Gele pour achat
                                             @endif
                                             • {{ $transaction->created_at->translatedFormat('j F Y \à H\hi') }}
                                         </p>
@@ -308,16 +307,15 @@
                                         +{{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
                                     </div>
                                 @elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId)
-                                  <div class="flex flex-col justify-end">
-                                    <div class="text-sm font-medium text-blue-600 text-end">
-                                        {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
+                                    <div class="flex flex-col justify-end">
+                                        <div class="text-sm font-medium text-blue-600 text-end">
+                                            {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
+                                        </div>
+
                                     </div>
-
-                                  </div>
-
                                 @elseif ($transaction->type == 'Envoie' && $transaction->sender_user_id == $userId)
                                     <div class="text-sm font-medium text-red-500">
-                                        -{{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
+                                        {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
                                     </div>
                                 @endif
                             </div>
@@ -329,14 +327,11 @@
 
 
                 @endif
-
-
-
                 <!-- More transactions... -->
             </div>
         </div>
     </div>
 
 
-    
+
 @endsection

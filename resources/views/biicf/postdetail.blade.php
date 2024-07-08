@@ -528,7 +528,9 @@
         </div>
     </div>
 
-
+    <div class="container mx-auto mt-5">
+        @livewire('countdown-component')
+    </div>
 
     {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {

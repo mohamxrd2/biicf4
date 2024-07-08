@@ -105,4 +105,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(AchatDirect::class, 'userTrader');
     }
+    public function countdown()
+    {
+        return $this->hasOne(Countdown::class,'user_id');
+    }
 }
