@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Comment;
 use App\Models\Countdown;
 use App\Notifications\CountdownNotification;
 use Illuminate\Console\Command;

@@ -60,6 +60,7 @@ class NotificationShow extends Component
     public $code_livr;
     public $countdownStarted = false;
     public $timeRemaining = null;
+    public $nameSender;
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -85,6 +86,8 @@ class NotificationShow extends Component
         $this->localite = $this->notification->data['localite'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
+        $this->nameSender = User::find($this->notification->data['userSender']) ?? null;
+
         $countdown = Countdown::where('user_id', Auth::id())
             ->where('notified', false)
             ->orderBy('start_time', 'desc')
@@ -239,7 +242,7 @@ class NotificationShow extends Component
         $notification->reponse = 'accepte';
         $notification->save();
 
-        $userSender = User::find($this->notification->data['userSender']);
+        // $userSender = User::find($this->notification->data['userSender']);
         $requiredAmount = $this->notification->data['montantTotal'];
         $pourcentSomme  = $requiredAmount * 0.1;
         $totalSom = $requiredAmount - $pourcentSomme;
@@ -262,12 +265,10 @@ class NotificationShow extends Component
             'totalSom' => $requiredAmount,
             'quantite' => $this->notification->data['quantité'],
             'localite' =>  $this->notification->data['localite'],
+            'userSender' =>  $this->notification->data['userSender'],
             'code_livr' => $code_livr,
 
         ];
-
-
-
 
         $livreurs = User::where('actor_type', 'livreur')->get();
 
@@ -405,7 +406,7 @@ class NotificationShow extends Component
             ->first();
 
         if ($countdown) {
-            $endTime = Carbon::parse($countdown->start_time)->addMinutes(5);
+            $endTime = Carbon::parse($countdown->start_time)->addMinutes(1);
             $now = Carbon::now();
 
             if ($now->greaterThan($endTime)) {

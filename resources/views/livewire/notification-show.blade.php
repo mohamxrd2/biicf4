@@ -838,6 +838,11 @@
                     <p class="text-md font-medium text-gray-600">{{ $notification->data['code_livr'] }}</p>
                 </div>
 
+                <div class="w-full flex justify-between items-center py-4  border-b-2">
+                    <p class="text-md font-semibold">Client a livrer </p>
+                    <p class="text-md font-medium text-gray-600">{{ $nameSender->name }}</p>
+                </div>
+
             </div>
             <div class="lg:col-span-1 col-span-2">
 
@@ -936,7 +941,6 @@
                             </div>
                         @endif
                     </div> --}}
-                    {{-- <livewire:countdown-component /> --}}
                     <div>
                         @if (!$countdownStarted)
                             nada
