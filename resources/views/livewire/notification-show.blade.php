@@ -990,29 +990,81 @@
                     </div>
 
 
-                    <div>
+                    {{-- <div>
                         @if ($timerStarted)
-                                <div x-data="{ timeleft: @entangle('timeleft'), countdownTime: @entangle('countdownTime') }" x-init="let updateCountdown = () => {
-                                    let now = Math.floor(Date.now() / 1000);
-                                    timeleft = countdownTime - now;
-                                    if (timeleft <= 0) {
-                                        clearInterval(interval);
-                                        timeleft = 'Countdown terminé';
-                                    }
-                                };
-                                let interval = setInterval(updateCountdown, 1000);
-                                window.livewire.on('start-timer', event => {
-                                    countdownTime = event.detail.countdownTime;
-                                    updateCountdown();
-                                });
-                                updateCountdown();">
-                                    <div
-                                        x-text="typeof timeleft === 'number' ? `${Math.floor(timeleft / 60)}:${('0' + (timeleft % 60)).slice(-2)}` : timeleft">
-                                    </div>
+                            <div x-data="{ timeleft: @entangle('timeleft'), countdownTime: @entangle('countdownTime') }" x-init="let updateCountdown = () => {
+                                let now = Math.floor(Date.now() / 1000);
+                                timeleft = countdownTime - now;
+                                if (timeleft <= 0) {
+                                    clearInterval(interval);
+                                    timeleft = 'Countdown terminé';
+                                }
+                            };
+                            let interval = setInterval(updateCountdown, 1000);
+                            window.livewire.on('start-timer', event => {
+                                countdownTime = event.detail.countdownTime;
+                                updateCountdown();
+                            });
+                            updateCountdown();">
+                                <div
+                                    x-text="typeof timeleft === 'number' ? `${Math.floor(timeleft / 60)}:${('0' + (timeleft % 60)).slice(-2)}` : timeleft">
                                 </div>
-                            @endif
-
+                            </div>
+                        @endif
+                    </div> --}}
+                    <div x-data="countdownComponent('{{ $oldestCommentDate }}', @json($highestPricedComment))">
+                        <div id="countdown" x-text="countdownDisplay"></div>
+                        <input type="number" id="prixTrade" x-bind:disabled="isDisabled" class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" placeholder="Faire une offre...">
+                        <button id="submitBtn" x-bind:hidden="isHidden" class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">Soumettre</button>
                     </div>
+                    <div id="prixTradeError" class="hidden text-red-500"></div>
+
+                    <script>
+                        function countdownComponent(startDateStr, highestPricedComment) {
+                            return {
+                                startDate: new Date(startDateStr),
+                                countdownTimer: null,
+                                countdownDisplay: '',
+                                isDisabled: false,
+                                isHidden: false,
+
+                                init() {
+                                    this.startDate.setMinutes(this.startDate.getMinutes() + 1);
+                                    this.updateCountdown();
+                                    this.countdownTimer = setInterval(this.updateCountdown.bind(this), 1000);
+                                },
+
+                                updateCountdown() {
+                                    const currentDate = new Date();
+                                    const difference = this.startDate - currentDate;
+
+                                    if (difference <= 0) {
+                                        clearInterval(this.countdownTimer);
+                                        this.countdownDisplay = 'Temps écoulé !';
+                                        this.isDisabled = true;
+                                        this.isHidden = true;
+
+                                        const prixTradeError = document.getElementById('prixTradeError');
+                                        if (highestPricedComment && highestPricedComment.user) {
+                                            prixTradeError.textContent = `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
+                                        } else {
+                                            prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                                        }
+                                        prixTradeError.classList.remove('hidden');
+                                    } else {
+                                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                                        this.countdownDisplay = `${hours}h : ${minutes}m : ${seconds}s`;
+                                    }
+                                }
+                            };
+                        }
+                    </script>
+
+
+
                 </div>
 
             </div>
