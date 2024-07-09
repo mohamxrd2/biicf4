@@ -60,6 +60,8 @@ class NotificationShow extends Component
     public $code_livr;
     public $countdownStarted = false;
     public $timeRemaining = null;
+    public $endTime = null;
+
     public $nameSender;
 
     protected $rules = [

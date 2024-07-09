@@ -957,15 +957,7 @@
 
             </div>
 
-            <script>
-                document.addEventListener('livewire:load', function () {
-                    @if($countdownStarted)
-                        setInterval(function() {
-                            @this.call('updateTimeRemaining');
-                        }, 1000);
-                    @endif
-                });
-            </script>
+            
 
             {{-- <script>
             document.addEventListener('DOMContentLoaded', function() {
