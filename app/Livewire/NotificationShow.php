@@ -402,9 +402,8 @@ class NotificationShow extends Component
             'id_trader' => $validatedData['id_trader'],
         ]);
 
-        // Vérifier si un compte à rebours est déjà en cours pour cet utilisateur
-        $existingCountdown = Countdown::where('user_id', Auth::id())
-            ->where('code_unique', $validatedData['code_livr'])
+        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+        $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
             ->where('notified', false)
             ->orderBy('start_time', 'desc')
             ->first();

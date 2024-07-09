@@ -989,81 +989,118 @@
                         </div>
                     </div>
 
+                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+
+
+                        @if ($oldestCommentDate)
+                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
+
+                            <div id="countdown"
+                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
+
+                                <div>-</div>:
+                                <div>-</div>:
+                                <div>-</div>
+                            </div>
+                        @endif
+                    </div>
+
 
                     {{-- <div>
                         @if ($timerStarted)
-                            <div x-data="{ timeleft: @entangle('timeleft'), countdownTime: @entangle('countdownTime') }" x-init="let updateCountdown = () => {
-                                let now = Math.floor(Date.now() / 1000);
-                                timeleft = countdownTime - now;
-                                if (timeleft <= 0) {
-                                    clearInterval(interval);
-                                    timeleft = 'Countdown terminé';
+                            <div x-data="{
+                                timeleft: @entangle('timeleft'),
+                                countdownTime: @entangle('countdownTime'),
+                                init() {
+                                    // Récupérer countdownTime du localStorage
+                                    const storedCountdownTime = localStorage.getItem('countdownTime');
+                                    if (storedCountdownTime) {
+                                        this.countdownTime = storedCountdownTime;
+                                    } else {
+                                        // Stocker countdownTime dans le localStorage
+                                        localStorage.setItem('countdownTime', this.countdownTime);
+                                    }
+                                    this.updateCountdown();
+                                    let interval = setInterval(this.updateCountdown.bind(this), 1000);
+                                    window.livewire.on('start-timer', event => {
+                                        this.countdownTime = event.detail.countdownTime;
+                                        localStorage.setItem('countdownTime', this.countdownTime);
+                                        this.updateCountdown();
+                                    });
+                                },
+                                updateCountdown() {
+                                    let now = Math.floor(Date.now() / 1000);
+                                    this.timeleft = this.countdownTime - now;
+                                    if (this.timeleft <= 0) {
+                                        clearInterval(interval);
+                                        this.timeleft = 'Countdown terminé';
+                                        // Supprimer countdownTime du localStorage
+                                        localStorage.removeItem('countdownTime');
+                                    }
                                 }
-                            };
-                            let interval = setInterval(updateCountdown, 1000);
-                            window.livewire.on('start-timer', event => {
-                                countdownTime = event.detail.countdownTime;
-                                updateCountdown();
-                            });
-                            updateCountdown();">
+                            }" x-init="init()">
                                 <div
                                     x-text="typeof timeleft === 'number' ? `${Math.floor(timeleft / 60)}:${('0' + (timeleft % 60)).slice(-2)}` : timeleft">
                                 </div>
                             </div>
                         @endif
                     </div> --}}
-                    <div x-data="countdownComponent('{{ $oldestCommentDate }}', @json($highestPricedComment))">
-                        <div id="countdown" x-text="countdownDisplay"></div>
-                        <input type="number" id="prixTrade" x-bind:disabled="isDisabled" class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" placeholder="Faire une offre...">
-                        <button id="submitBtn" x-bind:hidden="isHidden" class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">Soumettre</button>
-                    </div>
-                    <div id="prixTradeError" class="hidden text-red-500"></div>
 
                     <script>
-                        function countdownComponent(startDateStr, highestPricedComment) {
-                            return {
-                                startDate: new Date(startDateStr),
-                                countdownTimer: null,
-                                countdownDisplay: '',
-                                isDisabled: false,
-                                isHidden: false,
 
-                                init() {
-                                    this.startDate.setMinutes(this.startDate.getMinutes() + 1);
-                                    this.updateCountdown();
-                                    this.countdownTimer = setInterval(this.updateCountdown.bind(this), 1000);
-                                },
 
-                                updateCountdown() {
-                                    const currentDate = new Date();
-                                    const difference = this.startDate - currentDate;
+                        // Convertir la date de départ en objet Date JavaScript
+                        const startDate = new Date("{{ $oldestCommentDate }}");
 
-                                    if (difference <= 0) {
-                                        clearInterval(this.countdownTimer);
-                                        this.countdownDisplay = 'Temps écoulé !';
-                                        this.isDisabled = true;
-                                        this.isHidden = true;
+                        // Ajouter 5 jours à la date de départ
+                        // Ajouter 5 heures à la date de départ
+                        startDate.setMinutes(startDate.getMinutes() + 1);
 
-                                        const prixTradeError = document.getElementById('prixTradeError');
-                                        if (highestPricedComment && highestPricedComment.user) {
-                                            prixTradeError.textContent = `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
-                                        } else {
-                                            prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                                        }
-                                        prixTradeError.classList.remove('hidden');
-                                    } else {
-                                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                        // Mettre à jour le compte à rebours à intervalles réguliers
+                        const countdownTimer = setInterval(updateCountdown, 1000);
 
-                                        this.countdownDisplay = `${hours}h : ${minutes}m : ${seconds}s`;
-                                    }
+                        function updateCountdown() {
+                            // Obtenir la date et l'heure actuelles
+                            const currentDate = new Date();
+
+                            // Calculer la différence entre la date cible et la date de départ en millisecondes
+                            const difference = startDate.getTime() - currentDate.getTime();
+
+                            // Convertir la différence en jours, heures, minutes et secondes
+                            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                            // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+                            const countdownElement = document.getElementById('countdown');
+                            countdownElement.innerHTML = `
+
+                             <div>${hours}h</div>:
+                             <div>${minutes}m</div>:
+                             <div>${seconds}s</div>
+                            `;
+
+                            // Arrêter le compte à rebours lorsque la date cible est atteinte
+                            if (difference <= 0) {
+                                clearInterval(countdownTimer);
+                                countdownElement.innerHTML = "Temps écoulé !";
+                                document.getElementById('prixTrade').disabled = true;
+                                document.getElementById('submitBtn').hidden = true;
+
+
+                                const highestPricedComment = @json($highestPricedComment);
+
+                                if (highestPricedComment && highestPricedComment.user) {
+                                    prixTradeError.textContent =
+                                        `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
+                                } else {
+                                    prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
                                 }
-                            };
+                                prixTradeError.classList.remove('hidden');
+                            }
                         }
                     </script>
-
-
 
                 </div>
 
