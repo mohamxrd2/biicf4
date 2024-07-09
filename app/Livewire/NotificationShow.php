@@ -384,14 +384,25 @@ class NotificationShow extends Component
             'id_trader' => $validatedData['id_trader'],
         ]);
 
-        Countdown::create([
-            'user_id' => Auth::id(),
-            'userSender' => $this->userSender,
-            'start_time' => now(),
-            'code_unique' => $validatedData['code_livr'],
-        ]);
+        // Vérifier si un compte à rebours est déjà en cours pour cet utilisateur
+        $existingCountdown = Countdown::where('user_id', Auth::id())
+            ->where('code_unique', $validatedData['code_livr'])
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
 
-        $this->countdownStarted = true;
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $this->userSender,
+                'start_time' => now(),
+                'code_unique' => $validatedData['code_livr'],
+            ]);
+
+            $this->countdownStarted = true;
+            $this->updateTimeRemaining();
+        }
 
 
         // Afficher un message de succès
