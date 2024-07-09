@@ -807,6 +807,68 @@
 
 
         </div>
+    @elseif ($notification->type === 'App\Notifications\CountdownNotification')
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+            <header class="mb-4">
+                <h1 class="text-3xl font-bold">Facture Proforma</h1>
+                <div class="text-gray-600">
+                    <p>Numéro de Facture: <span class="font-semibold">#12345</span></p>
+                    <p>Date: <span class="font-semibold">09 juillet 2024</span></p>
+                </div>
+            </header>
+
+            <section class="mb-6">
+                <h2 class="text-xl font-semibold mb-2">Informations sur le Client</h2>
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <p>Nom du Client: <span class="font-semibold">Jean Dupont</span></p>
+                    <p>Adresse: <span class="font-semibold">123 Rue Principale, Paris, France</span></p>
+                    <p>Email: <span class="font-semibold">jean.dupont@example.com</span></p>
+                    <p>Téléphone: <span class="font-semibold">+33 1 23 45 67 89</span></p>
+                </div>
+            </section>
+
+            <section class="mb-6">
+                <h2 class="text-xl font-semibold mb-2">Détails de la Facture</h2>
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="w-full bg-gray-200">
+                            <th class="py-2 px-4 border-b">Description</th>
+                            <th class="py-2 px-4 border-b">Quantité</th>
+                            <th class="py-2 px-4 border-b">Prix Unitaire</th>
+                            <th class="py-2 px-4 border-b">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="py-2 px-4 border-b">Produit A</td>
+                            <td class="py-2 px-4 border-b">2</td>
+                            <td class="py-2 px-4 border-b">50€</td>
+                            <td class="py-2 px-4 border-b">100€</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">Service B</td>
+                            <td class="py-2 px-4 border-b">1</td>
+                            <td class="py-2 px-4 border-b">150€</td>
+                            <td class="py-2 px-4 border-b">150€</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="mb-6">
+                <div class="flex justify-end">
+                    <div class="w-1/3 bg-gray-100 p-4 rounded-lg">
+                        <p class="text-xl font-semibold">Total HT: <span class="font-bold">250€</span></p>
+                        <p class="text-xl font-semibold">TVA (20%): <span class="font-bold">50€</span></p>
+                        <p class="text-2xl font-bold">Total TTC: <span class="font-bold">300€</span></p>
+                    </div>
+                </div>
+            </section>
+
+            <footer>
+                <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
+            </footer>
+        </div>
     @elseif ($notification->type === 'App\Notifications\livraisonVerif')
         <div class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
@@ -863,7 +925,7 @@
 
                                     <div class="w-full h-full flex items-center justify-center">
                                         <p class="text-gray-800"> Aucune offre n'a été soumise</p>
-                                    </div>{{ $commentCount }}
+                                    </div>
                                 @else
                                     @foreach ($comments as $comment)
                                         <div class="flex items-center gap-3 relative">
@@ -923,198 +985,37 @@
                                 </div>
                             </form>
 
-                        </div>
 
-                        <div class="w-full flex justify-center">
-                            <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
                         </div>
                     </div>
 
-                    {{-- <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-                        @if ($oldestCommentDate)
-                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
-                            <div id="countdown"
-                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                                <div>-</div>:
-                                <div>-</div>:
-                                <div>-</div>
-                            </div>
-                        @endif
-                    </div> --}}
                     <div>
-                        @if (!$countdownStarted)
-                            nada
-                        @else
-                            <div>
-                                <p>Le compte à rebours a commencé !</p>
-                                <p>Temps restant : <span id="time-remaining">{{ $timeRemaining }}</span></p>
-                            </div>
-                        @endif
+                        @if ($timerStarted)
+                                <div x-data="{ timeleft: @entangle('timeleft'), countdownTime: @entangle('countdownTime') }" x-init="let updateCountdown = () => {
+                                    let now = Math.floor(Date.now() / 1000);
+                                    timeleft = countdownTime - now;
+                                    if (timeleft <= 0) {
+                                        clearInterval(interval);
+                                        timeleft = 'Countdown terminé';
+                                    }
+                                };
+                                let interval = setInterval(updateCountdown, 1000);
+                                window.livewire.on('start-timer', event => {
+                                    countdownTime = event.detail.countdownTime;
+                                    updateCountdown();
+                                });
+                                updateCountdown();">
+                                    <div
+                                        x-text="typeof timeleft === 'number' ? `${Math.floor(timeleft / 60)}:${('0' + (timeleft % 60)).slice(-2)}` : timeleft">
+                                    </div>
+                                </div>
+                            @endif
+
                     </div>
                 </div>
 
             </div>
-
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-                <header class="mb-4">
-                    <h1 class="text-3xl font-bold">Facture Proforma</h1>
-                    <div class="text-gray-600">
-                        <p>Numéro de Facture: <span class="font-semibold">#12345</span></p>
-                        <p>Date: <span class="font-semibold">09 juillet 2024</span></p>
-                    </div>
-                </header>
-
-                <section class="mb-6">
-                    <h2 class="text-xl font-semibold mb-2">Informations sur le Client</h2>
-                    <div class="bg-gray-100 p-4 rounded-lg">
-                        <p>Nom du Client: <span class="font-semibold">Jean Dupont</span></p>
-                        <p>Adresse: <span class="font-semibold">123 Rue Principale, Paris, France</span></p>
-                        <p>Email: <span class="font-semibold">jean.dupont@example.com</span></p>
-                        <p>Téléphone: <span class="font-semibold">+33 1 23 45 67 89</span></p>
-                    </div>
-                </section>
-
-                <section class="mb-6">
-                    <h2 class="text-xl font-semibold mb-2">Détails de la Facture</h2>
-                    <table class="min-w-full bg-white">
-                        <thead>
-                            <tr class="w-full bg-gray-200">
-                                <th class="py-2 px-4 border-b">Description</th>
-                                <th class="py-2 px-4 border-b">Quantité</th>
-                                <th class="py-2 px-4 border-b">Prix Unitaire</th>
-                                <th class="py-2 px-4 border-b">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="py-2 px-4 border-b">Produit A</td>
-                                <td class="py-2 px-4 border-b">2</td>
-                                <td class="py-2 px-4 border-b">50€</td>
-                                <td class="py-2 px-4 border-b">100€</td>
-                            </tr>
-                            <tr>
-                                <td class="py-2 px-4 border-b">Service B</td>
-                                <td class="py-2 px-4 border-b">1</td>
-                                <td class="py-2 px-4 border-b">150€</td>
-                                <td class="py-2 px-4 border-b">150€</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
-
-                <section class="mb-6">
-                    <div class="flex justify-end">
-                        <div class="w-1/3 bg-gray-100 p-4 rounded-lg">
-                            <p class="text-xl font-semibold">Total HT: <span class="font-bold">250€</span></p>
-                            <p class="text-xl font-semibold">TVA (20%): <span class="font-bold">50€</span></p>
-                            <p class="text-2xl font-bold">Total TTC: <span class="font-bold">300€</span></p>
-                        </div>
-                    </div>
-                </section>
-
-                <footer>
-                    <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
-                </footer>
-            </div>
-
-
-            <div>
-                <form wire:submit.prevent="startTimer">
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Démarrer le
-                        countdown</button>
-                </form>
-
-                @if ($timerStarted)
-                    <div x-data="{ timeleft: @entangle('timeleft'), countdownTime: @entangle('countdownTime') }" x-init="let updateCountdown = () => {
-                        let now = Math.floor(Date.now() / 1000);
-                        timeleft = countdownTime - now;
-                        if (timeleft <= 0) {
-                            clearInterval(interval);
-                            timeleft = 'Countdown terminé';
-                        }
-                    };
-                    let interval = setInterval(updateCountdown, 1000);
-                    window.livewire.on('start-timer', event => {
-                        countdownTime = event.detail.countdownTime;
-                        updateCountdown();
-                    });
-                    updateCountdown();">
-                        <div
-                            x-text="typeof timeleft === 'number' ? `${Math.floor(timeleft / 60)}:${('0' + (timeleft % 60)).slice(-2)}` : timeleft">
-                        </div>
-                    </div>
-                @endif
-            </div>
-
-
-
-
-            {{-- <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const prixTradeInput = document.getElementById('prixTrade');
-                const submitBtn = document.getElementById('submitBtnAppel');
-                const prixTradeError = document.getElementById('prixTradeError');
-
-                prixTradeInput.addEventListener('input', function() {
-                    const prixTradeValue = parseFloat(prixTradeInput.value);
-                    const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
-
-                    if (prixTradeValue > lowestPricedProduct) {
-                        submitBtn.disabled = true;
-                        prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
-                        prixTradeError.classList.remove('hidden');
-                    } else {
-                        submitBtn.disabled = false;
-                        prixTradeError.textContent = '';
-                        prixTradeError.classList.add('hidden');
-                    }
-                });
-
-                // Convertir la date de départ en objet Date JavaScript
-                const startDate = new Date("{{ $oldestCommentDate }}");
-
-                // Ajouter 5 heures à la date de départ
-                startDate.setMinutes(startDate.getMinutes() + 1);
-
-                // Mettre à jour le compte à rebours à intervalles réguliers
-                const countdownTimer = setInterval(updateCountdown, 1000);
-
-                function updateCountdown() {
-                    // Obtenir la date et l'heure actuelles
-                    const currentDate = new Date();
-
-                    // Calculer la différence entre la date cible et la date de départ en millisecondes
-                    const difference = startDate.getTime() - currentDate.getTime();
-
-                    // Convertir la différence en jours, heures, minutes et secondes
-                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                    // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                    const countdownElement = document.getElementById('countdown');
-                    countdownElement.innerHTML = `
-                    <div>${hours}h</div>:
-                    <div>${minutes}m</div>:
-                    <div>${seconds}s</div>
-                `;
-
-                    // Arrêter le compte à rebours lorsque la date cible est atteinte
-                    if (difference <= 0) {
-                        clearInterval(countdownTimer);
-                        countdownElement.innerHTML = "Temps écoulé !";
-                        prixTradeInput.disabled = true; // Désactiver le champ input
-                        document.getElementById('submitBtnAppel').hidden = true;
-                        prixTradeError.textContent =
-                            `Le fournisseur avec le prix le plus bas est {{ $lowPriceUserName }} avec {{ $lowPriceAmount }} FCFA!`;
-                        prixTradeError.classList.remove('hidden');
-                    }
-
-                }
-            });
-        </script> --}}
         </div>
 
     @endif

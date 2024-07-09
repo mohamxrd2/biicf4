@@ -386,7 +386,11 @@
                         </div>
 
                     </a>
-                    @elseif ($notification->type === 'App\Notifications\livraisonVerif')
+                @elseif ($notification->type === 'App\Notifications\CountdownNotification')
+                    <a href="{{ route('notification.show', $notification->id) }}">
+                        discustion entre les livreurs terminées consulter votre facture proformat
+                    </a>
+                @elseif ($notification->type === 'App\Notifications\livraisonVerif')
                     <a href="{{ route('notification.show', $notification->id) }}">
                         @php
                             $produit = ProduitService::find($notification->data['id_prod']);
@@ -405,7 +409,9 @@
                                     </p>
                                 </div>
                                 <div class="flex justify-between items-center w-full h-full">
-                                    <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous avez été identifié dans une commande a livré !</p>
+                                    <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous avez été
+                                        identifié
+                                        dans une commande a livré !</p>
                                     @if ($notification->read_at == null)
                                         <div class="w-10 flex justify-center items-center">
                                             <span class="w-2 h-2 rounded-full bg-purple-700"></span>

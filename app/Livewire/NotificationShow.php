@@ -428,6 +428,9 @@ class NotificationShow extends Component
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
+
+        $this->timerStarted = true;
+        $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
     }
 
     public function updateTimeRemaining()
