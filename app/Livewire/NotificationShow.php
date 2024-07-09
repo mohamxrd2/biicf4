@@ -48,7 +48,6 @@ class NotificationShow extends Component
     public $prixTrade;
     public $secondsRemaining = 60; // 60 seconds = 1 minute
     public $timerInterval;
-    protected $listeners = ['sendNotification' => 'render'];
 
     public $quantite;
 
@@ -63,6 +62,14 @@ class NotificationShow extends Component
     public $endTime = null;
 
     public $nameSender;
+
+    //test
+    public $countdownTime;
+    public $timerStarted;
+    public $timeleft;
+
+    protected $listeners = ['startTimer'];
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -99,7 +106,16 @@ class NotificationShow extends Component
             $this->countdownStarted = true;
             $this->updateTimeRemaining();
         }
+        $this->countdownTime = now()->addMinutes(1)->timestamp;
+        $this->timeleft = $this->countdownTime - now()->timestamp;
     }
+
+    public function startTimer()
+    {
+        $this->timerStarted = true;
+        $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
+    }
+
 
     public function accepterAGrouper()
     {

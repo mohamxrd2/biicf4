@@ -1020,6 +1020,35 @@
             </div>
 
 
+            <div>
+                <form wire:submit.prevent="startTimer">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Démarrer le
+                        countdown</button>
+                </form>
+
+                @if ($timerStarted)
+                    <div x-data="{ timeleft: @entangle('timeleft'), countdownTime: @entangle('countdownTime') }" x-init="let updateCountdown = () => {
+                        let now = Math.floor(Date.now() / 1000);
+                        timeleft = countdownTime - now;
+                        if (timeleft <= 0) {
+                            clearInterval(interval);
+                            timeleft = 'Countdown terminé';
+                        }
+                    };
+                    let interval = setInterval(updateCountdown, 1000);
+                    window.livewire.on('start-timer', event => {
+                        countdownTime = event.detail.countdownTime;
+                        updateCountdown();
+                    });
+                    updateCountdown();">
+                        <div
+                            x-text="typeof timeleft === 'number' ? `${Math.floor(timeleft / 60)}:${('0' + (timeleft % 60)).slice(-2)}` : timeleft">
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+
 
 
             {{-- <script>
