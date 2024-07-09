@@ -892,7 +892,7 @@
                                     <input type="hidden" name="code_livr" wire:model="code_livr"
                                         value="{{ $notification->data['code_livr'] }}">
                                     <input type="hidden" name="nameSender" wire:model="nameSender"
-                                        value="{{ $notification->data['userSender']  }}">
+                                        value="{{ $notification->data['userSender'] }}">
                                     <input type="hidden" name="id_trader" wire:model="id_trader"
                                         value="{{ $user->id }}">
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
@@ -957,7 +957,70 @@
 
             </div>
 
-            
+            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+                <header class="mb-4">
+                    <h1 class="text-3xl font-bold">Facture Proforma</h1>
+                    <div class="text-gray-600">
+                        <p>Numéro de Facture: <span class="font-semibold">#12345</span></p>
+                        <p>Date: <span class="font-semibold">09 juillet 2024</span></p>
+                    </div>
+                </header>
+
+                <section class="mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Informations sur le Client</h2>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <p>Nom du Client: <span class="font-semibold">Jean Dupont</span></p>
+                        <p>Adresse: <span class="font-semibold">123 Rue Principale, Paris, France</span></p>
+                        <p>Email: <span class="font-semibold">jean.dupont@example.com</span></p>
+                        <p>Téléphone: <span class="font-semibold">+33 1 23 45 67 89</span></p>
+                    </div>
+                </section>
+
+                <section class="mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Détails de la Facture</h2>
+                    <table class="min-w-full bg-white">
+                        <thead>
+                            <tr class="w-full bg-gray-200">
+                                <th class="py-2 px-4 border-b">Description</th>
+                                <th class="py-2 px-4 border-b">Quantité</th>
+                                <th class="py-2 px-4 border-b">Prix Unitaire</th>
+                                <th class="py-2 px-4 border-b">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-4 border-b">Produit A</td>
+                                <td class="py-2 px-4 border-b">2</td>
+                                <td class="py-2 px-4 border-b">50€</td>
+                                <td class="py-2 px-4 border-b">100€</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 border-b">Service B</td>
+                                <td class="py-2 px-4 border-b">1</td>
+                                <td class="py-2 px-4 border-b">150€</td>
+                                <td class="py-2 px-4 border-b">150€</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="mb-6">
+                    <div class="flex justify-end">
+                        <div class="w-1/3 bg-gray-100 p-4 rounded-lg">
+                            <p class="text-xl font-semibold">Total HT: <span class="font-bold">250€</span></p>
+                            <p class="text-xl font-semibold">TVA (20%): <span class="font-bold">50€</span></p>
+                            <p class="text-2xl font-bold">Total TTC: <span class="font-bold">300€</span></p>
+                        </div>
+                    </div>
+                </section>
+
+                <footer>
+                    <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
+                </footer>
+            </div>
+
+
+
 
             {{-- <script>
             document.addEventListener('DOMContentLoaded', function() {
