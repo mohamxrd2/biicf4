@@ -35,6 +35,7 @@ class NotificationShow extends Component
 {
     public $notification;
     public $id;
+    public $user;
     public $montantTotal;
     public $userSender = [];
     public $messageA = "Commande de produit en cours / Préparation a la livraison";
@@ -50,6 +51,7 @@ class NotificationShow extends Component
     public $timerInterval;
 
     public $quantite;
+    public $quantiteC;
 
     public $localite;
 
@@ -63,6 +65,13 @@ class NotificationShow extends Component
 
     public $nameSender;
     public $namefourlivr;
+    public $comments;
+    public $userComment;
+    public $commentCount;
+    public $oldestCommentDate;
+    public $isTempsEcoule;
+    public $tempsEcoule;
+    public $oldestComment;
 
     //test
     public $countdownTime;
@@ -92,17 +101,52 @@ class NotificationShow extends Component
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->userTrader = $this->notification->data['userTrader'] ?? null;
         $this->id_trader = Auth::user()->id ?? null;
+        $this->user = Auth::user()->id ?? null;
         $this->code_unique = $this->notification->data['code_unique'] ?? null;
         $this->quantite = $this->notification->data['quantité'] ?? null;
+        $this->quantiteC = $this->notification->data['quantite'] ?? null;
         $this->localite = $this->notification->data['localite'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
         $this->nameSender = $this->notification->data['userSender'] ?? null;
+        //pour la facture
         $this->produitfat = ProduitService::find($this->notification->data['id_prod']);
-
         $this->idProd = $this->notification->data['id_prod'];
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
+        //code unique recuperation dans render
+        // Vérifier si 'code_unique' existe dans les données de notification
+        $codeUnique = $this->notification->data['code_unique'] ?? $this->notification->data['code_livr'] ?? null;
+        $this->comments = Comment::with('user')
+            ->where('code_unique', $codeUnique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('prixTrade', 'asc')
+            ->get();
+        // Récupérer le commentaire de l'utilisateur connecté
+        $this->userComment = Comment::with('user')
+            ->where('code_unique', $codeUnique)
+            ->where('id_trader', $this->user)
+            ->first();
+
+        // Compter le nombre de commentaires
+        $this->commentCount = $this->comments->count();
+
+        // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
+        $this->oldestComment = Comment::where('code_unique', $codeUnique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // Initialiser la variable pour la date du plus ancien commentaire
+        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at : null;
+
+        // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
+        $this->tempsEcoule = $this->oldestCommentDate ? Carbon::parse($this->oldestCommentDate)->addMinutes(1) : null;
+
+        // Vérifier si $tempsEcoule est écoulé
+        $this->isTempsEcoule = $this->tempsEcoule && $this->tempsEcoule->isPast();
+
+        //gestion du temps et de la soumission dans countdown table
         $countdown = Countdown::where('user_id', Auth::id())
             ->where('notified', false)
             ->orderBy('start_time', 'desc')
@@ -110,17 +154,9 @@ class NotificationShow extends Component
 
         if ($countdown) {
             $this->countdownStarted = true;
-            $this->updateTimeRemaining();
         }
-        $this->countdownTime = now()->addMinutes(1)->timestamp;
-        $this->timeleft = $this->countdownTime - now()->timestamp;
     }
 
-    public function startTimer()
-    {
-        $this->timerStarted = true;
-        $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
-    }
 
     public function valider()
     {
@@ -418,6 +454,8 @@ class NotificationShow extends Component
             'code_livr' => 'required|string',
             'userSender' => 'required|numeric',
             'prixTrade' => 'required|numeric',
+            'quantiteC' => 'required|numeric',
+            'idProd' => 'required|numeric',
         ]);
 
         // Créer un commentaire
@@ -425,6 +463,8 @@ class NotificationShow extends Component
             'prixTrade' => $validatedData['prixTrade'],
             'code_unique' => $validatedData['code_livr'],
             'id_trader' => $validatedData['id_trader'],
+            'quantiteC' => $validatedData['quantiteC'],
+            'id_prod' => $validatedData['idProd'],
         ]);
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -443,7 +483,6 @@ class NotificationShow extends Component
             ]);
 
             $this->countdownStarted = true;
-            $this->updateTimeRemaining();
         }
 
 
@@ -457,25 +496,6 @@ class NotificationShow extends Component
         $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
     }
 
-    public function updateTimeRemaining()
-    {
-        $countdown = Countdown::where('user_id', Auth::id())
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
-
-        if ($countdown) {
-            $endTime = Carbon::parse($countdown->start_time)->addMinutes(1);
-            $now = Carbon::now();
-
-            if ($now->greaterThan($endTime)) {
-                $this->timeRemaining = '00:00';
-                $this->countdownStarted = false;
-            } else {
-                $this->timeRemaining = $endTime->diff($now)->format('%I:%S');
-            }
-        }
-    }
 
     // #[On('sendNotification')]
     public function render()
@@ -513,39 +533,39 @@ class NotificationShow extends Component
         }
 
         // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $notification->data['code_unique'] ?? $notification->data['code_livr'] ?? null;
+        // $codeUnique = $notification->data['code_unique'] ?? $notification->data['code_livr'] ?? null;
 
 
         // Récupérer les commentaires avec code_unique et prixTrade non nul
-        $comments = Comment::with('user')
-            ->where('code_unique', $codeUnique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('prixTrade', 'asc')
-            ->get();
+        // $comments = Comment::with('user')
+        //     ->where('code_unique', $codeUnique)
+        //     ->whereNotNull('prixTrade')
+        //     ->orderBy('prixTrade', 'asc')
+        //     ->get();
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $oldestComment = Comment::where('code_unique', $codeUnique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
+        // $oldestComment = Comment::where('code_unique', $codeUnique)
+        //     ->whereNotNull('prixTrade')
+        //     ->orderBy('created_at', 'asc')
+        //     ->first();
 
-        // Initialiser la variable pour la date du plus ancien commentaire
-        $oldestCommentDate = $oldestComment ? $oldestComment->created_at : null;
+        // // Initialiser la variable pour la date du plus ancien commentaire
+        // $oldestCommentDate = $oldestComment ? $oldestComment->created_at : null;
 
-        // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
-        $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addMinutes(1) : null;
+        // // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
+        // $tempsEcoule = $oldestCommentDate ? Carbon::parse($oldestCommentDate)->addMinutes(1) : null;
 
-        // Vérifier si $tempsEcoule est écoulé
-        $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+        // // Vérifier si $tempsEcoule est écoulé
+        // $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
 
-        // Récupérer le commentaire de l'utilisateur connecté
-        $userComment = Comment::with('user')
-            ->where('code_unique', $codeUnique)
-            ->where('id_trader', $user->id)
-            ->first();
+        // // Récupérer le commentaire de l'utilisateur connecté
+        // $userComment = Comment::with('user')
+        //     ->where('code_unique', $codeUnique)
+        //     ->where('id_trader', $user->id)
+        //     ->first();
 
-        // Compter le nombre de commentaires
-        $commentCount = $comments->count();
+        // // Compter le nombre de commentaires
+        // $commentCount = $comments->count();
 
         // Vérifier si le temps est écoulé /////\\\///////
 
@@ -814,37 +834,38 @@ class NotificationShow extends Component
             $produit = ProduitService::find($notification->data['produit_id']);
 
             $prixArticleNegos = $notification->data['quantite'] * $produit->prix;
-        } elseif ($notification->type === 'App\Notifications\livraisonVerif') {
-            $produit = ProduitService::find($notification->data['id_prod']);
+        } //elseif ($notification->type === 'App\Notifications\livraisonVerif') {
+        //     $produit = ProduitService::find($notification->data['id_prod']);
 
-            $userFour = User::find($notification->data['id_trader']);
-        }
+        //     $userFour = User::find($notification->data['id_trader']);
+        // }
 
-        // return view('livewire.notification-show', [
-        //     'userFour' => $this->userFour,
-        // ]);
+        return view('livewire.notification-show', [
+            'userFour' => $this->userFour,
+            'produitfat' => $this->produitfat,
+        ]);
 
-        return view('livewire.notification-show', compact(
-            'notification',
-            'produtOffre',
-            'comments',
-            'commentCount',
-            'userComment',
-            'oldestCommentDate',
-            'isTempsEcoule',
-            'codeUnique',
-            'oldestNotificationDate',
-            'sommeQuantites',
-            'nombreParticp',
-            'produit',
-            'prixArticleNegos',
-            'lowPriceUserName',
-            'lowPriceAmount',
-            'tempsEcoule',
-            'highestPricedComment',
-            'user',
-            'nombreLivr',
-            'userFour',
-        ));
+        // return view('livewire.notification-show', compact(
+        //     'notification',
+        //     'produtOffre',
+        //     'comments',
+        //     'commentCount',
+        //     'userComment',
+        //     'oldestCommentDate',
+        //     'isTempsEcoule',
+        //     'codeUnique',
+        //     'oldestNotificationDate',
+        //     'sommeQuantites',
+        //     'nombreParticp',
+        //     'produit',
+        //     'prixArticleNegos',
+        //     'lowPriceUserName',
+        //     'lowPriceAmount',
+        //     'tempsEcoule',
+        //     'highestPricedComment',
+        //     'user',
+        //     'nombreLivr',
+        //     'userFour',
+        // ));
     }
 }

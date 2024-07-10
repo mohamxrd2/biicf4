@@ -29,6 +29,7 @@ class CountdownNotification extends Notification
             'prixTrade' => $this->details['prixTrade'],
             'id_trader' => $this->details['id_trader'],
             'id_prod' => $this->details['id_prod'],
+            'quantiteC' => $this->details['quantiteC'],
         ];
     }
 }

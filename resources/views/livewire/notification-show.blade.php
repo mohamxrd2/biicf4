@@ -872,10 +872,10 @@
             </footer>
         </div>
     @elseif ($notification->type === 'App\Notifications\livraisonVerif')
-        <div class="grid grid-cols-2 gap-4 p-4">
+        <div  class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
 
-                <h2 class="text-3xl font-semibold mb-2">{{ $produit->name }}</h2>
+                <h2 class="text-3xl font-semibold mb-2">{{ $produitfat->name }}</h2>
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Quantité</p>
@@ -908,7 +908,7 @@
                 </div>
 
             </div>
-            <div class="lg:col-span-1 col-span-2">
+            <div  class="lg:col-span-1 col-span-2">
 
                 <div class="p-4">
 
@@ -955,10 +955,14 @@
                                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
                                     <input type="hidden" name="code_livr" wire:model="code_livr"
                                         value="{{ $notification->data['code_livr'] }}">
+                                    <input type="hidden" name="quantiteC" wire:model="quantiteC"
+                                        value="{{ $notification->data['quantite'] }}">
+                                    <input type="hidden" name="id_prod" wire:model="idProd"
+                                        value="{{ $notification->data['id_prod'] }}">
                                     <input type="hidden" name="nameSender" wire:model="nameSender"
                                         value="{{ $notification->data['userSender'] }}">
                                     <input type="hidden" name="id_trader" wire:model="id_trader"
-                                        value="{{ $user->id }}">
+                                        value="{{ $notification->data['id_trader'] }}">
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                         placeholder="Faire une offre..." required>
@@ -1007,47 +1011,6 @@
                         @endif
                     </div>
 
-
-                    {{-- <div>
-                        @if ($timerStarted)
-                            <div x-data="{
-                                timeleft: @entangle('timeleft'),
-                                countdownTime: @entangle('countdownTime'),
-                                init() {
-                                    // Récupérer countdownTime du localStorage
-                                    const storedCountdownTime = localStorage.getItem('countdownTime');
-                                    if (storedCountdownTime) {
-                                        this.countdownTime = storedCountdownTime;
-                                    } else {
-                                        // Stocker countdownTime dans le localStorage
-                                        localStorage.setItem('countdownTime', this.countdownTime);
-                                    }
-                                    this.updateCountdown();
-                                    let interval = setInterval(this.updateCountdown.bind(this), 1000);
-                                    window.livewire.on('start-timer', event => {
-                                        this.countdownTime = event.detail.countdownTime;
-                                        localStorage.setItem('countdownTime', this.countdownTime);
-                                        this.updateCountdown();
-                                    });
-                                },
-                                updateCountdown() {
-                                    let now = Math.floor(Date.now() / 1000);
-                                    this.timeleft = this.countdownTime - now;
-                                    if (this.timeleft <= 0) {
-                                        clearInterval(interval);
-                                        this.timeleft = 'Countdown terminé';
-                                        // Supprimer countdownTime du localStorage
-                                        localStorage.removeItem('countdownTime');
-                                    }
-                                }
-                            }" x-init="init()">
-                                <div
-                                    x-text="typeof timeleft === 'number' ? `${Math.floor(timeleft / 60)}:${('0' + (timeleft % 60)).slice(-2)}` : timeleft">
-                                </div>
-                            </div>
-                        @endif
-                    </div> --}}
-
                     <script>
                         // Convertir la date de départ en objet Date JavaScript
                         const startDate = new Date("{{ $oldestCommentDate }}");
@@ -1087,17 +1050,6 @@
                                 countdownElement.innerHTML = "Temps écoulé !";
                                 document.getElementById('prixTrade').disabled = true;
                                 document.getElementById('submitBtn').hidden = true;
-
-
-                                const highestPricedComment = @json($highestPricedComment);
-
-                                if (highestPricedComment && highestPricedComment.user) {
-                                    prixTradeError.textContent =
-                                        `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
-                                } else {
-                                    prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                                }
-                                prixTradeError.classList.remove('hidden');
                             }
                         }
                     </script>

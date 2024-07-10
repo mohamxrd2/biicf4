@@ -39,6 +39,7 @@ class CheckCountdowns extends Command
                 $lowestPrice = $lowestPriceComment->prixTrade;
                 $traderId = $lowestPriceComment->id_trader;
                 $id_prod = $lowestPriceComment->id_prod;
+                $quantiteC = $lowestPriceComment->quantiteC;
 
                 // Définir les détails de la notification
                 $details = [
@@ -47,6 +48,7 @@ class CheckCountdowns extends Command
                     'prixTrade' => $lowestPrice,
                     'id_trader' => $traderId,
                     'id_prod' => $id_prod,
+                    'quantiteC' => $quantiteC,
                 ];
 
                 // Envoyer la notification à l'utilisateur expéditeur
