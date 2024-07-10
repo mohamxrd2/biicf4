@@ -79,6 +79,8 @@ class NotificationShow extends Component
     public $timeleft;
     public $produitfat;
 
+    public $totalPrice;
+
     protected $listeners = ['startTimer'];
 
 
@@ -155,25 +157,50 @@ class NotificationShow extends Component
         if ($countdown) {
             $this->countdownStarted = true;
         }
+
+        //prix final
+        $this->totalPrice = (int) ($this->notification->data['prixTrade'] * $this->produitfat->prix);
     }
+
 
 
     public function valider()
     {
-        dd($this->validate());
+        // Calculer le prix total
+        $montantTotal = $this->totalPrice;
 
-        $userSender = User::find($this->notification->data['userSender']);
+        if (!$this->user) {
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
 
-        $userTrader = User::find($this->userId);
-        $this->handleCommission($this->userTrader, $this->pourcentSomme, 'Trader');
-        $this->handleCommission($this->userSender, $this->pourcentSomme, 'Sender');
+        $userSender = User::find($this->user); // Assurez-vous de récupérer l'objet utilisateur
 
-        $this->userWallet->increment('balance', $this->totalSom);
-        $this->createTransaction($userSender->id, $this->userId, 'Reception', $this->totalSom);
-        $this->createTransaction($userSender->id, $this->userId, 'Envoie', $this->requiredAmount);
+        if (!$userSender) {
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
+
+        $userWallet = Wallet::where('user_id',  $userSender->id)->first();
+
+        if (!$userWallet) {
+            session()->flash('error', 'Portefeuille introuvable.');
+            return;
+        }
+
+        $requiredAmount = $montantTotal;
+
+        if ($userWallet->balance < $requiredAmount) {
+            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
+            return;
+        }
+
+        $userWallet->decrement('balance', $requiredAmount);
+        $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
 
         Notification::send($userSender, new acceptAchat($this->messageA));
     }
+
 
 
     public function accepterAGrouper()
@@ -357,9 +384,6 @@ class NotificationShow extends Component
 
         $this->modalOpen = false;
     }
-
-
-
     private function genererCodeAleatoire($longueur)
     {
         $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -371,7 +395,6 @@ class NotificationShow extends Component
 
         return $code;
     }
-
 
     public function refuser()
     {

@@ -812,8 +812,8 @@
             <header class="mb-4">
                 <h1 class="text-3xl font-bold">Facture Proformat</h1>
                 <div class="text-gray-600">
-                    {{-- <p>code la de Facture: <span class="font-semibold">#{{$notification->data['code_unique']}}</span></p> --}}
-                    {{-- <p>Date: <span class="font-semibold">09 juillet 2024</span></p> --}}
+                    <p>code la de Facture: <span class="font-semibold">#{{$notification->data['code_unique']}}</span></p>
+                    <p>Date: <span class="font-semibold">09 juillet 2024</span></p>
                 </div>
             </header>
 
@@ -841,9 +841,9 @@
                     <tbody>
                         <tr>
                             <td class="py-2 px-4 border-b">Produit commandé: {{ $produitfat->name }}</td>
-                            <td class="py-2 px-4 border-b">2</td>
-                            <td class="py-2 px-4 border-b">{{ $produitfat->prix }}</td>
-                            <td class="py-2 px-4 border-b">100€</td>
+                            <td class="py-2 px-4 border-b">{{ $notification->data['quantiteC'] }}</td>
+                            <td class="py-2 px-4 border-b">{{ $produitfat->prix }} FCFA</td>
+                            <td class="py-2 px-4 border-b"> {{ (int) ($notification->data['prixTrade'] * $produitfat->prix) }} FCFA</td>
                         </tr>
                         <tr>
                             <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
@@ -863,7 +863,7 @@
                 </div>
 
                 <div class="w-1/4 bg-gray-100 p-2 rounded-lg">
-                    <p class="text-2xl text-center font-bold">Total TTC: <span class="font-bold">300€</span></p>
+                    <p class="text-2xl text-center font-bold">Total TTC: <span class="font-bold">{{ (int) ($notification->data['prixTrade'] * $produitfat->prix) +$notification->data['prixTrade'] }} FCFA</span></p>
                 </div>
             </section>
 
@@ -871,6 +871,14 @@
                 <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
             </footer>
         </div>
+        {{-- <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                window.addEventListener('alert-start', event => {
+                    alert(event.detail.message);
+                });
+            });
+        </script> --}}
+
     @elseif ($notification->type === 'App\Notifications\livraisonVerif')
         <div  class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
