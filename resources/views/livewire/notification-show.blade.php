@@ -810,58 +810,60 @@
     @elseif ($notification->type === 'App\Notifications\CountdownNotification')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
             <header class="mb-4">
-                <h1 class="text-3xl font-bold">Facture Proforma</h1>
+                <h1 class="text-3xl font-bold">Facture Proformat</h1>
                 <div class="text-gray-600">
-                    <p>Numéro de Facture: <span class="font-semibold">#12345</span></p>
-                    <p>Date: <span class="font-semibold">09 juillet 2024</span></p>
+                    {{-- <p>code la de Facture: <span class="font-semibold">#{{$notification->data['code_unique']}}</span></p> --}}
+                    {{-- <p>Date: <span class="font-semibold">09 juillet 2024</span></p> --}}
                 </div>
             </header>
 
-            <section class="mb-6">
+            {{-- <section class="mb-6">
                 <h2 class="text-xl font-semibold mb-2">Informations sur le Client</h2>
                 <div class="bg-gray-100 p-4 rounded-lg">
-                    <p>Nom du Client: <span class="font-semibold">Jean Dupont</span></p>
-                    <p>Adresse: <span class="font-semibold">123 Rue Principale, Paris, France</span></p>
-                    <p>Email: <span class="font-semibold">jean.dupont@example.com</span></p>
-                    <p>Téléphone: <span class="font-semibold">+33 1 23 45 67 89</span></p>
+                    <p>Nom du fournisseur: <span class="font-semibold">{{$namefourlivr->user->name}}</span></p>
+                    <p>Adresse du livreur: <span class="font-semibold">{{$namefourlivr->user->address}}</span></p>
+                    <p>Email du founisseur: <span class="font-semibold">{{$namefourlivr->user->email}}</span></p>
+                    <p>Téléphone founisseur: <span class="font-semibold">{{$namefourlivr->user->phone}}</span></p>
                 </div>
-            </section>
+            </section> --}}
 
             <section class="mb-6">
                 <h2 class="text-xl font-semibold mb-2">Détails de la Facture</h2>
                 <table class="min-w-full bg-white">
                     <thead>
                         <tr class="w-full bg-gray-200">
-                            <th class="py-2 px-4 border-b">Description</th>
-                            <th class="py-2 px-4 border-b">Quantité</th>
+                            <th class="py-2 px-4 border-b">Elements</th>
+                            <th class="py-2 px-4 border-b">Quantité commandé</th>
                             <th class="py-2 px-4 border-b">Prix Unitaire</th>
                             <th class="py-2 px-4 border-b">Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="py-2 px-4 border-b">Produit A</td>
+                            <td class="py-2 px-4 border-b">Produit commandé: {{ $produitfat->name }}</td>
                             <td class="py-2 px-4 border-b">2</td>
-                            <td class="py-2 px-4 border-b">50€</td>
+                            <td class="py-2 px-4 border-b">{{ $produitfat->prix }}</td>
                             <td class="py-2 px-4 border-b">100€</td>
                         </tr>
                         <tr>
-                            <td class="py-2 px-4 border-b">Service B</td>
-                            <td class="py-2 px-4 border-b">1</td>
-                            <td class="py-2 px-4 border-b">150€</td>
-                            <td class="py-2 px-4 border-b">150€</td>
+                            <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
+                            <td class="py-2 px-4 border-b">N/A</td>
+                            <td class="py-2 px-4 border-b">{{$notification->data['prixTrade']}} FCFA</td>
+                            <td class="py-2 px-4 border-b">{{$notification->data['prixTrade']}} FCFA</td>
                         </tr>
                     </tbody>
                 </table>
             </section>
 
-            <section class="mb-6">
-                <div class="flex justify-end">
-                    <div class="w-1/3 bg-gray-100 p-4 rounded-lg">
-                        <p class="text-xl font-semibold">Total HT: <span class="font-bold">250€</span></p>
-                        <p class="text-xl font-semibold">TVA (20%): <span class="font-bold">50€</span></p>
-                        <p class="text-2xl font-bold">Total TTC: <span class="font-bold">300€</span></p>
+            <section class="mb-6 flex justify-between">
+                <div class="w-1/3 bg-gray-100 p-4 rounded-lg">
+                    <div class="flex space-x-2 mt-4">
+                        <button wire:click.prevent='valider' class="bg-green-800 text-white px-4 py-2 rounded-lg">Validez la commande</button>
                     </div>
+                </div>
+
+                <div class="w-1/4 bg-gray-100 p-2 rounded-lg">
+                    <p class="text-2xl text-center font-bold">Total TTC: <span class="font-bold">300€</span></p>
                 </div>
             </section>
 
@@ -1047,8 +1049,6 @@
                     </div> --}}
 
                     <script>
-
-
                         // Convertir la date de départ en objet Date JavaScript
                         const startDate = new Date("{{ $oldestCommentDate }}");
 

@@ -62,11 +62,13 @@ class NotificationShow extends Component
     public $endTime = null;
 
     public $nameSender;
+    public $namefourlivr;
 
     //test
     public $countdownTime;
     public $timerStarted;
     public $timeleft;
+    public $produitfat;
 
     protected $listeners = ['startTimer'];
 
@@ -96,6 +98,10 @@ class NotificationShow extends Component
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
         $this->nameSender = $this->notification->data['userSender'] ?? null;
+        $this->produitfat = ProduitService::find($this->notification->data['id_prod']);
+
+        $this->idProd = $this->notification->data['id_prod'];
+        $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
         $countdown = Countdown::where('user_id', Auth::id())
             ->where('notified', false)
@@ -114,6 +120,23 @@ class NotificationShow extends Component
     {
         $this->timerStarted = true;
         $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
+    }
+
+    public function valider()
+    {
+        dd($this->validate());
+
+        $userSender = User::find($this->notification->data['userSender']);
+
+        $userTrader = User::find($this->userId);
+        $this->handleCommission($this->userTrader, $this->pourcentSomme, 'Trader');
+        $this->handleCommission($this->userSender, $this->pourcentSomme, 'Sender');
+
+        $this->userWallet->increment('balance', $this->totalSom);
+        $this->createTransaction($userSender->id, $this->userId, 'Reception', $this->totalSom);
+        $this->createTransaction($userSender->id, $this->userId, 'Envoie', $this->requiredAmount);
+
+        Notification::send($userSender, new acceptAchat($this->messageA));
     }
 
 
@@ -298,6 +321,8 @@ class NotificationShow extends Component
 
         $this->modalOpen = false;
     }
+
+
 
     private function genererCodeAleatoire($longueur)
     {
@@ -794,6 +819,11 @@ class NotificationShow extends Component
 
             $userFour = User::find($notification->data['id_trader']);
         }
+
+        // return view('livewire.notification-show', [
+        //     'userFour' => $this->userFour,
+        // ]);
+
         return view('livewire.notification-show', compact(
             'notification',
             'produtOffre',

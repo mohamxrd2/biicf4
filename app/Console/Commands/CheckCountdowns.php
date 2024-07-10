@@ -27,11 +27,34 @@ class CheckCountdowns extends Command
             ->get();
 
         foreach ($countdowns as $countdown) {
-            // Envoyer la notification à l'utilisateur expéditeur
-            Notification::send($countdown->sender, new CountdownNotification());
+            // Récupérer le code unique
+            $code_unique = $countdown->code_unique;
 
-            // Mettre à jour le statut notified à true
-            $countdown->update(['notified' => true]);
+            // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
+            $lowestPriceComment = Comment::where('code_unique', $code_unique)
+                ->orderBy('prixTrade', 'asc')
+                ->first();
+            // Vérifier si un enregistrement a été trouvé
+            if ($lowestPriceComment) {
+                $lowestPrice = $lowestPriceComment->prixTrade;
+                $traderId = $lowestPriceComment->id_trader;
+                $id_prod = $lowestPriceComment->id_prod;
+
+                // Définir les détails de la notification
+                $details = [
+                    'sender_name' => $countdown->sender->name, // Ajouter le nom de l'expéditeur aux détails de la notification
+                    'code_unique' => $countdown->code_unique,
+                    'prixTrade' => $lowestPrice,
+                    'id_trader' => $traderId,
+                    'id_prod' => $id_prod,
+                ];
+
+                // Envoyer la notification à l'utilisateur expéditeur
+                Notification::send($countdown->sender, new CountdownNotification($details));
+
+                // Mettre à jour le statut notified à true
+                $countdown->update(['notified' => true]);
+            }
         }
     }
 }

@@ -10,10 +10,10 @@ use Illuminate\Notifications\Notification;
 class CountdownNotification extends Notification
 {
     use Queueable;
-
-    public function __construct()
+    public $details;
+    public function __construct($details)
     {
-        //
+        $this->details = $details;
     }
 
     public function via($notifiable)
@@ -21,11 +21,14 @@ class CountdownNotification extends Notification
         return ['database'];
     }
 
-    public function toArray($notifiable)
+    public function toDatabase($notifiable)
     {
         return [
-            'message' => 'Le temps est écoulé.',
-            'action_url' => url('/'),
+            'sender_name' => $this->details['sender_name'],
+            'code_unique' => $this->details['code_unique'],
+            'prixTrade' => $this->details['prixTrade'],
+            'id_trader' => $this->details['id_trader'],
+            'id_prod' => $this->details['id_prod'],
         ];
     }
 }
