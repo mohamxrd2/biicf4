@@ -154,10 +154,9 @@
             </div>
             @if ($produit->user_id != $user->id)
                 <div class="w-full flex">
-                    <button class="w-1/2 bg-purple-500 text-white py-2 mr- rounded-xl" id="btnAchatDirect">Achat
+                    <button class="w-full bg-purple-500 text-white py-2 mr- rounded-xl" id="btnAchatDirect">Achat
                         direct</button>
-                    <button class="w-1/2 bg-green-500 text-white py-2 ml-2 rounded-xl" id="btnAchatGroup">Achat
-                        groupé</button>
+                   
                 </div>
             @else
                 <button class="w-full bg-red-500 text-white py-2 mr- rounded-xl"
