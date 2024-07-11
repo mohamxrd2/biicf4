@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class acceptAchat extends Notification
+class commandVerif extends Notification
 {
     use Queueable;
     private $accept;
@@ -27,8 +27,12 @@ class acceptAchat extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'message' => 'Votre achat a été accepté.',
-            'accept' => $this->accept,
+            'idProd' => $this->accept['idProd'],
+            'code_unique' =>$this->accept['code_unique'],
+            'id_trader' => $this->accept['id_trader'],
+         
+
+      
         ];
     }
 }

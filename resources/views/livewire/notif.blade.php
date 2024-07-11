@@ -26,9 +26,8 @@
             </h1>
         </div>
         @foreach (auth()->user()->notifications as $notification)
-            <div
-                class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
-                @if (isset($notification->data['message']) && isset($notification->data['accept']))
+            <div class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
+                @if (($notification->type === 'App\Notifications\commandVerif'))
                     <a href="{{ route('notification.show', $notification->id) }}" class="">
                         <div class="flex w-full">
                             <div class="w-16 h-16 overflow-hidden mr-3">
@@ -42,13 +41,13 @@
 
                             <div class="flex flex-col justify-between w-full">
                                 <div class="flex justify-between items-center w-full">
-                                    <p class="text-md font-semibold">{{ $notification->data['message'] }}</p>
+                                    <p class="text-md font-semibold">Verification de conformité</p>
                                     <p class="text-[12px] text-gray-400 text-right">
                                         {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
                                     </p>
                                 </div>
                                 <p class="text-sm text-slate-500 l max-w-1/2  font-normal">
-                                    {{ $notification->data['accept'] }}
+                                    Veillez passez a la verification de la conformité de votre produit !
                                 </p>
                             </div>
                         </div>

@@ -7,19 +7,21 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Comment;
 use Livewire\Component;
-use App\Models\AchatDirect;
+
+use App\Models\Countdown;
 use App\Models\OffreGroupe;
 use App\Models\Transaction;
+use Livewire\Attributes\On;
 use App\Models\Consommation;
-use App\Models\Countdown;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
 use App\Models\NotificationLog;
 use App\Notifications\AppelOffre;
 use App\Notifications\RefusAchat;
+
 use App\Notifications\acceptAchat;
-use Illuminate\Support\Facades\DB;
+use App\Notifications\commandVerif;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +30,6 @@ use App\Notifications\OffreNegosDone;
 use App\Notifications\AppelOffreTerminer;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\DatabaseNotification;
-use Livewire\Attributes\On;
 
 class NotificationShow extends Component
 
@@ -161,8 +162,6 @@ class NotificationShow extends Component
         }
 
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
-
-
     }
 
 
@@ -204,7 +203,17 @@ class NotificationShow extends Component
         $userWallet->decrement('balance', $requiredAmount);
         $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
 
-        Notification::send($userSender, new acceptAchat($this->messageA));
+        $data = [
+            'idProd' => $this->notification->data['idProd'],
+            'code_unique' => $this->code_unique,
+            'id_trader' => $this->namefourlivr->id,
+        ];
+        
+
+        Notification::send($userSender, new commandVerif($data));
+
+        $this->notification->update(['reponse' => 'valide']);
+        $this->validate();
     }
 
 

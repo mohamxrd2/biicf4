@@ -631,7 +631,7 @@
                 }
             }
         </script>
-    @elseif($notification->type === 'App\Notifications\AppelOffreTerminer')
+    @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
                 </span>{{ $notification->data['name'] }}</h2>
@@ -858,7 +858,20 @@
             </section>
 
             <section class="mb-6 flex justify-between">
-                <div class="w-1/3 bg-gray-100 p-4 rounded-lg">
+                <div class="w-1/3  p-4 rounded-lg">
+                    @if ($notification->reponse)
+
+                    <div class="flex space-x-2 mt-4">
+                        <div  class="bg-gray-600 text-white px-4 py-2 rounded-lg relative">
+                            <!-- Texte du bouton et icône -->
+                            Validé !
+                           
+                        </div>
+
+                    </div>
+
+                    @else
+
                     <div class="flex space-x-2 mt-4">
                         <button wire:click.prevent='valider' class="bg-green-800 text-white px-4 py-2 rounded-lg relative">
                             <!-- Texte du bouton et icône -->
@@ -876,12 +889,13 @@
                         </button>
 
                     </div>
+
+                    @endif
+                  
                 </div>
 
-                <div class="w-1/4 bg-gray-100 p-2 rounded-lg">
-                    <p class="text-2xl text-center font-bold">Total TTC: <span
-                            class="font-bold">{{ (int) ($notification->data['quantiteC'] * $produitfat->prix) + $notification->data['prixTrade'] }}
-                            FCFA</span></p>
+                <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
+                    <p class="text-xl  text-center font-bold">Total TTC: <span class="font-bold">{{ (int) ($notification->data['quantiteC'] * $produitfat->prix) + $notification->data['prixTrade'] }} FCFA</span></p>
                 </div>
             </section>
 
@@ -1076,6 +1090,50 @@
 
             </div>
         </div>
+
+    @elseif (($notification->type === 'App\Notifications\commandVerif'))
+
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-2">Informations du fournisseur</h2>
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <p>Nom du fournisseur: <span class="font-semibold">{{$namefourlivr->user->name}}</span></p>
+                    <p>Adresse du livreur: <span class="font-semibold">{{$namefourlivr->user->address}}</span></p>
+                    <p>Email du founisseur: <span class="font-semibold">{{$namefourlivr->user->email}}</span></p>
+                    <p>Téléphone founisseur: <span class="font-semibold">{{$namefourlivr->user->phone}}</span></p>
+                </div>
+    </div>
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mt-3">   
+        <h2 class="text-xl font-semibold my-2">Avis de conformité</h2>
+
+        <div class="flex mb-3">
+            <input type="checkbox" class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600  disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-default-checkbox">
+            <label for="hs-default-checkbox" class="text-md text-gray-600 ms-3 dark:text-neutral-400">Quantité</label>
+          </div>
+          
+          <div class="flex mb-3">
+            <input type="checkbox" class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-checked-checkbox" checked="">
+            <label for="hs-checked-checkbox" class="text-md text-gray-600 ms-3 dark:text-neutral-400">Qualité apparante</label>
+          </div>
+
+          <div class="flex">
+            <input type="checkbox" class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-checked-checkbox" checked="">
+            <label for="hs-checked-checkbox" class="text-md text-gray-600 ms-3 dark:text-neutral-400">Diversité</label>
+          </div>
+    </div>
+
+    <div class="max-w-4xl p-8 flex" >
+
+        <button class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
+          </svg>
+           Léver la main</button>
+
+        <button class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
+          </svg>
+           Refuser</button>
+
+    </div>
 
     @endif
 
