@@ -845,7 +845,7 @@
                             <td class="py-2 px-4 border-b">{{ $notification->data['quantiteC'] }}</td>
                             <td class="py-2 px-4 border-b">{{ $produitfat->prix }} FCFA</td>
                             <td class="py-2 px-4 border-b">
-                                {{ (int) ($notification->data['prixTrade'] * $produitfat->prix) }} FCFA</td>
+                                {{ (int) ($notification->data['quantiteC'] * $produitfat->prix) }} FCFA</td>
                         </tr>
                         <tr>
                             <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
@@ -880,7 +880,7 @@
 
                 <div class="w-1/4 bg-gray-100 p-2 rounded-lg">
                     <p class="text-2xl text-center font-bold">Total TTC: <span
-                            class="font-bold">{{ (int) ($notification->data['prixTrade'] * $produitfat->prix) + $notification->data['prixTrade'] }}
+                            class="font-bold">{{ (int) ($notification->data['quantiteC'] * $produitfat->prix) + $notification->data['prixTrade'] }}
                             FCFA</span></p>
                 </div>
             </section>
@@ -936,7 +936,7 @@
                         <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
 
                             <!-- comments -->
-                            {{-- <div
+                            <div
                                 class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
 
 
@@ -948,7 +948,7 @@
                                     </div>
                                 @else
                                     @foreach ($comments as $comment)
-                                        <div wire:poll class="flex items-center gap-3 relative">
+                                        <div  class="flex items-center gap-3 relative">
 
                                             <img src="{{ asset($comment->user->photo) }}" alt=""
                                                 class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
@@ -963,9 +963,7 @@
                                         </div>
                                     @endforeach
                                 @endif
-                            </div> --}}
-
-                            @livewire('comments', ['id' => $id])
+                            </div>
 
 
                             <!-- add comment -->

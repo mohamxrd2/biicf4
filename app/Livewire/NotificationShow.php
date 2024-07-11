@@ -170,7 +170,7 @@ class NotificationShow extends Component
     public function valider()
     {
         //prix final
-        $this->totalPrice = (int) ($this->notification->data['prixTrade'] * $this->produitfat->prix);
+        $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $this->produitfat->prix) + $this->notification->data['prixTrade'];
 
         // Calculer le prix total
         $montantTotal = $this->totalPrice;
