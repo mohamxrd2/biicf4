@@ -49,6 +49,7 @@ class CheckCountdowns extends Command
                     'id_trader' => $traderId,
                     'idProd' => $id_prod,
                     'quantiteC' => $quantiteC,
+                 
                 ];
 
                 // Envoyer la notification à l'utilisateur expéditeur

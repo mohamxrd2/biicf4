@@ -422,6 +422,36 @@
                         </div>
 
                     </a>
+                @elseif ($notification->type === 'App\Notifications\mainleve')
+
+                <a href="{{ route('notification.show', $notification->id) }}">
+
+                    <div class="flex w-full">
+                       
+
+                        <div class="flex flex-col justify-between w-full">
+                            <div class="flex justify-between items-center w-full">
+                                <h3 class="text-md font-semibold"></h3>
+                                <p class="text-[12px] text-gray-400 text-right">
+                                    {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                </p>
+                            </div>
+                            <div class="flex justify-between items-center w-full h-full">
+                                <p class="text-sm text-gray-700 l max-w-1/2 font-normal">Vous avez été
+                                    identifié
+                                    dans une commande a livré !</p>
+                                @if ($notification->read_at == null)
+                                    <div class="w-10 flex justify-center items-center">
+                                        <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                    </div>
+
+                </a>
+
                 @endif
 
             </div>

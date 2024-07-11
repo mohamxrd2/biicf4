@@ -7,16 +7,16 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class commandVerif extends Notification
+class mainleve extends Notification
 {
     use Queueable;
-    private $accept;
+    private $main;
     /**
      * Create a new notification instance.
      */
-    public function __construct($accept)
+    public function __construct($main)
     {
-        $this->accept = $accept;
+        $this->main = $main;
     }
 
     public function via($notifiable)
@@ -27,12 +27,13 @@ class commandVerif extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'idProd' => $this->accept['idProd'],
-            'code_unique' =>$this->accept['code_unique'],
-            'id_trader' => $this->accept['id_trader'],
-            'quantite' => $this->accept['quantite'],
-            'localité' => $this->accept['localité'],
-            'id_livreur' => $this->accept['id_livreur']
+            'idProd' => $this->main['idProd'],
+            'code_unique' =>$this->main['code_unique'],
+            'id_trader' => $this->main['id_trader'],
+            'quantite' => $this->main['quantite'],
+            'localité' => $this->main['localité'],
+            'id_client' => $this->main['id_client']
+            
         ];
     }
 }

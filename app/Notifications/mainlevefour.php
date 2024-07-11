@@ -7,16 +7,16 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class commandVerif extends Notification
+class mainlevefour extends Notification
 {
     use Queueable;
-    private $accept;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct($accept)
+    public function __construct()
     {
-        $this->accept = $accept;
+      
     }
 
     public function via($notifiable)
@@ -27,12 +27,9 @@ class commandVerif extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'idProd' => $this->accept['idProd'],
-            'code_unique' =>$this->accept['code_unique'],
-            'id_trader' => $this->accept['id_trader'],
-            'quantite' => $this->accept['quantite'],
-            'localité' => $this->accept['localité'],
-            'id_livreur' => $this->accept['id_livreur']
+            'message' => 'Vous venez de recevoir une note d\'enlevement pour un livreur'
+          
+            
         ];
     }
 }

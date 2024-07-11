@@ -17,11 +17,13 @@ use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
 use App\Models\NotificationLog;
+use App\Notifications\mainleve;
 use App\Notifications\AppelOffre;
-use App\Notifications\RefusAchat;
 
+use App\Notifications\RefusAchat;
 use App\Notifications\acceptAchat;
 use App\Notifications\commandVerif;
+use App\Notifications\mainlevefour;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
@@ -85,6 +87,8 @@ class NotificationShow extends Component
 
     protected $listeners = ['startTimer'];
 
+    public $id_livreur;
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -118,6 +122,10 @@ class NotificationShow extends Component
         $this->idProd = $this->notification->data['idProd'];
 
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
+
+        $this->id_livreur = $this->notification->data['id_livreur'] ?? null;
+
+
 
         //code unique recuperation dans render
         // Vérifier si 'code_unique' existe dans les données de notification
@@ -207,6 +215,9 @@ class NotificationShow extends Component
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->code_unique,
             'id_trader' => $this->namefourlivr->id,
+            'localité' => 'N/A',
+            'quantite' => $this->notification->data['quantiteC'],
+            'id_livreur' => $this->userFour->id
         ];
         
 
@@ -214,6 +225,36 @@ class NotificationShow extends Component
 
         $this->notification->update(['reponse' => 'valide']);
         $this->validate();
+    }
+
+    public function mainleve(){
+
+        $id_client = Auth::user()->id ;
+
+        $livreur = User::find($this->id_livreur);
+
+        $fournisseur = User::find($this->namefourlivr->id);
+
+        $data = [
+            'idProd' => $this->notification->data['idProd'],
+            'code_unique' => $this->code_unique,
+            'id_trader' => $this->namefourlivr->id,
+            'localité' => 'N/A',
+            'quantite' => $this->quantiteC,
+            'id_client' => $id_client
+            
+        ];
+
+
+         Notification::send($livreur, new mainleve($data));
+
+        //  Notification::send($fournisseur, new mainlevefour());
+
+         $this->notification->update(['reponse' => 'mainleve']);
+         $this->validate();
+
+
+
     }
 
 
