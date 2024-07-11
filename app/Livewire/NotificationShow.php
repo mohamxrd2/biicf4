@@ -871,10 +871,7 @@ class NotificationShow extends Component
         //     $userFour = User::find($notification->data['id_trader']);
         // }
 
-        return view('livewire.notification-show', [
-            'userFour' => $this->userFour,
-            'produitfat' => $this->produitfat,
-        ]);
+        return view('livewire.notification-show');
 
         // return view('livewire.notification-show', compact(
         //     'notification',
