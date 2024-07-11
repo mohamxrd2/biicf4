@@ -18,6 +18,7 @@ class Comment extends Model
         'id_trader',
         'code_unique',
         'id_prod',
+        'quantiteC',
     ];
 
     /**

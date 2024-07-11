@@ -113,8 +113,9 @@ class NotificationShow extends Component
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
         $this->nameSender = $this->notification->data['userSender'] ?? null;
         //pour la facture
-        // $this->produitfat = ProduitService::find($this->notification->data['id_prod']);
-        // $this->idProd = $this->notification->data['id_prod'];
+        $this->produitfat = ProduitService::find($this->notification->data['idProd']);
+        $this->idProd = $this->notification->data['idProd'];
+
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
         //code unique recuperation dans render
@@ -338,6 +339,7 @@ class NotificationShow extends Component
     public function accepter()
     {
 
+
         $this->notification->update(['reponse' => 'accepte']);
 
         $userId = Auth::id();
@@ -369,7 +371,7 @@ class NotificationShow extends Component
         // Notification::send($userSender, new acceptAchat($this->messageA));
 
         $data = [
-            'id_prod' => $this->notification->data['idProd'],
+            'idProd' => $this->notification->data['idProd'],
             'id_trader' => $this->userTrader,
             'totalSom' => $requiredAmount,
             'quantite' => $this->notification->data['quantité'],

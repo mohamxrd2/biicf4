@@ -393,7 +393,7 @@
                 @elseif ($notification->type === 'App\Notifications\livraisonVerif')
                     <a href="{{ route('notification.show', $notification->id) }}">
                         @php
-                            $produit = ProduitService::find($notification->data['id_prod']);
+                            $produit = ProduitService::find($notification->data['idProd']);
                         @endphp
                         <div class="flex w-full">
                             <div class=" w-16 h-16  overflow-hidden mr-3">

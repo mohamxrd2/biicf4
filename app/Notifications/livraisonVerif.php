@@ -27,7 +27,7 @@ class livraisonVerif extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'id_prod' => $this->livraisonVerif['id_prod'],
+            'idProd' => $this->livraisonVerif['idProd'],
             'quantite' => $this->livraisonVerif['quantite'],
             'id_trader' => $this->livraisonVerif['id_trader'],
             'totalSom' => $this->livraisonVerif['totalSom'],
