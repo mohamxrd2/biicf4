@@ -47,7 +47,7 @@ class NotificationShow extends Component
     public $idProd;
 
     public $userTrader;
-    public $code_unique;
+    public $code_unique = '';
     public $id_trader;
     public $prixTrade;
     public $secondsRemaining = 60; // 60 seconds = 1 minute
@@ -89,6 +89,10 @@ class NotificationShow extends Component
 
     public $id_livreur;
 
+    public $code_verif;
+
+    public $livreur;
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -124,6 +128,8 @@ class NotificationShow extends Component
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
         $this->id_livreur = $this->notification->data['id_livreur'] ?? null;
+
+        $this->livreur = User::find($this->notification->data['id_livreur'] ?? null);
 
 
 
@@ -233,7 +239,7 @@ class NotificationShow extends Component
 
         $livreur = User::find($this->id_livreur);
 
-        $fournisseur = User::find($this->namefourlivr->id);
+        $fournisseur = User::find($this->namefourlivr->user->id);
 
         $data = [
             'idProd' => $this->notification->data['idProd'],
@@ -241,20 +247,36 @@ class NotificationShow extends Component
             'id_trader' => $this->namefourlivr->id,
             'localité' => 'N/A',
             'quantite' => $this->quantiteC,
-            'id_client' => $id_client
+            'id_client' => $id_client,
+            'id_livreur' => $this->id_livreur
             
         ];
 
 
          Notification::send($livreur, new mainleve($data));
 
-        //  Notification::send($fournisseur, new mainlevefour());
+         Notification::send($fournisseur, new mainlevefour($data));
 
          $this->notification->update(['reponse' => 'mainleve']);
          $this->validate();
 
 
+    }
 
+    public function verifyCode()
+    {
+        $this->validate([
+            'code_verif' => 'required|string|size:10',
+        ], [
+            'code_verif.required' => 'Le code de vérification est requis.',
+            'code_verif.string' => 'Le code de vérification doit être une chaîne de caractères.',
+            'code_verif.size' => 'Le code de vérification doit être exactement de 10 caractères.',
+        ]);
+        if ($this->code_verif === $this->notification->data['code_unique']) {
+            session()->flash('succes', 'Code valide.');
+        } else {
+            session()->flash('error', 'Code invalide.');
+        }
     }
 
 

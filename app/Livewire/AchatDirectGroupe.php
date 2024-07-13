@@ -122,65 +122,7 @@ class AchatDirectGroupe extends Component
             session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
     }
-    public function AchatGroupeForm()
-    {
-        $validated = $this->validate();
-
-        $userId = Auth::id();
-
-        $montanTotal = $validated['quantité'] * $validated['prix'];
-
-        if (!$userId) {
-            session()->flash('error', 'Utilisateur non authentifié.');
-            return;
-        }
-
-        $userWallet = Wallet::where('user_id', $userId)->first();
-
-        if (!$userWallet) {
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
-        }
-
-        $requiredAmount = $montanTotal;
-
-        if ($userWallet->balance < $requiredAmount) {
-            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-            return;
-        }
-
-        try {
-            $achat = AchatGrouper::create([
-                'nameProd' => $validated['nameProd'],
-                'quantité' => $validated['quantité'],
-                'montantTotal' => $montanTotal,
-                'localite' => $validated['localite'],
-                'userTrader' => $validated['userTrader'],
-                'userSender' => $validated['userSender'],
-                'specificite' => $this->specificite,
-                'photoProd' => $validated['photoProd'],
-                'idProd' => $validated['idProd'],
-            ]);
-
-            // Déduire le montant du solde de l'utilisateur
-            $userWallet->decrement('balance', $requiredAmount);
-
-            // Enregistrer la transaction pour l'utilisateur connecté
-            $transaction = new Transaction();
-            $transaction->sender_user_id = $userId;
-            $transaction->receiver_user_id = $validated['userTrader'];
-            $transaction->type = 'Gele';
-            $transaction->amount = $montanTotal;
-            $transaction->save();
-
-            $this->reset(['quantité', 'localite', 'specificite']);
-
-            $this->dispatch('start-timer');
-            session()->flash('success', 'Achat passé avec succès.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
-        }
-    }
+   
 
     public function startTimer()
     {

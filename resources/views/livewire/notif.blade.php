@@ -26,8 +26,9 @@
             </h1>
         </div>
         @foreach (auth()->user()->notifications as $notification)
-            <div class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
-                @if (($notification->type === 'App\Notifications\commandVerif'))
+            <div
+                class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
+                @if ($notification->type === 'App\Notifications\commandVerif')
                     <a href="{{ route('notification.show', $notification->id) }}" class="">
                         <div class="flex w-full">
                             <div class="w-16 h-16 overflow-hidden mr-3">
@@ -167,8 +168,7 @@
                                 </div>
                                 <div class="flex justify-between items-center w-full h-full">
                                     <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous avez reçu une
-                                        commande de cet article en
-                                    <h1 class="text-[20px] font-bold">achat direct</h1>
+                                        commande de cet article en achat direct
                                     </p>
                                     @if ($notification->read_at == null)
                                         <div class="w-10 flex justify-center items-center">
@@ -387,7 +387,40 @@
                     </a>
                 @elseif ($notification->type === 'App\Notifications\CountdownNotification')
                     <a href="{{ route('notification.show', $notification->id) }}">
-                        discustion entre les livreurs terminées consulter votre facture proformat
+
+
+                        <div class="flex w-full">
+                            <div class=" w-16 h-16  overflow-hidden mr-3">
+
+                                <svg class="w-full text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.621 9.879a3 3 0 0 0-5.02 2.897l.164.609a4.5 4.5 0 0 1-.108 2.676l-.157.439.44-.22a2.863 2.863 0 0 1 2.185-.155c.72.24 1.507.184 2.186-.155L15 18M8.25 15.75H12m-1.5-13.5H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                </svg>
+
+
+                            </div>
+
+                            <div class="flex flex-col justify-between w-full">
+                                <div class="flex justify-between items-center w-full">
+                                    <h3 class="text-md font-semibold">Facture proformat</h3>
+                                    <p class="text-[12px] text-gray-400 text-right">
+                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                    </p>
+                                </div>
+                                <div class="flex justify-between items-center w-full h-full">
+                                    <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous avez été
+                                        identifié discustion entre les livreurs terminées consulter votre facture
+                                        proformat</p>
+                                    @if ($notification->read_at == null)
+                                        <div class="w-10 flex justify-center items-center">
+                                            <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                        </div>
                     </a>
                 @elseif ($notification->type === 'App\Notifications\livraisonVerif')
                     <a href="{{ route('notification.show', $notification->id) }}">
@@ -423,35 +456,82 @@
 
                     </a>
                 @elseif ($notification->type === 'App\Notifications\mainleve')
+                    <a href="{{ route('notification.show', $notification->id) }}">
 
-                <a href="{{ route('notification.show', $notification->id) }}">
+                        <div class="flex w-full">
+                            <div class="w-16 h-16 overflow-hidden mr-3">
 
-                    <div class="flex w-full">
-                       
 
-                        <div class="flex flex-col justify-between w-full">
-                            <div class="flex justify-between items-center w-full">
-                                <h3 class="text-md font-semibold"></h3>
-                                <p class="text-[12px] text-gray-400 text-right">
-                                    {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
-                                </p>
+
+
+                                <svg class="w-full text-blue-400" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                    <path
+                                        d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V13.5h12V6.375c0-1.036-.84-1.875-1.875-1.875h-8.25ZM13.5 15h-12v2.625c0 1.035.84 1.875 1.875 1.875h.375a3 3 0 1 1 6 0h3a.75.75 0 0 0 .75-.75V15Z" />
+                                    <path
+                                        d="M8.25 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM15.75 6.75a.75.75 0 0 0-.75.75v11.25c0 .087.015.17.042.248a3 3 0 0 1 5.958.464c.853-.175 1.522-.935 1.464-1.883a18.659 18.659 0 0 0-3.732-10.104 1.837 1.837 0 0 0-1.47-.725H15.75Z" />
+                                    <path d="M19.5 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" />
+                                </svg>
+
+
+
                             </div>
-                            <div class="flex justify-between items-center w-full h-full">
-                                <p class="text-sm text-gray-700 l max-w-1/2 font-normal">Vous avez été
-                                    identifié
-                                    dans une commande a livré !</p>
-                                @if ($notification->read_at == null)
-                                    <div class="w-10 flex justify-center items-center">
-                                        <span class="w-2 h-2 rounded-full bg-purple-700"></span>
-                                    </div>
-                                @endif
+
+                            <div class="flex flex-col justify-between w-full">
+                                <div class="flex justify-between items-center w-full">
+                                    <h3 class="text-md font-semibold">Livraison à effectué</h3>
+                                    <p class="text-[12px] text-gray-400 text-right">
+                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                    </p>
+                                </div>
+                                <div class="flex justify-between items-center w-full h-full">
+                                    <p class="text-sm text-gray-700 l max-w-1/2 font-normal">Vous avez été
+                                        identifié
+                                        dans une commande a livré !</p>
+                                    @if ($notification->read_at == null)
+                                        <div class="w-10 flex justify-center items-center">
+                                            <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
+
                         </div>
 
-                    </div>
+                    </a>
+                @elseif ($notification->type === 'App\Notifications\mainlevefour')
+                    <a href="{{ route('notification.show', $notification->id) }}">
+                        @php
+                            $produit = ProduitService::find($notification->data['idProd']);
+                        @endphp
 
-                </a>
+                        <div class="flex w-full">
+                            <div class=" w-16 h-16  overflow-hidden mr-3">
+                                <img src="{{ asset($produit->photoProd1) }}" alt="Product Image"
+                                    class="w-full h-full object-cover">
+                            </div>
 
+                            <div class="flex flex-col justify-between w-full">
+                                <div class="flex justify-between items-center w-full">
+                                    <h3 class="text-md font-semibold">{{ $produit->name }}</h3>
+                                    <p class="text-[12px] text-gray-400 text-right">
+                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                    </p>
+                                </div>
+                                <div class="flex justify-between items-center w-full h-full">
+                                    <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Arrivage du livreur et verification de confromité</p>
+                                    @if ($notification->read_at == null)
+                                        <div class="w-10 flex justify-center items-center">
+                                            <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </a>
                 @endif
 
             </div>

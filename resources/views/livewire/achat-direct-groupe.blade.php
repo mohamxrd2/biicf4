@@ -11,6 +11,7 @@
             {{ session('error') }}
         </div>
     @endif
+    
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
         class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md" style="display: none;" method="POST">
         @csrf

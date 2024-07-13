@@ -10,13 +10,13 @@ use Illuminate\Notifications\Notification;
 class mainlevefour extends Notification
 {
     use Queueable;
-
+    private $main;
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($main)
     {
-      
+        $this->main = $main;
     }
 
     public function via($notifiable)
@@ -27,8 +27,13 @@ class mainlevefour extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'message' => 'Vous venez de recevoir une note d\'enlevement pour un livreur'
-          
+           'idProd' => $this->main['idProd'],
+            'code_unique' =>$this->main['code_unique'],
+            'id_trader' => $this->main['id_trader'],
+            'quantite' => $this->main['quantite'],
+            'localité' => $this->main['localité'],
+            'id_client' => $this->main['id_client'],
+            'id_livreur' => $this->main['id_livreur']
             
         ];
     }
