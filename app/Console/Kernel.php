@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('check:countdowns')->everyMinute();
+        // $schedule->command('check:countdowns')->everyMinute();
+        $schedule->command('check:countdowns')->cron('* * * * * ');
     }
     /**
      * Register the commands for the application.
