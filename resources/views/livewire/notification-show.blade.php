@@ -822,9 +822,9 @@
 
 
 
-            <section class="mb-6">
+            <section class="mb-6 overflow-x-auto">
                 <h2 class="text-xl font-semibold mb-4">Détails de la Facture</h2>
-                <table class="min-w-full bg-white">
+                <table class="min-w-full bg-white ">
                     <thead>
                         <tr class="w-full bg-gray-200">
                             <th class="py-2 px-4 border-b">Elements</th>
@@ -855,9 +855,9 @@
                 <div class="w-1/3  p-4 rounded-lg">
                     @if ($notification->reponse)
                         <div class="flex space-x-2 mt-4">
-                            <div class="bg-gray-600 text-white px-4 py-2 rounded-lg relative">
+                            <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
                                 <!-- Texte du bouton et icône -->
-                                Validé !
+                                Validé
 
                             </div>
 
@@ -1214,23 +1214,44 @@
 
         </div>
 
+     
+
         <div class="flex">
-            <button class="p-2 text-white flex font-medium bg-green-700 rounded-md mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            @if ($notification->reponse)
+                <div class=" bg-gray-300 border p-2 rounded-md">
+                    <p class="text-md font-medium text-center">Réponse envoyée</p>
+                </div>
+            @else
+                <button wire:click='departlivr'
+                    class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6 mr-2">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                 </svg>
-                Livré</button>
 
-            <button class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
-                </svg>
-                Refuser</button>
+                    <span wire:loading.remove>
+                        Livré
+                    </span>
+                    <span wire:loading>
+                        Chargement...
+                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                        </svg>
+                    </span>
+                </button>
 
+                <button class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
+                    </svg>
+                    Refuser</button>
+            @endif
         </div>
     @elseif ($notification->type === 'App\Notifications\mainlevefour')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
@@ -1279,35 +1300,170 @@
         </div>
 
         @if (session()->has('succes'))
+            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+                <h2 class="text-xl font-semibold mb-4">Information sur le livreur</h2>
 
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Information sur le livreur</h2>
+                <div class=" w-full flex-col">
+                    <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
 
-            <div class=" w-full flex-col">
-                <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
+                        <img src="{{ asset($livreur->photo) }}" alt="photot" class="">
 
-                    <img src="{{ asset($livreur->photo) }}" alt="photot" class="">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <p class="mb-3 text-md">Nom du livreur: <span
+                                class=" font-semibold">{{ $livreur->name }}</span></p>
+                        <p class="mb-3 text-md">Adress du livreur: <span
+                                class=" font-semibold">{{ $livreur->address }}</span></p>
+                        <p class="mb-3 text-md">Contact du livreur: <span
+                                class=" font-semibold">{{ $livreur->phone }}</span></p>
+                        <p class="mb-3 text-md">Engin du livreur : <span class=" font-semibold">Moto</span></p>
+                        <p class="mb-3 text-md">Produit à recuperer: <span
+                                class= " font-semibold">{{ $produitfat->name }}</span></p>
+
+
+
+                    </div>
+
 
                 </div>
-
-                <div class="flex flex-col">
-                    <p class="mb-3 text-md">Nom du livreur: <span class=" font-semibold">{{ $livreur->name }}</span></p>
-                    <p class="mb-3 text-md">Adress du livreur: <span class=" font-semibold">{{ $livreur->address }}</span></p>
-                    <p class="mb-3 text-md">Contact du livreur: <span class=" font-semibold">{{ $livreur->phone }}</span></p>
-                    <p class="mb-3 text-md">Engin du livreur : <span class=" font-semibold">Moto</span></p>
-                    <p class="mb-3 text-md">Produit à recuperer: <span class= " font-semibold">{{ $produitfat->name }}</span></p>
-
-                    
-
-                </div>
-                
-
             </div>
+        @endif
+    @elseif ($notification->type === 'App\Notifications\mainleveclient')
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h2 class="text-xl font-semibold mb-4">Verification du livreur</h2>
+
+
+            <form wire:submit.prevent="verifyCode" method="POST">
+                @csrf
+                <div class="flex w-full">
+                    <input type="text" name="code_verif" wire:model.defer="code_verif"
+                        placeholder="Entrez le code de livraison"
+                        class="peer py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+
+
+
+                    <button type="submit" wire:loading.attr="disabled"
+                        class="bg-green-400 text-white font-semibold rounded-md px-2 ml-3">
+                        <span wire:loading.remove>Valider</span>
+                        <span wire:loading>
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            @error('code_verif')
+                <span class="text-red-500 mt-4">{{ $message }}</span>
+            @enderror
+
+            @if (session()->has('succes'))
+                <div class="text-green-500 mt-4">
+                    {{ session('succes') }}
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="text-red-500 mt-4">
+                    {{ session('error') }}
+                </div>
+            @endif
+
         </div>
+
+        @if (session()->has('succes'))
+            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+                <h2 class="text-xl font-semibold mb-4">Information sur le livreur</h2>
+
+                <div class=" w-full flex-col">
+                    <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
+
+                        <img src="{{ asset($livreur->photo) }}" alt="photo" class="">
+
+                    </div>
+
+                    <div class="flex flex-col">
+                        <p class="mb-3 text-md">Nom du livreur: <span
+                                class=" font-semibold">{{ $livreur->name }}</span></p>
+                        <p class="mb-3 text-md">Adress du livreur: <span
+                                class=" font-semibold">{{ $livreur->address }}</span></p>
+                        <p class="mb-3 text-md">Contact du livreur: <span
+                                class=" font-semibold">{{ $livreur->phone }}</span></p>
+                        <p class="mb-3 text-md">Engin du livreur : <span class=" font-semibold">Moto</span></p>
+                        <p class="mb-3 text-md">Produit à recuperer: <span
+                                class= " font-semibold">{{ $produitfat->name }}</span></p>
+
+
+
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="max-w-4xl mx-auto flex">
+                @if ($notification->reponse)
+                    <div class=" bg-gray-300 border p-2 rounded-md">
+                        <p class="text-md font-medium text-center">Réponse envoyée</p>
+                    </div>
+                @else
+                    <button wire:click='acceptColis'
+                        class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
+    
+                       
+                        <span wire:loading.remove>
+                            Accepter 
+                        </span>
+                        <span wire:loading>
+                            Chargement...
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+                    </button>
+    
+                    <button class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
+                        </svg>
+                        Refuser</button>
+                @endif
+            </div>
             
         @endif
+    
+    @elseif ($notification->type === 'App\Notifications\colisaccept')
 
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+        <h2 class="text-xl font-semibold mb-4">Livraison terminé</h2>
+        <p class="mb-3 text-md">date de livraison: <span
+            class=" font-semibold">{{ \Carbon\Carbon::parse($notification->created_at)->translatedFormat('d F Y') }}</span></p>
+            <p class="mb-3 text-md">Code de la livraison: <span
+                class=" font-semibold">{{ $notification->data['code_unique'] }}</span></p>
 
+                <div class="flex w-full justify-center">
+                    <div class=" w-80 h-80 overflow-hidden mr-3">
+                        <svg class="w-full text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+
+                    </div>
+                </div>
+    
+        
+    
+
+    </div>
 
 
     @endif

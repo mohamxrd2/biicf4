@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -12,8 +13,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('check:countdowns')->everyMinute();
-        $schedule->command('check:countdowns')->cron('* * * * * ');
+        if (App::environment('local')) {
+            // En local, exécuter la commande toutes les minutes
+            $schedule->command('check:countdowns')->everyMinute();
+        } else {
+            // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
+            $schedule->command('check:countdowns')->cron('* * * * *');
+        }
     }
     /**
      * Register the commands for the application.

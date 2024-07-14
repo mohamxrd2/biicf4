@@ -22,12 +22,14 @@ use App\Notifications\AppelOffre;
 
 use App\Notifications\RefusAchat;
 use App\Notifications\acceptAchat;
+use App\Notifications\colisaccept;
 use App\Notifications\commandVerif;
 use App\Notifications\mainlevefour;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\livraisonVerif;
+use App\Notifications\mainleveclient;
 use App\Notifications\OffreNegosDone;
 use App\Notifications\AppelOffreTerminer;
 use Illuminate\Support\Facades\Notification;
@@ -93,6 +95,8 @@ class NotificationShow extends Component
 
     public $livreur;
 
+    public $client;
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -130,6 +134,8 @@ class NotificationShow extends Component
         $this->id_livreur = $this->notification->data['id_livreur'] ?? null;
 
         $this->livreur = User::find($this->notification->data['id_livreur'] ?? null);
+
+        $this->client = User::find($this->notification->data['id_client'] ?? null);
 
 
 
@@ -221,7 +227,7 @@ class NotificationShow extends Component
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->code_unique,
             'id_trader' => $this->namefourlivr->id,
-            'localité' => 'N/A',
+            'localité' => $this->localite,
             'quantite' => $this->notification->data['quantiteC'],
             'id_livreur' => $this->userFour->id
         ];
@@ -239,26 +245,54 @@ class NotificationShow extends Component
 
         $livreur = User::find($this->id_livreur);
 
+    
+
         $fournisseur = User::find($this->namefourlivr->user->id);
 
         $data = [
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->code_unique,
-            'id_trader' => $this->namefourlivr->id,
-            'localité' => 'N/A',
+            'id_trader' => $this->namefourlivr->user->id,
+            'localité' => $this->localite,
             'quantite' => $this->quantiteC,
             'id_client' => $id_client,
             'id_livreur' => $this->id_livreur
             
         ];
 
-
          Notification::send($livreur, new mainleve($data));
 
          Notification::send($fournisseur, new mainlevefour($data));
 
+      
+
          $this->notification->update(['reponse' => 'mainleve']);
          $this->validate();
+
+
+    }
+
+    public function departlivr()
+    {
+
+        $id_livreur = Auth::user()->id;
+
+        $data = [
+            'idProd' => $this->notification->data['idProd'],
+            'code_unique' => $this->code_unique,
+            'id_trader' => $this->notification->data['id_trader'],
+            'localité' => $this->localite,
+            'quantite' => $this->quantiteC,
+            'id_client' => $this->notification->data['id_client'],
+            'id_livreur' => $id_livreur
+            
+        ];
+
+        Notification::send($this->client, new mainleveclient($data));
+
+        $this->notification->update(['reponse' => 'mainleveclient']);
+        $this->validate();
+
 
 
     }
@@ -279,135 +313,39 @@ class NotificationShow extends Component
         }
     }
 
+    public function acceptColis(){
+
+        $livreur = User::find($this->notification->data['id_livreur']);
+
+        $fournisseur = User::find($this->notification->data['id_trader']);
+
+        $client = User::find(Auth::user()->id);
+
+        $data = [
+            'idProd' => $this->notification->data['idProd'],
+            'code_unique' => $this->code_unique,
+            'id_trader' => $this->notification->data['id_trader'],
+            'localité' =>  $this->notification->data['localité'],
+            'quantite' => $this->notification->data['quantite'],
+            'id_client' => $this->notification->data['id_client'],
+            'id_livreur' => $this->notification->data['id_livreur']
+        ];
+
+        Notification::send($client, new colisaccept($data));
+
+        Notification::send($fournisseur, new colisaccept($data));
+
+        Notification::send($livreur, new colisaccept($data));
 
 
-    public function accepterAGrouper()
-    {
-        $this->notification->update(['reponse' => 'accepte']);
+        $this->notification->update(['reponse' => 'colisaccept']);
         $this->validate();
 
-        $userId = Auth::id();
-        $userWallet = Wallet::where('user_id', $userId)->first();
-
-        try {
-            // Trouver et mettre à jour la notification
-            $notification = DatabaseNotification::find($this->notification->id);
-            if ($notification) {
-                $notification->reponse = 'accepte';
-                $notification->save();
-            } else {
-                throw new Exception('Notification non trouvée.');
-            }
-
-            // Calcul du pourcentage et du montant total
-            $pourcentSomme = $this->montantTotal * 0.1;
-            $totalSom = $this->montantTotal - $pourcentSomme;
-
-            // Incrémenter le solde du portefeuille de userTrader
-            $userWallet->increment('balance', $totalSom);
-
-            // Créer une transaction de réception
-            $this->createTransaction($this->userSender[0], $userId, 'Reception', $totalSom);
-
-            // Traitement pour le parrain du trader
-            $userTrader = User::find($userId);
-            if ($userTrader->parrain) {
-                $commTraderParrain = $pourcentSomme * 0.05;
-                $commTraderParrainWallet = Wallet::where('user_id', $userTrader->parrain)->first();
-                if ($commTraderParrainWallet) {
-                    $commTraderParrainWallet->increment('balance', $commTraderParrain);
-                    $this->createTransaction($userId, $userTrader->parrain, 'Commission', $commTraderParrain);
-                } else {
-                    throw new Exception('Portefeuille du parrain pour l\'utilisateur ID ' . $userTrader->parrain->id . ' introuvable.');
-                }
-            }
-
-            // Traitement pour chaque utilisateur ayant envoyé la demande
-            foreach ($this->userSender as $userSenderId) {
-                $senderWallet = Wallet::where('user_id', $userSenderId)->first();
-                if (!$senderWallet) {
-                    throw new Exception('Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
-                }
-                $senderWallet->increment('balance', $this->montantTotal);
-                $this->createTransaction($userSenderId, $userId, 'Envoie', $this->montantTotal);
-
-                $userSender = User::find($userSenderId);
-                if (!$userSender) {
-                    throw new Exception('Utilisateur ID ' . $userSenderId . ' introuvable.');
-                }
-
-                if ($userSender->parrain) {
-                    $commSenderParrain = $pourcentSomme * 0.05;
-                    $commSenderParrainWallet = Wallet::where('user_id', $userSender->parrain)->first();
-                    if ($commSenderParrainWallet) {
-                        $commSenderParrainWallet->increment('balance', $commSenderParrain);
-                        $this->createTransaction($userSenderId, $userSender->parrain, 'Commission', $commSenderParrain);
-                    } else {
-                        throw new Exception('Portefeuille du parrain pour l\'utilisateur ID ' . $userSender->parrain->id . ' introuvable.');
-                    }
-                }
-
-                Notification::send($userSender, new AcceptAchat($this->messageA));
-            }
-
-            // Supprimer les logs de notification pour le produit spécifié
-            NotificationLog::where('idProd', $this->idProd)->delete();
-
-            session()->flash('success', 'Action acceptée avec succès');
-            return redirect()->back();
-        } catch (Exception $e) {
-            Log::error('Erreur lors de l\'acceptation de l\'achat:', ['exception' => $e]);
-            session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
-            return redirect()->back();
-        }
     }
 
-    public function refuserAGrouper()
-    {
-        $this->validate();
 
-        try {
-            // Update the notification response to "refuser"
-            $this->notification->update(['reponse' => 'refuser']);
 
-            foreach ($this->userSender as $userSenderId) {
-                $userSenderWallet = Wallet::where('user_id', $userSenderId)->first();
-                if (!$userSenderWallet) {
-                    throw new Exception('Portefeuille pour l\'utilisateur ID ' . $userSenderId . ' introuvable.');
-                }
-                // Increment the user wallet balance by the total amount
-                $userSenderWallet->increment('balance', $this->montantTotal);
-
-                // Create a transaction
-                $transaction = new Transaction();
-                $transaction->sender_user_id = Auth::id();
-                $transaction->receiver_user_id = $userSenderId;
-                $transaction->type = 'Reception';
-                $transaction->amount = $this->montantTotal;
-                $transaction->save();
-
-                // Retrieve the user sender
-                $userSender = User::find($userSenderId);
-                if (!$userSender) {
-                    throw new Exception('Utilisateur ID ' . $userSenderId . ' introuvable.');
-                }
-
-                // Send refusal notification
-                Notification::send($userSender, new RefusAchat($this->messageR));
-            }
-
-            // Delete the notification logs for the specified product
-            NotificationLog::where('idProd', $this->idProd)->delete();
-
-            session()->flash('success', 'Refus traité avec succès.');
-            return redirect()->back();
-        } catch (Exception $e) {
-            Log::error('Erreur lors du traitement du refus:', ['exception' => $e]);
-            session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
-            return redirect()->back();
-        }
-    }
-
+    
     public function accepter()
     {
 
