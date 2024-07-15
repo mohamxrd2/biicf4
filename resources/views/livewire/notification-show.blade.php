@@ -293,8 +293,13 @@
                                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
                                     <input type="hidden" name="code_unique" wire:model="code_unique"
                                         value="{{ $userComment->code_unique }}">
-                                    <input type="hidden" name="id_trader" wire:model="id_trader"
-                                        value="{{ $user->id }}">
+                                    {{-- <input type="text" name="quantiteC" wire:model="quantiteC"
+                                        value="">
+                                    <input type="text" name="idProd" wire:model="idProd"
+                                        value=""> --}}
+                                    <input type="hidden" name="id_sender" wire:model="id_sender"
+                                        value="{{ $notification->data['id_sender'] }}">
+                                    <input type="hidden" name="id_trader" wire:model="id_trader">
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                         placeholder="Faire une offre..." required>
@@ -332,17 +337,17 @@
                     </div>
 
                     <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+                        @if ($oldestCommentDate)
+                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
-                        <span class=" mb-2">Temps restant pour cette negociatiation</span>
+                            <div id="countdown"
+                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
 
-                        <div id="countdown"
-                            class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                            <div>-</div>:
-                            <div>-</div>:
-                            <div>-</div>
-                        </div>
-
+                                <div>-</div>:
+                                <div>-</div>:
+                                <div>-</div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -404,11 +409,7 @@
                         if (difference <= 0) {
                             clearInterval(countdownTimer);
                             countdownElement.innerHTML = "Temps écoulé !";
-                            prixTradeInput.disabled = true; // Désactiver le champ input
-                            document.getElementById('submitBtnAppel').hidden = true;
-                            prixTradeError.textContent =
-                                `Le fournisseur avec le prix le plus bas est {{ $lowPriceUserName }} avec {{ $lowPriceAmount }} FCFA!`;
-                            prixTradeError.classList.remove('hidden');
+
                         }
 
                     }
@@ -1022,8 +1023,6 @@
                     </div>
 
                     <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-
-
                         @if ($oldestCommentDate)
                             <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
@@ -1214,7 +1213,7 @@
 
         </div>
 
-     
+
 
         <div class="flex">
             @if ($notification->reponse)
@@ -1222,14 +1221,13 @@
                     <p class="text-md font-medium text-center">Réponse envoyée</p>
                 </div>
             @else
-                <button wire:click='departlivr'
-                    class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
+                <button wire:click='departlivr' class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
 
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                </svg>
+                        stroke="currentColor" class="size-6 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                    </svg>
 
                     <span wire:loading.remove>
                         Livré
@@ -1413,10 +1411,10 @@
                 @else
                     <button wire:click='acceptColis'
                         class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
-    
-                       
+
+
                         <span wire:loading.remove>
-                            Accepter 
+                            Accepter
                         </span>
                         <span wire:loading>
                             Chargement...
@@ -1427,7 +1425,7 @@
                             </svg>
                         </span>
                     </button>
-    
+
                     <button class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-6 mr-2">
@@ -1437,33 +1435,32 @@
                         Refuser</button>
                 @endif
             </div>
-            
+
         @endif
-    
     @elseif ($notification->type === 'App\Notifications\colisaccept')
-
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-        <h2 class="text-xl font-semibold mb-4">Livraison terminé</h2>
-        <p class="mb-3 text-md">date de livraison: <span
-            class=" font-semibold">{{ \Carbon\Carbon::parse($notification->created_at)->translatedFormat('d F Y') }}</span></p>
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h2 class="text-xl font-semibold mb-4">Livraison terminé</h2>
+            <p class="mb-3 text-md">date de livraison: <span
+                    class=" font-semibold">{{ \Carbon\Carbon::parse($notification->created_at)->translatedFormat('d F Y') }}</span>
+            </p>
             <p class="mb-3 text-md">Code de la livraison: <span
-                class=" font-semibold">{{ $notification->data['code_unique'] }}</span></p>
+                    class=" font-semibold">{{ $notification->data['code_unique'] }}</span></p>
 
-                <div class="flex w-full justify-center">
-                    <div class=" w-80 h-80 overflow-hidden mr-3">
-                        <svg class="w-full text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
+            <div class="flex w-full justify-center">
+                <div class=" w-80 h-80 overflow-hidden mr-3">
+                    <svg class="w-full text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
 
-                    </div>
                 </div>
-    
-        
-    
+            </div>
 
-    </div>
+
+
+
+        </div>
 
 
     @endif
