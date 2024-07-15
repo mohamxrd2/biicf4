@@ -7,16 +7,14 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AppelOffreTerminer extends Notification
+class AppelOffreTerminer extends Notification implements ShouldQueue
 {
     use Queueable;
-    private $negos;
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct($negos)
+
+    public $details;
+    public function __construct($details)
     {
-        $this->negos = $negos;
+        $this->details = $details;
     }
 
     public function via($notifiable)
@@ -27,12 +25,12 @@ class AppelOffreTerminer extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'message' => 'Negociation terminé !',
-            'prix_trade' => $this->negos['prix_trade'],
-            'id_trader' => $this->negos['id_trader'],
-            'name' => $this->negos['name'],
-            'quantite' => $this->negos['quantite']
-
+            'sender_name' => $this->details['sender_name'],
+            'code_unique' => $this->details['code_unique'],
+            'prixTrade' => $this->details['prixTrade'],
+            'id_trader' => $this->details['id_trader'],
+            'idProd' => $this->details['idProd'],
+            'quantiteC' => $this->details['quantiteC'],
         ];
     }
 }

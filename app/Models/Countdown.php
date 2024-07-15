@@ -9,7 +9,7 @@ class Countdown extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'start_time', 'notified', 'code_unique', 'userSender'];
+    protected $fillable = ['user_id', 'start_time', 'notified', 'code_unique', 'userSender', 'difference'];
 
     public function user()
     {

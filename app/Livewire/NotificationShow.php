@@ -79,6 +79,7 @@ class NotificationShow extends Component
     public $tempsEcoule;
     public $oldestComment;
     public $nombreLivr;
+    public $difference;
 
     //test
     public $countdownTime;
@@ -127,6 +128,7 @@ class NotificationShow extends Component
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
         $this->nameSender = $this->notification->data['userSender'] ?? null;
         $this->id_sender = $this->notification->data['id_sender'] ?? null;
+        $this->difference = $this->notification->data['difference'] ?? null;
         //pour la facture
         $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre')
             ? null
@@ -474,6 +476,7 @@ class NotificationShow extends Component
             'code_unique' => 'required|string',
             'prixTrade' => 'required|numeric',
             'id_sender' => 'required|numeric',
+            'difference' => 'required|string',
 
         ]);
 
@@ -496,6 +499,7 @@ class NotificationShow extends Component
                 'userSender' => $this->id_sender,
                 'start_time' => now(),
                 'code_unique' => $this->code_unique,
+                'difference' => $this->difference,
             ]);
 
             $this->countdownStarted = true;

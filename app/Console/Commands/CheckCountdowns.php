@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Comment;
 use App\Models\Countdown;
+use App\Notifications\AppelOffreTerminer;
 use App\Notifications\CountdownNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
@@ -34,6 +35,7 @@ class CheckCountdowns extends Command
             $lowestPriceComment = Comment::where('code_unique', $code_unique)
                 ->orderBy('prixTrade', 'asc')
                 ->first();
+
             // Vérifier si un enregistrement a été trouvé
             if ($lowestPriceComment) {
                 $lowestPrice = $lowestPriceComment->prixTrade;
@@ -49,11 +51,18 @@ class CheckCountdowns extends Command
                     'id_trader' => $traderId,
                     'idProd' => $id_prod,
                     'quantiteC' => $quantiteC,
-                 
                 ];
 
-                // Envoyer la notification à l'utilisateur expéditeur
-                Notification::send($countdown->sender, new CountdownNotification($details));
+                // Vérifier si la colonne 'difference' est égale à 'single'
+                if ($countdown->difference === 'single') {
+                    $traderId = $lowestPriceComment->id_trader; // Assurez-vous que la relation trader est définie
+
+                    // Envoyer la notification à l'utilisateur expéditeur
+                    Notification::send($traderId, new AppelOffreTerminer($details));
+                }else {
+                    // Envoyer une autre notification ou effectuer une autre action
+                    Notification::send($countdown->sender, new CountdownNotification($details));
+                }
 
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
