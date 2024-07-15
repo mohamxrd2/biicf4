@@ -55,15 +55,12 @@ class CheckCountdowns extends Command
 
                 // Vérifier si la colonne 'difference' est égale à 'single'
                 if ($countdown->difference === 'single') {
-                    $traderId = $lowestPriceComment->id_trader; // Assurez-vous que la relation trader est définie
-
                     // Envoyer la notification à l'utilisateur expéditeur
-                    Notification::send($traderId, new AppelOffreTerminer($details));
+                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($details));
                 }else {
                     // Envoyer une autre notification ou effectuer une autre action
                     Notification::send($countdown->sender, new CountdownNotification($details));
                 }
-
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }
