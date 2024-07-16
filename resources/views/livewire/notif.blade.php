@@ -26,8 +26,7 @@
             </h1>
         </div>
         @foreach (auth()->user()->notifications as $notification)
-            <div
-                class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
+            <div class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
                 @if ($notification->type === 'App\Notifications\commandVerif')
                     <a href="{{ route('notification.show', $notification->id) }}" class="">
                         <div class="flex w-full">

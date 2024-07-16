@@ -99,6 +99,10 @@ class NotificationShow extends Component
 
     public $client;
 
+    public $dateLivr;
+
+    public $date_livr;
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -129,6 +133,8 @@ class NotificationShow extends Component
         $this->nameSender = $this->notification->data['userSender'] ?? null;
         $this->id_sender = $this->notification->data['id_sender'] ?? null;
         $this->difference = $this->notification->data['difference'] ?? null;
+
+        $this->date_livr = $this->notification->data['date_livr'] ?? null;
         //pour la facture
         $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre')
             ? null
@@ -281,8 +287,14 @@ class NotificationShow extends Component
 
     public function departlivr()
     {
-
         $id_livreur = Auth::user()->id;
+
+        $this->validate([
+            'dateLivr' => 'required|date',
+        ], [
+            'dateLivr.required' => 'La date de livraison est requise.',
+            'dateLivr.date' => 'La date de livraison doit être une date valide.'
+        ]);
 
         $data = [
             'idProd' => $this->notification->data['idProd'],
@@ -291,14 +303,15 @@ class NotificationShow extends Component
             'localité' => $this->localite,
             'quantite' => $this->quantiteC,
             'id_client' => $this->notification->data['id_client'],
-            'id_livreur' => $id_livreur
-
+            'id_livreur' => $id_livreur,
+            'date_livr' => $this->dateLivr,
         ];
 
         Notification::send($this->client, new mainleveclient($data));
 
         $this->notification->update(['reponse' => 'mainleveclient']);
-        $this->validate();
+
+        session()->flash('message', 'Livraison marquée comme livrée.');
     }
 
     public function verifyCode()
