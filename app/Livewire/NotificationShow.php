@@ -103,6 +103,12 @@ class NotificationShow extends Component
 
     public $date_livr;
 
+    public $matine;
+
+    public $matine_client;
+
+   
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -135,6 +141,10 @@ class NotificationShow extends Component
         $this->difference = $this->notification->data['difference'] ?? null;
 
         $this->date_livr = $this->notification->data['date_livr'] ?? null;
+
+        
+
+        $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
         $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre')
             ? null
@@ -291,9 +301,11 @@ class NotificationShow extends Component
 
         $this->validate([
             'dateLivr' => 'required|date',
+            'matine' => 'required'
         ], [
             'dateLivr.required' => 'La date de livraison est requise.',
-            'dateLivr.date' => 'La date de livraison doit être une date valide.'
+            'dateLivr.date' => 'La date de livraison doit être une date valide.',
+            'matine.required' => 'La matinée ou soirée est requise.',
         ]);
 
         $data = [
@@ -305,6 +317,7 @@ class NotificationShow extends Component
             'id_client' => $this->notification->data['id_client'],
             'id_livreur' => $id_livreur,
             'date_livr' => $this->dateLivr,
+            'matine' => $this->matine
         ];
 
         Notification::send($this->client, new mainleveclient($data));
@@ -359,8 +372,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'colisaccept']);
         $this->validate();
     }
-
-
 
 
     public function accepter()
@@ -1013,7 +1024,7 @@ class NotificationShow extends Component
 
         return view('livewire.notification-show');
 
-        // return view('livewire.notification-show', compact(
+       // return view('livewire.notification-show', compact(
         //     'notification',
         //     'produtOffre',
         //     'comments',

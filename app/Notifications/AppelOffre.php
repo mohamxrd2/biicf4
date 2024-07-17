@@ -45,6 +45,8 @@ class AppelOffre extends Notification implements ShouldQueue
             'lowestPricedProduct' => $this->achat['lowestPricedProduct'] ?? null,
             'code_unique' => $this->achat['code_unique'],
             'difference' => $this->achat['difference'] ?? null,
+
+           
         ];
     }
 }

@@ -34,7 +34,8 @@ class mainleveclient extends Notification
             'localité' => $this->main['localité'],
             'id_client' => $this->main['id_client'],
             'id_livreur' => $this->main['id_livreur'],
-            'date_livr' => $this->main['date_livr']
+            'date_livr' => $this->main['date_livr'],
+            'matine' => $this->main['matine']
             
         ];
     }
