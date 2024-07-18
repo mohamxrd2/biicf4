@@ -43,7 +43,7 @@ class CheckCountdowns extends Command
                 $id_prod = $lowestPriceComment->id_prod ?? null;
                 $quantiteC = $lowestPriceComment->quantiteC ?? null;
                 $localite = $lowestPriceComment->localite ?? null;
-                $specifite = $lowestPriceComment->specifite ?? null;
+                $specificite = $lowestPriceComment->specificite ?? null;
 
                 // Définir les détails de la notification
                 $details = [
@@ -61,7 +61,7 @@ class CheckCountdowns extends Command
                     'idProd' => $id_prod,
                     'quantiteC' => $quantiteC,
                     'localite' => $localite,
-                    'specifite' => $specifite,
+                    'specificite' => $specificite,
                 ];
 
                 // Vérifier si la colonne 'difference' est égale à 'single'

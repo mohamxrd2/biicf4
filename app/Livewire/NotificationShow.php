@@ -516,6 +516,7 @@ class NotificationShow extends Component
             'prixTrade' => $this->prixTrade,
             'code_unique' => $this->code_unique,
             'id_trader' => $this->id_trader,
+            'quantiteC' => $this->quantiteC,
         ]);
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique

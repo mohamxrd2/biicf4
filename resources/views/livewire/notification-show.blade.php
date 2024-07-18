@@ -635,33 +635,101 @@
             }
         </script>
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
+
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             {{-- <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
-                </span>{{ $notification->data['name'] }}</h2>
-
-            <p class="mb-3"><strong>Quantité demander:</strong> {{ $notification->data['quantite'] }}
+                </span>{{ $notification->data['nameProd'] }}</h2> --}}
+            <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantiteC'] }}</p>
+            <p class="mb-3"><strong>Localité:</strong> {{ $notification->data['localite'] }}</p>
+            <p class="mb-3"><strong>Spécificité:</strong> {{ $notification->data['specificite'] }}</p>
+            <p class="mb-3"><strong>Prix d'achat:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
             </p>
 
             @php
-                $prixArticle = $notification->data['quantite'] * $notification->data['prix_trade'];
-
+                $prixArtiche = $notification->data['montantTotal'] ?? 0;
+                $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
             @endphp
 
-
-            <p class="mb-3"><strong>Prix d'artiche:</strong> {{ $prixArticle }} Fcfa
-            </p>
-
-            <p class=" font-medium text-sm text-green-600 mb-4">Payement effectué avec succès :)</p>
-
-            <a href="{{ route('biicf.wallet') }}"
-                class="mb-3 text-white bg-purple-600 hover:bg-purple-800 text-center py-2 rounded-xl flex justify-center">
-                Voir le porte-feuille
+            <p class="mb-3"><strong>Somme reçu :</strong> {{ number_format($sommeRecu, 2) }} Fcfa</p>
+            {{-- <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
+                class="mb-3 text-blue-700 hover:underline flex">
+                Voir le produit
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
                 </svg>
             </a> --}}
+
+            <p class="my-3 text-sm text-gray-500">Vous aurez debité 10% sur le prix de la marchandise
+            </p>
+            <div class="flex gap-2">
+                @if ($notification->reponse == 'accepte' || $notification->reponse == 'refuser')
+                    <div class="w-full bg-gray-300 border p-2 rounded-md">
+                        <p class="text-md font-medium text-center">Reponse envoyé</p>
+
+                    </div>
+                @else
+                    <div x-data="{ isOpen: false }" x-cloak>
+                        <button @click="isOpen = true"
+                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">
+                            Accepter
+                        </button>
+
+                        <div x-show="isOpen" id="hs-basic-modal"
+                            class="hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500 fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 overflow-y-auto">
+                            <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+                                <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
+                                    <div class="flex justify-between items-center py-3 px-4 border-b">
+                                        <h3 class="font-bold text-gray-800">
+                                            Envoie au livreur
+                                        </h3>
+                                        <button @click="isOpen = false" class="text-gray-800 hover:text-gray-600">
+                                            <span class="sr-only">Close</span>
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="p-4">
+                                        <p class="text-gray-800">
+                                            @if ($nombreLivr)
+                                                Le nombre de livreur disponible dans cette zone est:
+                                                {{ $nombreLivr }}
+                                            @else
+                                                Aucun livreur dans la zone
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <div class="flex justify-end items-center py-3 px-4 border-t">
+                                        <button @click="isOpen = false"
+                                            class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded mr-2">
+                                            Annuler
+                                        </button>
+                                        <button @click.prevent="isOpen = false; $wire.accepter()"
+                                            @if ($nombreLivr == 0) disabled @endif
+                                            class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
+                                            <span wire:loading.remove>
+                                                Envoie
+                                            </span>
+                                            <span wire:loading>
+                                                En cours...
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <button wire:click="refuser" id="btn-refuser" type="submit"
+                        class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+
+                @endif
+            </div>
 
 
         </div>

@@ -31,7 +31,7 @@ class AppelOffreTerminer extends Notification implements ShouldQueue
             'idProd' => $this->details['idProd'],
             'quantiteC' => $this->details['quantiteC'],
             'localite' => $this->details['localite'],
-            'specifite' => $this->details['specifite'],
+            'specificite' => $this->details['specificite'],
         ];
     }
 }
