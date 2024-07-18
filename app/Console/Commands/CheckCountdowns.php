@@ -38,12 +38,12 @@ class CheckCountdowns extends Command
 
             // Vérifier si un enregistrement a été trouvé
             if ($lowestPriceComment) {
-                $lowestPrice = $lowestPriceComment->prixTrade;
-                $traderId = $lowestPriceComment->id_trader;
-                $id_prod = $lowestPriceComment->id_prod;
-                $quantiteC = $lowestPriceComment->quantiteC;
-                $localite = $lowestPriceComment->localite;
-                $specifite = $lowestPriceComment->specifite;
+                $lowestPrice = $lowestPriceComment->prixTrade ?? null;
+                $traderId = $lowestPriceComment->id_trader ?? null;
+                $id_prod = $lowestPriceComment->id_prod ?? null;
+                $quantiteC = $lowestPriceComment->quantiteC ?? null;
+                $localite = $lowestPriceComment->localite ?? null;
+                $specifite = $lowestPriceComment->specifite ?? null;
 
                 // Définir les détails de la notification
                 $details = [
