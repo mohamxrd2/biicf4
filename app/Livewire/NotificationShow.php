@@ -107,6 +107,8 @@ class NotificationShow extends Component
 
     public $matine_client;
 
+    public $specificite;
+
    
 
 
@@ -501,10 +503,14 @@ class NotificationShow extends Component
             'prixTrade' => 'required|numeric',
             'id_sender' => 'required|numeric',
             'difference' => 'required|string',
+            'localite' => 'required|string',
+            'specificite' => 'required|string'
 
         ]);
 
         Comment::create([
+            'localite' => $this->notification->data['localite'],
+            'specificite' => $this->specificite,
             'prixTrade' => $this->prixTrade,
             'code_unique' => $this->code_unique,
             'id_trader' => $this->id_trader,
