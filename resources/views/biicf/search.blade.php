@@ -8,7 +8,7 @@
 
         <div class="lg:col-span-2 col-span-3">
 
-            <form action="{{ route('biicf.search') }}" method="GET" class="max-w-2xl mx-auto">
+            {{-- <form action="{{ route('biicf.search') }}" method="GET" class="max-w-2xl mx-auto">
 
                 <label for="default-search"
                     class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
@@ -96,7 +96,7 @@
 
                 </div>
 
-            </form>
+            </form> --}}
 
 
             @if ($resultCount == 0)
