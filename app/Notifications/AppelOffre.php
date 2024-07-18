@@ -39,6 +39,7 @@ class AppelOffre extends Notification implements ShouldQueue
             'payment' => $this->achat['payment'] ?? null,
             'Livraison' => $this->achat['Livraison'] ?? null,
             'specificity' => $this->achat['specificity'] ?? null,
+            'localite' => $this->achat['localite'] ?? null,
             'image' => $this->achat['image'] ?? null,
             'id_sender' => $this->achat['id_sender']?? null,
             'prodUsers' => $this->achat['prodUsers'] ?? null,
@@ -46,7 +47,7 @@ class AppelOffre extends Notification implements ShouldQueue
             'code_unique' => $this->achat['code_unique'],
             'difference' => $this->achat['difference'] ?? null,
 
-           
+
         ];
     }
 }

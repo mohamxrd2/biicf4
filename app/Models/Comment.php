@@ -19,6 +19,8 @@ class Comment extends Model
         'code_unique',
         'id_prod',
         'quantiteC',
+        'localite',
+        'specificite',
     ];
 
     /**

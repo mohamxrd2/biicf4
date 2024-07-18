@@ -42,6 +42,8 @@ class CheckCountdowns extends Command
                 $traderId = $lowestPriceComment->id_trader;
                 $id_prod = $lowestPriceComment->id_prod;
                 $quantiteC = $lowestPriceComment->quantiteC;
+                $localite = $lowestPriceComment->localite;
+                $specifite = $lowestPriceComment->specifite;
 
                 // Définir les détails de la notification
                 $details = [
@@ -52,11 +54,20 @@ class CheckCountdowns extends Command
                     'idProd' => $id_prod,
                     'quantiteC' => $quantiteC,
                 ];
+                $Adetails = [
+                    'code_unique' => $countdown->code_unique,
+                    'prixTrade' => $lowestPrice,
+                    'id_trader' => $traderId,
+                    'idProd' => $id_prod,
+                    'quantiteC' => $quantiteC,
+                    'localite' => $localite,
+                    'specifite' => $specifite,
+                ];
 
                 // Vérifier si la colonne 'difference' est égale à 'single'
                 if ($countdown->difference === 'single') {
                     // Envoyer la notification à l'utilisateur expéditeur
-                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($details));
+                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
                 }else {
                     // Envoyer une autre notification ou effectuer une autre action
                     Notification::send($countdown->sender, new CountdownNotification($details));

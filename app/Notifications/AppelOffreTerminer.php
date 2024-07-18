@@ -25,12 +25,13 @@ class AppelOffreTerminer extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
-            'sender_name' => $this->details['sender_name'],
             'code_unique' => $this->details['code_unique'],
             'prixTrade' => $this->details['prixTrade'],
             'id_trader' => $this->details['id_trader'],
             'idProd' => $this->details['idProd'],
             'quantiteC' => $this->details['quantiteC'],
+            'localite' => $this->details['localite'],
+            'specifite' => $this->details['specifite'],
         ];
     }
 }

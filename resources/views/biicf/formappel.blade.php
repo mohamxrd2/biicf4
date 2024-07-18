@@ -70,6 +70,11 @@
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Specificité" name="specificity">
                 </div>
+                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                    <input type="text" required
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                        placeholder="localité" name="localite">
+                </div>
                 <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
                     <h3>Ajouter une photo (facultatif)</h3>
                     <div class="flex items-center justify-center w-20 z-10" id="floating_photo1">

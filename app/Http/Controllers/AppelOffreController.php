@@ -112,15 +112,15 @@ class AppelOffreController extends Controller
     {
         // Récupérer l'ID de l'utilisateur connecté
         $userId = Auth::guard('web')->id();
-    
+
         // Récupérer l'offre groupée par son ID
         $appelOffreGroup = AppelOffreGrouper::find($id);
-    
+
         // Vérifier si l'offre groupée existe
         if (!$appelOffreGroup) {
             return redirect()->route('biicf.appeloffre');
         }
-    
+
         // Récupérer les variables
         $codesUniques = $appelOffreGroup->codeunique;
         $dateTot = $appelOffreGroup->dateTot;
@@ -131,18 +131,18 @@ class AppelOffreController extends Controller
         $livraison = $appelOffreGroup->livraison;
         $specificity = $appelOffreGroup->specificity;
         $lowestPricedProduct = $appelOffreGroup->lowestPricedProduct;
-    
+
         // Récupérer les utilisateurs associés à l'offre groupée
         $usergroup = AppelOffreGrouper::where('codeunique', $codesUniques)
             ->distinct()
             ->pluck('user_id')
             ->toArray();
-    
+
         $prodUsers = AppelOffreGrouper::where('codeunique', $codesUniques)
             ->distinct()
             ->pluck('prodUsers')
             ->toArray();
-    
+
         // Décoder les valeurs JSON de $prodUsers en entiers
         $decodedProdUsers = [];
         foreach ($prodUsers as $prodUser) {
@@ -151,25 +151,25 @@ class AppelOffreController extends Controller
                 $decodedProdUsers = array_merge($decodedProdUsers, $decodedValues);
             }
         }
-    
+
         // Récupérer la date la plus ancienne pour le code unique
         $datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
-    
+
         // Ajouter 1 minute à la date la plus ancienne, s'il y en a une
         $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
-    
+
         // Vérifier si $tempsEcoule est écoulé
         $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
-    
+
         $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
-    
+
         // Compter le nombre distinct d'utilisateurs pour le code unique
         $appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)
             ->distinct('user_id')
             ->count('user_id');
-    
+
         $notificationExists = NotificationLog::where('code_unique', $codesUniques)->exists();
-    
+
         if ($isTempsEcoule && !$notificationExists) {
             foreach ($decodedProdUsers as $prodUser) {
                 $data = [
@@ -186,7 +186,7 @@ class AppelOffreController extends Controller
                     'lowestPricedProduct' => $lowestPricedProduct,
                     'code_unique' => $codesUniques,
                 ];
-    
+
                 // Vérification que toutes les clés nécessaires sont présentes
                 $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
                 foreach ($requiredKeys as $key) {
@@ -194,16 +194,16 @@ class AppelOffreController extends Controller
                         throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
                     }
                 }
-    
+
                 // Récupération de l'utilisateur destinataire
                 $owner = User::find($prodUser);
-    
+
                 // Vérification si l'utilisateur existe
                 if ($owner) {
                     // Envoi de la notification à l'utilisateur
                     Notification::send($owner, new AppelOffre($data));
                 }
-    
+
                 // Création du commentaire
                 Comment::create([
                     'prixTrade' => null,
@@ -212,17 +212,17 @@ class AppelOffreController extends Controller
                     'id_prod' => null
                 ]);
             }
-    
+
             NotificationLog::create(['code_unique' => $codesUniques]);
-    
+
             AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
-        
+
         }
-    
+
         // Passer les variables à la vue (si nécessaire)
         return view('biicf.ajoutoffre', compact('userId', 'appelOffreGroup', 'datePlusAncienne', 'tempsEcoule', 'sumquantite', 'appelOffreGroupcount'));
     }
-    
+
     public function storeoffre(Request $request)
 
     {
@@ -256,6 +256,7 @@ class AppelOffreController extends Controller
                 'dateTot' => 'required|date',
                 'dateTard' => 'required|date',
                 'specificity' => 'nullable|string',
+                'localite' => 'nullable|string',
                 'id_prod' => 'id_prod',
                 'image' => 'nullable',
                 'prodUsers' => 'required|array', // Assurez-vous que prodUsers est un tableau
@@ -283,6 +284,7 @@ class AppelOffreController extends Controller
                     'payment' => $request->payment,
                     'Livraison' => $request->livraison,
                     'specificity' => $request->specificity,
+                    'localite' => $request->localite,
                     'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
                     'id_sender' => $userId,
                     'prodUsers' => $prodUser,
@@ -342,6 +344,7 @@ class AppelOffreController extends Controller
                 'dateTot' => 'required|date',
                 'dateTard' => 'required|date',
                 'specificity' => 'nullable|string',
+                'localite' => 'nullable|string',
                 'id_prod' => 'nullable|string',
                 'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'prodUsers' => 'required|array',
@@ -365,6 +368,7 @@ class AppelOffreController extends Controller
             $offre->dateTot = $request->input('dateTot');
             $offre->dateTard = $request->input('dateTard');
             $offre->specificity = $request->input('specificity');
+            $offre->localite = $request->input('localite');
             $offre->id_prod = $request->input('id_prod');
             $offre->prodUsers = json_encode($request->input('prodUsers'));
             $offre->codeunique = $codeunique;

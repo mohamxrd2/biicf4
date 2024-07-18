@@ -20,6 +20,7 @@ class AppelOffreGrouper extends Model
         'dateTot',
         'dateTard',
         'specificity',
+        'localite',
         'id_prod',
         'image',
         'prodUsers',
