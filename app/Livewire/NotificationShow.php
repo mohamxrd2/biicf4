@@ -59,6 +59,7 @@ class NotificationShow extends Component
     public $quantiteC;
 
     public $localite;
+    public $specificite;
 
     public $modalOpen = false;
 
@@ -107,9 +108,8 @@ class NotificationShow extends Component
 
     public $matine_client;
 
-    public $specificite;
 
-   
+
 
 
     protected $rules = [
@@ -134,8 +134,9 @@ class NotificationShow extends Component
         $this->user = Auth::user()->id ?? null;
         $this->code_unique = $this->notification->data['code_unique'] ?? null;
         $this->quantite = $this->notification->data['quantité'] ?? null;
-        $this->quantiteC = $this->notification->data['quantite'] ?? null;
+        $this->quantiteC = $this->notification->data['quantite'] ?? $this->notification->data['quantity'] ?? null;
         $this->localite = $this->notification->data['localite'] ?? null;
+        $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
         $this->nameSender = $this->notification->data['userSender'] ?? null;
@@ -144,7 +145,7 @@ class NotificationShow extends Component
 
         $this->date_livr = $this->notification->data['date_livr'] ?? null;
 
-        
+
 
         $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
@@ -498,13 +499,14 @@ class NotificationShow extends Component
     {
         // Récupérer l'utilisateur authentifié
         $this->validate([
-            'id_trader' => 'required|numeric',
             'code_unique' => 'required|string',
+            'quantiteC' => 'required|numeric',
             'prixTrade' => 'required|numeric',
             'id_sender' => 'required|numeric',
+            'id_trader' => 'required|numeric',
             'difference' => 'required|string',
             'localite' => 'required|string',
-            'specificite' => 'required|string'
+            'specificite' => 'required|string',
 
         ]);
 
@@ -1030,7 +1032,7 @@ class NotificationShow extends Component
 
         return view('livewire.notification-show');
 
-       // return view('livewire.notification-show', compact(
+        // return view('livewire.notification-show', compact(
         //     'notification',
         //     'produtOffre',
         //     'comments',
