@@ -63,7 +63,6 @@ class CheckCountdowns extends Command
                     'code_unique' => $countdown->code_unique,
                     'prixTrade' => $lowestPrice,
                     'id_trader' => $traderId,
-                    'idProd' => $id_prod,
                     'quantiteC' => $quantiteC,
                     'localite' => $localite,
                     'specificite' => $specificite,

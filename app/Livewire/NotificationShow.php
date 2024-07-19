@@ -47,7 +47,7 @@ class NotificationShow extends Component
     public $messageR = "Achat refuser / Produits plus disponible";
     public $notifId;
     public $idProd;
-
+    public $idProd2;
     public $userTrader;
     public $code_unique = '';
     public $id_trader;
@@ -209,7 +209,20 @@ class NotificationShow extends Component
         }
 
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
+
+        // Recherche dans la table produit_service
+        // Recherche dans la table produit_service pour récupérer l'ID du produit
+        if (isset($this->notification->data['nameprod']) && isset($this->notification->data['id_trader'])) {
+            $produitService = ProduitService::where('name', $this->notification->data['nameprod'])
+                ->where('user_id', $this->notification->data['id_trader'])
+                ->first();
+
+            if ($produitService) {
+                $this->idProd2 = $produitService->id;
+            }
+        }
     }
+
 
 
 
@@ -412,12 +425,12 @@ class NotificationShow extends Component
         // Notification::send($userSender, new acceptAchat($this->messageA));
 
         $data = [
-            'idProd' => $this->notification->data['idProd'],
-            'id_trader' => $this->userTrader,
+            'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
+            'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
             'totalSom' => $requiredAmount,
-            'quantite' => $this->notification->data['quantité'],
+            'quantite' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
             'localite' =>  $this->notification->data['localite'],
-            'userSender' =>  $this->notification->data['userSender'],
+            'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_trader'],
             'code_livr' => $code_livr,
 
         ];

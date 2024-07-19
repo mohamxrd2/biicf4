@@ -311,15 +311,7 @@ class AppelOffreController extends Controller
                     Notification::send($owner, new AppelOffre($data));
                 }
 
-                Comment::create([
-                    'prixTrade' => null,
-                    'id_trader' => $prodUser,
-                    'code_unique' => $codeUnique,
-                    'id_prod' => null
-                ]);
             }
-
-
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {

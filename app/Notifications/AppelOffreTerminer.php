@@ -28,7 +28,6 @@ class AppelOffreTerminer extends Notification implements ShouldQueue
             'code_unique' => $this->details['code_unique'] ?? null,
             'prixTrade' => $this->details['prixTrade'] ?? null,
             'id_trader' => $this->details['id_trader'] ?? null,
-            'idProd' => $this->details['idProd'] ?? null,
             'quantiteC' => $this->details['quantiteC'] ?? null,
             'localite' => $this->details['localite'] ?? null,
             'specificite' => $this->details['specificite'] ?? null,
