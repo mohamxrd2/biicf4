@@ -184,9 +184,6 @@
         <div class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
 
-
-
-
                 <h2 class="text-3xl font-semibold mb-2">{{ $notification->data['productName'] }}</h2>
 
                 <div class="w-full gap-y-2  mt-4">
@@ -296,7 +293,7 @@
                                     <input type="hidden" name="code_unique" wire:model="code_unique" value="{{ $notification->data['code_unique'] }}">
                                     <input type="hidden" name="quantiteC" wire:model="quantiteC" value="{{ $notification->data['quantity'] }}">
                                     <input type="hidden" name="difference" wire:model="difference" value="{{ $notification->data['difference'] }}">
-                                    <input type="hidden" name="id_sender" wire:model="id_sender" value="{{ $notification->data['id_sender'] }}">
+                                    <input type="text" name="id_sender" wire:model="id_sender" value="{{ is_array($id_sender) ? implode(',', $id_sender) : $id_sender }}">
                                     <input type="hidden" name="id_trader" wire:model="id_trader">
                                     <input type="hidden" name="nameprod" wire:model="nameprod" value="{{ $notification->data['productName'] }}">
 

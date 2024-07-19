@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\ProduitService;
 use App\Models\NotificationLog;
 use App\Models\AppelOffreGrouper;
+use App\Models\Countdown;
 use App\Notifications\AppelOffre;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
@@ -203,20 +204,11 @@ class AppelOffreController extends Controller
                     // Envoi de la notification à l'utilisateur
                     Notification::send($owner, new AppelOffre($data));
                 }
-
-                // Création du commentaire
-                Comment::create([
-                    'prixTrade' => null,
-                    'id_trader' => $prodUser,
-                    'code_unique' => $codesUniques,
-                    'id_prod' => null
-                ]);
             }
 
             NotificationLog::create(['code_unique' => $codesUniques]);
 
             AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
-
         }
 
         // Passer les variables à la vue (si nécessaire)
@@ -224,7 +216,6 @@ class AppelOffreController extends Controller
     }
 
     public function storeoffre(Request $request)
-
     {
         // Valider les données du formulaire
         $validatedData = $request->validate([
@@ -233,6 +224,8 @@ class AppelOffreController extends Controller
             'quantite' => 'required|integer'
         ]);
 
+
+
         // Créer un nouvel enregistrement dans la table offregroupe
         $offregroupe = new AppelOffreGrouper();
         $offregroupe->codeunique = $validatedData['codeUnique'];
@@ -240,8 +233,26 @@ class AppelOffreController extends Controller
         $offregroupe->quantity = $validatedData['quantite'];
         $offregroupe->save();
 
+        // Vérifier si un compte à rebours est déjà en cours pour ce code unique
+        $existingCountdown = Countdown::where('code_unique', $validatedData['codeUnique'])
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(), // Assurez-vous que l'utilisateur est authentifié
+                'userSender' => $validatedData['userId'],
+                'start_time' => now(),
+                'code_unique' => $validatedData['codeUnique'],
+                'difference' => 'groupe', // Mettez à jour cette valeur si nécessaire
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Quantité ajouter avec succès');
     }
+
     public function storeAppel(Request $request)
     {
         try {
@@ -310,7 +321,6 @@ class AppelOffreController extends Controller
                     // Envoi de la notification à l'utilisateur
                     Notification::send($owner, new AppelOffre($data));
                 }
-
             }
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
@@ -373,6 +383,8 @@ class AppelOffreController extends Controller
 
             // Save the model
             $offre->save();
+
+
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {

@@ -141,7 +141,8 @@ class NotificationShow extends Component
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
         $this->nameSender = $this->notification->data['userSender'] ?? null;
-        $this->id_sender = $this->notification->data['id_sender'] ?? null;
+        // $this->id_sender = $this->notification->data['id_sender'] ?? null;
+        $this->id_sender = is_array($this->notification->data['id_sender']) ? implode(',', $this->notification->data['id_sender']) : $this->notification->data['id_sender'];
         $this->difference = $this->notification->data['difference'] ?? null;
         $this->nameprod = $this->notification->data['productName'] ?? null;
 
@@ -151,7 +152,7 @@ class NotificationShow extends Component
 
         $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre' || $this->notification->type === 'App\Notifications\AppelOffreTerminer' )
+        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre' || $this->notification->type === 'App\Notifications\AppelOffreTerminer')
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? null);
 
@@ -391,7 +392,6 @@ class NotificationShow extends Component
         $this->validate();
     }
 
-
     public function accepter()
     {
 
@@ -610,102 +610,7 @@ class NotificationShow extends Component
         $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
     }
 
-    // public function appelOffre()
-    // {
-    //     if ($this->notification->type === 'App\Notifications\AppelOffre') {
-    //         Log::info('Notification type is App\Notifications\AppelOffre');
 
-    //         $notificationExists = NotificationLog::where('code_unique', $this->codeUnique)->exists();
-    //         $lowPriceComment = Comment::where('code_unique', $this->codeUnique)
-    //             ->whereNotNull('prixTrade')
-    //             ->orderBy('prixTrade', 'asc')
-    //             ->orderBy('created_at', 'desc')
-    //             ->first();
-
-    //         if ($lowPriceComment) {
-    //             Log::info('Low price comment found', ['lowPriceComment' => $lowPriceComment]);
-
-    //             $data = [
-    //                 'prix_trade' => $lowPriceComment->prixTrade ?? null,
-    //                 'id_trader' => $lowPriceComment->id_trader ?? null,
-    //                 'id_prod' => $lowPriceComment->id_prod ?? null,
-    //                 'quantite' => $this->notification->data['quantity'] ?? null,
-    //                 'name' => $this->notification->data['productName'] ?? 'Produit sans nom'
-    //             ];
-    //             $lowPriceUserName = $lowPriceComment->user->name;
-    //             $lowPriceAmount = $lowPriceComment->prixTrade;
-
-    //             if ($this->isTempsEcoule && !$notificationExists) {
-    //                 Log::info('Time has elapsed and no notification exists', ['code_unique' => $this->codeUnique]);
-
-    //                 // Vérifier si 'id_sender' est un tableau ou un seul élément
-    //                 $idSenders = is_array($this->notification->data['id_sender']) ? $this->notification->data['id_sender'] : [$this->notification->data['id_sender']];
-
-    //                 foreach ($idSenders as $userSender) {
-    //                     $owner = User::find($userSender);
-    //                     Log::info('Processing user sender', ['userSender' => $userSender, 'owner' => $owner]);
-
-    //                     if ($owner && $data['prix_trade'] && $data['quantite']) {
-    //                         $prixArticle = $data['quantite'] * $data['prix_trade'];
-    //                         Log::info('Price article calculated', ['prixArticle' => $prixArticle]);
-
-    //                         // Trouver les portefeuilles du propriétaire et du trader
-    //                         $ownerWallet = Wallet::where('user_id', $owner->id)->first();
-    //                         $traderWallet = Wallet::where('user_id', $data['id_trader'])->first();
-    //                         Log::info('Wallets found', ['ownerWallet' => $ownerWallet, 'traderWallet' => $traderWallet]);
-
-    //                         if ($ownerWallet && $traderWallet) {
-    //                             // Décrémenter le portefeuille du trader
-    //                             $traderWallet->decrement('balance', $prixArticle);
-
-    //                             // Incrémenter le portefeuille du propriétaire
-    //                             $ownerWallet->increment('balance', $prixArticle);
-
-    //                             // Enregistrer la transaction d'envoi
-    //                             $transaction1 = new Transaction();
-    //                             $transaction1->sender_user_id = $owner->id;
-    //                             $transaction1->receiver_user_id = $data['id_trader'];
-    //                             $transaction1->type = 'Envoie';
-    //                             $transaction1->amount = $prixArticle;
-    //                             $transaction1->save();
-
-    //                             // Enregistrer la transaction de réception
-    //                             $transaction2 = new Transaction();
-    //                             $transaction2->sender_user_id = $owner->id;
-    //                             $transaction2->receiver_user_id = $data['id_trader'];
-    //                             $transaction2->type = 'Reception';
-    //                             $transaction2->amount = $prixArticle;
-    //                             $transaction2->save();
-
-    //                             // Envoyer la notification à l'utilisateur authentifié
-    //                             Notification::send($owner, new AppelOffreTerminer($data));
-    //                             Log::info('Notification sent', ['user' => $owner, 'data' => $data]);
-
-    //                             NotificationLog::create(['code_unique' => $this->codeUnique]);
-    //                         } else {
-    //                             // Gérer le cas où le portefeuille du propriétaire ou du trader n'est pas trouvé
-    //                             if (!$ownerWallet) {
-    //                                 Log::error('Portefeuille non trouvé pour l\'utilisateur ID: ' . $owner->id);
-    //                             }
-    //                             if (!$traderWallet) {
-    //                                 Log::error('Portefeuille non trouvé pour le trader ID: ' . $data['id_trader']);
-    //                             }
-    //                         }
-    //                     } else {
-    //                         // Gérer le cas où le propriétaire ou les données requises sont manquants
-    //                         Log::error('Propriétaire non trouvé ou données manquantes pour userSender ID: ' . $userSender);
-    //                     }
-    //                 }
-    //             }
-    //         } else {
-    //             $lowPriceUserName = 'N/A';
-    //             $lowPriceAmount = 0;
-    //         }
-    //     }
-    // }
-
-
-    // #[On('sendNotification')]
     public function render()
     {
         // Récupérer l'utilisateur authentifié
@@ -869,7 +774,8 @@ class NotificationShow extends Component
         //         $lowPriceUserName = 'N/A';
         //         $lowPriceAmount = 0;
         //     }
-        // } elseif ($notification->type === 'App\Notifications\OffreNotifGroup') {
+        // }
+        //elseif ($notification->type === 'App\Notifications\OffreNotifGroup') {
         //     Log::info('Notification type is OffreNotifGroup');
 
         //     $comments = Comment::with('user')

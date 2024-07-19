@@ -77,6 +77,9 @@ class CheckCountdowns extends Command
                 if ($countdown->difference === 'single') {
                     // Envoyer la notification à l'utilisateur expéditeur
                     Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
+                if ($countdown->difference === 'groupe') {
+                    // Envoyer la notification à l'utilisateur expéditeur
+                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
                 } else {
                     // Envoyer une autre notification ou effectuer une autre action
                     Notification::send($countdown->sender, new CountdownNotification($details));
