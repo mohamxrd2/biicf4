@@ -47,6 +47,7 @@ class CheckCountdowns extends Command
                 $localite = $lowestPriceComment->localite;
                 $specificite = $lowestPriceComment->specificite;
                 $nameprod = $lowestPriceComment->nameprod;
+                $id_sender = $lowestPriceComment->id_sender;
                 // Calculer montotal
                 $montotal = $quantiteC * $lowestPrice;
 
@@ -67,6 +68,7 @@ class CheckCountdowns extends Command
                     'localite' => $localite,
                     'specificite' => $specificite,
                     'nameprod' => $nameprod,
+                    'id_sender' => $id_sender,
                     'montantTotal' => $montotal,
                 ];
 

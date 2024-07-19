@@ -60,6 +60,7 @@ class NotificationShow extends Component
 
     public $localite;
     public $specificite;
+    public $nameprod;
 
     public $modalOpen = false;
 
@@ -142,6 +143,7 @@ class NotificationShow extends Component
         $this->nameSender = $this->notification->data['userSender'] ?? null;
         $this->id_sender = $this->notification->data['id_sender'] ?? null;
         $this->difference = $this->notification->data['difference'] ?? null;
+        $this->nameprod = $this->notification->data['productName'] ?? null;
 
         $this->date_livr = $this->notification->data['date_livr'] ?? null;
 
@@ -149,7 +151,7 @@ class NotificationShow extends Component
 
         $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre')
+        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre' || $this->notification->type === 'App\Notifications\AppelOffreTerminer' )
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? null);
 
@@ -516,8 +518,8 @@ class NotificationShow extends Component
             'quantiteC' => 'required|numeric',
             'prixTrade' => 'required|numeric',
             'id_sender' => 'required|numeric',
-            'nameprod' => 'required|string',
             'id_trader' => 'required|numeric',
+            'nameprod' => 'required|string',
             'difference' => 'required|string',
             'localite' => 'required|string',
             'specificite' => 'required|string',
