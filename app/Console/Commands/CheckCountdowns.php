@@ -32,18 +32,23 @@ class CheckCountdowns extends Command
             $code_unique = $countdown->code_unique;
 
             // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
-            $lowestPriceComment = Comment::where('code_unique', $code_unique)
+            $lowestPriceComment = Comment::with('user')
+                ->where('code_unique', $code_unique)
                 ->orderBy('prixTrade', 'asc')
                 ->first();
 
+
             // Vérifier si un enregistrement a été trouvé
             if ($lowestPriceComment) {
-                $lowestPrice = $lowestPriceComment->prixTrade ?? null;
-                $traderId = $lowestPriceComment->id_trader ?? null;
-                $id_prod = $lowestPriceComment->id_prod ?? null;
-                $quantiteC = $lowestPriceComment->quantiteC ?? null;
-                $localite = $lowestPriceComment->localite ?? null;
-                $specificite = $lowestPriceComment->specificite ?? null;
+                $lowestPrice = $lowestPriceComment->prixTrade;
+                $traderId = $lowestPriceComment->id_trader;
+                $id_prod = $lowestPriceComment->id_prod;
+                $quantiteC = $lowestPriceComment->quantiteC;
+                $localite = $lowestPriceComment->localite;
+                $specificite = $lowestPriceComment->specificite;
+                $nameprod = $lowestPriceComment->nameprod;
+                // Calculer montotal
+                $montotal = $quantiteC * $lowestPrice;
 
                 // Définir les détails de la notification
                 $details = [
@@ -62,13 +67,16 @@ class CheckCountdowns extends Command
                     'quantiteC' => $quantiteC,
                     'localite' => $localite,
                     'specificite' => $specificite,
+                    'nameprod' => $nameprod,
+                    'montantTotal' => $montotal,
                 ];
+
 
                 // Vérifier si la colonne 'difference' est égale à 'single'
                 if ($countdown->difference === 'single') {
                     // Envoyer la notification à l'utilisateur expéditeur
                     Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
-                }else {
+                } else {
                     // Envoyer une autre notification ou effectuer une autre action
                     Notification::send($countdown->sender, new CountdownNotification($details));
                 }

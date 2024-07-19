@@ -24,12 +24,12 @@ class CountdownNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'sender_name' => $this->details['sender_name'],
-            'code_unique' => $this->details['code_unique'],
-            'prixTrade' => $this->details['prixTrade'],
-            'id_trader' => $this->details['id_trader'],
-            'idProd' => $this->details['idProd'],
-            'quantiteC' => $this->details['quantiteC'],
+            'sender_name' => $this->details['sender_name'] ?? null,
+            'code_unique' => $this->details['code_unique'] ?? null,
+            'prixTrade' => $this->details['prixTrade'] ?? null,
+            'id_trader' => $this->details['id_trader'] ?? null,
+            'idProd' => $this->details['idProd'] ?? null,
+            'quantiteC' => $this->details['quantiteC'] ?? null,
         ];
     }
 }
