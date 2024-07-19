@@ -234,21 +234,21 @@ class AppelOffreController extends Controller
         $offregroupe->save();
 
         // Vérifier si un compte à rebours est déjà en cours pour ce code unique
-        $existingCountdown = Countdown::where('code_unique', $validatedData['codeUnique'])
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
+        // $existingCountdown = Countdown::where('code_unique', $validatedData['codeUnique'])
+        //     ->where('notified', false)
+        //     ->orderBy('start_time', 'desc')
+        //     ->first();
 
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => Auth::id(), // Assurez-vous que l'utilisateur est authentifié
-                'userSender' => $validatedData['userId'],
-                'start_time' => now(),
-                'code_unique' => $validatedData['codeUnique'],
-                'difference' => 'groupe', // Mettez à jour cette valeur si nécessaire
-            ]);
-        }
+        // if (!$existingCountdown) {
+        //     // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+        //     Countdown::create([
+        //         'user_id' => Auth::id(), // Assurez-vous que l'utilisateur est authentifié
+        //         'userSender' => $validatedData['userId'],
+        //         'start_time' => now(),
+        //         'code_unique' => $validatedData['codeUnique'],
+        //         'difference' => 'groupe', // Mettez à jour cette valeur si nécessaire
+        //     ]);
+        // }
 
         return redirect()->back()->with('success', 'Quantité ajouter avec succès');
     }
@@ -402,24 +402,5 @@ class AppelOffreController extends Controller
 
         return $code;
     }
-    public function comment(Request $request)
-    {
-        // Validation des données du formulaire
-        $request->validate([
-            'prixTrade' => 'required|integer',
-            'id_trader' => 'required|integer|exists:users,id',
-            'code_unique' => 'required|string|exists:comments,code_unique',
-        ]);
 
-
-        // Création du commentaire
-        Comment::create([
-            'prixTrade' => $request->input('prixTrade'),
-            'id_trader' => $request->input('id_trader'),
-            'code_unique' => $request->input('code_unique'),
-        ]);
-
-        // Redirection avec un message de succès
-        return redirect()->back();
-    }
 }
