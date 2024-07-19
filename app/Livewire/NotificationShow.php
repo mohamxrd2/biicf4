@@ -432,7 +432,7 @@ class NotificationShow extends Component
             'totalSom' => $requiredAmount,
             'quantite' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
             'localite' =>  $this->notification->data['localite'],
-            'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_trader'],
+            'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
             'code_livr' => $code_livr,
 
         ];

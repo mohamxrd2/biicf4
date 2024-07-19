@@ -640,7 +640,7 @@
 
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
-                </span>{{ $notification->data['nameprod'] }}/ {{ $notification->data['id_trader'] }} / {{$idProd2}}</h2>
+                </span>{{ $notification->data['nameprod'] }}/ {{ $notification->data['id_trader'] }} / {{$idProd2}} / {{ $id_sender}}</h2>
             <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantiteC'] }}</p>
             <p class="mb-3"><strong>Localité:</strong> {{ $notification->data['localite'] }}</p>
             <p class="mb-3"><strong>Spécificité:</strong> {{ $notification->data['specificite'] }}</p>
