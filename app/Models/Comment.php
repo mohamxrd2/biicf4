@@ -21,6 +21,8 @@ class Comment extends Model
         'quantiteC',
         'localite',
         'specificite',
+        'nameprod',
+        'id_sender',
     ];
 
     /**
