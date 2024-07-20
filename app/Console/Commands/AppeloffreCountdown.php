@@ -4,24 +4,25 @@ namespace App\Console\Commands;
 
 use App\Models\AppelOffreGrouper;
 use App\Models\User;
-use App\Notifications\AppelOffre;
+use App\Notifications\AppelOffreGrouperNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
 class AppeloffreCountdown extends Command
 {
-
     protected $signature = 'app:appeloffre';
 
-    protected $description = 'when appeloffre subbmit and sen the notification ';
+    protected $description = 'When appeloffre submit and send the notification';
+
     public function __construct()
     {
         parent::__construct();
     }
+
     public function handle()
     {
         $appelOffreGroups = AppelOffreGrouper::whereNotNull('productName')
-            ->where('created_at', '<=', now()->subMinute())
+            ->where('created_at', '<=', now()->subMinutes(1))
             ->get();
 
         foreach ($appelOffreGroups as $appelOffreGroup) {
@@ -33,6 +34,7 @@ class AppeloffreCountdown extends Command
             $payment = $appelOffreGroup->payment;
             $livraison = $appelOffreGroup->livraison;
             $specificity = $appelOffreGroup->specificity;
+            $localite = $appelOffreGroup->localite;
             $lowestPricedProduct = $appelOffreGroup->lowestPricedProduct;
 
             $usergroup = AppelOffreGrouper::where('codeunique', $codesUniques)
@@ -67,7 +69,9 @@ class AppeloffreCountdown extends Command
                     'quantity' => $sumquantite,
                     'payment' => $payment,
                     'Livraison' => $livraison,
+                    'localite' => $localite,
                     'specificity' => $specificity,
+                    'difference' => 'grouper',
                     'image' => null,
                     'id_sender' => $usergroup,
                     'prodUsers' => $prodUser,
@@ -85,7 +89,7 @@ class AppeloffreCountdown extends Command
                 $owner = User::find($prodUser);
 
                 if ($owner) {
-                    Notification::send($owner, new AppelOffre($data));
+                    Notification::send($owner, new AppelOffreGrouperNotification($data));
                 }
             }
 

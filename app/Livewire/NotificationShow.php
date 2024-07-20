@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Rules\ArrayOrInteger;
 use Exception;
 use App\Models\User;
 use App\Models\Wallet;
@@ -71,7 +72,7 @@ class NotificationShow extends Component
     public $endTime = null;
 
     public $nameSender;
-    public $id_sender;
+    public $id_sender  = [];
     public $namefourlivr;
     public $comments;
     public $userComment;
@@ -142,7 +143,9 @@ class NotificationShow extends Component
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
         $this->nameSender = $this->notification->data['userSender'] ?? null;
         // $this->id_sender = $this->notification->data['id_sender'] ?? null;
-        $this->id_sender = is_array($this->notification->data['id_sender']) ? implode(',', $this->notification->data['id_sender']) : $this->notification->data['id_sender'];
+        // $this->id_sender = is_array($this->notification->data['id_sender']) ? implode(',', $this->notification->data['id_sender']) : $this->notification->data['id_sender'];
+        $data = $this->notification->data['id_sender'];
+        $this->id_sender = is_array($data) ? $data : explode(',', $data);
         $this->difference = $this->notification->data['difference'] ?? null;
         $this->nameprod = $this->notification->data['productName'] ?? null;
 
@@ -152,7 +155,7 @@ class NotificationShow extends Component
 
         $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffre' || $this->notification->type === 'App\Notifications\AppelOffreTerminer')
+        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification' || $this->notification->type === 'App\Notifications\AppelOffreTerminer')
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? null);
 
@@ -510,6 +513,57 @@ class NotificationShow extends Component
         $transaction->save();
     }
 
+    public function commentFormGroupe()
+    {
+        // Récupérer l'utilisateur authentifié
+        $this->validate([
+            'code_unique' => 'required|string',
+            'quantiteC' => 'required|numeric',
+            'prixTrade' => 'required|numeric',
+            'id_sender' => 'required|array',
+            'id_sender.*' => 'numeric',
+            'id_trader' => 'required|numeric',
+            'nameprod' => 'required|string',
+            'difference' => 'required|string',
+            'localite' => 'required|string',
+            'specificite' => 'required|string',
+
+        ]);
+
+        Comment::create([
+            'localite' => $this->notification->data['localite'],
+            'specificite' => $this->specificite,
+            'prixTrade' => $this->prixTrade,
+            'id_sender' => json_encode($this->id_sender),
+            'nameprod' => $this->nameprod,
+            'code_unique' => $this->code_unique,
+            'id_trader' => $this->id_trader,
+            'quantiteC' => $this->quantiteC,
+        ]);
+
+        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+        $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => $this->id_trader,
+                // 'userSender' => json_encode($this->id_sender),
+                'start_time' => now(),
+                'code_unique' => $this->code_unique,
+                'difference' => $this->difference,
+            ]);
+
+            $this->countdownStarted = true;
+        }
+
+        session()->flash('success', 'Commentaire créé avec succès!');
+
+        $this->reset(['prixTrade']);
+    }
     public function commentForm()
     {
         // Récupérer l'utilisateur authentifié

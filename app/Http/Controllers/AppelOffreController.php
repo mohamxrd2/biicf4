@@ -181,6 +181,7 @@ class AppelOffreController extends Controller
                     'payment' => $payment,
                     'Livraison' => $livraison,
                     'specificity' => $specificity,
+                    'difference' => 'grouper',
                     'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
                     'id_sender' => $usergroup,
                     'prodUsers' => $prodUser,
@@ -206,9 +207,9 @@ class AppelOffreController extends Controller
                 }
             }
 
-            NotificationLog::create(['code_unique' => $codesUniques]);
+            // NotificationLog::create(['code_unique' => $codesUniques]);
 
-            AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
+            // AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
         }
 
         // Passer les variables à la vue (si nécessaire)
@@ -383,8 +384,6 @@ class AppelOffreController extends Controller
 
             // Save the model
             $offre->save();
-
-
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {

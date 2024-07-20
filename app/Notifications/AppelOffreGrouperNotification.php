@@ -7,22 +7,16 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AppelOffre extends Notification implements ShouldQueue
+class AppelOffreGrouperNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     private $achat;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct($achat)
     {
-
-
         $this->achat = $achat;
     }
-
 
     public function via($notifiable)
     {
@@ -41,7 +35,7 @@ class AppelOffre extends Notification implements ShouldQueue
             'specificity' => $this->achat['specificity'] ?? null,
             'localite' => $this->achat['localite'] ?? null,
             'image' => $this->achat['image'] ?? null,
-            'id_sender' => $this->achat['id_sender']?? null,
+            'id_sender' => $this->achat['id_sender'] ?? null,
             'prodUsers' => $this->achat['prodUsers'] ?? null,
             'lowestPricedProduct' => $this->achat['lowestPricedProduct'] ?? null,
             'code_unique' => $this->achat['code_unique'],
