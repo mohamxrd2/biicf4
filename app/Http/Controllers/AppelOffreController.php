@@ -203,7 +203,7 @@ class AppelOffreController extends Controller
                 // Vérification si l'utilisateur existe
                 if ($owner) {
                     // Envoi de la notification à l'utilisateur
-                    Notification::send($owner, new AppelOffre($data));
+                    // Notification::send($owner, new AppelOffre($data));
                 }
             }
 
@@ -329,7 +329,7 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
-    
+
     public function formstoreGroupe(Request $request)
     {
         try {

@@ -153,14 +153,20 @@ class NotificationShow extends Component
         //     ? explode(',', $this->notification->data['id_sender'])
         //     : $this->notification->data['id_sender'];
         if (array_key_exists('id_sender', $this->notification->data)) {
-            $this->id_sender = is_array($this->notification->data['id_sender'])
-                ? explode(',', $this->notification->data['id_sender'])
-                : $this->notification->data['id_sender'];
+            $idSender = $this->notification->data['id_sender'];
+
+            if (is_array($idSender)) {
+                // If $idSender is already an array, assign it directly
+                $this->id_sender = $idSender;
+            } else {
+                // If $idSender is a string, use explode to convert it to an array
+                $this->id_sender = explode(',', $idSender);
+            }
         } else {
             // Handle the case where 'id_sender' does not exist
-            // You can set a default value or take other appropriate actions
             $this->id_sender = null; // or any other default value you prefer
         }
+
 
         // $data = $this->notification->data['id_sender'] ?? null;
         // $this->id_sender = is_array($data) ? $data : explode(',', $data);
