@@ -291,16 +291,16 @@
                             <form wire:submit.prevent="commentForm">
                                 <div
                                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    <input type="text" name="code_unique" wire:model="code_unique"
+                                    <input type="hidden" name="code_unique" wire:model="code_unique"
                                         value="{{ $notification->data['code_unique'] }}">
-                                    <input type="text" name="quantiteC" wire:model="quantiteC"
+                                    <input type="hidden" name="quantiteC" wire:model="quantiteC"
                                         value="{{ $notification->data['quantity'] }}">
-                                    <input type="text" name="difference" wire:model="difference"
+                                    <input type="hidden" name="difference" wire:model="difference"
                                         value="{{ $notification->data['difference'] }}">
-                                    <input type="text" name="id_sender" wire:model="id_sender"
-                                        value="{{ is_array($id_sender) ? implode(',', $id_sender) : $id_sender }}">
-                                    <input type="text" name="id_trader" wire:model="id_trader">
-                                    <input type="text" name="nameprod" wire:model="nameprod"
+                                    <input type="hidden" name="id_sender" wire:model="id_sender"
+                                        value="{{ $notification->data['id_sender']}}">
+                                    <input type="hidden" name="id_trader" wire:model="id_trader">
+                                    <input type="hidden" name="nameprod" wire:model="nameprod"
                                         value="{{ $notification->data['productName'] }}">
 
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
@@ -310,13 +310,13 @@
                                         <span class="text-red-500">{{ $message }}</span>
                                     @enderror
 
-                                    <input type="text" name="localite" id="localite" wire:model="localite"
+                                    <input type="hidden" name="localite" id="localite" wire:model="localite"
                                         value="{{ $notification->data['localite'] }}">
                                     @error('localite')
                                         <span class="text-red-500">{{ $message }}</span>
                                     @enderror
 
-                                    <input type="text" name="specificite" id="specificite"
+                                    <input type="hidden" name="specificite" id="specificite"
                                         wire:model="specificite" value="{{ $notification->data['specificity'] }}">
 
 
@@ -1318,20 +1318,20 @@
                                         value="{{ $notification->data['quantite'] }}">
                                     <input type="hidden" name="idProd" wire:model="idProd"
                                         value="{{ $notification->data['idProd'] }}">
-                                    {{-- <input type="text" name="nameSender" wire:model="nameSender"
-                                        value="{{ $notification->data['userSender'] }}"> --}}
+                                    <input type="hidden" name="nameSender" wire:model="nameSender"
+                                        value="{{ $notification->data['userSender'] }}">
                                     <input type="hidden" name="id_trader" wire:model="id_trader"
                                         value="{{ $notification->data['id_trader'] }}">
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                         placeholder="Faire une offre..." required>
                                     {{--  --}}
-                                    @if (is_array($nameSender))
+                                    {{-- @if (is_array($nameSender))
                                         @foreach ($nameSender as $userId)
                                             <input type="hidden" name="nameSender[]" wire:model="nameSender[]"
                                                 value="{{ $userId }}">
                                         @endforeach
-                                    @endif
+                                    @endif --}}
 
 
                                     <button type="submit" id="submitBtnAppel"

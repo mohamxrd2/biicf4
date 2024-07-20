@@ -4,7 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\Comment;
 use App\Models\Countdown;
-use App\Notifications\Facturegrouper;
+use App\Models\User;
+use App\Notifications\FacturegrouperNotifications;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
@@ -35,14 +36,12 @@ class FactureGrouper extends Command
                 ->orderBy('prixTrade', 'asc')
                 ->first();
 
-            // Vérifier si un enregistrement a été trouvé
             if ($lowestPriceComment) {
                 $lowestPrice = $lowestPriceComment->prixTrade;
                 $traderId = $lowestPriceComment->id_trader;
                 $id_prod = $lowestPriceComment->id_prod;
                 $quantiteC = $lowestPriceComment->quantiteC;
 
-                // Définir les détails de la notification
                 $details = [
                     'code_unique' => $code_unique,
                     'prixTrade' => $lowestPrice,
@@ -51,22 +50,29 @@ class FactureGrouper extends Command
                     'quantiteC' => $quantiteC,
                 ];
 
-                // Décoder et traiter les utilisateurs associés
-                $decodedProdUsers = json_decode($countdown->nsender, true);
-                if (is_array($decodedProdUsers)) {
-                    foreach ($decodedProdUsers as $prodUser) {
-                        $owner = User::find($prodUser);
-                        if ($owner) {
-                            Notification::send($owner, new Facturegrouper($details));
-                        }
+                $nSenders = Countdown::where('code_unique', $code_unique)
+                    ->distinct()
+                    ->pluck('nsender')
+                    ->toArray();
+
+                $decodednSenders = [];
+                foreach ($nSenders as $nSender) {
+                    $decodedValues = json_decode($nSender, true);
+                    if (is_array($decodedValues)) {
+                        $decodednSenders = array_merge($decodednSenders, $decodedValues);
                     }
                 }
+
+
+                $owner = User::find($nSender);
+                if ($owner) {
+                    // Notification::send($owner, new FacturegrouperNotifications($details));
+                }
+
 
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }
         }
-    
     }
 }
-

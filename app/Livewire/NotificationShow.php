@@ -144,14 +144,27 @@ class NotificationShow extends Component
 
         // $this->nameSender = $this->notification->data['userSender'] ?? null;
         $data2 = $this->notification->data['userSender'] ?? null;
-        $data3 = json_decode($data2, true);;
+        $data3 = json_decode($data2, true);
 
         $this->nameSender = is_array($data3) ? $data3 : explode(',', $data3);
 
         // $this->id_sender = $this->notification->data['id_sender'] ?? null;
-        // $this->id_sender = is_array($this->notification->data['id_sender']) ? implode(',', $this->notification->data['id_sender']) : $this->notification->data['id_sender'];
-        $data = $this->notification->data['id_sender'] ?? null;
-        $this->id_sender = is_array($data) ? $data : explode(',', $data);
+        // $this->id_sender = is_array($this->notification->data['id_sender'])
+        //     ? explode(',', $this->notification->data['id_sender'])
+        //     : $this->notification->data['id_sender'];
+        if (array_key_exists('id_sender', $this->notification->data)) {
+            $this->id_sender = is_array($this->notification->data['id_sender'])
+                ? explode(',', $this->notification->data['id_sender'])
+                : $this->notification->data['id_sender'];
+        } else {
+            // Handle the case where 'id_sender' does not exist
+            // You can set a default value or take other appropriate actions
+            $this->id_sender = null; // or any other default value you prefer
+        }
+
+        // $data = $this->notification->data['id_sender'] ?? null;
+        // $this->id_sender = is_array($data) ? $data : explode(',', $data);
+
 
         $this->difference = $this->notification->data['difference'] ?? null;
         $this->nameprod = $this->notification->data['productName'] ?? null;
@@ -162,7 +175,7 @@ class NotificationShow extends Component
 
         $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification' || $this->notification->type === 'App\Notifications\AppelOffreTerminer')
+        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification' || $this->notification->type === 'App\Notifications\AppelOffreTerminer' || $this->notification->type === 'App\Notifications\AppelOffre')
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? null);
 
@@ -234,8 +247,6 @@ class NotificationShow extends Component
                 $this->idProd2 = $produitService->id;
             }
         }
-
-        
     }
 
 
@@ -593,7 +604,7 @@ class NotificationShow extends Component
             'localite' => $this->notification->data['localite'],
             'specificite' => $this->specificite,
             'prixTrade' => $this->prixTrade,
-            'id_sender' => $this->id_sender,
+            'id_sender' => json_encode($this->id_sender),
             'nameprod' => $this->nameprod,
             'code_unique' => $this->code_unique,
             'id_trader' => $this->id_trader,
@@ -615,8 +626,6 @@ class NotificationShow extends Component
                 'code_unique' => $this->code_unique,
                 'difference' => $this->difference,
             ]);
-
-            $this->countdownStarted = true;
         }
 
         session()->flash('success', 'Commentaire créé avec succès!');
@@ -629,9 +638,9 @@ class NotificationShow extends Component
         $validatedData = $this->validate([
             'id_trader' => 'required|numeric',
             'code_livr' => 'required|string',
-            // 'userSender' => 'required|numeric',
-            'nameSender' => 'required|array',
-            'nameSender.*' => 'numeric',
+            'userSender' => 'required|numeric',
+            // 'nameSender' => 'required|array',
+            // 'nameSender.*' => 'numeric',
             'prixTrade' => 'required|numeric',
             'quantiteC' => 'required|numeric',
             'idProd' => 'required|numeric',
@@ -657,14 +666,12 @@ class NotificationShow extends Component
             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
             Countdown::create([
                 'user_id' => Auth::id(),
-                // 'userSender' => $this->userSender,
-                'nsender' => json_encode($validatedData['nameSender']),
-
+                'userSender' => $this->userSender,
+                // 'nsender' => json_encode($validatedData['nameSender']),
                 'start_time' => now(),
                 'code_unique' => $validatedData['code_livr'],
-                'difference' => 'facturegrouper',
+                // 'difference' => 'facturegrouper',
             ]);
-
         }
 
 

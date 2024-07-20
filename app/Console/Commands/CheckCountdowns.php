@@ -72,7 +72,7 @@ class CheckCountdowns extends Command
                     'localite' => $localite,
                     'specificite' => $specificite,
                     'nameprod' => $nameprod,
-                    'id_sender' => $id_sender,
+                    'id_sender' => $decodedSenderIds,
                     'montantTotal' => $montotal,
                 ];
                 $Gdetails = [
