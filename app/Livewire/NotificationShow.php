@@ -141,11 +141,18 @@ class NotificationShow extends Component
         $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
-        $this->nameSender = $this->notification->data['userSender'] ?? null;
+
+        // $this->nameSender = $this->notification->data['userSender'] ?? null;
+        $data2 = $this->notification->data['userSender'] ?? null;
+        $data3 = json_decode($data2, true);;
+
+        $this->nameSender = is_array($data3) ? $data3 : explode(',', $data3);
+
         // $this->id_sender = $this->notification->data['id_sender'] ?? null;
         // $this->id_sender = is_array($this->notification->data['id_sender']) ? implode(',', $this->notification->data['id_sender']) : $this->notification->data['id_sender'];
-        $data = $this->notification->data['id_sender'];
+        $data = $this->notification->data['id_sender'] ?? null;
         $this->id_sender = is_array($data) ? $data : explode(',', $data);
+
         $this->difference = $this->notification->data['difference'] ?? null;
         $this->nameprod = $this->notification->data['productName'] ?? null;
 
@@ -227,6 +234,8 @@ class NotificationShow extends Component
                 $this->idProd2 = $produitService->id;
             }
         }
+
+        
     }
 
 
@@ -620,11 +629,14 @@ class NotificationShow extends Component
         $validatedData = $this->validate([
             'id_trader' => 'required|numeric',
             'code_livr' => 'required|string',
-            'userSender' => 'required|numeric',
+            // 'userSender' => 'required|numeric',
+            'nameSender' => 'required|array',
+            'nameSender.*' => 'numeric',
             'prixTrade' => 'required|numeric',
             'quantiteC' => 'required|numeric',
             'idProd' => 'required|numeric',
         ]);
+
 
         // Créer un commentaire
         Comment::create([
@@ -645,12 +657,14 @@ class NotificationShow extends Component
             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
             Countdown::create([
                 'user_id' => Auth::id(),
-                'userSender' => $this->userSender,
+                // 'userSender' => $this->userSender,
+                'nsender' => json_encode($validatedData['nameSender']),
+
                 'start_time' => now(),
                 'code_unique' => $validatedData['code_livr'],
+                'difference' => 'facturegrouper',
             ]);
 
-            $this->countdownStarted = true;
         }
 
 

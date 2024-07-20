@@ -24,7 +24,7 @@ class CountdownNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'sender_name' => $this->details['sender_name'] ?? null,
+            // 'sender_name' => $this->details['sender_name'] ?? null,
             'code_unique' => $this->details['code_unique'] ?? null,
             'prixTrade' => $this->details['prixTrade'] ?? null,
             'id_trader' => $this->details['id_trader'] ?? null,
