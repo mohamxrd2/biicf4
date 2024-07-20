@@ -56,25 +56,25 @@ class CheckCountdowns extends Command
                 $montotal = $quantiteC * $lowestPrice;
 
                 // Définir les détails de la notification
-                // $details = [
-                //     'sender_name' => $countdown->sender->name, // Ajouter le nom de l'expéditeur aux détails de la notification
-                //     'code_unique' => $countdown->code_unique,
-                //     'prixTrade' => $lowestPrice,
-                //     'id_trader' => $traderId,
-                //     'idProd' => $id_prod,
-                //     'quantiteC' => $quantiteC,
-                // ];
-                // $Adetails = [
-                //     'code_unique' => $countdown->code_unique,
-                //     'prixTrade' => $lowestPrice,
-                //     'id_trader' => $traderId,
-                //     'quantiteC' => $quantiteC,
-                //     'localite' => $localite,
-                //     'specificite' => $specificite,
-                //     'nameprod' => $nameprod,
-                //     'id_sender' => $id_sender,
-                //     'montantTotal' => $montotal,
-                // ];
+                $details = [
+                    'sender_name' => $countdown->sender->name, // Ajouter le nom de l'expéditeur aux détails de la notification
+                    'code_unique' => $countdown->code_unique,
+                    'prixTrade' => $lowestPrice,
+                    'id_trader' => $traderId,
+                    'idProd' => $id_prod,
+                    'quantiteC' => $quantiteC,
+                ];
+                $Adetails = [
+                    'code_unique' => $countdown->code_unique,
+                    'prixTrade' => $lowestPrice,
+                    'id_trader' => $traderId,
+                    'quantiteC' => $quantiteC,
+                    'localite' => $localite,
+                    'specificite' => $specificite,
+                    'nameprod' => $nameprod,
+                    'id_sender' => $id_sender,
+                    'montantTotal' => $montotal,
+                ];
                 $Gdetails = [
                     'code_unique' => $countdown->code_unique,
                     'prixTrade' => $lowestPrice,
@@ -93,13 +93,13 @@ class CheckCountdowns extends Command
                     // Envoyer la notification à l'utilisateur expéditeur
                     Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
                 }
-                // else if ($countdown->difference === 'single') {
-                //     // Envoyer la notification à l'utilisateur expéditeur
-                //     Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
-                // } else {
-                //     // Envoyer une autre notification ou effectuer une autre action
-                //     Notification::send($countdown->sender, new CountdownNotification($details));
-                // }
+                else if ($countdown->difference === 'single') {
+                    // Envoyer la notification à l'utilisateur expéditeur
+                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
+                } else {
+                    // Envoyer une autre notification ou effectuer une autre action
+                    Notification::send($countdown->sender, new CountdownNotification($details));
+                }
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }

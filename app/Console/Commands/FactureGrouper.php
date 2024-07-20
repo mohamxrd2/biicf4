@@ -4,13 +4,13 @@ namespace App\Console\Commands;
 
 use App\Models\Comment;
 use App\Models\Countdown;
-use App\Notifications\CountdownNotification;
+use App\Notifications\Facturegrouper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
 class FactureGrouper extends Command
 {
-    protected $signature = 'facture:countdowns';
+    protected $signature = 'facture:proformat';
     protected $description = 'Check facture grouper';
 
     public function __construct()
@@ -44,27 +44,29 @@ class FactureGrouper extends Command
 
                 // Définir les détails de la notification
                 $details = [
-                    'code_unique' => $countdown->code_unique,
+                    'code_unique' => $code_unique,
                     'prixTrade' => $lowestPrice,
                     'id_trader' => $traderId,
                     'idProd' => $id_prod,
                     'quantiteC' => $quantiteC,
                 ];
-               if ($countdown->senders) {
 
-                // Vérifier si la colonne 'difference' est égale à 'facturegrouper'
-                if ($countdown->difference === 'facturegrouper') {
-                    // Envoyer une notification à chaque utilisateur associé
-                    foreach ($countdown->senders as $sender) {
-                        Notification::send($sender, new CountdownNotification($details));
+                // Décoder et traiter les utilisateurs associés
+                $decodedProdUsers = json_decode($countdown->nsender, true);
+                if (is_array($decodedProdUsers)) {
+                    foreach ($decodedProdUsers as $prodUser) {
+                        $owner = User::find($prodUser);
+                        if ($owner) {
+                            Notification::send($owner, new Facturegrouper($details));
+                        }
                     }
-                }
                 }
 
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }
         }
+    
     }
 }
 

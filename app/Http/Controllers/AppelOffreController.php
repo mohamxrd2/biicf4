@@ -329,6 +329,7 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
+    
     public function formstoreGroupe(Request $request)
     {
         try {
