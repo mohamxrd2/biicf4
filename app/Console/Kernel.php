@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
             // En local, exécuter la commande toutes les minutes
             $schedule->command('check:countdowns')->everyMinute();
             $schedule->command('app:envoi-four')->everyMinute();
-            $schedule->command('facture:proformat')->everyMinute();
+            $schedule->command('app:grouper-facture')->everyMinute();
             $schedule->command('app:appeloffre')->everyMinute();
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique

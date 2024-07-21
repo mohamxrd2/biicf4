@@ -298,7 +298,7 @@
                                     <input type="hidden" name="difference" wire:model="difference"
                                         value="{{ $notification->data['difference'] }}">
                                     <input type="hidden" name="id_sender" wire:model="id_sender"
-                                        value="{{ $notification->data['id_sender']}}">
+                                        value="{{ $notification->data['id_sender'] }}">
                                     <input type="hidden" name="id_trader" wire:model="id_trader">
                                     <input type="hidden" name="nameprod" wire:model="nameprod"
                                         value="{{ $notification->data['productName'] }}">
@@ -1318,20 +1318,23 @@
                                         value="{{ $notification->data['quantite'] }}">
                                     <input type="hidden" name="idProd" wire:model="idProd"
                                         value="{{ $notification->data['idProd'] }}">
-                                    <input type="hidden" name="nameSender" wire:model="nameSender"
-                                        value="{{ $notification->data['userSender'] }}">
+                                    {{-- <input type="hidden" name="nameSender" wire:model="nameSender"
+                                        value="{{ $notification->data['userSender'] }}"> --}}
                                     <input type="hidden" name="id_trader" wire:model="id_trader"
                                         value="{{ $notification->data['id_trader'] }}">
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                         placeholder="Faire une offre..." required>
                                     {{--  --}}
-                                    {{-- @if (is_array($nameSender))
+                                    @if (is_array($nameSender))
                                         @foreach ($nameSender as $userId)
                                             <input type="hidden" name="nameSender[]" wire:model="nameSender[]"
                                                 value="{{ $userId }}">
                                         @endforeach
-                                    @endif --}}
+                                    @else
+                                        <input type="hidden" name="nameSender" wire:model="nameSender"
+                                            value="{{ $nameSender }}">
+                                    @endif
 
 
                                     <button type="submit" id="submitBtnAppel"

@@ -5,20 +5,29 @@ namespace App\Console\Commands;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\User;
-use App\Notifications\FacturegrouperNotifications;
+use App\Notifications\GrouperFactureNotifications;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
-class FactureGrouper extends Command
+class GrouperFacture extends Command
 {
-    protected $signature = 'facture:proformat';
-    protected $description = 'Check facture grouper';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:grouper-facture';
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
 
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
         // Récupérer les countdowns non notifiés et dont le start_time est passé depuis au moins une minute
@@ -66,7 +75,9 @@ class FactureGrouper extends Command
 
                 $owner = User::find($nSender);
                 if ($owner) {
-                    // Notification::send($owner, new FacturegrouperNotifications($details));
+                    if ($countdown->difference === 'facturegrouper') {
+                        Notification::send($owner, new GrouperFactureNotifications($details));
+                    }
                 }
 
 
