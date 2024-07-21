@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('countdowns', function (Blueprint $table) {
-            $table->json('nsender')->nullable()->after('userSender');
+        Schema::create('groupagefact', function (Blueprint $table) {
+            $table->id();
+            $table->json('usersenders');
+            $table->string('code_unique');
+            $table->timestamp('start-time');
+            $table->boolean('notified')->default(false);
+            $table->timestamps();
         });
     }
 
@@ -21,7 +26,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('countdows', function (Blueprint $table) {
+        Schema::table('groupagefact', function (Blueprint $table) {
             //
         });
     }

@@ -11,51 +11,85 @@ use Illuminate\Support\Facades\Notification;
 
 class GrouperFacture extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+
     protected $signature = 'app:grouper-facture';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Command description';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        // Retrieve unnotified countdowns where the start_time is at least one minute past
-        $countdowns = Countdown::where('notified', false)
-            ->where('start_time', '<=', now()->subMinutes(1))
-            ->get();
+        // $appelOffreGroups = AppelOffreGrouper::whereNotNull('notified')
+        //     ->where('created_at', '<=', now()->subMinutes(1))
+        //     ->get();
 
-        foreach ($countdowns as $countdown) {
-            // Retrieve the unique code
-            $code_unique = $countdown->code_unique;
+        // foreach ($appelOffreGroups as $appelOffreGroup) {
+            // Récupérer le code unique
+    //         $code_unique = $countdown->code_unique;
 
-            // Get the comment with the lowest price for the given unique code
-            $lowestPriceComment = Comment::with('user')
-                ->where('code_unique', $code_unique)
-                ->orderBy('prixTrade', 'asc')
-                ->first();
+    //         // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
+    //         $lowestPriceComment = Comment::with('user')
+    //             ->where('code_unique', $code_unique)
+    //             ->orderBy('prixTrade', 'asc')
+    //             ->first();
 
-            if ($lowestPriceComment && $countdown->difference === 'facturegrouper') {
-                $details = [
-                    'code_unique' => $code_unique,
-                ];
 
-                // Send notification to the user
-                Notification::send($lowestPriceComment->user, new GrouperFactureNotifications($details));
-            }
+    //         // Vérifier si un enregistrement a été trouvé
+    //         if ($lowestPriceComment) {
+    //             $lowestPrice = $lowestPriceComment->prixTrade;
+    //             $traderId = $lowestPriceComment->id_trader;
+    //             $id_prod = $lowestPriceComment->id_prod;
+    //             $quantiteC = $lowestPriceComment->quantiteC;
+    //             $localite = $lowestPriceComment->localite;
+    //             $specificite = $lowestPriceComment->specificite;
+    //             $nameprod = $lowestPriceComment->nameprod;
+    //             $id_sender = $lowestPriceComment->id_sender;
 
-            // Update the notified status to true
-            $countdown->update(['notified' => true]);
-        }
+    //         $usergroup = AppelOffreGrouper::where('codeunique', $codesUniques)
+    //             ->distinct()
+    //             ->pluck('user_id')
+    //             ->toArray();
+
+    //         $prodUsers = AppelOffreGrouper::where('codeunique', $codesUniques)
+    //             ->distinct()
+    //             ->pluck('prodUsers')
+    //             ->toArray();
+
+    //         $decodedProdUsers = [];
+    //         foreach ($prodUsers as $prodUser) {
+    //             $decodedValues = json_decode($prodUser, true);
+    //             if (is_array($decodedValues)) {
+    //                 $decodedProdUsers = array_merge($decodedProdUsers, $decodedValues);
+    //             }
+    //         }
+
+
+
+    //         foreach ($decodedProdUsers as $prodUser) {
+    //             $data = [
+    //                 'sender_name' => $countdown->sender->name, // Ajouter le nom de l'expéditeur aux détails de la notification
+    //                 'code_unique' => $countdown->code_unique,
+    //                 'prixTrade' => $lowestPrice,
+    //                 'id_trader' => $traderId,
+    //                 'idProd' => $id_prod,
+    //                 'quantiteC' => $quantiteC,
+    //             ];
+
+    //             $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
+    //             foreach ($requiredKeys as $key) {
+    //                 if (!array_key_exists($key, $data)) {
+    //                     throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
+    //                 }
+    //             }
+
+    //             $owner = User::find($prodUser);
+
+    //             if ($owner) {
+    //                 Notification::send($owner, new GrouperFactureNotifications($data));
+    //             }
+    //         }
+
+    //     }
+
+    //     return 0;
     }
 }

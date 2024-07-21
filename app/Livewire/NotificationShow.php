@@ -656,6 +656,54 @@ class NotificationShow extends Component
             'id_trader' => 'required|numeric',
             'code_livr' => 'required|string',
             'userSender' => 'required|numeric',
+            'prixTrade' => 'required|numeric',
+            'quantiteC' => 'required|numeric',
+            'idProd' => 'required|numeric',
+        ]);
+
+
+        // Créer un commentaire
+        Comment::create([
+            'prixTrade' => $validatedData['prixTrade'],
+            'code_unique' => $validatedData['code_livr'],
+            'id_trader' => $validatedData['id_trader'],
+            'quantiteC' => $validatedData['quantiteC'],
+            'id_prod' => $validatedData['idProd'],
+        ]);
+
+        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+        $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $this->userSender,
+                'start_time' => now(),
+                'code_unique' => $validatedData['code_livr'],
+            ]);
+        }
+
+
+        // Afficher un message de succès
+        session()->flash('success', 'Commentaire créé avec succès!');
+
+        // Réinitialiser le champ du formulaire
+        $this->reset(['prixTrade']);
+
+        $this->timerStarted = true;
+        $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
+    }
+    public function commentFormLivrGroup()
+    {
+        // Valider les données
+        $validatedData = $this->validate([
+            'id_trader' => 'required|numeric',
+            'code_livr' => 'required|string',
+            'userSender' => 'required|numeric',
             // 'nameSender' => 'required|array',
             // 'nameSender.*' => 'numeric',
             'prixTrade' => 'required|numeric',
