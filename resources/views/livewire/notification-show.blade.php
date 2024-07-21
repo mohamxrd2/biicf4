@@ -289,19 +289,15 @@
                             </div>
                             <!-- add comment -->
                             <form wire:submit.prevent="commentForm">
-                                <div
-                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    <input type="hidden" name="code_unique" wire:model="code_unique"
-                                        value="{{ $notification->data['code_unique'] }}">
-                                    <input type="hidden" name="quantiteC" wire:model="quantiteC"
-                                        value="{{ $notification->data['quantity'] }}">
-                                    <input type="hidden" name="difference" wire:model="difference"
-                                        value="{{ $notification->data['difference'] }}">
-                                    <input type="hidden" name="id_sender" wire:model="id_sender"
-                                        value="{{ $notification->data['id_sender'] }}">
-                                    <input type="hidden" name="id_trader" wire:model="id_trader">
-                                    <input type="hidden" name="nameprod" wire:model="nameprod"
-                                        value="{{ $notification->data['productName'] }}">
+                                <div class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                    <input type="hidden" wire:model="code_unique">
+                                    <input type="hidden" wire:model="quantiteC">
+                                    <input type="hidden" wire:model="difference">
+                                    <input type="hidden" wire:model="idsender">
+                                    <input type="hidden" wire:model="id_trader">
+                                    <input type="hidden" wire:model="nameprod">
+                                    <input type="hidden" wire:model="localite">
+                                    <input type="hidden" wire:model="specificite">
 
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
@@ -310,29 +306,16 @@
                                         <span class="text-red-500">{{ $message }}</span>
                                     @enderror
 
-                                    <input type="hidden" name="localite" id="localite" wire:model="localite"
-                                        value="{{ $notification->data['localite'] }}">
-                                    @error('localite')
-                                        <span class="text-red-500">{{ $message }}</span>
-                                    @enderror
-
-                                    <input type="hidden" name="specificite" id="specificite"
-                                        wire:model="specificite" value="{{ $notification->data['specificity'] }}">
-
-
                                     <button type="submit" id="submitBtnAppel"
                                         class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
                                         <span wire:loading.remove>
-                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                                 fill="currentColor" viewBox="0 0 18 20">
-                                                <path
-                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                                <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
                                             </svg>
                                         </span>
                                         <span wire:loading>
-                                            <svg class="w-5 h-5 animate-spin inline-block"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            <svg class="w-5 h-5 animate-spin inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -341,6 +324,7 @@
                                     </button>
                                 </div>
                             </form>
+
 
 
                         </div>

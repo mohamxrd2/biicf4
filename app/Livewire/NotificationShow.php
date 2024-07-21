@@ -73,6 +73,7 @@ class NotificationShow extends Component
 
     public $nameSender;
     public $id_sender  = [];
+    public $idsender;
     public $namefourlivr;
     public $comments;
     public $userComment;
@@ -158,7 +159,7 @@ class NotificationShow extends Component
         $this->nameSender = is_array($data3) ? $data3 : explode(',', $data3);
 
 
-        // $this->id_sender = $this->notification->data['id_sender'] ?? null;
+        $this->idsender = $this->notification->data['id_sender'] ?? null;
         // $this->id_sender = is_array($this->notification->data['id_sender'])
         //     ? explode(',', $this->notification->data['id_sender'])
         //     : $this->notification->data['id_sender'];
@@ -166,14 +167,14 @@ class NotificationShow extends Component
             $idSender = $this->notification->data['id_sender'];
 
             if (is_array($idSender)) {
-                // If $idSender is already an array, assign it directly
+                //If $idSender is already an array, assign it directly
                 $this->id_sender = $idSender;
             } else {
-                // If $idSender is a string, use explode to convert it to an array
+               // If $idSender is a string, use explode to convert it to an array
                 $this->id_sender = explode(',', $idSender);
             }
         } else {
-            // Handle the case where 'id_sender' does not exist
+            //Handle the case where 'id_sender' does not exist
             $this->id_sender = null; // or any other default value you prefer
         }
 
@@ -607,7 +608,7 @@ class NotificationShow extends Component
             'code_unique' => 'required|string',
             'quantiteC' => 'required|numeric',
             'prixTrade' => 'required|numeric',
-            'id_sender' => 'required|numeric',
+            'idsender' => 'required|numeric',
             'id_trader' => 'required|numeric',
             'nameprod' => 'required|string',
             'difference' => 'required|string',
@@ -620,7 +621,7 @@ class NotificationShow extends Component
             'localite' => $this->notification->data['localite'],
             'specificite' => $this->specificite,
             'prixTrade' => $this->prixTrade,
-            'id_sender' => json_encode($this->id_sender),
+            'id_sender' => json_encode($this->idsender),
             'nameprod' => $this->nameprod,
             'code_unique' => $this->code_unique,
             'id_trader' => $this->id_trader,
@@ -637,7 +638,7 @@ class NotificationShow extends Component
             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
             Countdown::create([
                 'user_id' => $this->id_trader,
-                'userSender' => $this->id_sender,
+                'userSender' => $this->idsender,
                 'start_time' => now(),
                 'code_unique' => $this->code_unique,
                 'difference' => $this->difference,
