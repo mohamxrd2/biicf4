@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class GrouperFactureNotifications extends Notification
+class GrouperFactureNotifications extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -28,12 +28,7 @@ class GrouperFactureNotifications extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'sender_name' => $this->details['sender_name'] ?? null,
-            'code_unique' => $this->details['code_unique'] ?? null,
-            'prixTrade' => $this->details['prixTrade'] ?? null,
-            'id_trader' => $this->details['id_trader'] ?? null,
-            'idProd' => $this->details['idProd'] ?? null,
-            'quantiteC' => $this->details['quantiteC'] ?? null,
+
         ];
     }
 }

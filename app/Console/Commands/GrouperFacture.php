@@ -30,60 +30,32 @@ class GrouperFacture extends Command
      */
     public function handle()
     {
-        // Récupérer les countdowns non notifiés et dont le start_time est passé depuis au moins une minute
+        // Retrieve unnotified countdowns where the start_time is at least one minute past
         $countdowns = Countdown::where('notified', false)
             ->where('start_time', '<=', now()->subMinutes(1))
             ->get();
 
         foreach ($countdowns as $countdown) {
-            // Récupérer le code unique
+            // Retrieve the unique code
             $code_unique = $countdown->code_unique;
 
-            // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
+            // Get the comment with the lowest price for the given unique code
             $lowestPriceComment = Comment::with('user')
                 ->where('code_unique', $code_unique)
                 ->orderBy('prixTrade', 'asc')
                 ->first();
 
-            if ($lowestPriceComment) {
-                $lowestPrice = $lowestPriceComment->prixTrade;
-                $traderId = $lowestPriceComment->id_trader;
-                $id_prod = $lowestPriceComment->id_prod;
-                $quantiteC = $lowestPriceComment->quantiteC;
-
+            if ($lowestPriceComment && $countdown->difference === 'facturegrouper') {
                 $details = [
                     'code_unique' => $code_unique,
-                    'prixTrade' => $lowestPrice,
-                    'id_trader' => $traderId,
-                    'idProd' => $id_prod,
-                    'quantiteC' => $quantiteC,
                 ];
 
-                $nSenders = Countdown::where('code_unique', $code_unique)
-                    ->distinct()
-                    ->pluck('nsender')
-                    ->toArray();
-
-                $decodednSenders = [];
-                foreach ($nSenders as $nSender) {
-                    $decodedValues = json_decode($nSender, true);
-                    if (is_array($decodedValues)) {
-                        $decodednSenders = array_merge($decodednSenders, $decodedValues);
-                    }
-                }
-
-
-                $owner = User::find($nSender);
-                if ($owner) {
-                    if ($countdown->difference === 'facturegrouper') {
-                        Notification::send($owner, new GrouperFactureNotifications($details));
-                    }
-                }
-
-
-                // Mettre à jour le statut notified à true
-                $countdown->update(['notified' => true]);
+                // Send notification to the user
+                Notification::send($lowestPriceComment->user, new GrouperFactureNotifications($details));
             }
+
+            // Update the notified status to true
+            $countdown->update(['notified' => true]);
         }
     }
 }

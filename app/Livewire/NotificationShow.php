@@ -654,9 +654,9 @@ class NotificationShow extends Component
         $validatedData = $this->validate([
             'id_trader' => 'required|numeric',
             'code_livr' => 'required|string',
-            // 'userSender' => 'required|numeric',
-            'nameSender' => 'required|array',
-            'nameSender.*' => 'numeric',
+            'userSender' => 'required|numeric',
+            // 'nameSender' => 'required|array',
+            // 'nameSender.*' => 'numeric',
             'prixTrade' => 'required|numeric',
             'quantiteC' => 'required|numeric',
             'idProd' => 'required|numeric',
@@ -682,11 +682,11 @@ class NotificationShow extends Component
             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
             Countdown::create([
                 'user_id' => Auth::id(),
-                // 'userSender' => $this->userSender,
-                'nsender' => json_encode($validatedData['nameSender']),
+                'userSender' => $this->userSender,
+                // 'nsender' => json_encode($validatedData['nameSender']),
                 'start_time' => now(),
                 'code_unique' => $validatedData['code_livr'],
-                'difference' => 'facturegrouper',
+                // 'difference' => 'facturegrouper',
             ]);
         }
 
