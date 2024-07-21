@@ -144,26 +144,21 @@ class NotificationShow extends Component
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
 
-        // $this->nameSender = $this->notification->data['userSender'] ?? null;
-        // $data2 = $this->notification->data['userSender'] ?? null;
-        // $data3 = json_decode($data2, true);
+        $data = $this->notification->data['userSender'] ?? null;
 
-        // $this->nameSender = is_array($data3) ? $data3 : explode(',', $data3);
-        $data2 = $this->notification->data['userSender'] ?? null;
-
-        if (is_string($data2)) {
-            $data3 = json_decode($data2, true);
+        if (is_string($data)) {
+            $decodedData = json_decode($data, true);
+            $this->nameSender = is_array($decodedData) ? $decodedData : explode(',', $decodedData);
+        } elseif (is_array($data)) {
+            $this->nameSender = $data;
         } else {
-            $data3 = $data2; // If $data2 is already an array or null, assign it directly
+            $this->nameSender = null;
         }
 
-        $this->nameSender = is_array($data3) ? $data3 : explode(',', $data3);
 
 
         $this->idsender = $this->notification->data['id_sender'] ?? null;
-        // $this->id_sender = is_array($this->notification->data['id_sender'])
-        //     ? explode(',', $this->notification->data['id_sender'])
-        //     : $this->notification->data['id_sender'];
+
         if (array_key_exists('id_sender', $this->notification->data)) {
             $idSender = $this->notification->data['id_sender'];
 
@@ -171,7 +166,7 @@ class NotificationShow extends Component
                 //If $idSender is already an array, assign it directly
                 $this->id_sender = $idSender;
             } else {
-               // If $idSender is a string, use explode to convert it to an array
+                // If $idSender is a string, use explode to convert it to an array
                 $this->id_sender = explode(',', $idSender);
             }
         } else {
@@ -694,7 +689,6 @@ class NotificationShow extends Component
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
-
     }
     public function commentFormLivrGroup()
     {
@@ -740,7 +734,6 @@ class NotificationShow extends Component
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
-
     }
 
 
