@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -15,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->json('usersenders');
             $table->string('code_unique');
-            $table->timestamp('start-time');
+            $table->timestamp('start_time')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->boolean('notified')->default(false);
             $table->timestamps();
         });

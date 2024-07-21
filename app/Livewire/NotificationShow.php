@@ -14,6 +14,7 @@ use App\Models\OffreGroupe;
 use App\Models\Transaction;
 use Livewire\Attributes\On;
 use App\Models\Consommation;
+use App\Models\groupagefact;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
@@ -694,8 +695,6 @@ class NotificationShow extends Component
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
 
-        $this->timerStarted = true;
-        $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
     }
     public function commentFormLivrGroup()
     {
@@ -703,9 +702,8 @@ class NotificationShow extends Component
         $validatedData = $this->validate([
             'id_trader' => 'required|numeric',
             'code_livr' => 'required|string',
-            'userSender' => 'required|numeric',
-            // 'nameSender' => 'required|array',
-            // 'nameSender.*' => 'numeric',
+            'nameSender' => 'required|array',
+            'nameSender.*' => 'numeric',
             'prixTrade' => 'required|numeric',
             'quantiteC' => 'required|numeric',
             'idProd' => 'required|numeric',
@@ -729,13 +727,10 @@ class NotificationShow extends Component
 
         if (!$existingCountdown) {
             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $this->userSender,
-                // 'nsender' => json_encode($validatedData['nameSender']),
+            groupagefact::create([
+                'usersenders' => json_encode($this->userSender),
                 'start_time' => now(),
                 'code_unique' => $validatedData['code_livr'],
-                // 'difference' => 'facturegrouper',
             ]);
         }
 
@@ -746,8 +741,6 @@ class NotificationShow extends Component
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
 
-        $this->timerStarted = true;
-        $this->dispatch('start-timer', ['countdowtime' => $this->countdownTime]);
     }
 
 

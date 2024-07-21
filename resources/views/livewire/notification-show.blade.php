@@ -1300,8 +1300,7 @@
                                             value="{{ $notification->data['quantite'] }}">
                                         <input type="hidden" name="idProd" wire:model="idProd"
                                             value="{{ $notification->data['idProd'] }}">
-                                        {{-- <input type="hidden" name="nameSender" wire:model="nameSender"
-                                        value="{{ $notification->data['userSender'] }}"> --}}
+
                                         <input type="hidden" name="id_trader" wire:model="id_trader"
                                             value="{{ $notification->data['id_trader'] }}">
                                         <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
