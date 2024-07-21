@@ -5,20 +5,28 @@ namespace App\Console\Commands;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Notifications\AppelOffreTerminer;
-use App\Notifications\CountdownNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
-class CheckCountdowns extends Command
+class EnvoiFour extends Command
 {
-    protected $signature = 'check:countdowns';
-    protected $description = 'Check countdowns and send notifications if time is up';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:envoi-four';
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
 
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
         // Récupérer les countdowns non notifiés et dont le start_time est passé depuis au moins une minute
@@ -56,15 +64,8 @@ class CheckCountdowns extends Command
                 $montotal = $quantiteC * $lowestPrice;
 
                 // Définir les détails de la notification
-                $details = [
-                    'sender_name' => $countdown->sender->name, // Ajouter le nom de l'expéditeur aux détails de la notification
-                    'code_unique' => $countdown->code_unique,
-                    'prixTrade' => $lowestPrice,
-                    'id_trader' => $traderId,
-                    'idProd' => $id_prod,
-                    'quantiteC' => $quantiteC,
-                ];
-                $Adetails = [
+
+                $Gdetails = [
                     'code_unique' => $countdown->code_unique,
                     'prixTrade' => $lowestPrice,
                     'id_trader' => $traderId,
@@ -77,15 +78,12 @@ class CheckCountdowns extends Command
                 ];
 
 
-
                 // Vérifier si la colonne 'difference' est égale à 'single'
-                if ($countdown->difference === 'single') {
+                if ($countdown->difference === 'grouper') {
                     // Envoyer la notification à l'utilisateur expéditeur
-                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
-                } else {
-                    // Envoyer une autre notification ou effectuer une autre action
-                    Notification::send($countdown->sender, new CountdownNotification($details));
+                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
                 }
+
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }

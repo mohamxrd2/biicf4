@@ -143,10 +143,20 @@ class NotificationShow extends Component
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
 
         // $this->nameSender = $this->notification->data['userSender'] ?? null;
+        // $data2 = $this->notification->data['userSender'] ?? null;
+        // $data3 = json_decode($data2, true);
+
+        // $this->nameSender = is_array($data3) ? $data3 : explode(',', $data3);
         $data2 = $this->notification->data['userSender'] ?? null;
-        $data3 = json_decode($data2, true);
+
+        if (is_string($data2)) {
+            $data3 = json_decode($data2, true);
+        } else {
+            $data3 = $data2; // If $data2 is already an array or null, assign it directly
+        }
 
         $this->nameSender = is_array($data3) ? $data3 : explode(',', $data3);
+
 
         // $this->id_sender = $this->notification->data['id_sender'] ?? null;
         // $this->id_sender = is_array($this->notification->data['id_sender'])
