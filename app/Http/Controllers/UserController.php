@@ -509,7 +509,7 @@ class UserController extends Controller
             $wallet->save();
 
             //envoi du couriel au nouveau client
-            $user->sendEmailVerificationNotification();
+            // $user->sendEmailVerificationNotification();
 
             return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
         } catch (\Exception $e) {
@@ -619,4 +619,5 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Une erreur est survenue lors de la mise à jour de la photo de profil.'])->withInput();
         }
     }
+
 }
