@@ -32,7 +32,8 @@ class mainleve extends Notification
             'id_trader' => $this->main['id_trader'],
             'quantite' => $this->main['quantite'],
             'localité' => $this->main['localité'],
-            'id_client' => $this->main['id_client']
+            'id_client' => $this->main['id_client'],
+            'prixTrade' => $this->main['prixTrade']
             
         ];
     }
