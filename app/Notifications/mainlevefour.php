@@ -33,8 +33,8 @@ class mainlevefour extends Notification
             'quantite' => $this->main['quantite'],
             'localité' => $this->main['localité'],
             'id_client' => $this->main['id_client'],
-            'id_livreur' => $this->main['id_livreur']
-            
+            'id_livreur' => $this->main['id_livreur'],
+            'prixTrade' => $this->main['prixTrade']
         ];
     }
 }

@@ -308,7 +308,8 @@ class NotificationShow extends Component
             'id_trader' => $this->namefourlivr->id,
             'localité' => $this->localite,
             'quantite' => $this->notification->data['quantiteC'],
-            'id_livreur' => $this->userFour->id
+            'id_livreur' => $this->userFour->id,
+            'prixTrade' => $this->notification->data['prixTrade']
         ];
 
 
@@ -336,7 +337,8 @@ class NotificationShow extends Component
             'localité' => $this->localite,
             'quantite' => $this->quantiteC,
             'id_client' => $id_client,
-            'id_livreur' => $this->id_livreur
+            'id_livreur' => $this->id_livreur,
+            'prixTrade' => $this->notification->data['prixTrade']
 
         ];
 
@@ -372,7 +374,8 @@ class NotificationShow extends Component
             'id_client' => $this->notification->data['id_client'],
             'id_livreur' => $id_livreur,
             'date_livr' => $this->dateLivr,
-            'matine' => $this->matine
+            'matine' => $this->matine,
+            'prixTrade' => $this->notification->data['prixTrade']
         ];
 
         Notification::send($this->client, new mainleveclient($data));
@@ -407,6 +410,8 @@ class NotificationShow extends Component
 
         $client = User::find(Auth::user()->id);
 
+        $produit = ProduitService::find($this->notification->data['idProd']);
+
         $data = [
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->code_unique,
@@ -414,8 +419,80 @@ class NotificationShow extends Component
             'localité' =>  $this->notification->data['localité'],
             'quantite' => $this->notification->data['quantite'],
             'id_client' => $this->notification->data['id_client'],
-            'id_livreur' => $this->notification->data['id_livreur']
+            'id_livreur' => $this->notification->data['id_livreur'],
+            'prixTrade' => $this->notification->data['prixTrade']
         ];
+
+        // recuperation de prote-feuille
+
+        $clientWallet = Wallet::where('user_id', Auth::user()->id)->first();
+
+        if (!$clientWallet) {
+            session()->flash('error', 'Portefeuille du client introuvable.');
+            return;
+        }
+
+        $fournisseurWallet = Wallet::where('user_id', $this->notification->data['id_trader'])->first();
+
+        if (!$fournisseurWallet) {
+            session()->flash('error', 'Portefeuille du fournisseur introuvable.');
+            return;
+        }
+
+        $livreurWallet = Wallet::where('user_id', $this->notification->data['id_livreur'])->first();
+
+        if (!$livreurWallet) {
+            session()->flash('error', 'Portefeuille du livreur introuvable.');
+            return;
+        }
+
+        $requiredAmount = $this->notification->data['quantite'] * $produit->prix;
+
+        $pourcentSomme  = $requiredAmount * 0.1;
+
+        $totalSom = $requiredAmount - $pourcentSomme;
+
+        if($fournisseur->parrain){
+            $commTraderParrain = $pourcentSomme * 0.05;
+
+            $commTraderParrainWallet = Wallet::where('user_id', $fournisseur->parrain)->first();
+
+            $commTraderParrainWallet->increment('balance', $commTraderParrain);
+        }
+
+        if($client->parrain){
+            $commSenderParrain = $pourcentSomme * 0.05;
+
+            $commSenderParrainWallet = Wallet::where('user_id', $client->parrain)->first();
+
+            $commSenderParrainWallet->increment('balance', $commSenderParrain);
+        }
+
+        // debit
+        
+        // $clientWallet->decrement('balance', $totalSom);
+        
+        $fournisseurWallet->increment('balance', $totalSom);
+
+        $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
+
+
+        // transactions
+
+        //transation fournisseur
+
+        $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Reception', $totalSom);
+
+        //transaction client
+
+        // $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Envoie', $totalSom);
+
+        //transtion livreur
+
+        $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Reception', $this->notification->data['prixTrade']);
+
+
+
 
         Notification::send($client, new colisaccept($data));
 
@@ -427,6 +504,8 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'colisaccept']);
         $this->validate();
     }
+
+   
 
     public function accepter()
     {
@@ -526,15 +605,15 @@ class NotificationShow extends Component
         // $this->emit('notificationUpdated');
     }
 
-    protected function handleCommission($user, $amount, $type)
-    {
-        if ($user->parrain) {
-            $commission = $amount * 0.05;
-            $parrainWallet = Wallet::where('user_id', $user->parrain)->first();
-            $parrainWallet->increment('balance', $commission);
-            $this->createTransaction($user->id, $user->parrain, 'Commission', $commission);
-        }
-    }
+    // protected function handleCommission($user, $amount, $type)
+    // {
+    //     if ($user->parrain) {
+    //         $commission = $amount * 0.05;
+    //         $parrainWallet = Wallet::where('user_id', $user->parrain)->first();
+    //         $parrainWallet->increment('balance', $commission);
+    //         $this->createTransaction($user->id, $user->parrain, 'Commission', $commission);
+    //     }
+    // }
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
     {

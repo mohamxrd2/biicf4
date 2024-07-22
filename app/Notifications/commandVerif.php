@@ -32,7 +32,8 @@ class commandVerif extends Notification
             'id_trader' => $this->accept['id_trader'],
             'quantite' => $this->accept['quantite'],
             'localité' => $this->accept['localité'],
-            'id_livreur' => $this->accept['id_livreur']
+            'id_livreur' => $this->accept['id_livreur'],
+            'prixTrade' => $this->accept['prixTrade']
         ];
     }
 }

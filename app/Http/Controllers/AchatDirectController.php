@@ -98,7 +98,7 @@ class AchatDirectController extends Controller
             $this->createTransaction($userSender, $userSenders->parrain, 'Commission', $commSenderParrain);
         }
 
-        Notification::send($userSenders, new acceptAchat($validatedData['message']));
+       // Notification::send($userSenders, new acceptAchat($validatedData['message']));
 
 
         return redirect()->back()->with('success', 'Achat accepté.');
