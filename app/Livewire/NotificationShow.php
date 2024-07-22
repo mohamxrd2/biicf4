@@ -647,6 +647,7 @@ class NotificationShow extends Component
     }
     public function commentFormLivr()
     {
+
         // Valider les données
         $validatedData = $this->validate([
             'id_trader' => 'required|numeric',
@@ -656,8 +657,6 @@ class NotificationShow extends Component
             'quantiteC' => 'required|numeric',
             'idProd' => 'required|numeric',
         ]);
-
-
         // Créer un commentaire
         Comment::create([
             'prixTrade' => $validatedData['prixTrade'],
@@ -666,7 +665,6 @@ class NotificationShow extends Component
             'quantiteC' => $validatedData['quantiteC'],
             'id_prod' => $validatedData['idProd'],
         ]);
-
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
             ->where('notified', false)
