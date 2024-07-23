@@ -22,10 +22,8 @@ class GrouperFacture extends Command
             ->get();
 
         foreach ($groupagefacts as $groupagefact) {
-            // Récupérer le code unique
             $code_unique = $groupagefact->code_unique;
 
-            // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
             $lowestPriceComment = Comment::with('user')
                 ->where('code_unique', $code_unique)
                 ->orderBy('prixTrade', 'asc')
@@ -50,31 +48,19 @@ class GrouperFacture extends Command
                     }
                 }
 
-
                 foreach ($decodedProdUsers as $prodUser) {
-                    // Assuming $prodUser has an 'id' field representing user ID
-                    $userQuantity = userquantites::with('user')
-                        ->where('code_unique', $code_unique)
-                        ->where('user_id', $prodUser) // Adjusted to array syntax
-                        ->first();
-
-                    if ($userQuantity) {
-                        $data = [
-                            'code_unique' => $code_unique,
-                            'prixTrade' => $lowestPrice,
-                            'id_trader' => $traderId,
-                            'idProd' => $id_prod,
-                            'quantiteC' => $userQuantity->quantite, // Use quantity from userQuantity
-                        ];
-                    } else {
-                        $data = [
-                            'code_unique' => $code_unique,
-                            'prixTrade' => $lowestPrice,
-                            'id_trader' => $traderId,
-                            'idProd' => $id_prod,
-                            'quantiteC' => $quantiteC, // Use the original quantiteC as fallback
-                        ];
-                    }
+                    // Calculer la quantité totale pour chaque utilisateur
+                    $userQuantity = userquantites::where('code_unique', $code_unique)
+                        ->where('user_id', $prodUser)
+                        ->sum('quantite'); // La somme est un nombre, pas un objet
+                        
+                    $data = [
+                        'code_unique' => $code_unique,
+                        'prixTrade' => $lowestPrice,
+                        'id_trader' => $traderId,
+                        'idProd' => $id_prod,
+                        'quantiteC' => $userQuantity, // Utilisez la somme calculée
+                    ];
 
                     $requiredKeys = ['code_unique', 'prixTrade', 'id_trader', 'idProd', 'quantiteC'];
                     foreach ($requiredKeys as $key) {
@@ -83,8 +69,7 @@ class GrouperFacture extends Command
                         }
                     }
 
-                    $owner = $userQuantity ? $userQuantity->user : User::find($prodUser['id']); // Adjust to array syntax
-
+                    $owner = User::find($prodUser);
 
                     if ($owner) {
                         Notification::send($owner, new GrouperFactureNotifications($data));
