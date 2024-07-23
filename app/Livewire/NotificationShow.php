@@ -469,9 +469,9 @@ class NotificationShow extends Component
         }
 
         // debit
-        
+
         // $clientWallet->decrement('balance', $totalSom);
-        
+
         $fournisseurWallet->increment('balance', $totalSom);
 
         $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
@@ -505,7 +505,7 @@ class NotificationShow extends Component
         $this->validate();
     }
 
-   
+
 
     public function accepter()
     {
@@ -529,7 +529,7 @@ class NotificationShow extends Component
         $pourcentSomme  = $requiredAmount * 0.1;
         $totalSom = $requiredAmount - $pourcentSomme;
 
-        $code_livr = $this->genererCodeAleatoire(10);
+        $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
 
         // $userTrader = User::find($userId);
         // $this->handleCommission($userTrader, $pourcentSomme, 'Trader');

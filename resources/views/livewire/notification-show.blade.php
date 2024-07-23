@@ -529,16 +529,15 @@
                                         value="{{ $notification->data['quantity'] }}">
                                     <input type="hidden" name="difference" wire:model="difference"
                                         value="{{ $notification->data['difference'] }}">
-                                    {{-- <input type="hidden" name="id_sender" wire:model="id_sender"
-                                        value="{{ is_array($id_sender) ? implode(',', $id_sender) : $id_sender }}"> --}}
+
                                     <input type="hidden" name="id_trader" wire:model="id_trader">
                                     <input type="hidden" name="nameprod" wire:model="nameprod"
                                         value="{{ $notification->data['productName'] }}">
                                     {{--  --}}
                                     @if (is_array($id_sender))
                                         @foreach ($id_sender as $userId)
-                                            <input type="hidden" name="id_sender[]" wire:model="id_sender[]"
-                                                value="{{ $userId }}">
+                                        <input type="hidden" name="id_sender[]" wire:model="id_sender.{{ $loop->index }}" value="{{ $userId }}">
+
                                         @endforeach
                                     @endif
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
@@ -891,7 +890,7 @@
             <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantiteC'] }}</p>
             <p class="mb-3"><strong>Localité:</strong> {{ $notification->data['localite'] }}</p>
             <p class="mb-3"><strong>Spécificité:</strong> {{ $notification->data['specificite'] }}</p>
-            <p class="mb-3"><strong>Prix d'achat:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
+            <p class="mb-3"><strong>Prix d'achat:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa {{ $notification->data['code_unique'] }}
             </p>
 
             @php
@@ -1398,7 +1397,7 @@
                                             placeholder="Faire une offre..." required>
                                         {{--  --}}
                                         @foreach ($nameSender as $userId)
-                                            <input type="hidden" name="nameSender[]" wire:model="nameSender[]"
+                                            <input type="hidden" name="nameSender[]" wire:model="nameSender.{{ $loop->index }}"
                                                 value="{{ $userId }}">
                                         @endforeach
 

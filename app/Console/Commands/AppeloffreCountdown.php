@@ -85,7 +85,6 @@ class AppeloffreCountdown extends Command
                         throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
                     }
                 }
-                
 
                 $owner = User::find($prodUser);
 
@@ -94,7 +93,7 @@ class AppeloffreCountdown extends Command
                 }
             }
 
-            // AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
+            AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
         }
 
         return 0;

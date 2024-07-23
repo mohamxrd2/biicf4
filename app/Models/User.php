@@ -109,4 +109,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Countdown::class,'user_id');
     }
+    public function userquantites(): HasMany
+    {
+        return $this->hasMany(UserQuantite::class, 'user_id');
+    }
 }

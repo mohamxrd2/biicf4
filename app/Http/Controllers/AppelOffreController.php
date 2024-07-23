@@ -10,6 +10,7 @@ use App\Models\ProduitService;
 use App\Models\NotificationLog;
 use App\Models\AppelOffreGrouper;
 use App\Models\Countdown;
+use App\Models\userquantites;
 use App\Notifications\AppelOffre;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
@@ -207,9 +208,6 @@ class AppelOffreController extends Controller
                 }
             }
 
-            // NotificationLog::create(['code_unique' => $codesUniques]);
-
-            // AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
         }
 
         // Passer les variables à la vue (si nécessaire)
@@ -233,6 +231,13 @@ class AppelOffreController extends Controller
         $offregroupe->user_id = $validatedData['userId'];
         $offregroupe->quantity = $validatedData['quantite'];
         $offregroupe->save();
+
+        //ajout dans table userquantites
+        $quantite = new userquantites();
+        $quantite->code_unique = $validatedData['codeUnique'];
+        $quantite->user_id = $validatedData['userId'];
+        $quantite->quantite = $validatedData['quantite'];
+        $quantite->save();
 
         // Vérifier si un compte à rebours est déjà en cours pour ce code unique
         // $existingCountdown = Countdown::where('code_unique', $validatedData['codeUnique'])
@@ -383,9 +388,19 @@ class AppelOffreController extends Controller
                 $offre->image = $imagePath;
             }
 
-            // Save the model
-            $offre->save();
+             // Save the model
+             $offre->save();
 
+
+            // Create a new instance of the model
+            $quantite = new userquantites();
+            $quantite->user_id = Auth::id();
+            $quantite->quantite = $request->input('quantity');
+            $quantite->code_unique = $codeunique;
+            $quantite->save();
+
+
+           
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());

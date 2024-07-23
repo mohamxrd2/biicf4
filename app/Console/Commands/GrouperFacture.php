@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Comment;
 use App\Models\groupagefact;
 use App\Models\User;
+use App\Models\userquantites;
 use App\Notifications\GrouperFactureNotifications;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
@@ -49,14 +50,31 @@ class GrouperFacture extends Command
                     }
                 }
 
+
                 foreach ($decodedProdUsers as $prodUser) {
-                    $data = [
-                        'code_unique' => $code_unique,
-                        'prixTrade' => $lowestPrice,
-                        'id_trader' => $traderId,
-                        'idProd' => $id_prod,
-                        'quantiteC' => $quantiteC,
-                    ];
+                    // Assuming $prodUser has an 'id' field representing user ID
+                    $userQuantity = userquantites::with('user')
+                        ->where('code_unique', $code_unique)
+                        ->where('user_id', $prodUser) // Adjusted to array syntax
+                        ->first();
+
+                    if ($userQuantity) {
+                        $data = [
+                            'code_unique' => $code_unique,
+                            'prixTrade' => $lowestPrice,
+                            'id_trader' => $traderId,
+                            'idProd' => $id_prod,
+                            'quantiteC' => $userQuantity->quantite, // Use quantity from userQuantity
+                        ];
+                    } else {
+                        $data = [
+                            'code_unique' => $code_unique,
+                            'prixTrade' => $lowestPrice,
+                            'id_trader' => $traderId,
+                            'idProd' => $id_prod,
+                            'quantiteC' => $quantiteC, // Use the original quantiteC as fallback
+                        ];
+                    }
 
                     $requiredKeys = ['code_unique', 'prixTrade', 'id_trader', 'idProd', 'quantiteC'];
                     foreach ($requiredKeys as $key) {
@@ -65,7 +83,8 @@ class GrouperFacture extends Command
                         }
                     }
 
-                    $owner = User::find($prodUser);
+                    $owner = $userQuantity ? $userQuantity->user : User::find($prodUser['id']); // Adjust to array syntax
+
 
                     if ($owner) {
                         Notification::send($owner, new GrouperFactureNotifications($data));
