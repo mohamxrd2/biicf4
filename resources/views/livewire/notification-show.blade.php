@@ -536,8 +536,9 @@
                                     {{--  --}}
                                     @if (is_array($id_sender))
                                         @foreach ($id_sender as $userId)
-                                        <input type="hidden" name="id_sender[]" wire:model="id_sender.{{ $loop->index }}" value="{{ $userId }}">
-
+                                            <input type="hidden" name="id_sender[]"
+                                                wire:model="id_sender.{{ $loop->index }}"
+                                                value="{{ $userId }}">
                                         @endforeach
                                     @endif
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
@@ -890,7 +891,8 @@
             <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantiteC'] }}</p>
             <p class="mb-3"><strong>Localité:</strong> {{ $notification->data['localite'] }}</p>
             <p class="mb-3"><strong>Spécificité:</strong> {{ $notification->data['specificite'] }}</p>
-            <p class="mb-3"><strong>Prix d'achat:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa {{ $notification->data['code_unique'] }}
+            <p class="mb-3"><strong>Prix d'achat:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
+                {{ $notification->data['code_unique'] }}
             </p>
 
             @php
@@ -1371,6 +1373,7 @@
                                                     {{ $comment->user->name }}</p>
                                                 <p class="text-sm mt-0.5">
                                                     {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
+                                                
                                             </div>
                                         </div>
                                     @endforeach
@@ -1397,7 +1400,8 @@
                                             placeholder="Faire une offre..." required>
                                         {{--  --}}
                                         @foreach ($nameSender as $userId)
-                                            <input type="hidden" name="nameSender[]" wire:model="nameSender.{{ $loop->index }}"
+                                            <input type="hidden" name="nameSender[]"
+                                                wire:model="nameSender.{{ $loop->index }}"
                                                 value="{{ $userId }}">
                                         @endforeach
 
@@ -1437,7 +1441,7 @@
                                         <input type="hidden" name="idProd" wire:model="idProd"
                                             value="{{ $notification->data['idProd'] }}">
                                         <input type="hidden" name="nameSender" wire:model="namesender"
-                                        value="{{ $notification->data['userSender'] }}">
+                                            value="{{ $notification->data['userSender'] }}">
                                         <input type="hidden" name="id_trader" wire:model="id_trader"
                                             value="{{ $notification->data['id_trader'] }}">
                                         <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
@@ -1489,7 +1493,7 @@
                         @endif
                     </div>
 
-                    <script>
+                    {{-- <script>
                         // Convertir la date de départ en objet Date JavaScript
                         const startDate = new Date("{{ $oldestCommentDate }}");
 
@@ -1530,7 +1534,9 @@
                                 document.getElementById('submitBtn').hidden = true;
                             }
                         }
-                    </script>
+                    </script> --}}
+
+
 
                 </div>
 
