@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Events\CommentSubmitted;
 use Exception;
 use App\Models\User;
 use App\Models\Wallet;
@@ -215,19 +216,19 @@ class NotificationShow extends Component
         //code unique recuperation dans render
         // Vérifier si 'code_unique' existe dans les données de notification
         $codeUnique = $this->notification->data['code_unique'] ?? $this->notification->data['code_livr'] ?? null;
-        // $this->comments = Comment::with('user')
-        //     ->where('code_unique', $codeUnique)
-        //     ->whereNotNull('prixTrade')
-        //     ->orderBy('prixTrade', 'asc')
-        //     ->get();
-        // // Récupérer le commentaire de l'utilisateur connecté
-        // $this->userComment = Comment::with('user')
-        //     ->where('code_unique', $codeUnique)
-        //     ->where('id_trader', $this->user)
-        //     ->first();
+        $this->comments = Comment::with('user')
+            ->where('code_unique', $codeUnique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('prixTrade', 'asc')
+            ->get();
+        // Récupérer le commentaire de l'utilisateur connecté
+        $this->userComment = Comment::with('user')
+            ->where('code_unique', $codeUnique)
+            ->where('id_trader', $this->user)
+            ->first();
 
-        // // Compter le nombre de commentaires
-        // $this->commentCount = $this->comments->count();
+        // Compter le nombre de commentaires
+        $this->commentCount = $this->comments->count();
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Comment::where('code_unique', $codeUnique)
@@ -269,26 +270,7 @@ class NotificationShow extends Component
         }
     }
 
-    public function affichagecommentaire()
-    {
 
-        //code unique recuperation dans render
-        // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['code_unique'] ?? $this->notification->data['code_livr'] ?? null;
-        $this->comments = Comment::with('user')
-            ->where('code_unique', $codeUnique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('prixTrade', 'asc')
-            ->get();
-        // Récupérer le commentaire de l'utilisateur connecté
-        $this->userComment = Comment::with('user')
-            ->where('code_unique', $codeUnique)
-            ->where('id_trader', $this->user)
-            ->first();
-
-        // Compter le nombre de commentaires
-        $this->commentCount = $this->comments->count();
-    }
     public function valider()
     {
         //prix final
@@ -402,7 +384,7 @@ class NotificationShow extends Component
             'date_livr' => $this->dateLivr,
             'matine' => $this->matine,
             'prixTrade' => $this->notification->data['prixTrade'],
-             'prixProd' => $this->notification->data['prixProd']
+            'prixProd' => $this->notification->data['prixProd']
         ];
 
         Notification::send($this->client, new mainleveclient($data));
@@ -569,9 +551,9 @@ class NotificationShow extends Component
 
         $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
 
-        $this->createTransaction( $this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
+        $this->createTransaction($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
 
-        $this->createTransaction( $this->notification->data['id_client'], $this->notification->data['id_livreur'], 'Reception', $this->notification->data['prixTrade']);
+        $this->createTransaction($this->notification->data['id_client'], $this->notification->data['id_livreur'], 'Reception', $this->notification->data['prixTrade']);
 
         Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
 
@@ -584,8 +566,6 @@ class NotificationShow extends Component
 
         $this->notification->update(['reponse' => 'refuseVereif']);
         $this->validate();
-
-
     }
 
     public function accepter()
@@ -715,7 +695,7 @@ class NotificationShow extends Component
 
         $clientWallet->increment('balance', $montantTotal);
 
-        $this->createTransaction( $this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
+        $this->createTransaction($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
 
         Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
 
@@ -728,9 +708,6 @@ class NotificationShow extends Component
 
         $this->notification->update(['reponse' => 'refuseVereif']);
         $this->validate();
-
-
-
     }
 
     // protected function handleCommission($user, $amount, $type)
@@ -831,6 +808,7 @@ class NotificationShow extends Component
             'quantiteC' => $this->quantiteC,
         ]);
 
+
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $this->code_unique)
             ->where('notified', false)
@@ -876,6 +854,8 @@ class NotificationShow extends Component
             'id_prod' => $validatedData['idProd'],
             'prixProd' => $validatedData['prixProd'],
         ]);
+
+
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
             ->where('notified', false)

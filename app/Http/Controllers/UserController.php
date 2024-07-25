@@ -219,7 +219,7 @@ class UserController extends Controller
 
         $validatedData = $request->validate([
             'type' => 'required|string|in:produits,services', // Type doit être soit 'product' soit 'service'
-            'name' =>  'required|string|max:255',
+            'name' =>  'required|string|max:255|unique:produit_services,name,NULL,id,user_id,' . auth()->id(),
             'conditionnement' => $request->type == 'produits' ? 'required|string|max:255' : 'nullable|string|max:255',
             'format' => $request->type == 'produits' ? 'required|string' : 'nullable|string',
             'qteProd_min' => $request->type == 'produits' ? 'required|string' : 'nullable|string',
@@ -243,6 +243,7 @@ class UserController extends Controller
             'type.in' => 'Le type doit être soit "produit" soit "service".',
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'name.unique' => 'Vous ne pouvez pas inscrit deux fois le meme nom de produit',
             'conditionnement.required' => 'Le conditionnement est requis pour les produits.',
             'conditionnement.max' => 'Le conditionnement ne doit pas dépasser 255 caractères.',
             'format.required' => 'Le format est requis pour les produits.',

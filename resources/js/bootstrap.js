@@ -15,83 +15,17 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
  * allows your team to easily build robust real-time web applications.
  */
 
-// import Echo from "laravel-echo";
-// import Pusher from "pusher-js";
-// import Swal from "sweetalert2";
 
-// window.Pusher = Pusher;
-// Pusher.logToConsole = true;
 
-// window.Echo = new Echo({
-//     broadcaster: "pusher",
-//     key: "cdd50dab9a95edd6da7d",
-//     cluster: "eu",
-//     forceTLS: true,
-// });
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 
-// // var channel = window.Echo.channel("my-channel"); // Use 'private-my-channel' for private channels
-// // channel.listen(".my-event", function (data) {
-// //     alert(JSON.stringify(data));
-// // });
+Pusher.logToConsole = true;
 
-// /// Récupérer l'ID utilisateur depuis la balise <meta>
-// const userId = document.querySelector('meta[name="user-id"]').getAttribute("content");
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    encrypted: true
+});
 
-// // Écouter les événements sur un canal privé
-// const channel = window.Echo.private(`App.Models.User.${userId}`);
-
-// // Écouter un événement spécifique
-// channel.listen(".my-event", function (data) {
-//     alert(JSON.stringify(data));
-// });
-
-// const userId = document
-//     .querySelector('meta[name="user-id"]')
-//     .getAttribute("content");
-
-// window.Echo.private(`App.Models.User.${userId}`).notification(
-//     (notification) => {
-//         console.log(notification);
-
-//         // Display a SweetAlert2 toast notification
-//         Swal.fire({
-//             toast: true,
-//             position: "top-end",
-//             showConfirmButton: false,
-//             timer: 3000,
-//             icon: "success", // You can change this to 'success', 'error', 'warning', etc.
-//             // title: notification.message, // Customize this based on your notification structure
-//             title: 'action effectuee avec succes', // Customize this based on your notification structure
-//         });
-//     }
-// );
-
-// Pusher.logToConsole = true;
-
-// window.Echo = new Echo({
-//     broadcaster: "pusher",
-//     key: "cdd50dab9a95edd6da7d",
-//     cluster: "eu",
-//     forceTLS: true,
-// });
-
-// const userId = document
-//     .querySelector('meta[name="user-id"]')
-//     .getAttribute("content");
-
-// window.Echo.private(`App.Models.User.${userId}`).listen("UserEvent", (e) => {
-//     console.log(e.message);
-//     Swal.fire({
-//         toast: true,
-//         position: "top-end",
-//         icon: "success",
-//         title: "e.message",
-//         showConfirmButton: false,
-//         timer: 3000,
-//         timerProgressBar: true,
-//         didOpen: (toast) => {
-//             toast.addEventListener("mouseenter", Swal.stopTimer);
-//             toast.addEventListener("mouseleave", Swal.resumeTimer);
-//         },
-//     });
-// });

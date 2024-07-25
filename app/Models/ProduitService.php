@@ -42,4 +42,8 @@ class ProduitService extends Model
     {
         return $this->hasMany(AchatDirect::class, 'idProd');
     }
+    public function setNameAttribute($value)
+    {
+        $this->attributes['name'] = strtolower($value); // Convertir le nom en minuscules
+    }
 }

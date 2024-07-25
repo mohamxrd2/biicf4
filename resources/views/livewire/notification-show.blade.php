@@ -357,7 +357,7 @@
 
 
 
-            <script>
+            {{-- <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const prixTradeInput = document.getElementById('prixTrade');
                     const submitBtn = document.getElementById('submitBtnAppel');
@@ -416,7 +416,7 @@
 
                     }
                 });
-            </script>
+            </script> --}}
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
         <div class="grid grid-cols-2 gap-4 p-4">
@@ -1539,6 +1539,8 @@
                             }
                         }
                     </script>
+
+
                 </div>
 
             </div>

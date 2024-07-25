@@ -118,18 +118,12 @@ class AchatDirectGroupe extends Component
 
             $this->reset(['quantité', 'localite', 'specificite']);
             session()->flash('success', 'Achat passé avec succès.');
+            $this->dispatch('sendNotification', $user );
         } catch (\Exception $e) {
             session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
     }
-   
 
-    public function startTimer()
-    {
-        // Rien à faire ici, le timer est géré en JavaScript côté client
-    }
-
-    #[On('sendNotification')]
     public function verifierEtEnvoyerNotification()
     {
         $produit = ProduitService::findOrFail($this->id);
@@ -145,7 +139,8 @@ class AchatDirectGroupe extends Component
         $notificationExists = NotificationLog::where('idProd', $produit->id)->exists();
 
         if ($isTempsEcoule && !$notificationExists && $nbreAchatGroup) {
-            $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');            $montants = AchatGrouper::where('idProd', $produit->id)->sum('montantTotal');
+            $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');
+            $montants = AchatGrouper::where('idProd', $produit->id)->sum('montantTotal');
             $userSenders = AchatGrouper::where('idProd', $produit->id)
                 ->distinct('userSender')
                 ->pluck('userSender')
