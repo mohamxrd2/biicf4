@@ -33,7 +33,8 @@ class livraisonVerif extends Notification
             'totalSom' => $this->livraisonVerif['totalSom'],
             'localite' => $this->livraisonVerif['localite'],
             'userSender' => $this->livraisonVerif['userSender'],
-            'code_livr' => $this->livraisonVerif['code_livr']
+            'code_livr' => $this->livraisonVerif['code_livr'],
+            'prixProd' => $this->livraisonVerif['prixProd']
         ];
     }
 }

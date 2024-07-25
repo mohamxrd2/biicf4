@@ -1158,13 +1158,13 @@
                         <tr>
                             <td class="py-2 px-4 border-b">Produit commandé: {{ $produitfat->name }}</td>
                             <td class="py-2 px-4 border-b">{{ $notification->data['quantiteC'] }}</td>
-                            <td class="py-2 px-4 border-b">{{ $produitfat->prix }} FCFA</td>
+                            <td class="py-2 px-4 border-b">{{ $this->notification->data['prixProd'] }} FCFA</td>
                             <td class="py-2 px-4 border-b">
-                                {{ (int) ($notification->data['quantiteC'] * $produitfat->prix) }} FCFA</td>
+                                {{ (int) ($notification->data['quantiteC'] * $this->notification->data['prixProd']) }} FCFA</td>
                         </tr>
                         <tr>
                             <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
-                            <td class="py-2 px-4 border-b">N/A</td>
+                            <td class="py-2 px-4 border-b">1</td>
                             <td class="py-2 px-4 border-b">{{ $notification->data['prixTrade'] }} FCFA</td>
                             <td class="py-2 px-4 border-b">{{ $notification->data['prixTrade'] }} FCFA</td>
                         </tr>
@@ -1209,7 +1209,7 @@
 
                 <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
                     <p class="text-xl  text-center font-bold">Total TTC: <span
-                            class="font-bold">{{ (int) ($notification->data['quantiteC'] * $produitfat->prix) + $notification->data['prixTrade'] }}
+                            class="font-bold">{{ (int) ($notification->data['quantiteC'] * $this->notification->data['prixProd']) + $notification->data['prixTrade'] }}
                             FCFA</span></p>
                 </div>
             </section>
@@ -1441,10 +1441,13 @@
                                         value="{{ $notification->data['userSender'] }}">
                                         <input type="hidden" name="id_trader" wire:model="id_trader"
                                             value="{{ $notification->data['id_trader'] }}">
+                                         <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd"
+                                            value="{{ $notification->data['prixProd'] }}">
                                         <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
-
+                                    
+                                        
 
                                         <button type="submit" id="submitBtnAppel"
                                             class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
@@ -1580,7 +1583,7 @@
             </div>
         </div>
 
-        <div class="max-w-4xl p-8 flex">
+        <div class="max-w-4xl mt-6 flex">
             @if ($notification->reponse)
                 <div class=" bg-gray-300 border p-2 rounded-md">
                     <p class="text-md font-medium text-center">Réponse envoyée</p>
@@ -1607,13 +1610,26 @@
                     </span>
                 </button>
 
-                <button class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                <button  wire:click='refuseVerif'
+                class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-6 mr-2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                     </svg>
-                    Refuser</button>
+                    <span wire:loading.remove> 
+                        Refuser
+                    </span>
+                    <span wire:loading>
+                        Chargement...
+                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                        </svg>
+                    </span>
+                    
+                </button>
             @endif
         </div>
     @elseif ($notification->type === 'App\Notifications\mainleve')
@@ -1731,13 +1747,25 @@
                         </span>
                     </button>
 
-                    <button type="button" class="p-2 text-white flex font-medium bg-red-700 rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
+                    <button  wire:click='refuseVerif'
+                    class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6 mr-2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>
-                        Refuser
+                        <span wire:loading.remove> 
+                            Refuser
+                        </span>
+                        <span wire:loading>
+                            Chargement...
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+                        
                     </button>
                 @endif
             </div>
@@ -1956,13 +1984,26 @@
                         </span>
                     </button>
 
-                    <button class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
+                    <button  wire:click='refuseColis'
+                class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
+                    </svg>
+                    <span wire:loading.remove> 
+                        Refuser
+                    </span>
+                    <span wire:loading>
+                        Chargement...
+                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
                         </svg>
-                        Refuser</button>
+                    </span>
+                    
+                </button>
                 @endif
             </div>
 
