@@ -48,6 +48,7 @@ class CheckCountdowns extends Command
                 $specificite = $lowestPriceComment->specificite;
                 $nameprod = $lowestPriceComment->nameprod;
                 $id_sender = $lowestPriceComment->id_sender;
+                $prixProd = $lowestPriceComment->prixProd;
 
                 // Décoder le JSON id_sender
                 $decodedSenderIds = json_decode($id_sender, true);
@@ -63,6 +64,7 @@ class CheckCountdowns extends Command
                     'id_trader' => $traderId,
                     'idProd' => $id_prod,
                     'quantiteC' => $quantiteC,
+                    'prixProd' => $prixProd
                 ];
                 $Adetails = [
                     'code_unique' => $countdown->code_unique,

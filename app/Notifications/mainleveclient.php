@@ -36,7 +36,8 @@ class mainleveclient extends Notification
             'id_livreur' => $this->main['id_livreur'],
             'date_livr' => $this->main['date_livr'],
             'matine' => $this->main['matine'],
-            'prixTrade' => $this->main['prixTrade']
+            'prixTrade' => $this->main['prixTrade'],
+            'prixProd' => $this->main['prixProd']
             
         ];
     }

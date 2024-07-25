@@ -41,6 +41,9 @@ class ListeClients extends Component
     }
     public function render()
     {
+        $user = User::where('name', 'like', "%{$this->search}%")
+            ->orderBy('created_at', 'DESC')
+            ->paginate(10);
 
         $users = User::with('admin')
             ->orderBy('created_at', 'DESC')

@@ -2,19 +2,19 @@
 
 namespace App\Livewire;
 
-use App\Rules\ArrayOrInteger;
 use Exception;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Comment;
 use Livewire\Component;
-
 use App\Models\Countdown;
+
 use App\Models\OffreGroupe;
 use App\Models\Transaction;
 use Livewire\Attributes\On;
 use App\Models\Consommation;
 use App\Models\groupagefact;
+use App\Rules\ArrayOrInteger;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
@@ -23,6 +23,7 @@ use App\Notifications\mainleve;
 use App\Notifications\AppelOffre;
 
 use App\Notifications\RefusAchat;
+use App\Notifications\RefusVerif;
 use App\Notifications\acceptAchat;
 use App\Notifications\colisaccept;
 use App\Notifications\commandVerif;
@@ -113,6 +114,9 @@ class NotificationShow extends Component
     public $matine_client;
 
 
+    public $prixProd;
+
+
 
 
 
@@ -144,6 +148,8 @@ class NotificationShow extends Component
         $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
+
+        $this->prixProd = $this->notification->data['prixProd'] ?? null;
 
         $data = $this->notification->data['userSender'] ?? null;
 
@@ -286,7 +292,7 @@ class NotificationShow extends Component
     public function valider()
     {
         //prix final
-        $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $this->produitfat->prix) + $this->notification->data['prixTrade'];
+        $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
 
         // Calculer le prix total
         $montantTotal = $this->totalPrice;
@@ -323,11 +329,12 @@ class NotificationShow extends Component
         $data = [
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->code_unique,
-            'id_trader' => $this->namefourlivr->id,
+            'id_trader' => $this->namefourlivr->user->id,
             'localité' => $this->localite,
             'quantite' => $this->notification->data['quantiteC'],
             'id_livreur' => $this->userFour->id,
-            'prixTrade' => $this->notification->data['prixTrade']
+            'prixTrade' => $this->notification->data['prixTrade'],
+            'prixProd' => $this->notification->data['prixProd']
         ];
 
 
@@ -356,7 +363,8 @@ class NotificationShow extends Component
             'quantite' => $this->quantiteC,
             'id_client' => $id_client,
             'id_livreur' => $this->id_livreur,
-            'prixTrade' => $this->notification->data['prixTrade']
+            'prixTrade' => $this->notification->data['prixTrade'],
+            'prixProd' => $this->notification->data['prixProd']
 
         ];
 
@@ -393,7 +401,8 @@ class NotificationShow extends Component
             'id_livreur' => $id_livreur,
             'date_livr' => $this->dateLivr,
             'matine' => $this->matine,
-            'prixTrade' => $this->notification->data['prixTrade']
+            'prixTrade' => $this->notification->data['prixTrade'],
+             'prixProd' => $this->notification->data['prixProd']
         ];
 
         Notification::send($this->client, new mainleveclient($data));
@@ -438,7 +447,8 @@ class NotificationShow extends Component
             'quantite' => $this->notification->data['quantite'],
             'id_client' => $this->notification->data['id_client'],
             'id_livreur' => $this->notification->data['id_livreur'],
-            'prixTrade' => $this->notification->data['prixTrade']
+            'prixTrade' => $this->notification->data['prixTrade'],
+            'prixProd' => $this->notification->data['prixProd'],
         ];
 
         // recuperation de prote-feuille
@@ -464,7 +474,7 @@ class NotificationShow extends Component
             return;
         }
 
-        $requiredAmount = $this->notification->data['quantite'] * $produit->prix;
+        $requiredAmount = $this->notification->data['quantite'] * $this->notification->data['prixProd'];
 
         $pourcentSomme  = $requiredAmount * 0.1;
 
@@ -507,7 +517,7 @@ class NotificationShow extends Component
 
         //transtion livreur
 
-        $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Reception', $this->notification->data['prixTrade']);
+        $this->createTransaction(Auth::user()->id, $this->notification->data['id_livreur'], 'Reception', $this->notification->data['prixTrade']);
 
 
 
@@ -521,6 +531,61 @@ class NotificationShow extends Component
 
         $this->notification->update(['reponse' => 'colisaccept']);
         $this->validate();
+    }
+
+    public function refuseColis()
+
+    {
+
+        $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
+
+        $montantTotal = $this->totalPrice;
+
+
+
+
+        $livreur = User::find($this->notification->data['id_livreur']);
+
+        $fournisseur = User::find($this->notification->data['id_trader']);
+
+
+        $client = User::find($this->notification->data['id_client']);
+
+        $clientWallet = Wallet::where('user_id', $this->notification->data['id_client'])->first();
+
+        if (!$clientWallet) {
+            session()->flash('error', 'Portefeuille du client introuvable.');
+            return;
+        }
+
+        $livreurWallet = Wallet::where('user_id', $this->notification->data['id_livreur'])->first();
+
+        if (!$livreurWallet) {
+            session()->flash('error', 'Portefeuille du livreur introuvable.');
+            return;
+        }
+
+        $clientWallet->increment('balance', $montantTotal);
+
+        $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
+
+        $this->createTransaction( $this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
+
+        $this->createTransaction( $this->notification->data['id_client'], $this->notification->data['id_livreur'], 'Reception', $this->notification->data['prixTrade']);
+
+        Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
+
+        Notification::send($fournisseur, new RefusVerif('Le colis à été refuser !'));
+
+        Notification::send($client, new RefusVerif('Le colis à été refuser !'));
+
+
+
+
+        $this->notification->update(['reponse' => 'refuseVereif']);
+        $this->validate();
+
+
     }
 
     public function accepter()
@@ -547,6 +612,8 @@ class NotificationShow extends Component
 
         $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
 
+        $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
+
         // $userTrader = User::find($userId);
         // $this->handleCommission($userTrader, $pourcentSomme, 'Trader');
         // $this->handleCommission($userSender, $pourcentSomme, 'Sender');
@@ -565,6 +632,7 @@ class NotificationShow extends Component
             'localite' =>  $this->notification->data['localite'],
             'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
             'code_livr' => $code_livr,
+            'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix
 
         ];
 
@@ -619,6 +687,50 @@ class NotificationShow extends Component
 
         session()->flash('success', 'Achat refusé.');
         // $this->emit('notificationUpdated');
+    }
+
+    public function refuseVerif()
+    {
+
+        $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
+
+        $montantTotal = $this->totalPrice;
+
+
+
+
+        $livreur = User::find($this->notification->data['id_livreur']);
+
+        $fournisseur = User::find($this->notification->data['id_trader']);
+
+
+        $client = User::find($this->notification->data['id_client']);
+
+        $clientWallet = Wallet::where('user_id', $this->notification->data['id_client'])->first();
+
+        if (!$clientWallet) {
+            session()->flash('error', 'Portefeuille du client introuvable.');
+            return;
+        }
+
+        $clientWallet->increment('balance', $montantTotal);
+
+        $this->createTransaction( $this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
+
+        Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
+
+        Notification::send($fournisseur, new RefusVerif('Le colis à été refuser !'));
+
+        Notification::send($client, new RefusVerif('Le colis à été refuser !'));
+
+
+
+
+        $this->notification->update(['reponse' => 'refuseVereif']);
+        $this->validate();
+
+
+
     }
 
     // protected function handleCommission($user, $amount, $type)
@@ -751,6 +863,7 @@ class NotificationShow extends Component
             'prixTrade' => 'required|numeric',
             'quantiteC' => 'required|numeric',
             'idProd' => 'required|numeric',
+            'prixProd' => 'required|numeric'
         ]);
 
 
@@ -761,6 +874,7 @@ class NotificationShow extends Component
             'id_trader' => $validatedData['id_trader'],
             'quantiteC' => $validatedData['quantiteC'],
             'id_prod' => $validatedData['idProd'],
+            'prixProd' => $validatedData['prixProd'],
         ]);
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
