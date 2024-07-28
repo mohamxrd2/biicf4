@@ -30,7 +30,7 @@
         <div>
             <div class=" p-3 border border-gray-200 bg-white rounded-md">
                 <p class="text-sm text-gray-600">Solde</p>
-                <p class="text-2xl font-bold">{{ $wallet->balance }} FCFA</p>
+                <p class="text-2xl font-bold"> {{ number_format($wallet->balance, 2, ',', ' ') }} FCFA</p>
 
             </div>
 
@@ -1095,7 +1095,16 @@
             </div>
             <div class="mb-3">
                 <p class="font-semibold text-sm">Email</p>
-                <p class="text-sm text-gray-400">{{ $user->email }}</p>
+                <p class="text-sm text-gray-400">{{ $user->email }}
+                    @if ($user->email_verified_at)
+                    <span class="text-green-400">(Vérifié)</span>
+                        
+                    @else
+
+                    <span class="text-red-400">(Non vérifié)</span>
+
+                    @endif
+                </p>
             </div>
             <div class="mb-3">
                 <p class="font-semibold text-sm">Nombre de publication</p>
