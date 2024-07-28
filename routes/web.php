@@ -99,6 +99,10 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     //success
     Route::get('/ajouter-client', [UserController::class, 'createPageAdmin'])->name('clients.create');
     Route::post('/ajouter-client', [UserController::class, 'createUserAdmin'])->name('clients.store');
+
+    Route::get('demande', function(){
+        return view ('admin.demande');
+    })->name('admin.demande');
 });
 
 //email

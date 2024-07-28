@@ -1,4 +1,73 @@
 <div class="max-w-4xl mx-auto p-8 bg-white shadow-md rounded-md">
+    
+    
+    
+    @if ($livraison)
+
+    <div class="mb-6 p-4 ">
+        <h2 class="text-xl font-semibold text-center text-gray-700 mb-4">Suivi de la demande</h2>
+        <div class="flex items-center space-x-4">
+            <div class="flex-1">
+                <div class="relative">
+                    <div class="w-full h-2 bg-gray-200 rounded-full">
+                        <div class="h-2 rounded-full 
+                            @if ($livraison->etat === 'En cours') 
+                                bg-yellow-400 
+                            @elseif ($livraison->etat === 'Accepté') 
+                                bg-green-400 
+                            @else 
+                                bg-red-400 
+                            @endif" 
+                            style="width: 
+                            @if ($livraison->etat === 'En cours') 
+                                50% 
+                            @elseif ($livraison->etat === 'Accepté' || $livraison->etat === 'Refusé') 
+                                100% 
+                            @else 
+                                0% 
+                            @endif;">
+                        </div>
+                    </div>
+                    <div class="absolute top-0 left-0 flex items-center justify-between w-full mt-4">
+                        <span class="text-md font-semibold text-gray-600">En cours...</span>
+                        <span class="text-md font-semibold text-gray-600">Reponse</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center w-8 h-8 text-white rounded-full 
+                    @if ($livraison->etat === 'En cours') 
+                        bg-yellow-400 
+                    @elseif ($livraison->etat === 'Accepté') 
+                        bg-green-400 
+                    @else 
+                        bg-red-400 
+                    @endif">
+                    @if ($livraison->etat === 'En cours')
+                        ⏳
+                    @elseif ($livraison->etat === 'Accepté')
+                        ✅
+                    @else
+                        ❌
+                    @endif
+                </div>
+                <span class="ml-2 font-semibold">
+                    @if ($livraison->etat === 'En cours')
+                        En cours
+                    @elseif ($livraison->etat === 'Accepté')
+                        Accepté
+                    @else
+                        {{ $livraison->etat }}
+                    @endif
+                </span>
+            </div>
+        </div>
+    </div>
+    
+        
+    @else
+
+
     @if (session()->has('message'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
             <strong class="font-bold">Succès!</strong>
@@ -15,7 +84,7 @@
             <select id="experience" wire:model="experience"
                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 
-                <option value="moins de 1 an">Moins de 1 an</option>
+                <option value="moins de 1 an" selected>Moins de 1 an</option>
                 <option value="entre 1 et 5 ans">Entre 1 et 5 ans</option>
                 <option value="5 ans et plus">5 ans et plus</option>
             </select>
@@ -32,7 +101,7 @@
             <select id="license" wire:model="license"
                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
              
-                <option value="Permis A">Permis A</option>
+                <option value="Permis A" selected>Permis A</option>
                 <option value="Permis B">Permis B</option>
                 <option value="Permis C">Permis C</option>
             </select>
@@ -46,7 +115,7 @@
             <select id="vehicle" wire:model="vehicle"
                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
               
-                <option value="Moto">Moto</option>
+                <option value="Moto" selected>Moto</option>
                 <option value="Fourgonette">Fourgonette</option>
                 <option value="Camion">Camion</option>
             </select>
@@ -125,4 +194,8 @@
             Soumettre la candidature
         </button>
     </form>
+        
+    @endif
+    
+    
 </div>

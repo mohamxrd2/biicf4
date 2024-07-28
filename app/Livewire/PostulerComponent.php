@@ -23,6 +23,9 @@ class PostulerComponent extends Component
     public $assurance;
     public $etat = 'En cours';
 
+    public $livraison;
+
+
     protected $rules = [
         'experience' => 'required|string',
         'license' => 'required|string',
@@ -61,6 +64,26 @@ class PostulerComponent extends Component
         ];
     }
 
+
+    public function mount()
+    {
+        $this->livraison = livraisons::where('user_id', Auth::id())->first();
+        
+        if ($this->livraison) {
+            $this->experience = $this->livraison->experience;
+            $this->license = $this->livraison->license;
+            $this->vehicle = $this->livraison->vehicle;
+            $this->matricule = $this->livraison->matricule;
+            $this->availability = $this->livraison->availability;
+            $this->zone = implode(';', json_decode($this->livraison->zone, true));
+            $this->comments = $this->livraison->comments;
+            $this->identity = $this->livraison->identity;
+            $this->permis = $this->livraison->permis;
+            $this->assurance = $this->livraison->assurance;
+            $this->etat = $this->livraison->etat;
+        }
+    }
+
     public function submit()
     {
         $this->validate();
@@ -79,9 +102,9 @@ class PostulerComponent extends Component
             'availability' => $this->availability,
             'zone' => json_encode(explode(';', $this->zone)), // Convertir en JSON
             'comments' => $this->comments,
-            'identity' => $identityPath,
-            'permis' => $permisPath,
-            'assurance' => $assurancePath,
+            'identity' => $identityPath ?? 'null',
+            'permis' => $permisPath ?? 'null',
+            'assurance' => $assurancePath ?? 'null',
             'etat' => $this->etat,
         ]);
 
