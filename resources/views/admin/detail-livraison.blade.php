@@ -1,10 +1,9 @@
 @extends('admin.layout.navside')
 
-@section('title', 'Demande')
+@section('title', 'Dashboard')
 
 @section('content')
 
-   @livewire('demande')
 
 
 @endsection
