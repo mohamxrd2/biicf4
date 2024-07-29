@@ -22,6 +22,9 @@ class Kernel extends ConsoleKernel
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');
+            $schedule->command('app:envoi-four')->cron('* * * * *');
+            $schedule->command('app:grouper-facture')->cron('* * * * *');
+            $schedule->command('app:appeloffre')->cron('* * * * *');
         }
     }
     /**

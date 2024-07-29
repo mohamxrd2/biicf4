@@ -757,8 +757,8 @@
                                 @csrf
                                 <div
                                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    <input type="hidden" name="code_unique" value="{{ $codeUnique }}">
-                                    <input type="hidden" name="id_trader" value="{{ $user->id }}">
+                                    {{-- <input type="hidden" name="code_unique" value="{{ $codeUnique }}"> --}}
+                                    {{-- <input type="hidden" name="id_trader" value="{{ $user->id }}"> --}}
                                     <input type="number" name="prixTrade" id="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                         placeholder="Faire une offre..." required>
@@ -808,82 +808,81 @@
 
             </div>
 
-        </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const prixTradeInput = document.getElementById('prixTrade');
+                    const submitBtn = document.getElementById('submitBtn');
+                    const prixTradeError = document.getElementById('prixTradeError');
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const prixTradeInput = document.getElementById('prixTrade');
-                const submitBtn = document.getElementById('submitBtn');
-                const prixTradeError = document.getElementById('prixTradeError');
+                    prixTradeInput.addEventListener('input', function() {
+                        const prixTradeValue = parseFloat(prixTradeInput.value);
+                        const produit_prix = parseFloat('{{ $notification->data['produit_prix'] }}');
 
-                prixTradeInput.addEventListener('input', function() {
-                    const prixTradeValue = parseFloat(prixTradeInput.value);
-                    const produit_prix = parseFloat('{{ $notification->data['produit_prix'] }}');
-
-                    if (prixTradeValue < produit_prix) {
-                        submitBtn.disabled = true;
-                        prixTradeError.textContent = 'Le prix  doit  etre superieur ' + produit_prix;
-                        prixTradeError.classList.remove('hidden');
-                    } else {
-                        submitBtn.disabled = false;
-                        prixTradeError.textContent = '';
-                        prixTradeError.classList.add('hidden');
-                    }
+                        if (prixTradeValue < produit_prix) {
+                            submitBtn.disabled = true;
+                            prixTradeError.textContent = 'Le prix  doit  etre superieur ' + produit_prix;
+                            prixTradeError.classList.remove('hidden');
+                        } else {
+                            submitBtn.disabled = false;
+                            prixTradeError.textContent = '';
+                            prixTradeError.classList.add('hidden');
+                        }
+                    });
                 });
-            });
 
-            // Convertir la date de départ en objet Date JavaScript
-            const startDate = new Date("{{ $oldestCommentDate }}");
+                // Convertir la date de départ en objet Date JavaScript
+                const startDate = new Date("{{ $oldestCommentDate }}");
 
-            // Ajouter 5 jours à la date de départ
-            // Ajouter 5 heures à la date de départ
-            startDate.setMinutes(startDate.getMinutes() + 1);
+                // Ajouter 5 jours à la date de départ
+                // Ajouter 5 heures à la date de départ
+                startDate.setMinutes(startDate.getMinutes() + 1);
 
-            // Mettre à jour le compte à rebours à intervalles réguliers
-            const countdownTimer = setInterval(updateCountdown, 1000);
+                // Mettre à jour le compte à rebours à intervalles réguliers
+                const countdownTimer = setInterval(updateCountdown, 1000);
 
-            function updateCountdown() {
-                // Obtenir la date et l'heure actuelles
-                const currentDate = new Date();
+                function updateCountdown() {
+                    // Obtenir la date et l'heure actuelles
+                    const currentDate = new Date();
 
-                // Calculer la différence entre la date cible et la date de départ en millisecondes
-                const difference = startDate.getTime() - currentDate.getTime();
+                    // Calculer la différence entre la date cible et la date de départ en millisecondes
+                    const difference = startDate.getTime() - currentDate.getTime();
 
-                // Convertir la différence en jours, heures, minutes et secondes
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                    // Convertir la différence en jours, heures, minutes et secondes
+                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-                // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                const countdownElement = document.getElementById('countdown');
-                countdownElement.innerHTML = `
+                    // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+                    const countdownElement = document.getElementById('countdown');
+                    countdownElement.innerHTML = `
 
                  <div>${hours}h</div>:
                  <div>${minutes}m</div>:
                  <div>${seconds}s</div>
                 `;
 
-                // Arrêter le compte à rebours lorsque la date cible est atteinte
-                if (difference <= 0) {
-                    clearInterval(countdownTimer);
-                    countdownElement.innerHTML = "Temps écoulé !";
-                    document.getElementById('prixTrade').disabled = true;
-                    document.getElementById('submitBtn').hidden = true;
+                    // Arrêter le compte à rebours lorsque la date cible est atteinte
+                    if (difference <= 0) {
+                        clearInterval(countdownTimer);
+                        countdownElement.innerHTML = "Temps écoulé !";
+                        document.getElementById('prixTrade').disabled = true;
+                        document.getElementById('submitBtn').hidden = true;
 
 
-                    const highestPricedComment = @json($highestPricedComment);
+                        // const highestPricedComment = ;
 
-                    if (highestPricedComment && highestPricedComment.user) {
-                        prixTradeError.textContent =
-                            `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
-                    } else {
-                        prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                        // if (highestPricedComment && highestPricedComment.user) {
+                        //     prixTradeError.textContent =
+                        //         `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
+                        // } else {
+                        //     prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                        // }
+                        // prixTradeError.classList.remove('hidden');
                     }
-                    prixTradeError.classList.remove('hidden');
                 }
-            }
-        </script>
+            </script>
+        </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
@@ -1161,7 +1160,8 @@
                             <td class="py-2 px-4 border-b">{{ $notification->data['quantiteC'] }}</td>
                             <td class="py-2 px-4 border-b">{{ $this->notification->data['prixProd'] }} FCFA</td>
                             <td class="py-2 px-4 border-b">
-                                {{ (int) ($notification->data['quantiteC'] * $this->notification->data['prixProd']) }} FCFA</td>
+                                {{ (int) ($notification->data['quantiteC'] * $this->notification->data['prixProd']) }}
+                                FCFA</td>
                         </tr>
                         <tr>
                             <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
@@ -1444,7 +1444,7 @@
                                             value="{{ $notification->data['userSender'] }}">
                                         <input type="hidden" name="id_trader" wire:model="id_trader"
                                             value="{{ $notification->data['id_trader'] }}">
-                                         <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd"
+                                        <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd"
                                             value="{{ $notification->data['prixProd'] }}">
                                         <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
@@ -1614,8 +1614,7 @@
                     </span>
                 </button>
 
-                <button  wire:click='refuseVerif'
-                class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                <button wire:click='refuseVerif' class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-6 mr-2">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -1751,8 +1750,8 @@
                         </span>
                     </button>
 
-                    <button  wire:click='refuseVerif'
-                    class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                    <button wire:click='refuseVerif'
+                        class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-6 mr-2">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -1988,26 +1987,26 @@
                         </span>
                     </button>
 
-                    <button  wire:click='refuseColis'
-                class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6 mr-2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
-                    </svg>
-                    <span wire:loading.remove>
-                        Refuser
-                    </span>
-                    <span wire:loading>
-                        Chargement...
-                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                    <button wire:click='refuseColis'
+                        class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>
-                    </span>
+                        <span wire:loading.remove>
+                            Refuser
+                        </span>
+                        <span wire:loading>
+                            Chargement...
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
 
-                </button>
+                    </button>
                 @endif
             </div>
 

@@ -134,7 +134,8 @@
                         </div>
                     </a>
                 @elseif ($notification->type === 'App\Notifications\OffreNotif')
-                    <a href="{{ route('notification.show', $notification->id) }}" class="">
+                    <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}" class="">
+                        
                         <div class="flex w-full">
                             @if (isset($notification->data['produit_id']))
                                 @php

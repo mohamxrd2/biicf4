@@ -196,7 +196,11 @@ class NotificationShow extends Component
 
         $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification' || $this->notification->type === 'App\Notifications\AppelOffreTerminer' || $this->notification->type === 'App\Notifications\AppelOffre')
+        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification'
+            || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
+            || $this->notification->type === 'App\Notifications\AppelOffre'
+            || $this->notification->type === 'App\Notifications\OffreNotifGroup'
+            ||  $this->notification->type === 'App\Notifications\OffreNotif')
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? null);
 
