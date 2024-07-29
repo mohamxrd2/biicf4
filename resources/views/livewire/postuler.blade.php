@@ -1,9 +1,5 @@
-<div class="max-w-4xl mx-auto p-8 bg-white shadow-md rounded-md">
-    
-    
-    
+<div class="max-w-4xl mx-auto p-8 bg-white shadow-md rounded-md" wire:poll.15000ms>
     @if ($livraison)
-
     <div class="mb-6 p-4 ">
         <h2 class="text-xl font-semibold text-center text-gray-700 mb-4">Suivi de la demande</h2>
         <div class="flex items-center space-x-4">
@@ -190,8 +186,12 @@
         </div>
 
         <button type="submit"
-            class=" py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            class=" py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700  ">
             Soumettre la candidature
+        </button>
+        <button type="reset"
+            class=" py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 ">
+            Annuler
         </button>
     </form>
         
