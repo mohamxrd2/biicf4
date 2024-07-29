@@ -114,7 +114,7 @@ class AchatDirectGroupe extends Component
             Notification::send($owner, new AchatBiicf($achat));
 
             $user = User::find($userId);
-            event(new MyEvent($user));
+            // event(new MyEvent($user));
 
             $this->reset(['quantité', 'localite', 'specificite']);
             session()->flash('success', 'Achat passé avec succès.');
@@ -124,44 +124,6 @@ class AchatDirectGroupe extends Component
         }
     }
 
-    public function verifierEtEnvoyerNotification()
-    {
-        $produit = ProduitService::findOrFail($this->id);
-
-        $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
-        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
-        $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
-
-        $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
-            ->distinct('userSender')
-            ->count('userSender');
-
-        $notificationExists = NotificationLog::where('idProd', $produit->id)->exists();
-
-        if ($isTempsEcoule && !$notificationExists && $nbreAchatGroup) {
-            $sommeQuantite = AchatGrouper::where('idProd', $produit->id)->sum('quantité');
-            $montants = AchatGrouper::where('idProd', $produit->id)->sum('montantTotal');
-            $userSenders = AchatGrouper::where('idProd', $produit->id)
-                ->distinct('userSender')
-                ->pluck('userSender')
-                ->toArray();
-
-            $notificationData = [
-                'nameProd' => $produit->name,
-                'quantité' => $sommeQuantite,
-                'montantTotal' => $montants,
-                'userTrader' => $produit->user->id,
-                'photoProd' => $produit->photoProd1,
-                'idProd' => $produit->id,
-                'userSender' => $userSenders
-            ];
-
-            Notification::send($produit->user, new AchatGroupBiicf($notificationData));
-
-            NotificationLog::create(['idProd' => $produit->id]);
-            AchatGrouper::where('idProd', $produit->id)->delete();
-        }
-    }
     public function render()
     {
         // Récupérer le produit ou échouer

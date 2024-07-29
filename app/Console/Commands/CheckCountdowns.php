@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\Countdown;
 use App\Notifications\AppelOffreTerminer;
 use App\Notifications\CountdownNotification;
+use App\Notifications\NegosTerminer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
@@ -84,6 +85,9 @@ class CheckCountdowns extends Command
                 if ($countdown->difference === 'single') {
                     // Envoyer la notification à l'utilisateur expéditeur
                     Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Adetails));
+                } else if ($countdown->difference === 'offredirect') {
+                    // Envoyer la notification à l'utilisateur expéditeur
+                    Notification::send($lowestPriceComment->user, new NegosTerminer($details));
                 } else {
                     // Envoyer une autre notification ou effectuer une autre action
                     Notification::send($countdown->sender, new CountdownNotification($details));

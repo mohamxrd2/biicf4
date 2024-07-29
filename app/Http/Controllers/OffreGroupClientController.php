@@ -81,7 +81,7 @@ class OffreGroupClientController extends Controller
             // Redirection avec un message de succès
             return redirect()->back();
         } catch (\Exception $e) {
-            dd($e)->getMessage();
+            // dd($e)->getMessage();
             // En cas d'erreur, redirection avec un message d'erreur
             return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
         }

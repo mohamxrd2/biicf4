@@ -11,7 +11,7 @@
             {{ session('error') }}
         </div>
     @endif
-    
+
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
         class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md" style="display: none;" method="POST">
         @csrf
@@ -63,82 +63,6 @@
                 <span wire:loading>Envoi en cours...</span>
             </button>
         </div>
-    </form>
-    <form wire:submit.prevent="AchatGroupeForm"
-        class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md" id="formAchatGroup"
-        style="display: none;" method="POST">
-        @csrf
-        <h1 class="text-xl text-center mb-3">Achat groupé</h1>
-
-
-        <div>
-            <p class="text-center text-md font-medium text-gray-700 mb-3">Nombre de participants: <span
-                    class="text-md  text-purple-800">{{ $nbreAchatGroup }}</span></p>
-        </div>
-
-        <div class="space-y-3 mb-3 w-full">
-            <input type="number" id="quantityInput1" name="quantité" wire:model.defer="quantité"
-                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                placeholder="Quantité" data-min="{{ $produit->qteProd_min }}" data-max="{{ $produit->qteProd_max }}"
-                oninput="updateMontantTotalGroup()" required>
-        </div>
-
-        <div class="space-y-3 mb-3 w-full">
-            <input type="text" id="locationInput1" name="localite" wire:model.defer="localite"
-                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                placeholder="Lieu de livraison" required>
-        </div>
-
-        <div class="space-y-3 mb-3 w-full">
-            <input type="text" id="specificite1" name="specificite" wire:model.defer="specificite"
-                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                placeholder="Specificité (Facultatif)">
-        </div>
-
-        <input type="hidden" wire:model.defer="userTrader" name="userTrader" value="{{ $produit->user->id }}">
-        <input type="hidden" wire:model.defer="nameProd" name="nameProd" value="{{ $produit->name }}">
-        <input type="hidden" wire:model.defer="userSender" name="userSender" value="{{ $userId }}">
-        <input type="hidden" wire:model.defer="message" name="message"
-            value="Un utilisateur veut acheter ce produit">
-        <input type="hidden" wire:model.defer="photoProd" name="photoProd" value="{{ $produit->photoProd1 }}">
-        <input type="hidden" wire:model.defer="idProd" name="idProd" value="{{ $produit->id }}">
-        <input type="hidden" name="prix" wire:model.defer="prix" value="{{ $produit->prix }}">
-
-
-        <div class="flex justify-between px-4 mb-3 w-full">
-            <p class="font-semibold text-sm text-gray-500">Prix total:</p>
-            <p class="text-sm text-purple-600" id="montantTotal1">0 FCFA</p>
-            <input type="hidden" name="montantTotal" id="montant_total_input1">
-        </div>
-
-        <p id="errorMessage1" class="text-sm text-center text-red-500 hidden">Erreur</p>
-
-        <div class="w-full text-center mt-3">
-            <button type="reset"
-                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-gray-200 text-black hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none">Annulé
-            </button>
-            <button type="submit" id="submitButton1"
-                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                wire:loading.attr="disabled" disabled>
-
-                <span wire:loading.remove>Envoyer</span>
-                <span wire:loading>Envoi en cours...</span>
-            </button>
-        </div>
-
-
-        @if ($nbreAchatGroup > 0 && isset($userId) && isset($produit->user->id) && $userId != $produit->user->id)
-            <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-                <span class="mb-2">Temps restant pour cet achat groupé</span>
-                <div id="countdown"
-                    class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100 p-3 rounded-xl w-auto">
-                    <div>-</div>:
-                    <div>-</div>:
-                    <div>-</div>:
-                    <div>-</div>
-                </div>
-            </div>
-        @endif
     </form>
 </div>
 <script>
@@ -219,87 +143,6 @@
         }
     }
 
-    // Fonction pour mettre à jour le montant total pour l'achat groupé
-    function updateMontantTotalGroup() {
-        const quantityInput = document.getElementById('quantityInput1');
-        const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
-        const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
-        const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
-        const quantity = parseInt(quantityInput.value);
-        const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
-        const montantTotalElement = document.getElementById('montantTotal1');
-        const errorMessageElement = document.getElementById('errorMessage1');
-        const submitButton = document.getElementById('submitButton1');
-        const montantTotalInput = document.getElementById('montant_total_input1');
 
-        const userBalance = {{ $userWallet->balance }};
 
-        if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
-            errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = '0 FCFA';
-            submitButton.disabled = true;
-        } else if (montantTotal > userBalance) {
-            errorMessageElement.innerText =
-                `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            submitButton.disabled = true;
-        } else {
-            errorMessageElement.classList.add('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-            submitButton.disabled = false;
-        }
-    }
-
-    document.addEventListener('livewire:init', function() {
-        Livewire.on('start-timer', () => {
-
-            // Convertir la date de départ en objet Date JavaScript
-            const startDate = new Date();
-
-            // Ajouter 5 jours à la date de départ
-            startDate.setMinutes(startDate.getMinutes() + 1);
-
-            // Mettre à jour le compte à rebours à intervalles réguliers
-            const countdownTimer = setInterval(updateCountdown, 1000);
-
-            function updateCountdown() {
-                // Obtenir la date et l'heure actuelles
-                const currentDate = new Date();
-
-                // Calculer la différence entre la date cible et la date de départ en millisecondes
-                const difference = startDate.getTime() - currentDate.getTime();
-
-                // Convertir la différence en jours, heures, minutes et secondes
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                const countdownElement = document.getElementById('countdown');
-                countdownElement.innerHTML = `
-             <div>${days}j</div>:
-             <div>${hours}h</div>:
-             <div>${minutes}m</div>:
-            <div>${seconds}s</div>
-              `;
-
-                // Arrêter le compte à rebours lorsque la date cible est atteinte
-                if (difference <= 0) {
-                    clearInterval(countdownTimer);
-                    countdownElement.innerHTML = "Temps écoulé !";
-                }
-            }
-            setTimeout(() => {
-                Livewire.dispatch('sendNotification');
-                console.log('Livewire.dispatch("sendNotification") executed after 1 minute');
-            }, 60000); // 1 minute
-            Livewire.on('sendNotification', () => {
-                console.log('Event "sendNotification" received');
-            });
-        });
-    });
 </script>

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
+use App\Models\AchatDirect;
 use Exception;
 use App\Models\User;
 use App\Models\Wallet;
@@ -26,6 +27,7 @@ use App\Notifications\AppelOffre;
 use App\Notifications\RefusAchat;
 use App\Notifications\RefusVerif;
 use App\Notifications\acceptAchat;
+use App\Notifications\AchatBiicf;
 use App\Notifications\colisaccept;
 use App\Notifications\commandVerif;
 use App\Notifications\mainlevefour;
@@ -96,8 +98,6 @@ class NotificationShow extends Component
 
     public $totalPrice;
 
-    protected $listeners = ['startTimer'];
-
     public $id_livreur;
 
     public $code_verif;
@@ -113,13 +113,11 @@ class NotificationShow extends Component
     public $matine;
 
     public $matine_client;
-
-
     public $prixProd;
-
-
-
-
+    public $produit;
+    public $userWallet;
+    public $nameProd;
+    public $prix;
 
 
     protected $rules = [
@@ -142,13 +140,20 @@ class NotificationShow extends Component
         $this->userTrader = $this->notification->data['userTrader'] ?? null;
         $this->id_trader = Auth::user()->id ?? null;
         $this->user = Auth::user()->id ?? null;
-        $this->code_unique = $this->notification->data['code_unique'] ?? null;
+        $this->code_unique = $this->notification->data['code_unique'] ?? $this->notification->data['Uniquecode'] ?? null;
         $this->quantite = $this->notification->data['quantité'] ?? null;
         $this->quantiteC = $this->notification->data['quantite'] ?? $this->notification->data['quantity'] ?? null;
         $this->localite = $this->notification->data['localite'] ?? null;
         $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
+        //achat direct dans notif show
+        $this->produit = ProduitService::findOrFail($this->idProd);
+        $this->userWallet = Wallet::where('user_id', $this->user)->first();
+        $this->nameProd = $this->produit->name;
+        $this->userTrader = $this->produit->user->id;
+        $this->idProd = $this->produit->id;
+        $this->prix = $this->produit->prix;
 
         $this->prixProd = $this->notification->data['prixProd'] ?? null;
 
@@ -200,9 +205,10 @@ class NotificationShow extends Component
             || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
             || $this->notification->type === 'App\Notifications\AppelOffre'
             || $this->notification->type === 'App\Notifications\OffreNotifGroup'
+            || $this->notification->type === 'App\Notifications\NegosTerminer'
             ||  $this->notification->type === 'App\Notifications\OffreNotif')
             ? null
-            : (ProduitService::find($this->notification->data['idProd']) ?? null);
+            : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
 
         // $this->produitfat = ProduitService::find($this->notification->data['idProd']) ?? null;
         $this->idProd = $this->notification->data['idProd'] ?? null;
@@ -219,7 +225,10 @@ class NotificationShow extends Component
 
         //code unique recuperation dans render
         // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['code_unique'] ?? $this->notification->data['code_livr'] ?? null;
+        $codeUnique = $this->notification->data['code_unique']
+            ?? $this->notification->data['code_livr']
+            ?? $this->notification->data['Uniquecode'] ?? null;
+
         $this->comments = Comment::with('user')
             ->where('code_unique', $codeUnique)
             ->whereNotNull('prixTrade')
@@ -261,7 +270,6 @@ class NotificationShow extends Component
 
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
 
-        // Recherche dans la table produit_service
         // Recherche dans la table produit_service pour récupérer l'ID du produit
         if (isset($this->notification->data['nameprod']) && isset($this->notification->data['id_trader'])) {
             $produitService = ProduitService::where('name', $this->notification->data['nameprod'])
@@ -272,6 +280,67 @@ class NotificationShow extends Component
                 $this->idProd2 = $produitService->id;
             }
         }
+    }
+
+    public function AchatDirectForm()
+    {
+        $validated = $this->validate([
+            'nameProd' => 'required|string',
+            'quantite' => 'required|integer',
+            'prix' => 'required|numeric',
+            'localite' => 'required|string|max:255',
+            'userTrader' => 'required|numeric',
+            'specificite' => 'required|string',
+            'idProd' => 'required|numeric',
+        ]);
+        $userId = Auth::id();
+
+        $montanTotal = $validated['quantite'] * $validated['prix'];
+
+        if (!$userId) {
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
+
+        $userWallet = Wallet::where('user_id', $userId)->first();
+
+        if (!$userWallet) {
+            session()->flash('error', 'Portefeuille introuvable.');
+            return;
+        }
+
+        $requiredAmount = $montanTotal;
+
+        if ($userWallet->balance < $requiredAmount) {
+            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
+            return;
+        }
+
+
+        $achat = AchatDirect::create([
+            'nameProd' => $validated['nameProd'],
+            'quantité' => $validated['quantite'],
+            'montantTotal' => $montanTotal,
+            'localite' => $validated['localite'],
+            'userTrader' => $validated['userTrader'],
+            'specificite' => $this->specificite,
+            'idProd' => $validated['idProd'],
+        ]);
+
+        $userWallet->decrement('balance', $requiredAmount);
+
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $userId;
+        $transaction->receiver_user_id = $validated['userTrader'];
+        $transaction->type = 'Gele';
+        $transaction->amount = $montanTotal;
+        $transaction->save();
+
+        $owner = User::find($validated['userTrader']);
+        Notification::send($owner, new AchatBiicf($achat));
+
+        $this->reset(['quantite', 'localite', 'specificite']);
+        session()->flash('success', 'Achat passé avec succès.');
     }
 
 
@@ -823,7 +892,7 @@ class NotificationShow extends Component
             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
             Countdown::create([
                 'user_id' => $this->id_trader,
-                'userSender' => $this->idsender,
+                'userSender' => $this->namefourlivr,
                 'start_time' => now(),
                 'code_unique' => $this->code_unique,
                 'difference' => $this->difference,
@@ -930,6 +999,56 @@ class NotificationShow extends Component
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
+    }
+
+    public function commentoffgroup()
+    {
+        try {
+            // Récupérer l'utilisateur authentifié
+            $this->validate([
+                'prixTrade' => 'required|numeric',
+                'id_trader' => 'required|numeric',
+                'code_unique' => 'required|string',
+                'idProd' => 'required|numeric',
+            ]);
+
+
+            // Création du commentaire
+            Comment::create([
+                'prixProd' => $this->prixTrade,
+                'prixTrade' => $this->prixTrade,
+                'id_trader' => $this->id_trader,
+                'code_unique' => $this->code_unique,
+                'id_prod' => $this->idProd,
+            ]);
+
+            $produit = ProduitService::with('user')->find($this->idProd);
+
+            if ($produit) {
+                $userId = $produit->user_id; // Directement depuis l'objet ProduitService
+            }
+            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+            $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+                ->where('notified', false)
+                ->orderBy('start_time', 'desc')
+                ->first();
+
+            if (!$existingCountdown) {
+                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+                Countdown::create([
+                    'user_id' => $this->id_trader,
+                    'userSender' => $userId,
+                    'start_time' => now(),
+                    'code_unique' => $this->code_unique,
+                    'difference' => 'offredirect',
+                ]);
+            }
+            $this->reset(['prixTrade']);
+        } catch (\Exception $e) {
+            // dd($e)->getMessage();
+            // En cas d'erreur, redirection avec un message d'erreur
+            return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
+        }
     }
 
 

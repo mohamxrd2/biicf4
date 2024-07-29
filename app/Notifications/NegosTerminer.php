@@ -27,7 +27,11 @@ class NegosTerminer extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'offre' => $this->offre,
+            'code_unique' => $this->offre['code_unique'] ?? null,
+            'prixProd' => $this->offre['prixProd'] ?? null,
+            'idProd' => $this->offre['idProd'] ?? null,
+            'id_trader' => $this->offre['id_trader'] ?? null,
+            'id_sender' => $this->offre['id_sender'] ?? null,
         ];
     }
 }

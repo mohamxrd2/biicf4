@@ -1,87 +1,133 @@
 <div>
-    @if ($notification->type === 'App\Notifications\AchatGroupBiicf')
-
-        <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
-
-            <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
-                </span>{{ $notification->data['nameProd'] }}</h2>
-            <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantité'] }}</p>
-            <p class="mb-3"><strong>Prix totale:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa</p>
-            @php
-                $prixArtiche = $notification->data['montantTotal'] ?? 0;
-                $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
-            @endphp
-
-            <p class="mb-3"><strong>Somme reçu :</strong> {{ number_format($sommeRecu, 2) }} Fcfa</p>
-
-            <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
-                class="mb-3 text-blue-700 hover:underline flex">
-                Voir le produit
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                </svg>
-            </a>
-            <p class="my-3 text-sm text-gray-500">Vous aurez debité 10% sur le prix de la marchandise</p>
-
-
-            <div class="flex gap-2">
-
-
-                @if ($notification->reponse)
-                    <div class="w-full bg-gray-300 border p-2 rounded-md">
-                        <p class="text-md font-medium text-center">Réponse envoyée</p>
-                    </div>
-                @else
-                    <form wire:submit.prevent="accepterAGrouper">
-                        @csrf
-                        @foreach ($notification->data['userSender'] as $index => $userId)
-                            <input type="hidden" name="userSender[]" value="{{ $userId }}"
-                                wire:model="userSender.{{ $index }}">
-                        @endforeach
-
-                        <input type="text" name="montantTotal" value="{{ $notification->data['montantTotal'] }}"
-                            wire:model="montantTotal">
-                        <input type="text" name="idProd" value="{{ $notification->data['idProd'] }}"
-                            wire:model="idProd">
-                        <input type="text" name="message"
-                            value="commande de produit en cours /Préparation à la livraison" wire:model="messageA">
-                        <input type="text" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
-
-                        <!-- Bouton accepter -->
-                        <button id="btn-accepter" type="submit"
-                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">
-                            Accepter
-                        </button>
-                    </form>
-
-                    <form wire:submit.prevent="refuserAGrouper">
-                        @csrf
-
-                        @foreach ($notification->data['userSender'] as $index => $userId)
-                            <input type="hidden" name="userSender[]" value="{{ $userId }}"
-                                wire:model="userSender.{{ $index }}">
-                        @endforeach
-
-                        <input type="text" name="montantTotal" value="{{ $notification->data['montantTotal'] }}"
-                            wire:model="montantTotal">
-                        <input type="text" name="idProd" value="{{ $notification->data['idProd'] }}"
-                            wire:model="idProd">
-                        <input type="text" name="message" value="Achat refuser / Produits plus disponible"
-                            wire:model="messageR">
-                        <input type="text" name="notifId" value="{{ $notification->id }}" wire:model="notifId">
-
-                        <button id="btn-refuser" type="submit"
-                            class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">
-                            Refuser
-                        </button>
-                    </form>
-
-                @endif
-
+    @if ($notification->type === 'App\Notifications\NegosTerminer')
+        @if (session('success'))
+            <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
+                {{ session('success') }}
             </div>
+        @endif
 
+        <!-- Afficher les messages d'erreur -->
+        @if (session('error'))
+            <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
+                {{ session('error') }}
+            </div>
+        @endif
+        <div class="flex items-center justify-center h-screen bg-gray-100">
+
+            <div class="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">PASSEZ A L'ACHAT DIRECT</h2>
+                <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
+                    class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
+                    @csrf
+                    <div class="space-y-3 mb-3 w-full">
+                        <input type="number" id="quantityInput" name="quantité" wire:model.defer="quantite"
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Quantité" data-min="{{ $produit->qteProd_min }}"
+                            data-max="{{ $produit->qteProd_max }}" oninput="updateMontantTotalDirect()" required>
+                    </div>
+                    <div class="space-y-3 mb-3 w-full">
+                        <input type="text" id="locationInput" name="localite" wire:model.defer="localite"
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Lieu de livraison" required>
+                    </div>
+
+                    <div class="space-y-3 mb-3 w-full">
+                        <input type="text" id="specificite" name="specificite" wire:model.defer="specificite"
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Specificité (Facultatif)">
+                    </div>
+
+                    <input type="hidden" name="nameProd" wire:model.defer="nameProd">
+                    <input type="hidden" name="userSender" wire:model.defer="userTrader">
+                    <input type="hidden" name="idProd" wire:model.defer="idProd">
+                    <input type="hidden" name="prix" wire:model.defer="prix">
+
+                    <div class="flex justify-between px-4 mb-3 w-full">
+                        <p class="font-semibold text-sm text-gray-500">Prix total:</p>
+                        <p class="text-sm text-purple-600" id="montantTotal">0 FCFA</p>
+                        <input type="hidden" name="montantTotal" id="montant_total_input">
+                    </div>
+
+                    <p id="errorMessage" class="text-sm text-center text-red-500 hidden">Erreur</p>
+
+                    <div class="w-full text-center mt-3">
+                        <button type="reset"
+                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-gray-200 text-black hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none">Annulé</button>
+                        <button type="submit" id="submitButton"
+                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
+                            wire:loading.attr="disabled" disabled>
+
+                            <span wire:loading.remove>Envoyer</span>
+                            <span wire:loading>Envoi en cours...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const btnAchatDirect = document.getElementById('btnAchatDirect');
+                const formAchatDirect = document.getElementById('formAchatDirect');
+
+                // Vous pouvez ajouter des écouteurs d'événements ou d'autres actions ici
+                if (btnAchatDirect) {
+                    btnAchatDirect.addEventListener('click', () => {
+                        toggleVisibility();
+                    });
+                }
+            });
+
+            function toggleVisibility() {
+                const contentDiv = document.getElementById('formAchatDirect');
+
+                if (contentDiv.classList.contains('hidden')) {
+                    contentDiv.classList.remove('hidden');
+                    // Forcer le reflow pour activer la transition
+                    contentDiv.offsetHeight;
+                    contentDiv.classList.add('show');
+                } else {
+                    contentDiv.classList.remove('show');
+                    contentDiv.addEventListener('transitionend', () => {
+                        contentDiv.classList.add('hidden');
+                    }, {
+                        once: true
+                    });
+                }
+            }
+
+            function updateMontantTotalDirect() {
+                const quantityInput = document.getElementById('quantityInput');
+                const price = parseFloat(quantityInput.getAttribute('data-price')) || 0;
+                const minQuantity = parseInt(quantityInput.getAttribute('data-min'), 10);
+                const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
+                const quantity = parseInt(quantityInput.value, 10);
+                const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
+                const montantTotalElement = document.getElementById('montantTotal');
+                const errorMessageElement = document.getElementById('errorMessage');
+                const submitButton = document.getElementById('submitButton');
+                const montantTotalInput = document.getElementById('montant_total_input');
+
+                const userBalance = parseFloat("{{ $userWallet->balance }}") || 0;
+
+                if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
+                    errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
+                    errorMessageElement.classList.remove('hidden');
+                    montantTotalElement.innerText = '0 FCFA';
+                    submitButton.disabled = true;
+                } else if (montantTotal > userBalance) {
+                    errorMessageElement.innerText =
+                        `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
+                    errorMessageElement.classList.remove('hidden');
+                    montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+                    submitButton.disabled = true;
+                } else {
+                    errorMessageElement.classList.add('hidden');
+                    montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+                    montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+                    submitButton.disabled = false;
+                }
+            }
+        </script>
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
@@ -235,10 +281,6 @@
                 </div>
 
 
-
-
-
-
             </div>
             <div class="lg:col-span-1 col-span-2">
 
@@ -246,9 +288,6 @@
 
                     <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
                         uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-
-
 
 
                         <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
@@ -357,7 +396,7 @@
 
 
 
-            {{-- <script>
+            <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const prixTradeInput = document.getElementById('prixTrade');
                     const submitBtn = document.getElementById('submitBtnAppel');
@@ -416,7 +455,7 @@
 
                     }
                 });
-            </script> --}}
+            </script>
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
         <div class="grid grid-cols-2 gap-4 p-4">
@@ -694,7 +733,7 @@
 
                 </div>
 
-                <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
+                <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
                     class=" bg-blue-500 text-white p-2 rounded font-medium hover:bg-blue-600  mt-10">
                     Voir le produit
                 </a>
@@ -753,25 +792,37 @@
 
 
                             <!-- add comment -->
-                            <form action="{{ route('biicf.offgrpcomment') }}" method="post" id="commentForm">
+                            <form wire:submit.prevent="commentoffgroup">
                                 @csrf
                                 <div
                                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    {{-- <input type="hidden" name="code_unique" value="{{ $codeUnique }}"> --}}
-                                    {{-- <input type="hidden" name="id_trader" value="{{ $user->id }}"> --}}
-                                    <input type="number" name="prixTrade" id="prixTrade"
+
+                                    <input type="hidden" wire:model="idProd">
+                                    <input type="hidden" wire:model="code_unique">
+                                    <input type="hidden" wire:model="id_trader">
+                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                         placeholder="Faire une offre..." required>
 
 
-                                    <button type="submit" id="submitBtn"
-                                        class=" justify-center p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                        <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                            viewBox="0 0 18 20">
-                                            <path
-                                                d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                        </svg>
+                                    <button type="submit" id="submitBtnAppel"
+                                        class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
+                                        <span wire:loading.remove>
+                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
+                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                fill="currentColor" viewBox="0 0 18 20">
+                                                <path
+                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                            </svg>
+                                        </span>
+                                        <span wire:loading>
+                                            <svg class="w-5 h-5 animate-spin inline-block"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                            </svg>
+                                        </span>
                                     </button>
                                 </div>
 

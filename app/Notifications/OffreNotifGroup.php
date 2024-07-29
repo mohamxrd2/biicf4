@@ -41,7 +41,7 @@ class OffreNotifGroup extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'produit_id' => $this->produit->id,
+            'idProd' => $this->produit->id,
             'produit_name' => $this->produit->name,
             'produit_conditionnement' => $this->produit->condProd,
             'produit_livraison' => $this->produit->LivreCapProd,
