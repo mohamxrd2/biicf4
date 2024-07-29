@@ -4,6 +4,7 @@
         <p><strong>Nom & prénom :</strong> {{ $livraison->user->name }}</p>
         <p><strong>Véhicule :</strong> {{ $livraison->vehicle }}</p>
         <p><strong>Expérience :</strong> {{ $livraison->experience }}</p>
+        <p><strong>photo :</strong> <img src="{{ asset('post/all') }}/{{ $livraison->identity }}"></p>
         <p><strong>État :</strong>
             @if ($livraison->etat == 'En cours')
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-yellow-800 bg-yellow-100">{{ $livraison->etat }}</span>
