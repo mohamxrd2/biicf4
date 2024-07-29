@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\livraisons;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class PostulerComponent extends Component
 {
@@ -24,7 +25,6 @@ class PostulerComponent extends Component
     public $etat = 'En cours';
 
     public $livraison;
-
 
     protected $rules = [
         'experience' => 'required|string',
@@ -64,11 +64,10 @@ class PostulerComponent extends Component
         ];
     }
 
-
     public function mount()
     {
         $this->livraison = livraisons::where('user_id', Auth::id())->first();
-        
+
         if ($this->livraison) {
             $this->experience = $this->livraison->experience;
             $this->license = $this->livraison->license;
@@ -88,30 +87,41 @@ class PostulerComponent extends Component
     {
         $this->validate();
 
-        // Sauvegarde des fichiers
-        $identityPath = $this->identity->store('identities');
-        $permisPath = $this->permis->store('permis');
-        $assurancePath = $this->assurance->store('assurances');
+        $livraisons = $this->livraison ?: new livraisons();
+        $livraisons->user_id = Auth::id();
+        $livraisons->experience = $this->experience;
+        $livraisons->license = $this->license;
+        $livraisons->vehicle = $this->vehicle;
+        $livraisons->matricule = $this->matricule;
+        $livraisons->availability = $this->availability;
+        $livraisons->zone = json_encode(explode(';', $this->zone));
+        $livraisons->comments = $this->comments;
+        $livraisons->etat = $this->etat;
 
-        livraisons::create([
-            'user_id' => Auth::id(),
-            'experience' => $this->experience,
-            'license' => $this->license,
-            'vehicle' => $this->vehicle,
-            'matricule' => $this->matricule,
-            'availability' => $this->availability,
-            'zone' => json_encode(explode(';', $this->zone)), // Convertir en JSON
-            'comments' => $this->comments,
-            'identity' => $identityPath ?? 'null',
-            'permis' => $permisPath ?? 'null',
-            'assurance' => $assurancePath ?? 'null',
-            'etat' => $this->etat,
-        ]);
+        // Handle file uploads
+        if ($this->identity) {
+            $identityImageName = Carbon::now()->timestamp . '_1.' . $this->identity->extension();
+            $this->identity->storeAs('all', $identityImageName);
+            $livraisons->identity = $identityImageName;
+        }
 
-        // Réinitialiser les champs du formulaire
+        if ($this->permis) {
+            $permisImageName = Carbon::now()->timestamp . '_2.' . $this->permis->extension();
+            $this->permis->storeAs('all', $permisImageName);
+            $livraisons->permis = $permisImageName;
+        }
+
+        if ($this->assurance) {
+            $assuranceImageName = Carbon::now()->timestamp . '_3.' . $this->assurance->extension();
+            $this->assurance->storeAs('all', $assuranceImageName);
+            $livraisons->assurance = $assuranceImageName;
+        }
+
+        $livraisons->save();
+
         $this->reset([
-            'experience', 'license', 'vehicle', 'matricule', 
-            'availability', 'zone', 'comments', 'identity', 
+            'experience', 'license', 'vehicle', 'matricule',
+            'availability', 'zone', 'comments', 'identity',
             'permis', 'assurance', 'etat'
         ]);
 
