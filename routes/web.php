@@ -1,10 +1,12 @@
 <?php
 
+use App\Livewire\RechargeAgent;
+use App\Livewire\DetailLivraison;
 use App\Http\Controllers\OffreNegos;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsoController;
-
 use App\Http\Controllers\AdminsController;
 use App\Http\Controllers\AchatGroupController;
 use App\Http\Controllers\AdminAgentController;
@@ -21,7 +23,6 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
-use App\Livewire\RechargeAgent;
 
 Route::get('/', function () {
     return view('index');
@@ -103,6 +104,10 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('demande', function(){
         return view ('admin.demande');
     })->name('admin.demande');
+
+    Route::get('/livraison/{id}', DetailLivraison::class)->name('livraison.show');
+
+    
 });
 
 //email
@@ -184,6 +189,8 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('postuler', function(){
         return view ('biicf.postuler');
     })->name('biicf.postuler');
+
+
 
 });
 
