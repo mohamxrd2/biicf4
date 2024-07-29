@@ -50,6 +50,12 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/consommation-produit', [ConsoController::class, 'adminConsProd'])->name('admin.conso-produit');
     Route::get('/consommation-service', [ConsoController::class, 'adminConsServ'])->name('admin.conso-service');
 
+    //consommation show
+    Route::get('/consommation/{id}', [UserController::class, 'consoShow'])->name('consommation.consoShow');
+
+    //consommation show
+    Route::post('/consommation/{id}', [UserController::class, 'consoEtat'])->name('consommation.consoEtat');
+
     Route::get('/profile', function () {
         return view('admin.profile');
     })->name('admin.profile');
@@ -85,11 +91,6 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/produit/{id}', [UserController::class, 'etat'])->name('produit.etat');
 
 
-    //consommation show
-    Route::get('/consommation/{id}', [UserController::class, 'consoShow'])->name('consommation.consoShow');
-
-    //consommation show
-    Route::post('/consommation/{id}', [UserController::class, 'consoEtat'])->name('consommation.consoEtat');
 
 
 
@@ -101,13 +102,12 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/ajouter-client', [UserController::class, 'createPageAdmin'])->name('clients.create');
     Route::post('/ajouter-client', [UserController::class, 'createUserAdmin'])->name('clients.store');
 
-    Route::get('demande', function(){
-        return view ('admin.demande');
-    })->name('admin.demande');
 
-    Route::get('/livraison/{id}', DetailLivraison::class)->name('livraison.show');
+    Route::get('/demande', [UserController::class, 'livraisonliste'])->name('admin.demande');
+    Route::get('demande-livraison/{id}', [UserController::class, 'detaillivraison'])->name('livraison.show');
 
-    
+
+
 });
 
 //email
@@ -144,7 +144,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::delete('publication/supprimer/{produit}', [ProduitServiceController::class, 'destroyProductBiicf'])->name('biicf.pubdeleteBiicf');
     //la vue du formulaire
     Route::get('publication/{id}', [ProduitServiceController::class, 'pubDet'])->name('biicf.postdet');
-    
+
 
     Route::get('consommation', [ConsoController::class, 'consoBiicf'])->name('biicf.conso');
     Route::post('consommation/ajouter', [UserController::class, 'storeCons'])->name('biicf.storeCons');

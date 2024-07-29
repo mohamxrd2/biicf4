@@ -440,7 +440,6 @@ class UserController extends Controller
         return back()->with('success', 'Administrateur mis à jour avec succès.');
     }
 
-
     public function createPageBiicf()
     {
         return view('auth.signup');
@@ -619,6 +618,15 @@ class UserController extends Controller
             dd($e->getMessage());
             return back()->withErrors(['error' => 'Une erreur est survenue lors de la mise à jour de la photo de profil.'])->withInput();
         }
+    }
+
+    public function livraisonliste()
+    {
+        return view('admin.demande');
+    }
+    public function detaillivraison($id)
+    {
+        return view('admin.detail-livraison', compact('id'));
     }
 
 }

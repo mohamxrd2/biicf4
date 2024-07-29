@@ -25,7 +25,7 @@
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Etat</th>
-                                
+
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -34,7 +34,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                                        <a href="{{ route('livraison.show', $livraison->id) }}" class="hover:underline">
                                         {{ $livraison->user->name }}
-                                       </a>  
+                                       </a>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                         {{ $livraison->vehicle }}</td>
@@ -58,10 +58,11 @@
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-gray-800 bg-gray-100 dark:text-gray-400 dark:bg-gray-200">{{ $livraison->etat }}</span>
                                         @endif
                                     </td>
-                                   
+
                                 </tr>
                             @endforeach
                         </tbody>
+
                     </table>
                 </div>
             </div>

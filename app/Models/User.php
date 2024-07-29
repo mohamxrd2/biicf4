@@ -109,8 +109,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(Countdown::class,'user_id');
     }
-    public function userquantites(): HasMany
+    public function userQuantites()
     {
-        return $this->hasMany(UserQuantite::class, 'user_id');
+        return $this->hasMany(userquantites::class, 'user_id');
+    }
+
+    public function livraisons()
+    {
+        return $this->hasMany(livraisons::class, 'user_id'); // Correction ici
     }
 }
