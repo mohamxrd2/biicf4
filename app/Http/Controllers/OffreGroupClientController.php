@@ -61,29 +61,5 @@ class OffreGroupClientController extends Controller
         return $code;
     }
 
-    public function commentoffgroup(Request $request)
-    {
-        try {
-            // Validation des données du formulaire
-            $validated = $request->validate([
-                'prixTrade' => 'required|integer',
-                'id_trader' => 'required|integer|exists:users,id',
-                'code_unique' => 'required|string',
-            ]);
 
-            // Création du commentaire
-            Comment::create([
-                'prixTrade' => $validated['prixTrade'],
-                'id_trader' => $validated['id_trader'],
-                'code_unique' => $validated['code_unique'],
-            ]);
-
-            // Redirection avec un message de succès
-            return redirect()->back();
-        } catch (\Exception $e) {
-            // dd($e)->getMessage();
-            // En cas d'erreur, redirection avec un message d'erreur
-            return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
-        }
-    }
 }

@@ -1035,7 +1035,7 @@
         </div>
     @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
-
+            <h1 class="text-xl font-medium mb-4">Ajout de quantite</h1>
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre du produit:
                     {{ $notification->data['produit_name'] }}</span></h2>
 
@@ -1055,16 +1055,16 @@
                 </svg>
             </a>
 
-            <form action="{{ route('biicf.addquantity') }}" method="POST">
+            <form wire:submit.prevent="add">
                 @csrf
                 <div class="flex">
                     <input type="number"
                         class="py-3 px-4 block w-full mr-3 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                        placeholder="Ajouter une quantité" name="quantite" id="quantiteInput" required>
-                    <input type="hidden" name="name" value="{{ $notification->data['produit_name'] }}">
-                    <input type="hidden" name="produit_id" value="{{ $notification->data['produit_id'] }}">
+                        placeholder="Ajouter une quantité" name="quantitE" id="quantiteInput" wire:model="quantitE" required>
+                    <input type="hidden" name="name" wire:model="name" >
+                    <input type="hidden" name="produit_id" wire:model="produit_id" >
 
-                    <input type="hidden" name="code_unique" value="{{ $notification->data['code_unique'] }}">
+                    <input type="hidden" name="code_unique" wire:model="code_unique"  >
 
                     <button type="submit" class="bg-purple-500 text-white px-4 rounded-md"
                         id="submitBtn">Ajouter</button>
@@ -1088,6 +1088,13 @@
                 </div>
 
             </div>
+            
+            <script>
+                window.addEventListener('form-submitted', function () {
+                    // Reload the page
+                    location.reload();
+                });
+            </script>
 
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -1137,7 +1144,7 @@
                 </span>{{ $produit->name }}</h2>
             <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantite'] }}</p>
 
-            <p class="mb-3"><strong>Prix d'artiche:</strong>{{ number_format($prixArticleNegos, 2, ',', ' ') }}
+            <p class="mb-3"><strong>Prix de l'article:</strong>{{ number_format($prixArticleNegos, 2, ',', ' ') }}
                 Fcfa
             </p>
 

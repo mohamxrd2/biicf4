@@ -118,6 +118,13 @@ class NotificationShow extends Component
     public $userWallet;
     public $nameProd;
     public $prix;
+    public $sommeQuantites;
+    public $nombreParticp;
+    public $name;
+    public $produit_id;
+    public $oldestNotificationDate;
+    public $prixArticleNegos;
+    public $quantitE;
 
 
     protected $rules = [
@@ -147,13 +154,8 @@ class NotificationShow extends Component
         $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
-        //achat direct dans notif show
-        $this->produit = ProduitService::findOrFail($this->idProd);
-        $this->userWallet = Wallet::where('user_id', $this->user)->first();
-        $this->nameProd = $this->produit->name;
-        $this->userTrader = $this->produit->user->id;
-        $this->idProd = $this->produit->id;
-        $this->prix = $this->produit->prix;
+
+
 
         $this->prixProd = $this->notification->data['prixProd'] ?? null;
 
@@ -206,6 +208,8 @@ class NotificationShow extends Component
             || $this->notification->type === 'App\Notifications\AppelOffre'
             || $this->notification->type === 'App\Notifications\OffreNotifGroup'
             || $this->notification->type === 'App\Notifications\NegosTerminer'
+            || $this->notification->type === 'App\Notifications\OffreNegosNotif'
+            || $this->notification->type === 'App\Notifications\OffreNegosDone'
             ||  $this->notification->type === 'App\Notifications\OffreNotif')
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
@@ -228,6 +232,20 @@ class NotificationShow extends Component
         $codeUnique = $this->notification->data['code_unique']
             ?? $this->notification->data['code_livr']
             ?? $this->notification->data['Uniquecode'] ?? null;
+        //offre negocier grouper
+        $this->name = $this->notification->data['produit_name'] ?? null;
+        $this->produit_id = $this->notification->data['produit_id'] ?? null;
+        $notificationsNegos = DatabaseNotification::where('type', 'App\Notifications\OffreNegosNotif')
+            ->where(function ($query) use ($codeUnique) {
+                $query->where('data->code_unique', $codeUnique);
+            })
+            ->get();
+        $this->oldestNotificationDate = $notificationsNegos->min('created_at');
+        $this->sommeQuantites = OffreGroupe::where('code_unique', $codeUnique)
+            ->sum('quantite');
+        $this->nombreParticp = OffreGroupe::where('code_unique', $codeUnique)
+            ->distinct('user_id')
+            ->count();
 
         $this->comments = Comment::with('user')
             ->where('code_unique', $codeUnique)
@@ -280,10 +298,21 @@ class NotificationShow extends Component
                 $this->idProd2 = $produitService->id;
             }
         }
+        //achat direct dans notif show
+        $this->produit = ProduitService::findOrFail($this->produit_id) ?? ProduitService::findOrFail($this->produit_id) ?? null;
+        $this->nameProd = $this->produit->name;
+        $this->userTrader = $this->produit->user->id;
+        $this->idProd = $this->produit->id;
+        $this->prix = $this->produit->prix;
+        $this->userWallet = Wallet::where('user_id', $this->user)->first();
+        $this->prixArticleNegos = $this->notification->data['quantite'] * $this->produit->prix;
+
     }
 
     public function AchatDirectForm()
     {
+
+
         $validated = $this->validate([
             'nameProd' => 'required|string',
             'quantite' => 'required|integer',
@@ -341,6 +370,35 @@ class NotificationShow extends Component
 
         $this->reset(['quantite', 'localite', 'specificite']);
         session()->flash('success', 'Achat passé avec succès.');
+    }
+    public function add()
+    {
+        $this->validate([
+            'quantitE' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'produit_id' => 'required|numeric',
+            'code_unique' => 'required|string',
+        ]);
+        // Récupérer l'identifiant de l'utilisateur connecté
+        $user_id = Auth::guard('web')->id();
+
+        $offreGroupeExistante = OffreGroupe::where('code_unique', $this->code_unique)->first();
+
+        $differance = $offreGroupeExistante->differance;
+
+
+        // Créer une nouvelle instance de OffreGroupe
+        OffreGroupe::create([
+            'name' => $this->name,
+            'quantite' =>  $this->quantitE,
+            'code_unique' =>  $this->code_unique,
+            'produit_id' =>  $this->produit_id,
+            'user_id' =>  $user_id,
+            'differance' => $differance ?? null,
+        ]);
+        $this->reset(['quantitE']);
+        // Trigger JavaScript event
+        $this->dispatch('form-submitted');
     }
 
 
@@ -1054,7 +1112,6 @@ class NotificationShow extends Component
 
     public function render()
     {
-
         return view('livewire.notification-show');
     }
 }

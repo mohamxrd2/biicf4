@@ -22,7 +22,7 @@ class OffreNegosNotif extends Notification
     public function __construct( $offrenegos)
     {
         $this->offrenegos = $offrenegos;
-      
+
     }
 
 
