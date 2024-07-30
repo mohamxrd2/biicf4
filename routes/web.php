@@ -107,7 +107,6 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('demande-livraison/{id}', [UserController::class, 'detaillivraison'])->name('livraison.show');
 
 
-
 });
 
 //email

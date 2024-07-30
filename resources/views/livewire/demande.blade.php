@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.15000ms>
     {{-- Because she competes with no one, no one can compete with her. --}}
     <div class="mb-6 w-full">
         <h1 class=" text-center font-bold text-2xl">Liste de demande pour être livreur</h1>
@@ -62,7 +62,6 @@
                                 </tr>
                             @endforeach
                         </tbody>
-
                     </table>
                 </div>
             </div>
