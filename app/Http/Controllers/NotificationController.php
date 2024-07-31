@@ -96,7 +96,7 @@ class NotificationController extends Controller
             // Compter le nombre de commentaires
             $commentCount = $comments->count();
 
-            // Vérifier si le temps est écoulé /////\\\///////
+            ////Vérifier si le temps est écoulé /////\\\///////
 
             if ($notification->type === 'App\Notifications\AppelOffre') {
                 Log::info('Notification type is App\Notifications\AppelOffre');
@@ -275,88 +275,89 @@ class NotificationController extends Controller
                     }
                 }
             }elseif ($notification->type === 'App\Notifications\OffreNegosNotif') {
-                $prixArticleNegos = null;
-                $uniqueCode = $notification->data['code_unique'];
+                // $prixArticleNegos = null;
+                // $uniqueCode = $notification->data['code_unique'];
 
-                $offreGroupeExistante = OffreGroupe::where('code_unique', $uniqueCode)->first();
+                // $offreGroupeExistante = OffreGroupe::where('code_unique', $uniqueCode)->first();
 
-                $differance = $offreGroupeExistante->differance;
+                // $differance = $offreGroupeExistante->differance;
 
-                $notificationsNegos = DatabaseNotification::where('type', 'App\Notifications\OffreNegosNotif')
-                    ->where(function ($query) use ($uniqueCode) {
-                        $query->where('data->code_unique', $uniqueCode);
-                    })
-                    ->get();
+                // $notificationsNegos = DatabaseNotification::where('type', 'App\Notifications\OffreNegosNotif')
+                //     ->where(function ($query) use ($uniqueCode) {
+                //         $query->where('data->code_unique', $uniqueCode);
+                //     })
+                //     ->get();
 
-                $oldestNotificationDate = $notificationsNegos->min('created_at');
+                // $oldestNotificationDate = $notificationsNegos->min('created_at');
 
-                $tempsEcoule = $oldestNotificationDate ? Carbon::parse($oldestNotificationDate)->addMinutes(1) : null;
+                // $tempsEcoule = $oldestNotificationDate ? Carbon::parse($oldestNotificationDate)->addMinutes(1) : null;
 
-                // Vérifier si $tempsEcoule est écoulé
-                $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+                // // Vérifier si $tempsEcoule est écoulé
+                // $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
 
-                $sommeQuantites = OffreGroupe::where('code_unique', $uniqueCode)
-                    ->sum('quantite');
+                // $sommeQuantites = OffreGroupe::where('code_unique', $uniqueCode)
+                //     ->sum('quantite');
 
-                $nombreParticp = OffreGroupe::where('code_unique', $uniqueCode)
-                    ->distinct('user_id')
-                    ->count();
-                $produit = ProduitService::find($notification->data['produit_id']);
+                // $nombreParticp = OffreGroupe::where('code_unique', $uniqueCode)
+                //     ->distinct('user_id')
+                //     ->count();
+                // $produit = ProduitService::find($notification->data['produit_id']);
 
-                $notificationExists = NotificationLog::where('code_unique', $uniqueCode)->exists();
+                // $notificationExists = NotificationLog::where('code_unique', $uniqueCode)->exists();
 
-                if ($isTempsEcoule && !$notificationExists) {
-                    $data = [
-                        'quantite' => $sommeQuantites,
-                        'produit_id' => $notification->data['produit_id'],
-                        'produit_name' => $notification->data['produit_name'],
-                        'code_unique' => $uniqueCode
-                    ];
-                    if ($produit) {
-                        // Récupérer le user_id du produit
-                        $user_id = $produit->user_id;
+                // if ($isTempsEcoule && !$notificationExists) {
+                //     $data = [
+                //         'quantite' => $sommeQuantites,
+                //         'produit_id' => $notification->data['produit_id'],
+                //         'produit_name' => $notification->data['produit_name'],
+                //         'code_unique' => $uniqueCode
+                //     ];
+                //     if ($produit) {
+                //         // Récupérer le user_id du produit
+                //         $user_id = $produit->user_id;
 
-                        // Utiliser $user_id comme nécessaire
-                    } else {
-                        // Gérer le cas où le produit n'est pas trouvé
-                        Log::error('Produit non trouvé pour l\'ID: ' . $notification->data['produit_id']);
-                        return redirect()->back()->with('error', 'Produit non trouvé pour l\'ID spécifié.');
-                    }
+                //         // Utiliser $user_id comme nécessaire
+                //     } else {
+                //         // Gérer le cas où le produit n'est pas trouvé
+                //         Log::error('Produit non trouvé pour l\'ID: ' . $notification->data['produit_id']);
+                //         return redirect()->back()->with('error', 'Produit non trouvé pour l\'ID spécifié.');
+                //     }
 
-                    $idsProprietaires = Consommation::where('name', $notification->data['produit_name'])
-                        ->where('id_user', '!=', $produit->user_id)
-                        ->where('statuts', 'Accepté')
-                        ->distinct()
-                        ->pluck('id_user')
-                        ->toArray();
+                //     $idsProprietaires = Consommation::where('name', $notification->data['produit_name'])
+                //         ->where('id_user', '!=', $produit->user_id)
+                //         ->where('statuts', 'Accepté')
+                //         ->distinct()
+                //         ->pluck('id_user')
+                //         ->toArray();
 
-                    // Recherchez le produit associé à l'ID de produit
+                //     // Recherchez le produit associé à l'ID de produit
+                //     Log::info('IDs to notify: ', $idsProprietaires);
 
-                    if ($differance) {
+                //     if ($differance) {
 
-                        foreach ($idsProprietaires as $conso) {
-                            $owner = User::find($conso);
+                //         foreach ($idsProprietaires as $conso) {
+                //             $owner = User::find($conso);
 
-                            if ($owner) {
-                                Notification::send($owner, new AppelOffre(['quantity' => $sommeQuantites, 'productName' => $notification->data['produit_name'], 'prodUsers' => $user_id]));
-                            } else {
-                                Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
-                            }
-                        }
-                    } else {
+                //             if ($owner) {
+                //                 Notification::send($owner, new AppelOffre(['quantity' => $sommeQuantites, 'productName' => $notification->data['produit_name'], 'prodUsers' => $user_id]));
+                //             } else {
+                //                 Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                //             }
+                //         }
+                //     } else {
 
-                        foreach ($idsProprietaires as $conso) {
-                            $owner = User::find($conso);
+                //         foreach ($idsProprietaires as $conso) {
+                //             $owner = User::find($conso);
 
-                            if ($owner) {
-                                Notification::send($owner, new OffreNegosDone($data));
-                            } else {
-                                Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
-                            }
-                        }
-                    }
-                    NotificationLog::create(['code_unique' => $uniqueCode]);
-                }
+                //             if ($owner) {
+                //                 Notification::send($owner, new OffreNegosDone($data));
+                //             } else {
+                //                 Log::error('Utilisateur non trouvé pour l\'ID: ' . $conso);
+                //             }
+                //         }
+                //     }
+                //     NotificationLog::create(['code_unique' => $uniqueCode]);
+                // }
             }elseif ($notification->type === 'App\Notifications\OffreNegosDone') {
                 $produit = ProduitService::find($notification->data['produit_id']);
 

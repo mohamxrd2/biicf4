@@ -232,6 +232,7 @@ class NotificationShow extends Component
         $codeUnique = $this->notification->data['code_unique']
             ?? $this->notification->data['code_livr']
             ?? $this->notification->data['Uniquecode'] ?? null;
+
         //offre negocier grouper
         $this->name = $this->notification->data['produit_name'] ?? null;
         $this->produit_id = $this->notification->data['produit_id'] ?? null;
@@ -282,9 +283,6 @@ class NotificationShow extends Component
             ->orderBy('start_time', 'desc')
             ->first();
 
-        if ($countdown) {
-            $this->countdownStarted = true;
-        }
 
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
 
@@ -298,17 +296,91 @@ class NotificationShow extends Component
                 $this->idProd2 = $produitService->id;
             }
         }
+
         //achat direct dans notif show
-        $this->produit = ProduitService::findOrFail($this->produit_id) ?? ProduitService::findOrFail($this->produit_id) ?? null;
-        $this->nameProd = $this->produit->name;
-        $this->userTrader = $this->produit->user->id;
-        $this->idProd = $this->produit->id;
-        $this->prix = $this->produit->prix;
-        $this->userWallet = Wallet::where('user_id', $this->user)->first();
-        $this->prixArticleNegos = $this->notification->data['quantite'] * $this->produit->prix;
+        // $this->produit = ProduitService::findOrFail($this->produit_id) ?? ProduitService::findOrFail($this->idProd) ?? null;
+        // $this->nameProd = $this->produit->name;
+        // $this->userTrader = $this->produit->user->id;
+        // $this->idProd = $this->produit->id;
+        // $this->prix = $this->produit->prix;
+        // $this->userWallet = Wallet::where('user_id', $this->user)->first();
+        // $this->prixArticleNegos = $this->notification->data['quantite'] * $this->produit->prix;
+        // Vérification avant de récupérer le produit
+        if (isset($this->notification->data['idProd']) || isset($this->notification->data['produit_id'])) {
+            $produitId = $this->notification->data['idProd'] ?? $this->notification->data['produit_id'] ?? null;
+            $this->produit = ProduitService::find($produitId);
 
+            if ($this->produit) {
+                $this->nameProd = $this->produit->name;
+                $this->userTrader = $this->produit->user->id;
+                $this->idProd = $this->produit->id;
+                $this->prix = $this->produit->prix;
+            } else {
+                $this->nameProd = $this->userTrader = $this->idProd = $this->prix = null;
+            }
+        } else {
+            $this->produit = null;
+            $this->nameProd = $this->userTrader = $this->idProd = $this->prix = null;
+        }
     }
+    public function acceptoffre()
+    {
+        $this->notification->update(['reponse' => 'accepte']);
 
+        // Retrieve the currently authenticated user
+        $userId = Auth::guard('web')->id();
+
+        // Retrieve the user's wallet
+        $userWallet = Wallet::where('user_id', $userId)->first();
+        if (!$userWallet) {
+            return redirect()->back()->with('error', 'Portefeuille de l\'utilisateur introuvable.');
+        }
+
+        $distinctUserIds = OffreGroupe::where('code_unique', $this->code_unique)
+            ->distinct()
+            ->pluck('user_id');
+
+        foreach ($distinctUserIds as $id_trader) {
+            if (is_null($this->prixArticleNegos) || is_null($id_trader) || is_null($this->notifId)) {
+                return redirect()->back()->with('error', 'Données manquantes dans la requête.');
+            }
+
+            $traderWallet = Wallet::where('user_id', $id_trader)->first();
+            if (!$traderWallet) {
+                return redirect()->back()->with('error', 'Portefeuille du trader introuvable.');
+            }
+
+            // Update trader's wallet
+            $traderWallet->increment('balance', $this->prixArticleNegos);
+
+            // Create transaction record for the trader
+            $this->createTransaction($userId, $id_trader, 'Reception', $this->prixArticleNegos);
+        }
+
+        // Update the user's wallet
+        $userWallet->decrement('balance', $this->prixArticleNegos);
+
+        // Create transaction record for the user
+        $this->createTransaction($userId, $id_trader, 'Envoie', $this->prixArticleNegos);
+
+        $data = [
+            'nameProd' => $this->nameProd,
+            'quantité' => $this->notification->data['quantite'],
+            'montantTotal' => $this->prixArticleNegos,
+            'localite' => User::findOrFail(Auth::id())->address,
+            'specificite' => null,
+            'userTrader' => $this->userTrader,
+            'userSender' => Auth::id(),
+            'photoProd' => $this->produit->photoProd1,
+            'idProd' => $this->produit_id,
+        ];
+        // Retrieve the trader's user model
+        $userTrader = User::find($this->userTrader);
+        if (!$userTrader) {
+            return redirect()->back()->with('error', 'Utilisateur du trader introuvable.');
+        }
+        Notification::send($userTrader, new AchatBiicf($data));
+    }
     public function AchatDirectForm()
     {
 

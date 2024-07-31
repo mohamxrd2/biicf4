@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Countdown;
 use App\Models\User;
 use App\Models\Wallet;
 
@@ -68,6 +69,21 @@ class OffreNegos extends Controller
             'user_id' => $user_id,
             'differance' => $differance ?? null,
         ]);
+        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+        $existingCountdown = Countdown::where('code_unique', $Uniquecode)
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'start_time' => now(),
+                'code_unique' => $Uniquecode,
+                'difference' => 'offregroupe',
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
     }

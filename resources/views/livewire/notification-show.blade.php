@@ -1060,11 +1060,12 @@
                 <div class="flex">
                     <input type="number"
                         class="py-3 px-4 block w-full mr-3 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                        placeholder="Ajouter une quantité" name="quantitE" id="quantiteInput" wire:model="quantitE" required>
-                    <input type="hidden" name="name" wire:model="name" >
-                    <input type="hidden" name="produit_id" wire:model="produit_id" >
+                        placeholder="Ajouter une quantité" name="quantitE" id="quantiteInput" wire:model="quantitE"
+                        required>
+                    <input type="hidden" name="name" wire:model="name">
+                    <input type="hidden" name="produit_id" wire:model="produit_id">
 
-                    <input type="hidden" name="code_unique" wire:model="code_unique"  >
+                    <input type="hidden" name="code_unique" wire:model="code_unique">
 
                     <button type="submit" class="bg-purple-500 text-white px-4 rounded-md"
                         id="submitBtn">Ajouter</button>
@@ -1088,9 +1089,9 @@
                 </div>
 
             </div>
-            
+
             <script>
-                window.addEventListener('form-submitted', function () {
+                window.addEventListener('form-submitted', function() {
                     // Reload the page
                     location.reload();
                 });
@@ -1166,20 +1167,40 @@
                         <p class="text-md font-medium text-center">Réponse envoyée</p>
                     </div>
                 @else
-                    <form id="form-accepter" action="{{ route('biicf.offNAccept') }}" method="POST">
-                        @csrf
-
-                        <input type="hidden" value="{{ $prixArticleNegos }}" name="prixarticle">
-                        <input type="hidden" value="{{ $notification->data['code_unique'] }}" name="code_unique">
-                        <input type="hidden" value="{{ $notification->id }}" name="notifId">
+                    <input type="hidden" wire:model="prixArticleNegos" name="prixarticle">
+                    <input type="hidden" wire:model="code_unique" name="code_unique">
+                    <input type="hidden" wire:model="notifId" name="notifId">
 
 
-                        <!-- Bouton accepter -->
-                        <button id="btn-accepter" type="submit"
-                            class="px-4 py-1 w-full text-white bg-green-500 rounded-xl hover:bg-green-700">
+                    <!-- Bouton accepter -->
+                    <button wire:click='acceptoffre'
+                        class="px-4 py-1 w-full text-white bg-green-500 rounded-xl hover:bg-green-700">
+                        <span wire:loading.remove>
                             Accepter
-                        </button>
-                    </form>
+                        </span>
+
+                        <span wire:loading>
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+                    </button>
+                    <button wire:click=''
+                        class="mt-4 px-4 py-1 w-full text-white bg-red-500 rounded-xl hover:bg-red-700">
+                        <span wire:loading.remove>
+                            refuser
+                        </span>
+
+                        <span wire:loading>
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+                    </button>
                 @endif
 
             </div>
@@ -2047,8 +2068,8 @@
 
                     <button wire:click='refuseColis'
                         class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6 mr-2">
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>

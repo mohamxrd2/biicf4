@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-
+use Illuminate\Support\Facades\Log;
 
 class OffreNegosDone extends Notification
 {
@@ -15,15 +15,20 @@ class OffreNegosDone extends Notification
     /**
      * Create a new notification instance.
      *
+     * @param array $offredone
      * @return void
      */
-    public function __construct( $offredone)
+    public function __construct(array $offredone)
     {
         $this->offredone = $offredone;
-      
     }
 
-
+    /**
+     * Determine the channels the notification will be sent on.
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
     public function via($notifiable)
     {
         return ['database'];
@@ -37,12 +42,13 @@ class OffreNegosDone extends Notification
      */
     public function toDatabase($notifiable)
     {
+        Log::info('Notification data: ', $this->offredone); // Log the data being sent
+
         return [
+            'quantite' => $this->offredone['quantite'],
             'produit_id' => $this->offredone['produit_id'],
             'produit_name' => $this->offredone['produit_name'],
-            'quantite' => $this->offredone['quantite'],
             'code_unique' => $this->offredone['code_unique'],
-          
         ];
     }
 }

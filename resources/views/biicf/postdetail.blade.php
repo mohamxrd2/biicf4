@@ -156,7 +156,7 @@
                 <div class="w-full flex">
                     <button class="w-full bg-purple-500 text-white py-2 mr- rounded-xl" id="btnAchatDirect">Achat
                         direct</button>
-                   
+
                 </div>
             @else
                 <button class="w-full bg-red-500 text-white py-2 mr- rounded-xl"
@@ -368,7 +368,7 @@
                                     Offre Groupé
                                 </h3>
                                 <p class="text-gray-500 dark:text-neutral-500">
-                                    le nombre de fornisseur potentiels est ({{ $nomFournisseurCount }})
+                                    le nombre de fournisseur potentiels est ({{ $nomFournisseurCount }})
                                 </p>
 
                                 <div class="mt-6 flex justify-center gap-x-4">
