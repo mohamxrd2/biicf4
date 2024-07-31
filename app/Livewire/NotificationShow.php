@@ -81,7 +81,7 @@ class NotificationShow extends Component
     public $id_sender  = [];
     public $idsender;
     public $namefourlivr;
-    public $comments;
+    public $comments = [];
     public $userComment;
     public $commentCount;
     public $oldestCommentDate;
@@ -249,11 +249,14 @@ class NotificationShow extends Component
             ->distinct('user_id')
             ->count();
 
-        $this->comments = Comment::with('user')
+        $comments = Comment::with('user')
             ->where('code_unique', $codeUnique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->get();
+        // foreach ($comments as $comment) {
+        //     $this->commentSend($comment);
+        // }
         // Récupérer le commentaire de l'utilisateur connecté
         $this->userComment = Comment::with('user')
             ->where('code_unique', $codeUnique)
@@ -261,7 +264,7 @@ class NotificationShow extends Component
             ->first();
 
         // Compter le nombre de commentaires
-        $this->commentCount = $this->comments->count();
+        $this->commentCount = $comments->count();
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Comment::where('code_unique', $codeUnique)
@@ -475,7 +478,7 @@ class NotificationShow extends Component
             'code_unique' =>  $this->code_unique,
             'user_id' =>  $user_id,
         ]);
-        
+
         session()->flash('success', 'Offre ajoutée avec succès.');
         $this->reset(['quantitE']);
         // Trigger JavaScript event
@@ -1066,6 +1069,7 @@ class NotificationShow extends Component
             'id_prod' => $validatedData['idProd'],
             'prixProd' => $validatedData['prixProd'],
         ]);
+        event(new CommentSubmitted($validatedData['prixTrade']));
 
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -1092,7 +1096,8 @@ class NotificationShow extends Component
         $this->reset(['prixTrade']);
 
         // Émettre un événement pour notifier les autres utilisateurs
-        $this->dispatch('priceSubmitted', $validatedData);
+        // $this->dispatch('priceSubmitted', $validatedData);
+        // $this->dispatch('form-submitted');
     }
     public function commentFormLivrGroup()
     {
@@ -1188,6 +1193,16 @@ class NotificationShow extends Component
             // En cas d'erreur, redirection avec un message d'erreur
             return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
         }
+    }
+
+    #[On('echo:comments,CommentSubmitted')]
+    public function listenForMessage($event)
+    {
+        // dd($event);
+        // Ajouter le nouveau commentaire à la liste des commentaires
+        $this->comments[] = [
+            'prix' => $event['prix'],
+        ];
     }
 
 

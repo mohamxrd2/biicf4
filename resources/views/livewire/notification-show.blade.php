@@ -1443,18 +1443,19 @@
                                     @foreach ($comments as $comment)
                                         <div class="flex items-center gap-3 relative">
 
-                                            <img src="{{ asset($comment->user->photo) }}" alt=""
-                                                class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
+                                            {{-- <img src="{{ asset($comment->user->photo) }}" alt=""
+                                                class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover"> --}}
 
                                             <div class="flex-1">
-                                                <p
+                                                {{-- <p
                                                     class=" text-base text-black font-medium inline-block dark:text-white">
                                                     {{ $comment->user->name }}</p>
                                                 <p class="text-sm mt-0.5">
-                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-
+                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p> --}}
+                                                    {{ $comment['prix'] }}
                                             </div>
                                         </div>
+
                                     @endforeach
                                 @endif
                             </div>
@@ -1575,8 +1576,13 @@
                             </div>
                         @endif
                     </div>
-
-                    <script>
+                    {{-- <script>
+                        window.addEventListener('form-submitted', function() {
+                            // Reload the page
+                            location.reload();
+                        });
+                    </script> --}}
+                    {{-- <script>
                         // Convertir la date de départ en objet Date JavaScript
                         const startDate = new Date("{{ $oldestCommentDate }}");
 
@@ -1617,7 +1623,7 @@
                                 document.getElementById('submitBtn').hidden = true;
                             }
                         }
-                    </script>
+                    </script> --}}
 
 
                 </div>

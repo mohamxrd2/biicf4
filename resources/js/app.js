@@ -1,5 +1,9 @@
 import './bootstrap';
 import 'preline';
 import 'flowbite';
-import Toastify from 'toastify-js';
-import 'toastify-js/src/toastify.css';
+
+
+// var channel = Echo.channel('comments');
+// channel.listen('CommentSubmitted', function(data) {
+//   alert(JSON.stringify(data));
+// });

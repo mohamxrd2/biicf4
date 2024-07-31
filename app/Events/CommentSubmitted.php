@@ -15,16 +15,16 @@ class CommentSubmitted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $comment;
+    public $prix;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Comment $comment)
+    public function __construct($prix)
     {
-        $this->comment = $comment;
+        $this->prix = $prix;
     }
 
     /**
@@ -34,8 +34,8 @@ class CommentSubmitted implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('comments.' . $this->comment->id_trader);
+        return new Channel('comments');
     }
 
-   
+
 }
