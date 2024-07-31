@@ -1434,32 +1434,34 @@
 
 
 
-                                @if ($commentCount == 0)
 
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <p class="text-gray-800"> Aucune offre n'a été soumise</p>
-                                    </div>
-                                @else
-                                    @foreach ($comments as $comment)
-                                        <div class="flex items-center gap-3 relative">
+                                @foreach ($comments as $comment)
+                                    <div class="flex items-center gap-3 relative">
 
-                                            {{-- <img src="{{ asset($comment->user->photo) }}" alt=""
-                                                class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover"> --}}
+                                        <div class="flex-1">
 
-                                            <div class="flex-1">
-                                                {{-- <p
-                                                    class=" text-base text-black font-medium inline-block dark:text-white">
-                                                    {{ $comment->user->name }}</p>
-                                                <p class="text-sm mt-0.5">
-                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p> --}}
-                                                    {{ $comment['prix'] }}
-                                            </div>
+                                            <p class="text-sm mt-0.5">
+                                                {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
+
                                         </div>
-
-                                    @endforeach
-                                @endif
+                                    </div>
+                                @endforeach
                             </div>
+                            {{-- @foreach ($comments as $comment)
+                                <div class="flex items-center gap-3 relative">
 
+                                    <img src="{{ asset($comment->user->photo) }}" alt=""
+                                        class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
+
+                                    <div class="flex-1">
+                                        <p class=" text-base text-black font-medium inline-block dark:text-white">
+                                            {{ $comment->user->name }}</p>
+                                        <p class="text-sm mt-0.5">
+                                            {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
+
+                                    </div>
+                                </div>
+                            @endforeach --}}
                             {{-- deux form  --}}
                             @if (is_array($nameSender))
                                 <form wire:submit.prevent="commentFormLivrGroup">

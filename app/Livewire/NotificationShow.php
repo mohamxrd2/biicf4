@@ -254,9 +254,9 @@ class NotificationShow extends Component
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->get();
-        // foreach ($comments as $comment) {
-        //     $this->commentSend($comment);
-        // }
+        foreach ($comments as $comment) {
+            $this->commentsend($comment);
+        }
         // Récupérer le commentaire de l'utilisateur connecté
         $this->userComment = Comment::with('user')
             ->where('code_unique', $codeUnique)
@@ -1061,7 +1061,7 @@ class NotificationShow extends Component
 
 
         // Créer un commentaire
-        Comment::create([
+        $comment = Comment::create([
             'prixTrade' => $validatedData['prixTrade'],
             'code_unique' => $validatedData['code_livr'],
             'id_trader' => $validatedData['id_trader'],
@@ -1069,7 +1069,9 @@ class NotificationShow extends Component
             'id_prod' => $validatedData['idProd'],
             'prixProd' => $validatedData['prixProd'],
         ]);
-        event(new CommentSubmitted($validatedData['prixTrade']));
+        $this->commentsend($comment);
+
+        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
 
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -1195,16 +1197,43 @@ class NotificationShow extends Component
         }
     }
 
+
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage($event)
     {
+        // Déboguer pour vérifier la structure de l'événement
         // dd($event);
-        // Ajouter le nouveau commentaire à la liste des commentaires
-        $this->comments[] = [
-            'prix' => $event['prix'],
-        ];
+
+        // Récupérer les données de l'événement
+        $commentId = $event['commentId'] ?? null;
+
+        if ($commentId) {
+            // Récupérer le commentaire par ID
+            $comment = Comment::with('user')->find($commentId);
+
+            if ($comment) {
+                // Ajouter le nouveau commentaire à la liste
+                $this->commentsend($comment);
+            } else {
+                // Gérer le cas où le commentaire n'existe pas
+                Log::error('Commentaire non trouvé', ['commentId' => $commentId]);
+            }
+        } else {
+            // Gestion des erreurs si l'ID du commentaire n'est pas fourni
+            Log::error('ID du commentaire manquant dans l\'événement', ['event' => $event]);
+        }
     }
 
+
+    public function commentsend($comment)
+    {
+        if ($comment) {
+            $this->comments[] = [
+                'prix' => $comment->prixTrade,
+                'commentId' => $comment->id
+            ];
+        }
+    }
 
     public function render()
     {
