@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
 use App\Models\AchatDirect;
+use App\Models\userquantites;
 use Exception;
 use App\Models\User;
 use App\Models\Wallet;
@@ -468,6 +469,14 @@ class NotificationShow extends Component
             'user_id' =>  $user_id,
             'differance' => $differance ?? null,
         ]);
+        // Créer une nouvelle instance de OffreGroupe
+        userquantites::create([
+            'quantite' =>  $this->quantitE,
+            'code_unique' =>  $this->code_unique,
+            'user_id' =>  $user_id,
+        ]);
+        
+        session()->flash('success', 'Offre ajoutée avec succès.');
         $this->reset(['quantitE']);
         // Trigger JavaScript event
         $this->dispatch('form-submitted');
