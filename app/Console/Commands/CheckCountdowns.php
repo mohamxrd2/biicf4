@@ -98,14 +98,13 @@ class CheckCountdowns extends Command
                 } else if ($countdown->difference === 'offredirect') {
                     // Envoyer la notification à l'utilisateur expéditeur
                     Notification::send($lowestPriceComment->user, new NegosTerminer($details));
-                } else // Vérifier si la colonne 'difference' est égale à 'single'
-                    if ($countdown->difference === 'grouper') {
-                        // Envoyer la notification à l'utilisateur expéditeur
-                        Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
-                    } else ($countdown->difference === 'offredirect') {
-                        // Envoyer une autre notification ou effectuer une autre action
-                        Notification::send($countdown->sender, new CountdownNotification($details));
-                    }
+                } else if ($countdown->difference === 'grouper') {
+                    // Envoyer la notification à l'utilisateur expéditeur
+                    Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
+                } else {
+                    // Envoyer une autre notification ou effectuer une autre action
+                    Notification::send($countdown->sender, new CountdownNotification($details));
+                }
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }
