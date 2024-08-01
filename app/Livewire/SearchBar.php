@@ -13,17 +13,20 @@ class SearchBar extends Component
     public $keyword;
     public $zone_economique;
     public $type;
-    public $qte_search;
+    public $qte_min;
+    public $qte_max;
 
     protected $updatesQueryString = [
         'keyword' => ['except' => ''],
         'zone_economique' => ['except' => ''],
         'type' => ['except' => ''],
+        'qte_min' => ['except' => ''],
+        'qte_max' => ['except' => ''],
     ];
 
     public function mount()
     {
-        $this->fill(request()->only('keyword', 'zone_economique', 'type'));
+        $this->fill(request()->only('keyword', 'zone_economique', 'type', 'qte_min', 'qte_max'));
     }
 
     public function render()
@@ -44,8 +47,12 @@ class SearchBar extends Component
             $produits->where('type', $this->type);
         }
 
-        if ($this->qte_search) {
-            $produits->where('quantity', '>=', $this->qte_search);
+        if ($this->qte_min) {
+            $produits->where('qteProd_min', '>=', $this->qte_min);
+        }
+
+        if ($this->qte_max) {
+            $produits->where('qteProd_max', '<=', $this->qte_max);
         }
 
         $results = $produits->paginate(10);

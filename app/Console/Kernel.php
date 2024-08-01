@@ -16,14 +16,14 @@ class Kernel extends ConsoleKernel
         if (App::environment('local')) {
             // En local, exécuter la commande toutes les minutes
             $schedule->command('check:countdowns')->everyMinute();
-            $schedule->command('app:envoi-four')->everyMinute();
+            // $schedule->command('app:envoi-four')->everyMinute();
             $schedule->command('app:grouper-facture')->everyMinute();
             $schedule->command('app:appeloffre')->everyMinute();
             $schedule->command('app:ajout-qoffre')->everyMinute();
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');
-            $schedule->command('app:envoi-four')->cron('* * * * *');
+            // $schedule->command('app:envoi-four')->cron('* * * * *');
             $schedule->command('app:grouper-facture')->cron('* * * * *');
             $schedule->command('app:appeloffre')->cron('* * * * *');
             $schedule->command('app:ajout-qoffre')->cron('* * * * *');

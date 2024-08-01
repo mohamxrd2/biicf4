@@ -83,6 +83,6 @@ class AjoutQoffre extends Command
             $offre->update(['notified' => true]);
         }
 
-      
+
     }
 }

@@ -65,17 +65,7 @@ class EnvoiFour extends Command
 
                 // Définir les détails de la notification
 
-                $Gdetails = [
-                    'code_unique' => $countdown->code_unique,
-                    'prixTrade' => $lowestPrice,
-                    'id_trader' => $traderId,
-                    'quantiteC' => $quantiteC,
-                    'localite' => $localite,
-                    'specificite' => $specificite,
-                    'nameprod' => $nameprod,
-                    'id_sender' => $decodedSenderIds,
-                    'montantTotal' => $montotal,
-                ];
+                
 
 
                 // Vérifier si la colonne 'difference' est égale à 'single'

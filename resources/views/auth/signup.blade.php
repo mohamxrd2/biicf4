@@ -20,13 +20,7 @@
 
             <p class="text-center my-5 text-2xl">Creer un compte</p>
 
-            @if ($errors->any())
-                <div class="bg-red-200 text-red-800 px-4 py-2 rounded-md mb-4">
-                    @foreach ($errors->all() as $error)
-                        <p>{{ $error }}</p>
-                    @endforeach
-                </div>
-            @endif
+
 
             @if (session('success'))
                 <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
@@ -38,9 +32,7 @@
                 <!-- Stepper Nav -->
                 <ul class="relative flex flex-row gap-x-2 overflow-x-auto">
                     <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
-                        data-hs-stepper-nav-item='{
-              "index": 1
-            }'>
+                        data-hs-stepper-nav-item='{ "index": 1 }'>
                         <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
                             <span
                                 class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
@@ -63,9 +55,7 @@
                     </li>
 
                     <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
-                        data-hs-stepper-nav-item='{
-              "index": 2
-            }'>
+                        data-hs-stepper-nav-item='{ "index": 2  }'>
                         <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
                             <span
                                 class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
@@ -86,38 +76,13 @@
                         </div>
                     </li>
 
+
                     <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
-                        data-hs-stepper-nav-item='{
-                "index": 3
-              }'>
+                        data-hs-stepper-nav-item='{"index": 3 }'>
                         <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
                             <span
                                 class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
                                 <span class="hs-stepper-success:hidden hs-stepper-completed:hidden">3</span>
-                                <svg class="hidden flex-shrink-0 size-3 hs-stepper-success:block"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </span>
-                            <span class="ms-2 text-sm font-medium text-gray-800">
-                                Secteur d'activité
-                            </span>
-                        </span>
-                        <div
-                            class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600">
-                        </div>
-                    </li>
-
-                    <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
-                        data-hs-stepper-nav-item='{
-                "index": 4
-              }'>
-                        <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
-                            <span
-                                class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
-                                <span class="hs-stepper-success:hidden hs-stepper-completed:hidden">4</span>
                                 <svg class="hidden flex-shrink-0 size-3 hs-stepper-success:block"
                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -141,9 +106,7 @@
                     <!-- Stepper Content -->
                     <div class="mt-5 sm:mt-8">
                         <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{
-              "index": 1
-            }'>
+                        <div data-hs-stepper-content-item='{"index": 1 }'>
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
 
@@ -184,9 +147,7 @@
                         <!-- End First Contnet -->
 
                         <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{
-              "index": 2
-            }'
+                        <div data-hs-stepper-content-item='{"index": 2 }'
                             style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
@@ -287,14 +248,6 @@
                                     // Ajoutez d'autres attributs au besoin
                                 ])
                             </div>
-                        </div>
-                        <!-- End First Contnet -->
-
-                        <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{
-              "index": 3
-            }'
-                            style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
                                 @include('admin.components.select', [
@@ -367,11 +320,10 @@
 
                             </div>
                         </div>
+                        <!-- End First Contnet -->
 
                         <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{
-                "index": 4
-              }'
+                        <div data-hs-stepper-content-item='{ "index": 3}'
                             style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
@@ -425,9 +377,7 @@
                         <!-- End First Contnet -->
 
                         <!-- Final Contnet -->
-                        <div data-hs-stepper-content-item='{
-              "isFinal": true
-            }'
+                        <div data-hs-stepper-content-item='{"isFinal": true}'
                             style="display: none;">
                             <div
                                 class="p-4 h-48 bg-gray-50 flex justify-center items-center border border-dashed border-gray-200 rounded-xl">

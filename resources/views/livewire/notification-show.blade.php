@@ -129,102 +129,171 @@
             }
         </script>
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
-        <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
-            <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
-                </span>{{ $notification->data['nameProd'] }}</h2>
-            <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantité'] }}</p>
-            <p class="mb-3"><strong>Localité:</strong> {{ $notification->data['localite'] }}</p>
-            <p class="mb-3"><strong>Spécificité:</strong> {{ $notification->data['specificite'] }}</p>
-            <p class="mb-3"><strong>Prix d'artiche:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
-            </p>
-
-            @php
-                $prixArtiche = $notification->data['montantTotal'] ?? 0;
-                $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
-            @endphp
-
-            <p class="mb-3"><strong>Somme reçu :</strong> {{ number_format($sommeRecu, 2) }} Fcfa</p>
-            <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
-                class="mb-3 text-blue-700 hover:underline flex">
-                Voir le produit
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                </svg>
-            </a>
-
-            <p class="my-3 text-sm text-gray-500">Vous aurez debité 10% sur le prix de la marchandise
-            </p>
-            <div class="flex gap-2">
-                @if ($notification->reponse == 'accepte' || $notification->reponse == 'refuser')
-                    <div class="w-full bg-gray-300 border p-2 rounded-md">
-                        <p class="text-md font-medium text-center">Reponse envoyé</p>
-
+        <div class="container mx-auto px-4 py-6">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande</h1>
+                </div>
+                <div class="p-6">
+                    <!-- Détails de la Commande -->
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm mb-6">
+                        <h2 class="text-lg font-semibold text-gray-700 mb-2">Informations de la Commande</h2>
+                        <ul>
+                            <li class="flex justify-between py-1"><span class="font-medium">Numéro de Commande:</span>
+                                <span>#12345</span>
+                            </li>
+                            <li class="flex justify-between py-1"><span class="font-medium">Date de Commande:</span>
+                                <span>2024-08-01</span>
+                            </li>
+                            <li class="flex justify-between py-1"><span class="font-medium">Fournisseur:</span>
+                                <span>XYZ Corp</span>
+                            </li>
+                            <li class="flex justify-between py-1"><span class="font-medium">Statut:</span> <span>En
+                                    attente de validation</span></li>
+                        </ul>
                     </div>
-                @else
-                    <div x-data="{ isOpen: false }" x-cloak>
-                        <button @click="isOpen = true"
-                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">
-                            Accepter
-                        </button>
 
-                        <div x-show="isOpen" id="hs-basic-modal"
-                            class="hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500 fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 overflow-y-auto">
-                            <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-                                <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
-                                    <div class="flex justify-between items-center py-3 px-4 border-b">
-                                        <h3 class="font-bold text-gray-800">
-                                            Envoie au livreur
-                                        </h3>
-                                        <button @click="isOpen = false" class="text-gray-800 hover:text-gray-600">
-                                            <span class="sr-only">Close</span>
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </button>
+                    <!-- Liste des Produits -->
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h2 class="text-lg font-semibold text-gray-700 mb-2">Éléments de la Commande</h2>
+                        <p class="my-3 text-sm text-gray-500">Vous serez débité de 10% sur le prix de la marchandise</p>
+
+                        <!-- Tableau pour écrans moyens et plus grands -->
+                        <div class="hidden md:block">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-100 text-left text-gray-600">
+                                        <th class="py-2 px-4">Produit ou Service</th>
+                                        <th class="py-2 px-4">Quantité</th>
+                                        <th class="py-2 px-4">Lieu de livraison</th>
+                                        <th class="py-2 px-4">Spécificité</th>
+                                        <th class="py-2 px-4">Prix de la commande</th>
+                                        <th class="py-2 px-4">Somme reçue</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="py-2 px-4">{{ $notification->data['nameProd'] }}</td>
+                                        <td class="py-2 px-4">{{ $notification->data['quantité'] }}</td>
+                                        <td class="py-2 px-4">{{ $notification->data['localite'] }}</td>
+                                        <td class="py-2 px-4">{{ $notification->data['specificite'] }}</td>
+                                        <td class="py-2 px-4">{{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
+                                        </td>
+                                        @php
+                                            $prixArtiche = $notification->data['montantTotal'] ?? 0;
+                                            $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
+                                        @endphp
+                                        <td class="py-2 px-4">{{ number_format($sommeRecu, 2) }} Fcfa</td>
+                                    </tr>
+                                    <!-- Ajoutez d'autres lignes de produits si nécessaire -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Liste pour petits écrans -->
+                        <div class="block md:hidden">
+                            <div class="space-y-4">
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-gray-700">Produit ou Service:</div>
+                                    <div class="text-gray-800">{{ $notification->data['nameProd'] }}</div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-gray-700">Quantité:</div>
+                                    <div class="text-gray-800">{{ $notification->data['quantité'] }}</div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-gray-700">Lieu de livraison:</div>
+                                    <div class="text-gray-800">{{ $notification->data['localite'] }}</div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-gray-700">Spécificité:</div>
+                                    <div class="text-gray-800">{{ $notification->data['specificite'] }}</div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-gray-700">Prix de la commande:</div>
+                                    <div class="text-gray-800">{{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
                                     </div>
-                                    <div class="p-4">
-                                        <p class="text-gray-800">
-                                            @if ($nombreLivr)
-                                                Le nombre de livreur disponible dans cette zone est:
-                                                {{ $nombreLivr }}
-                                            @else
-                                                Aucun livreur dans la zone
-                                            @endif
-                                        </p>
-                                    </div>
-                                    <div class="flex justify-end items-center py-3 px-4 border-t">
-                                        <button @click="isOpen = false"
-                                            class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded mr-2">
-                                            Annuler
-                                        </button>
-                                        <button @click.prevent="isOpen = false; $wire.accepter()"
-                                            @if ($nombreLivr == 0) disabled @endif
-                                            class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
-                                            <span wire:loading.remove>
-                                                Envoie
-                                            </span>
-                                            <span wire:loading>
-                                                En cours...
-                                            </span>
-                                        </button>
-                                    </div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-gray-700">Somme reçue:</div>
+                                    @php
+                                        $prixArtiche = $notification->data['montantTotal'] ?? 0;
+                                        $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
+                                    @endphp
+                                    <div class="text-gray-800">{{ number_format($sommeRecu, 2) }} Fcfa</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
+                        class="mb-3 text-blue-700 hover:underline flex items-center">
+                        Voir le produit
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                        </svg>
+                    </a>
 
+                    <div class="mt-6 flex flex-col md:flex-row justify-end gap-4">
+                        @if ($notification->reponse == 'accepte' || $notification->reponse == 'refuser')
+                            <div class="w-full bg-gray-300 border p-2 rounded-md">
+                                <p class="text-md font-medium text-center">Réponse envoyée</p>
+                            </div>
+                        @else
+                            <div x-data="{ isOpen: false }" x-cloak>
+                                <button @click="isOpen = true"
+                                    class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
+                                <button wire:click="refuser" id="btn-refuser" type="submit"
+                                    class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
 
-                    <button wire:click="refuser" id="btn-refuser" type="submit"
-                        class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+                                <div x-show="isOpen" id="hs-basic-modal"
+                                    class="hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500 fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 overflow-y-auto">
+                                    <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+                                        <div
+                                            class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
+                                            <div class="flex justify-between items-center py-3 px-4 border-b">
+                                                <h3 class="font-bold text-gray-800">Envoi au livreur</h3>
+                                                <button @click="isOpen = false"
+                                                    class="text-gray-800 hover:text-gray-600">
+                                                    <span class="sr-only">Close</span>
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <div class="p-4">
+                                                <p class="text-gray-800">
+                                                    @if ($nombreLivr)
+                                                        Le nombre de livreurs disponibles dans cette zone est:
+                                                        {{ $nombreLivr }}
+                                                    @else
+                                                        Aucun livreur dans la zone
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            <div class="flex justify-end items-center py-3 px-4 border-t">
+                                                <button @click="isOpen = false"
+                                                    class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded mr-2">Annuler</button>
+                                                <button @click.prevent="isOpen = false; $wire.accepter()"
+                                                    @if ($nombreLivr == 0) disabled @endif
+                                                    class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
+                                                    <span wire:loading.remove>Envoyer</span>
+                                                    <span wire:loading>En cours...</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                @endif
+                        @endif
+                    </div>
+                </div>
             </div>
-
-
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="grid grid-cols-2 gap-4 p-4">
@@ -291,39 +360,23 @@
 
 
                         <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-
-
-
                             <!-- comments -->
                             <div
                                 class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
 
+                                @foreach ($comments as $comment)
+                                    <div class="flex items-center gap-3 relative">
+                                        <img src="{{ asset($comment['photoUser']) }}" alt=""
+                                            class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
+                                        <div class="flex-1">
+                                            <p class=" text-base text-black font-medium inline-block dark:text-white">
+                                                {{ $comment['nameUser'] }}</p>
+                                            <p class="text-sm mt-0.5">
+                                                {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
 
-
-                                @if ($commentCount == 0)
-
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <p class="text-gray-800"> Aucune offre n'a été soumise</p>
-                                    </div>
-                                @else
-                                    @foreach ($comments as $comment)
-                                        <div class="flex items-center gap-3 relative">
-
-                                            <img src="{{ asset($comment->user->photo) }}" alt=""
-                                                class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-
-                                            <div class="flex-1">
-                                                <p
-                                                    class=" text-base text-black font-medium inline-block dark:text-white">
-                                                    {{ $comment->user->name }}</p>
-                                                <p class="text-sm mt-0.5">
-                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                            </div>
                                         </div>
-                                    @endforeach
-
-
-                                @endif
+                                    </div>
+                                @endforeach
 
                             </div>
                             <!-- add comment -->
@@ -399,12 +452,16 @@
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtnAppel');
+                    const submitBtn = document.getElementById(
+                        'submitBtnAppel'); // Assurez-vous que l'ID du bouton correspond
                     const prixTradeError = document.getElementById('prixTradeError');
 
+                    // Vérification du prix d'offre
                     prixTradeInput.addEventListener('input', function() {
                         const prixTradeValue = parseFloat(prixTradeInput.value);
-                        const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
+                        const lowestPricedProduct = parseFloat(
+                            '{{ $notification->data['lowestPricedProduct'] ?? 0 }}'
+                        ); // Assurez-vous que la valeur est correcte
 
                         if (prixTradeValue > lowestPricedProduct) {
                             submitBtn.disabled = true;
@@ -418,9 +475,10 @@
                     });
 
                     // Convertir la date de départ en objet Date JavaScript
-                    const startDate = new Date("{{ $oldestCommentDate }}");
+                    const startDate = new Date(
+                        "{{ $oldestCommentDate }}"); // Assurez-vous que le format de la date est correct
 
-                    // Ajouter 5 heures à la date de départ
+                    // Ajouter 1 minute à la date de départ (ou ajustez selon votre besoin)
                     startDate.setMinutes(startDate.getMinutes() + 1);
 
                     // Mettre à jour le compte à rebours à intervalles réguliers
@@ -433,7 +491,7 @@
                         // Calculer la différence entre la date cible et la date de départ en millisecondes
                         const difference = startDate.getTime() - currentDate.getTime();
 
-                        // Convertir la différence en jours, heures, minutes et secondes
+                        // Convertir la différence en heures, minutes et secondes
                         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
@@ -441,18 +499,18 @@
                         // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
                         const countdownElement = document.getElementById('countdown');
                         countdownElement.innerHTML = `
-                        <div>${hours}h</div>:
-                        <div>${minutes}m</div>:
-                        <div>${seconds}s</div>
-                    `;
+            <div>${hours}h</div>:
+            <div>${minutes}m</div>:
+            <div>${seconds}s</div>
+        `;
 
                         // Arrêter le compte à rebours lorsque la date cible est atteinte
                         if (difference <= 0) {
                             clearInterval(countdownTimer);
                             countdownElement.innerHTML = "Temps écoulé !";
-
+                            submitBtn.hidden = true; // Cache le bouton après la fin du compte à rebours
+                            prixTradeInput.hidden = true; // Cache le champ d'entrée après la fin du compte à rebours
                         }
-
                     }
                 });
             </script>
@@ -518,44 +576,25 @@
                     <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
                         uk-sticky="media: 1024; end: #js-oversized; offset: 80">
 
-
-
-
-
                         <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-
-
 
                             <!-- comments -->
                             <div
                                 class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
 
+                                @foreach ($comments as $comment)
+                                    <div class="flex items-center gap-3 relative">
+                                        <img src="{{ asset($comment['photoUser']) }}" alt=""
+                                            class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
+                                        <div class="flex-1">
+                                            <p class=" text-base text-black font-medium inline-block dark:text-white">
+                                                {{ $comment['nameUser'] }}</p>
+                                            <p class="text-sm mt-0.5">
+                                                {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
 
-
-                                @if ($commentCount == 0)
-
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <p class="text-gray-800"> Aucune offre n'a été soumise</p>
-                                    </div>
-                                @else
-                                    @foreach ($comments as $comment)
-                                        <div class="flex items-center gap-3 relative">
-
-                                            <img src="{{ asset($comment->user->photo) }}" alt=""
-                                                class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-
-                                            <div class="flex-1">
-                                                <p
-                                                    class=" text-base text-black font-medium inline-block dark:text-white">
-                                                    {{ $comment->user->name }}</p>
-                                                <p class="text-sm mt-0.5">
-                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                            </div>
                                         </div>
-                                    @endforeach
-
-
-                                @endif
+                                    </div>
+                                @endforeach
 
                             </div>
                             <!-- add comment -->
@@ -942,7 +981,6 @@
             <p class="mb-3"><strong>Localité:</strong> {{ $notification->data['localite'] }}</p>
             <p class="mb-3"><strong>Spécificité:</strong> {{ $notification->data['specificite'] }}</p>
             <p class="mb-3"><strong>Prix d'achat:</strong> {{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
-                {{ $notification->data['code_unique'] }}
             </p>
 
             @php
@@ -1389,6 +1427,7 @@
             </footer>
         </div>
     @elseif ($notification->type === 'App\Notifications\livraisonVerif')
+        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs</h1>
         <div class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
 
@@ -1414,10 +1453,10 @@
                     <p class="text-md font-medium text-gray-600">{{ $userFour->phone }}</p>
                 </div>
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
+                {{-- <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Code de livrasion</p>
                     <p class="text-md font-medium text-gray-600">{{ $notification->data['code_livr'] }}</p>
-                </div>
+                </div> --}}
             </div>
             <div class="lg:col-span-1 col-span-2">
 
@@ -1432,14 +1471,13 @@
                             <div
                                 class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
 
-
-
-
                                 @foreach ($comments as $comment)
                                     <div class="flex items-center gap-3 relative">
-
+                                        <img src="{{ asset($comment['photoUser']) }}" alt=""
+                                            class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
                                         <div class="flex-1">
-
+                                            <p class=" text-base text-black font-medium inline-block dark:text-white">
+                                                {{ $comment['nameUser'] }}</p>
                                             <p class="text-sm mt-0.5">
                                                 {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
 
@@ -1447,21 +1485,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            {{-- @foreach ($comments as $comment)
-                                <div class="flex items-center gap-3 relative">
 
-                                    <img src="{{ asset($comment->user->photo) }}" alt=""
-                                        class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-
-                                    <div class="flex-1">
-                                        <p class=" text-base text-black font-medium inline-block dark:text-white">
-                                            {{ $comment->user->name }}</p>
-                                        <p class="text-sm mt-0.5">
-                                            {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
-
-                                    </div>
-                                </div>
-                            @endforeach --}}
                             {{-- deux form  --}}
                             @if (is_array($nameSender))
                                 <form wire:submit.prevent="commentFormLivrGroup">
@@ -1578,13 +1602,13 @@
                             </div>
                         @endif
                     </div>
-                    {{-- <script>
+                    <script>
                         window.addEventListener('form-submitted', function() {
                             // Reload the page
                             location.reload();
                         });
-                    </script> --}}
-                    {{-- <script>
+                    </script>
+                    <script>
                         // Convertir la date de départ en objet Date JavaScript
                         const startDate = new Date("{{ $oldestCommentDate }}");
 
@@ -1625,7 +1649,7 @@
                                 document.getElementById('submitBtn').hidden = true;
                             }
                         }
-                    </script> --}}
+                    </script>
 
 
                 </div>
@@ -1639,11 +1663,14 @@
                 <p class="mb-2">Nom du fournisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->name }}</span></p>
                 <p class="mb-2">Adresse du livreur: <span
-                        class="font-semibold">{{ $namefourlivr->user->address }}</span></p>
+                        class="font-semibold">{{ $namefourlivr->user->address }}</span>
+                </p>
                 <p class="mb-2">Email du founisseur: <span
-                        class="font-semibold">{{ $namefourlivr->user->email }}</span></p>
+                        class="font-semibold">{{ $namefourlivr->user->email }}</span>
+                </p>
                 <p class="mb-2">Téléphone founisseur: <span
-                        class="font-semibold">{{ $namefourlivr->user->phone }}</span></p>
+                        class="font-semibold">{{ $namefourlivr->user->phone }}</span>
+                </p>
             </div>
         </div>
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mt-3">
@@ -1734,11 +1761,13 @@
                 <p class="mb-2">Code de livraison: <span
                         class="font-semibold">{{ $notification->data['code_unique'] }}</span></p>
                 <p class="mb-2">Téléphone founisseur: <span
-                        class="font-semibold">{{ $namefourlivr->user->phone }}</span></p>
+                        class="font-semibold">{{ $namefourlivr->user->phone }}</span>
+                </p>
                 <p class="mb-2">Email founisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->email }}</span></p>
                 <p class="mb-2">Lieu d'enlevement: <span
-                        class="font-semibold">{{ $namefourlivr->user->address }}</span></p>
+                        class="font-semibold">{{ $namefourlivr->user->address }}</span>
+                </p>
                 <p class="mb-2">Lieu de livraison: <span
                         class="font-semibold">{{ $notification->data['localité'] }}</span></p>
             </div>
@@ -1779,7 +1808,8 @@
 
             <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
                 <h2 class="text-xl font-semibold mb-2">Estimation de date de livraison <span
-                        class="text-red-700">*</span></h2>
+                        class="text-red-700">*</span>
+                </h2>
 
                 <div class="lg:w-1/2 w-full mr-2 relative">
                     <input type="date" id="datePickerStart" name="dateLivr" wire:model.defer="dateLivr" required
@@ -2004,7 +2034,8 @@
 
                     <div class="flex flex-col">
                         <p class="mb-3 text-md">Nom du livreur: <span
-                                class=" font-semibold">{{ $livreur->name }}</span></p>
+                                class=" font-semibold">{{ $livreur->name }}</span>
+                        </p>
                         <p class="mb-3 text-md">Adress du livreur: <span
                                 class=" font-semibold">{{ $livreur->address }}</span></p>
                         <p class="mb-3 text-md">Contact du livreur: <span
@@ -2037,7 +2068,8 @@
                     <input type="checkbox"
                         class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                         id="hs-checked-checkbox1">
-                    <label for="hs-checked-checkbox1" class="text-md text-gray-600 ms-3 dark:text-neutral-400">Qualité
+                    <label for="hs-checked-checkbox1"
+                        class="text-md text-gray-600 ms-3 dark:text-neutral-400">Qualité
                         apparante</label>
                 </div>
 

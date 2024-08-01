@@ -68,25 +68,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const btnAchatDirect = document.getElementById('btnAchatDirect');
-        const btnAchatGroup = document.getElementById('btnAchatGroup');
         const formAchatDirect = document.getElementById('formAchatDirect');
-        const formAchatGroup = document.getElementById('formAchatGroup');
 
         btnAchatDirect.addEventListener('click', function() {
             if (formAchatDirect.style.display === 'none' || formAchatDirect.style.display === '') {
                 formAchatDirect.style.display = 'block';
-                formAchatGroup.style.display = 'none';
             } else {
                 formAchatDirect.style.display = 'none';
-            }
-        });
-
-        btnAchatGroup.addEventListener('click', function() {
-            if (formAchatGroup.style.display === 'none' || formAchatGroup.style.display === '') {
-                formAchatGroup.style.display = 'block';
-                formAchatDirect.style.display = 'none';
-            } else {
-                formAchatGroup.style.display = 'none';
             }
         });
     });
@@ -142,7 +130,4 @@
             submitButton.disabled = false;
         }
     }
-
-
-
 </script>

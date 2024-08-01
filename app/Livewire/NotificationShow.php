@@ -962,7 +962,7 @@ class NotificationShow extends Component
 
         ]);
 
-        Comment::create([
+        $comment = Comment::create([
             'localite' => $this->notification->data['localite'],
             'specificite' => $this->specificite,
             'prixTrade' => $this->prixTrade,
@@ -972,6 +972,9 @@ class NotificationShow extends Component
             'id_trader' => $this->id_trader,
             'quantiteC' => $this->quantiteC,
         ]);
+        $this->commentsend($comment);
+
+        broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $this->code_unique)
@@ -989,7 +992,6 @@ class NotificationShow extends Component
                 'difference' => $this->difference,
             ]);
 
-            $this->countdownStarted = true;
         }
 
         session()->flash('success', 'Commentaire créé avec succès!');
@@ -1012,7 +1014,7 @@ class NotificationShow extends Component
 
         ]);
 
-        Comment::create([
+        $comment = Comment::create([
             'localite' => $this->notification->data['localite'],
             'specificite' => $this->specificite,
             'prixTrade' => $this->prixTrade,
@@ -1022,6 +1024,9 @@ class NotificationShow extends Component
             'id_trader' => $this->id_trader,
             'quantiteC' => $this->quantiteC,
         ]);
+        $this->commentsend($comment);
+
+        broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -1230,7 +1235,9 @@ class NotificationShow extends Component
         if ($comment) {
             $this->comments[] = [
                 'prix' => $comment->prixTrade,
-                'commentId' => $comment->id
+                'commentId' => $comment->id,
+                'nameUser' => $comment->user->name,
+                'photoUser' => $comment->user->photo,
             ];
         }
     }

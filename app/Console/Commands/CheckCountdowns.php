@@ -59,7 +59,7 @@ class CheckCountdowns extends Command
 
                 // Définir les détails de la notification
                 $details = [
-                    'sender_name' => $countdown->sender->name, // Ajouter le nom de l'expéditeur aux détails de la notification
+                    'sender_name' => $countdown->sender->name ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
                     'code_unique' => $countdown->code_unique,
                     'prixTrade' => $lowestPrice,
                     'id_trader' => $traderId,
@@ -79,7 +79,17 @@ class CheckCountdowns extends Command
                     'montantTotal' => $montotal,
                 ];
 
-
+                $Gdetails = [
+                    'code_unique' => $countdown->code_unique,
+                    'prixTrade' => $lowestPrice,
+                    'id_trader' => $traderId,
+                    'quantiteC' => $quantiteC,
+                    'localite' => $localite,
+                    'specificite' => $specificite,
+                    'nameprod' => $nameprod,
+                    'id_sender' => $decodedSenderIds,
+                    'montantTotal' => $montotal,
+                ];
 
                 // Vérifier si la colonne 'difference' est égale à 'single'
                 if ($countdown->difference === 'single') {
@@ -88,10 +98,14 @@ class CheckCountdowns extends Command
                 } else if ($countdown->difference === 'offredirect') {
                     // Envoyer la notification à l'utilisateur expéditeur
                     Notification::send($lowestPriceComment->user, new NegosTerminer($details));
-                } else {
-                    // Envoyer une autre notification ou effectuer une autre action
-                    Notification::send($countdown->sender, new CountdownNotification($details));
-                }
+                } else // Vérifier si la colonne 'difference' est égale à 'single'
+                    if ($countdown->difference === 'grouper') {
+                        // Envoyer la notification à l'utilisateur expéditeur
+                        Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
+                    } else ($countdown->difference === 'offredirect') {
+                        // Envoyer une autre notification ou effectuer une autre action
+                        Notification::send($countdown->sender, new CountdownNotification($details));
+                    }
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }
