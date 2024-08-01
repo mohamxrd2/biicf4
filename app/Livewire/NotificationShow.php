@@ -991,7 +991,6 @@ class NotificationShow extends Component
                 'code_unique' => $this->code_unique,
                 'difference' => $this->difference,
             ]);
-
         }
 
         session()->flash('success', 'Commentaire créé avec succès!');
@@ -1121,14 +1120,16 @@ class NotificationShow extends Component
 
 
         // Créer un commentaire
-        Comment::create([
+        $comment = Comment::create([
             'prixTrade' => $validatedData['prixTrade'],
             'code_unique' => $validatedData['code_livr'],
             'id_trader' => $validatedData['id_trader'],
             'quantiteC' => $validatedData['quantiteC'],
             'id_prod' => $validatedData['idProd'],
         ]);
+        $this->commentsend($comment);
 
+        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
             ->where('notified', false)
@@ -1228,7 +1229,6 @@ class NotificationShow extends Component
             Log::error('ID du commentaire manquant dans l\'événement', ['event' => $event]);
         }
     }
-
 
     public function commentsend($comment)
     {

@@ -1602,12 +1602,12 @@
                             </div>
                         @endif
                     </div>
-                    <script>
+                    {{-- <script>
                         window.addEventListener('form-submitted', function() {
                             // Reload the page
                             location.reload();
                         });
-                    </script>
+                    </script> --}}
                     <script>
                         // Convertir la date de départ en objet Date JavaScript
                         const startDate = new Date("{{ $oldestCommentDate }}");

@@ -105,6 +105,9 @@ class CheckCountdowns extends Command
                     // Envoyer une autre notification ou effectuer une autre action
                     Notification::send($countdown->sender, new CountdownNotification($details));
                 }
+                // Supprimer les commentaires avec ce code unique
+                Comment::where('code_unique', $code_unique)->delete();
+
                 // Mettre à jour le statut notified à true
                 $countdown->update(['notified' => true]);
             }
