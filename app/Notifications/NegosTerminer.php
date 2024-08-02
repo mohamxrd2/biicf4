@@ -31,7 +31,7 @@ class NegosTerminer extends Notification
             'prixProd' => $this->offre['prixProd'] ?? null,
             'idProd' => $this->offre['idProd'] ?? null,
             'id_trader' => $this->offre['id_trader'] ?? null,
-            'id_sender' => $this->offre['id_sender'] ?? null,
+            'id_sender' => $this->offre['sender_name'] ?? null,
         ];
     }
 }

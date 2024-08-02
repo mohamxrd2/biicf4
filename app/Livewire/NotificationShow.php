@@ -227,7 +227,12 @@ class NotificationShow extends Component
         $this->livreur = User::find($this->notification->data['id_livreur'] ?? null);
 
         $this->client = User::find($this->notification->data['id_client'] ?? null);
-
+        //achat direct dans notif show
+        // $this->nameProd = $this->produit->name;
+        // $this->userTrader = $this->produit->user->id;
+        // $this->idProd = $this->produit->id;
+        $this->userWallet = Wallet::where('user_id', $this->user)->first();
+        // $this->prixArticleNegos = $this->notification->data['quantite'] * $this->produit->prix;
 
 
         //code unique recuperation dans render
@@ -303,14 +308,7 @@ class NotificationShow extends Component
             }
         }
 
-        //achat direct dans notif show
-        // $this->produit = ProduitService::findOrFail($this->produit_id) ?? ProduitService::findOrFail($this->idProd) ?? null;
-        // $this->nameProd = $this->produit->name;
-        // $this->userTrader = $this->produit->user->id;
-        // $this->idProd = $this->produit->id;
-        // $this->prix = $this->produit->prix;
-        // $this->userWallet = Wallet::where('user_id', $this->user)->first();
-        // $this->prixArticleNegos = $this->notification->data['quantite'] * $this->produit->prix;
+
         // Vérification avant de récupérer le produit
         if (isset($this->notification->data['idProd']) || isset($this->notification->data['produit_id'])) {
             $produitId = $this->notification->data['idProd'] ?? $this->notification->data['produit_id'] ?? null;
@@ -402,7 +400,7 @@ class NotificationShow extends Component
         ]);
         $userId = Auth::id();
 
-        $montanTotal = $validated['quantite'] * $validated['prix'];
+        $montanTotal = $validated['quantite'] * $this->prixProd;
 
         if (!$userId) {
             session()->flash('error', 'Utilisateur non authentifié.');
@@ -422,14 +420,17 @@ class NotificationShow extends Component
             session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
             return;
         }
-
+        $id_prod = ProduitService::findOrFail($validated['idProd']);
+        $photo1 =  $id_prod->photoProd1;
 
         $achat = AchatDirect::create([
             'nameProd' => $validated['nameProd'],
+            'photoProd' => $photo1,
             'quantité' => $validated['quantite'],
             'montantTotal' => $montanTotal,
             'localite' => $validated['localite'],
             'userTrader' => $validated['userTrader'],
+            'userSender' => $userId,
             'specificite' => $this->specificite,
             'idProd' => $validated['idProd'],
         ]);
@@ -612,7 +613,6 @@ class NotificationShow extends Component
 
         session()->flash('message', 'Livraison marquée comme livrée.');
         $this->isDelivering = false;
-
     }
 
     public function verifyCode()
@@ -928,7 +928,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'refuseVerif']);
         $this->validate();
         $this->isRefusing = false;
-
     }
 
 

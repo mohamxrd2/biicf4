@@ -13,9 +13,10 @@
             </div>
         @endif
         <div class="flex items-center justify-center h-screen bg-gray-100">
-
             <div class="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">PASSEZ A L'ACHAT DIRECT</h2>
+                <h1>Le prix au quel vous negocier est {{$prixProd}} FCFA</h1>
+
                 <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
                     class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
                     @csrf
@@ -772,7 +773,7 @@
 
                 </div>
 
-                <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
+                <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
                     class=" bg-blue-500 text-white p-2 rounded font-medium hover:bg-blue-600  mt-10">
                     Voir le produit
                 </a>
