@@ -126,6 +126,8 @@ class NotificationShow extends Component
     public $oldestNotificationDate;
     public $prixArticleNegos;
     public $quantitE;
+    public $isDelivering = false;
+    public $isRefusing = false;
 
 
     protected $rules = [
@@ -577,6 +579,8 @@ class NotificationShow extends Component
 
     public function departlivr()
     {
+        $this->isDelivering = true;
+
         $id_livreur = Auth::user()->id;
 
         $this->validate([
@@ -607,6 +611,8 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'mainleveclient']);
 
         session()->flash('message', 'Livraison marquée comme livrée.');
+        $this->isDelivering = false;
+
     }
 
     public function verifyCode()
@@ -867,7 +873,7 @@ class NotificationShow extends Component
         $notification->reponse = 'refuser';
         $notification->save();
 
-        $userSender = User::find($this->notification->data['userSender']);
+        $userSender = User::find($this->notification->data['id_sender']);
         $requiredAmount = $this->notification->data['montantTotal'];
         $userWallet = Wallet::where('user_id', $userSender->id)->first();
         if (!$userWallet) {
@@ -886,44 +892,45 @@ class NotificationShow extends Component
 
     public function refuseVerif()
     {
+        $this->isRefusing = true;
 
+        // Calcul du prix total
         $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
-
         $montantTotal = $this->totalPrice;
 
-
-
-
+        // Récupération des utilisateurs
         $livreur = User::find($this->notification->data['id_livreur']);
-
         $fournisseur = User::find($this->notification->data['id_trader']);
 
+        // Récupération de l'utilisateur authentifié (client)
+        $client = Auth::user();  // Remplace Auth::id() par Auth::user() pour obtenir l'objet User
 
-        $client = User::find($this->notification->data['id_client']);
-
-        $clientWallet = Wallet::where('user_id', $this->notification->data['id_client'])->first();
+        // Récupération du portefeuille du client
+        $clientWallet = Wallet::where('user_id', $client->id)->first();
 
         if (!$clientWallet) {
             session()->flash('error', 'Portefeuille du client introuvable.');
             return;
         }
 
+        // Augmentation du solde du portefeuille du client
         $clientWallet->increment('balance', $montantTotal);
 
-        $this->createTransaction($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
+        // Création de la transaction
+        $this->createTransaction($this->notification->data['id_trader'], $client->id, 'Reception', $montantTotal);
 
-        Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
+        // Envoi des notifications
+        Notification::send($livreur, new RefusVerif('Le colis a été refusé !'));
+        Notification::send($fournisseur, new RefusVerif('Le colis a été refusé !'));
+        Notification::send($client, new RefusVerif('Le colis a été refusé !'));
 
-        Notification::send($fournisseur, new RefusVerif('Le colis à été refuser !'));
-
-        Notification::send($client, new RefusVerif('Le colis à été refuser !'));
-
-
-
-
-        $this->notification->update(['reponse' => 'refuseVereif']);
+        // Mise à jour de la notification
+        $this->notification->update(['reponse' => 'refuseVerif']);
         $this->validate();
+        $this->isRefusing = false;
+
     }
+
 
     // protected function handleCommission($user, $amount, $type)
     // {
@@ -1023,6 +1030,7 @@ class NotificationShow extends Component
             'id_trader' => $this->id_trader,
             'quantiteC' => $this->quantiteC,
         ]);
+
         $this->commentsend($comment);
 
         broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
@@ -1127,9 +1135,11 @@ class NotificationShow extends Component
             'quantiteC' => $validatedData['quantiteC'],
             'id_prod' => $validatedData['idProd'],
         ]);
+
         $this->commentsend($comment);
 
         broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
             ->where('notified', false)
@@ -1166,13 +1176,16 @@ class NotificationShow extends Component
 
 
             // Création du commentaire
-            Comment::create([
+            $comment = Comment::create([
                 'prixProd' => $this->prixTrade,
                 'prixTrade' => $this->prixTrade,
                 'id_trader' => $this->id_trader,
                 'code_unique' => $this->code_unique,
                 'id_prod' => $this->idProd,
             ]);
+            $this->commentsend($comment);
+
+            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
             $produit = ProduitService::with('user')->find($this->idProd);
 

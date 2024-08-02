@@ -801,30 +801,19 @@
 
 
 
-                                @if ($commentCount == 0)
+                                @foreach ($comments as $comment)
+                                    <div class="flex items-center gap-3 relative">
+                                        <img src="{{ asset($comment['photoUser']) }}" alt=""
+                                            class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
+                                        <div class="flex-1">
+                                            <p class=" text-base text-black font-medium inline-block dark:text-white">
+                                                {{ $comment['nameUser'] }}</p>
+                                            <p class="text-sm mt-0.5">
+                                                {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
 
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <p class="text-gray-800"> Aucune offre n'a été soumise</p>
-                                    </div>
-                                @else
-                                    @foreach ($comments as $comment)
-                                        <div class="flex items-center gap-3 relative">
-
-                                            <img src="{{ asset($comment->user->photo) }}" alt=""
-                                                class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-
-                                            <div class="flex-1">
-                                                <p
-                                                    class=" text-base text-black font-medium inline-block dark:text-white">
-                                                    {{ $comment->user->name }}</p>
-                                                <p class="text-sm mt-0.5">
-                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                            </div>
                                         </div>
-                                    @endforeach
-
-
-                                @endif
+                                    </div>
+                                @endforeach
 
                             </div>
 
@@ -1727,7 +1716,6 @@
                         </svg>
                     </span>
                 </button>
-
                 <button wire:click='refuseVerif' class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-6 mr-2">
@@ -1830,6 +1818,7 @@
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                         <option selected disabled>Choisir matin ou le soir</option>
                         <option value="Matin">Matin</option>
+                        <option value="Matin">Apres-midi</option>
                         <option value="Soir">Soir</option>
                     </select>
 
