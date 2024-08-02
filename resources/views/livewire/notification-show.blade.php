@@ -15,7 +15,7 @@
         <div class="flex items-center justify-center h-screen bg-gray-100">
             <div class="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">PASSEZ A L'ACHAT DIRECT</h2>
-                <h1>Le prix au quel vous negocier est {{$prixProd}} FCFA</h1>
+                <h1>Le prix au quel vous negocier est {{ $prixProd }} FCFA</h1>
 
                 <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
                     class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
@@ -1172,10 +1172,22 @@
             <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
                 </span>{{ $produit->name }}</h2>
             <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantite'] }}</p>
+            @php
+                // Assurez-vous que la variable $notification est définie et accessible
+                $produit = \App\Models\ProduitService::find($notification->data['produit_id']);
 
-            <p class="mb-3"><strong>Prix de l'article:</strong>{{ number_format($prixArticleNegos, 2, ',', ' ') }}
-                Fcfa
+                // Assurez-vous que $this->notification->data['quantite'] et $this->namefourlivr->prix sont définis et accessibles
+                $quantite = $this->notification->data['quantite'] ?? 0;
+                $prixUnitaire = $this->produit->prix ?? 0;
+
+                // Calcul du prix total de la négociation
+                $prixArticleNego = $quantite * $prixUnitaire;
+            @endphp
+
+            <p class="mb-3">
+                <strong>Prix Total:</strong> {{ number_format($prixArticleNego, 2, ',', ' ') }} Fcfa
             </p>
+
 
             <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
                 class="mb-3 bg-blue-700 text-white justify-center rounded-xl py-1 flex">
@@ -1215,7 +1227,7 @@
                             </svg>
                         </span>
                     </button>
-                    <button wire:click=''
+                    <button wire:click='refusoffre'
                         class="mt-4 px-4 py-1 w-full text-white bg-red-500 rounded-xl hover:bg-red-700">
                         <span wire:loading.remove>
                             refuser
