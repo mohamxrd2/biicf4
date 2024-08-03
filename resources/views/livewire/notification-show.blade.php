@@ -517,6 +517,7 @@
             </script>
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
+        <h1 class="text-center text-3xl font-semibold mb-2">Negociations des Fournisseurs</h1>
         <div class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
 

@@ -53,7 +53,7 @@ class GrouperFacture extends Command
                     $userQuantity = userquantites::where('code_unique', $code_unique)
                         ->where('user_id', $prodUser)
                         ->sum('quantite'); // La somme est un nombre, pas un objet
-                        
+
                     $data = [
                         'code_unique' => $code_unique,
                         'prixTrade' => $lowestPrice,
@@ -75,6 +75,11 @@ class GrouperFacture extends Command
                         Notification::send($owner, new GrouperFactureNotifications($data));
                     }
                 }
+                // Supprimer les commentaires avec ce code unique
+                Comment::where('code_unique', $code_unique)->delete();
+                // Supprimer les commentaires avec ce code unique
+                userquantites::where('code_unique', $code_unique)->delete();
+
 
                 // Mettre à jour la facture pour indiquer qu'une notification a été envoyée
                 $groupagefact->update(['notified' => true]);

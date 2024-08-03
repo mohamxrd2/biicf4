@@ -506,13 +506,21 @@ class NotificationShow extends Component
 
     public function valider()
     {
-        //prix final
-        $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
+        // Déterminer le prix unitaire
+        if (isset($this->notification->data['prixProd'])) {
+            $prixUnitaire = $this->notification->data['prixProd'];
+        } else {
+            $prixUnitaire = $this->notification->data['prixTrade'];
+        }
+        Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
 
         // Calculer le prix total
-        $montantTotal = $this->totalPrice;
+        $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
+        Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
 
+        // Vérifier si l'utilisateur est authentifié
         if (!$this->user) {
+            Log::error('Utilisateur non authentifié.');
             session()->flash('error', 'Utilisateur non authentifié.');
             return;
         }
@@ -520,44 +528,89 @@ class NotificationShow extends Component
         $userSender = User::find($this->user); // Assurez-vous de récupérer l'objet utilisateur
 
         if (!$userSender) {
+            Log::error('Utilisateur non trouvé avec ID', ['userId' => $this->user]);
             session()->flash('error', 'Utilisateur non authentifié.');
             return;
         }
+        Log::info('Utilisateur trouvé', ['userSender' => $userSender]);
 
-        $userWallet = Wallet::where('user_id',  $userSender->id)->first();
+        $userWallet = Wallet::where('user_id', $userSender->id)->first();
 
         if (!$userWallet) {
+            Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $userSender->id]);
             session()->flash('error', 'Portefeuille introuvable.');
             return;
         }
+        Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
 
-        $requiredAmount = $montantTotal;
+        $requiredAmount = $this->totalPrice;
 
         if ($userWallet->balance < $requiredAmount) {
+            Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
             session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
             return;
         }
 
         $userWallet->decrement('balance', $requiredAmount);
+        Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
         $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
 
-        $data = [
-            'idProd' => $this->notification->data['idProd'],
-            'code_unique' => $this->code_unique,
-            'id_trader' => $this->namefourlivr->user->id,
-            'localité' => $this->localite,
-            'quantite' => $this->notification->data['quantiteC'],
-            'id_livreur' => $this->userFour->id,
-            'prixTrade' => $this->notification->data['prixTrade'],
-            'prixProd' => $this->notification->data['prixProd']
-        ];
+        // Vérifier si le code unique existe dans userquantites
+        $userQuantitiesExist = userquantites::where('code_unique', $this->code_unique)->exists();
+        Log::info('Vérification de l\'existence du code unique', ['code_unique' => $this->code_unique, 'exists' => $userQuantitiesExist]);
 
+        if ($userQuantitiesExist) {
+            // Si le code unique existe, envoyer des notifications aux utilisateurs associés
+            $userQuantities = userquantites::where('code_unique', $this->code_unique)->get();
+            Log::info('Quantités utilisateur récupérées', ['userQuantities' => $userQuantities]);
 
-        Notification::send($userSender, new commandVerif($data));
+            // Groupement par utilisateur et calcul de la somme des quantités
+            $userQuantitiesSum = $userQuantities->groupBy('user_id')->map(function ($group) {
+                return $group->sum('quantite');
+            });
+            Log::info('Somme des quantités groupées par utilisateur', ['userQuantitiesSum' => $userQuantitiesSum]);
 
+            foreach ($userQuantitiesSum as $userId => $totalQuantity) {
+                $owner = User::find($userId);
+                if ($owner) {
+                    $data = [
+                        'idProd' => $this->notification->data['idProd'],
+                        'code_unique' => $this->code_unique,
+                        'id_trader' => $this->namefourlivr->user->id,
+                        'localité' => $this->localite,
+                        'quantite' => $totalQuantity, // Somme des quantités pour l'utilisateur
+                        'id_livreur' => $this->userFour->id,
+                        'prixTrade' => $this->notification->data['prixTrade'],
+                        'prixProd' => $this->notification->data['prixProd']
+                    ];
+                    Log::info('Notification envoyée', ['ownerId' => $userId, 'data' => $data]);
+                    Notification::send($owner, new commandVerif($data));
+                }
+            }
+        } else {
+            // Envoyer la notification normale au userSender
+            $data = [
+                'idProd' => $this->notification->data['idProd'],
+                'code_unique' => $this->code_unique,
+                'id_trader' => $this->namefourlivr->user->id,
+                'localité' => $this->localite,
+                'quantite' => $this->notification->data['quantiteC'],
+                'id_livreur' => $this->userFour->id,
+                'prixTrade' => $this->notification->data['prixTrade'],
+                'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
+            ];
+            Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
+            Notification::send($userSender, new commandVerif($data));
+        }
+
+        // Mettre à jour la notification et valider
         $this->notification->update(['reponse' => 'valide']);
+        Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
+
+
         $this->validate();
     }
+
 
     public function mainleve()
     {
@@ -876,7 +929,6 @@ class NotificationShow extends Component
 
     public function refuser()
     {
-        $this->notification->update(['reponse' => 'refuser']);
 
         $userId = Auth::id();
         if (!$userId) {
@@ -888,18 +940,58 @@ class NotificationShow extends Component
         $notification->reponse = 'refuser';
         $notification->save();
 
-        $userSender = User::find($this->notification->data['id_sender']);
+        // Récupérer les IDs d'expéditeur depuis la notification
+        $senderIds = $this->notification->data['id_sender'];
         $requiredAmount = $this->notification->data['montantTotal'];
-        $userWallet = Wallet::where('user_id', $userSender->id)->first();
-        if (!$userWallet) {
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
+
+        // Vérifier si l'ID d'expéditeur est un tableau ou un ID unique
+        if (is_array($senderIds)) {
+            // Cas où id_sender est un tableau d'IDs
+            $userSenders = User::whereIn('id', $senderIds)->get();
+
+            foreach ($userSenders as $userSender) {
+                $userWallet = Wallet::where('user_id', $userSender->id)->first();
+
+                if (!$userWallet) {
+                    session()->flash('error', 'Portefeuille introuvable pour l\'utilisateur avec ID ' . $userSender->id);
+                    return;
+                }
+
+                // Ajouter le montant requis au solde du portefeuille
+                $userWallet->increment('balance', $requiredAmount);
+
+                // Créer une transaction pour chaque utilisateur
+                $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
+
+                // Envoyer une notification à chaque utilisateur
+                Notification::send($userSender, new RefusAchat($this->messageR));
+            }
+        } else {
+            // Cas où id_sender est un seul ID
+            $userSender = User::find($senderIds);
+
+            if ($userSender) {
+                $userWallet = Wallet::where('user_id', $userSender->id)->first();
+
+                if (!$userWallet) {
+                    session()->flash('error', 'Portefeuille introuvable pour l\'utilisateur avec ID ' . $userSender->id);
+                    return;
+                }
+
+                // Ajouter le montant requis au solde du portefeuille
+                $userWallet->increment('balance', $requiredAmount);
+
+                // Créer une transaction pour l'utilisateur
+                $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
+
+                // Envoyer une notification à l'utilisateur
+                Notification::send($userSender, new RefusAchat($this->messageR));
+            } else {
+                session()->flash('error', 'Utilisateur introuvable avec ID ' . $senderIds);
+            }
         }
 
-        $userWallet->increment('balance', $requiredAmount);
-        $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
-
-        Notification::send($userSender, new RefusAchat($this->messageR));
+        $this->notification->update(['reponse' => 'refuser']);
 
         session()->flash('success', 'Achat refusé.');
         // $this->emit('notificationUpdated');
