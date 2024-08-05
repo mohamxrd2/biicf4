@@ -521,7 +521,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <script src="{{ asset('/build/assets/app-DIpgiKC1.js  ') }}"></script>
+    {{-- <script src="{{ asset('/build/assets/app-DIpgiKC1.js  ') }}"></script> --}}
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
