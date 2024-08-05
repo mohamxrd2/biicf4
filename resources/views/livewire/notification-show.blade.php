@@ -1665,7 +1665,7 @@
             <div class="bg-gray-100 p-4 rounded-lg">
                 <p class="mb-2">Nom du fournisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->name }}</span></p>
-                <p class="mb-2">Adresse du livreur: <span
+                <p class="mb-2">Adresse du fournisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->address }}</span>
                 </p>
                 <p class="mb-2">Email du founisseur: <span
