@@ -648,7 +648,6 @@ class NotificationShow extends Component
 
     public function departlivr()
     {
-        $this->isDelivering = true;
 
         $id_livreur = Auth::user()->id;
 
@@ -999,7 +998,6 @@ class NotificationShow extends Component
 
     public function refuseVerif()
     {
-        $this->isRefusing = true;
 
         // Calcul du prix total
         $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
@@ -1034,7 +1032,43 @@ class NotificationShow extends Component
         // Mise à jour de la notification
         $this->notification->update(['reponse' => 'refuseVerif']);
         $this->validate();
-        $this->isRefusing = false;
+    }
+    public function refuseVerifLivreur()
+    {
+
+        // Calcul du prix total
+        $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
+        $montantTotal = $this->totalPrice;
+
+        // Récupération des utilisateurs
+        $livreur = User::find($this->notification->data['id_livreur']);
+        $fournisseur = User::find($this->notification->data['id_trader']);
+
+        // Récupération de l'utilisateur authentifié (client)
+        $client = $this->client;  // Remplace Auth::id() par Auth::user() pour obtenir l'objet User
+
+        // Récupération du portefeuille du client
+        $clientWallet = Wallet::where('user_id', $client->id)->first();
+
+        if (!$clientWallet) {
+            session()->flash('error', 'Portefeuille du client introuvable.');
+            return;
+        }
+
+        // Augmentation du solde du portefeuille du client
+        $clientWallet->increment('balance', $montantTotal);
+
+        // Création de la transaction
+        $this->createTransaction($this->notification->data['id_trader'], $client->id, 'Reception', $montantTotal);
+
+        // Envoi des notifications
+        Notification::send($livreur, new RefusVerif('Le colis a été refusé !'));
+        Notification::send($fournisseur, new RefusVerif('Le colis a été refusé !'));
+        Notification::send($this->client, new RefusVerif('Le colis a été refusé !'));
+
+        // Mise à jour de la notification
+        $this->notification->update(['reponse' => 'refuseVerif']);
+        $this->validate();
     }
 
 
