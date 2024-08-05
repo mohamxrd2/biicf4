@@ -328,6 +328,7 @@ class NotificationShow extends Component
             $this->nameProd = $this->userTrader = $this->idProd = $this->prix = null;
         }
     }
+
     public function acceptoffre()
     {
 
@@ -400,6 +401,10 @@ class NotificationShow extends Component
         }
         Notification::send($userTrader, new AchatBiicf($data));
         $this->notification->update(['reponse' => 'accepte']);
+    }
+    public function refusoffre()
+    {
+        $this->notification->update(['reponse' => 'refus']);
     }
     public function AchatDirectForm()
     {
@@ -555,6 +560,47 @@ class NotificationShow extends Component
         Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
         $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
 
+
+        // Envoyer la notification normale au userSender
+        $data = [
+            'idProd' => $this->notification->data['idProd'],
+            'code_unique' => $this->code_unique,
+            'id_trader' => $this->namefourlivr->user->id,
+            'localité' => $this->localite,
+            'quantite' => $this->notification->data['quantiteC'],
+            'id_livreur' => $this->userFour->id,
+            'prixTrade' => $this->notification->data['prixTrade'],
+            'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
+        ];
+        Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
+        Notification::send($userSender, new commandVerif($data));
+
+
+        // Mettre à jour la notification et valider
+        $this->notification->update(['reponse' => 'valide']);
+        Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
+
+
+        $this->validate();
+    }
+
+
+    public function mainleve()
+    {
+
+        $id_client = Auth::user()->id;
+        Log::info('le id du client', ['id_client' => $id_client]);
+
+
+        $livreur = User::find($this->id_livreur);
+        Log::info('le id du livreur', ['livreur' => $livreur]);
+
+
+
+        $fournisseur = User::find($this->namefourlivr->user->id);
+        Log::info('le id du fournisseur', ['fournisseur' => $fournisseur]);
+
+
         // Vérifier si le code unique existe dans userquantites
         $userQuantitiesExist = userquantites::where('code_unique', $this->code_unique)->exists();
         Log::info('Vérification de l\'existence du code unique', ['code_unique' => $this->code_unique, 'exists' => $userQuantitiesExist]);
@@ -578,68 +624,41 @@ class NotificationShow extends Component
                         'code_unique' => $this->code_unique,
                         'id_trader' => $this->namefourlivr->user->id,
                         'localité' => $this->localite,
-                        'quantite' => $totalQuantity, // Somme des quantités pour l'utilisateur
-                        'id_livreur' => $this->userFour->id,
+                        'quantite' => $this->quantiteC,
+                        'id_client' => $id_client,
+                        'id_livreur' => $this->id_livreur,
                         'prixTrade' => $this->notification->data['prixTrade'],
                         'prixProd' => $this->notification->data['prixProd']
+
                     ];
                     Log::info('Notification envoyée', ['ownerId' => $userId, 'data' => $data]);
-                    Notification::send($owner, new commandVerif($data));
+
+                    Notification::send($owner, new mainlevefour($data));
+                    Notification::send($livreur, new mainleve($data));
+                    Notification::send($fournisseur, new mainlevefour($data));
+
+
                 }
             }
         } else {
-            // Envoyer la notification normale au userSender
+
             $data = [
                 'idProd' => $this->notification->data['idProd'],
                 'code_unique' => $this->code_unique,
                 'id_trader' => $this->namefourlivr->user->id,
                 'localité' => $this->localite,
-                'quantite' => $this->notification->data['quantiteC'],
-                'id_livreur' => $this->userFour->id,
+                'quantite' => $this->quantiteC,
+                'id_client' => $id_client,
+                'id_livreur' => $this->id_livreur,
                 'prixTrade' => $this->notification->data['prixTrade'],
-                'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
+                'prixProd' => $this->notification->data['prixProd']
+
             ];
-            Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
-            Notification::send($userSender, new commandVerif($data));
+
+            Notification::send($livreur, new mainleve($data));
+
+            Notification::send($fournisseur, new mainlevefour($data));
         }
-
-        // Mettre à jour la notification et valider
-        $this->notification->update(['reponse' => 'valide']);
-        Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
-
-
-        $this->validate();
-    }
-
-
-    public function mainleve()
-    {
-
-        $id_client = Auth::user()->id;
-
-        $livreur = User::find($this->id_livreur);
-
-
-
-        $fournisseur = User::find($this->namefourlivr->user->id);
-
-        $data = [
-            'idProd' => $this->notification->data['idProd'],
-            'code_unique' => $this->code_unique,
-            'id_trader' => $this->namefourlivr->user->id,
-            'localité' => $this->localite,
-            'quantite' => $this->quantiteC,
-            'id_client' => $id_client,
-            'id_livreur' => $this->id_livreur,
-            'prixTrade' => $this->notification->data['prixTrade'],
-            'prixProd' => $this->notification->data['prixProd']
-
-        ];
-
-        Notification::send($livreur, new mainleve($data));
-
-        Notification::send($fournisseur, new mainlevefour($data));
-
 
 
         $this->notification->update(['reponse' => 'mainleve']);
@@ -940,7 +959,7 @@ class NotificationShow extends Component
         $notification->save();
 
         // Récupérer les IDs d'expéditeur depuis la notification
-        $senderIds = $this->notification->data['id_sender'];
+        $senderIds = $this->notification->data['userSender'];
         $requiredAmount = $this->notification->data['montantTotal'];
 
         // Vérifier si l'ID d'expéditeur est un tableau ou un ID unique
