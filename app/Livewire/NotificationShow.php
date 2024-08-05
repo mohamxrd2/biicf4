@@ -631,13 +631,25 @@ class NotificationShow extends Component
                         'prixProd' => $this->notification->data['prixProd']
 
                     ];
+                    $donne = [
+                        'idProd' => $this->notification->data['idProd'],
+                        'code_unique' => $this->code_unique,
+                        'id_trader' => $this->namefourlivr->user->id,
+                        'localité' => $this->localite,
+                        'quantite' => $totalQuantity,
+                        'id_client' => $id_client,
+                        'id_livreur' => $this->id_livreur,
+                        'prixTrade' => $this->notification->data['prixTrade'],
+                        'prixProd' => $this->notification->data['prixProd']
+
+                    ];
                     Log::info('Notification envoyée', ['ownerId' => $userId, 'data' => $data]);
 
-                    Notification::send($owner, new mainlevefour($data));
+
+
+                    Notification::send($owner, new mainlevefour($donne));
                     Notification::send($livreur, new mainleve($data));
                     Notification::send($fournisseur, new mainlevefour($data));
-
-
                 }
             }
         } else {
@@ -1090,7 +1102,6 @@ class NotificationShow extends Component
         $this->validate();
     }
 
-
     // protected function handleCommission($user, $amount, $type)
     // {
     //     if ($user->parrain) {
@@ -1321,7 +1332,6 @@ class NotificationShow extends Component
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
     }
-
     public function commentoffgroup()
     {
         try {
