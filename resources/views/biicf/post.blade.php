@@ -173,20 +173,20 @@
                                             <div class="space-y-3 w-full mb-3">
                                                 <input type="text" name="ville" id="floating_ville"
                                                     class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="Ville " />
+                                                    placeholder="Département" />
                                             </div>
                                             <div class="space-y-3 w-full mb-3">
                                                 <input type="text" name="commune" id="floating_commune"
                                                     class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="Commune " />
+                                                    placeholder="Localité" />
                                             </div>
 
 
 
                                             <div class="relative z-0 w-full mb-5 group">
-                                                <textarea id="floating_description" name="description"
+                                                <input id="floating_description" name="description"
                                                     class="py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    rows="3" placeholder="Description de la publication"></textarea>
+                                                    rows="3" placeholder="Specification">
                                             </div>
 
                                             <div class="relative z-0 flex justify-between items-center w-full flex-row">
