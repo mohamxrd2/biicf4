@@ -1152,7 +1152,7 @@ class NotificationShow extends Component
         ]);
         $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+        // broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $this->code_unique)
@@ -1204,7 +1204,7 @@ class NotificationShow extends Component
 
         $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+        // broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -1254,7 +1254,7 @@ class NotificationShow extends Component
         ]);
         $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+        // broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
 
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -1309,7 +1309,7 @@ class NotificationShow extends Component
 
         $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+        // broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
@@ -1355,7 +1355,7 @@ class NotificationShow extends Component
             ]);
             $this->commentsend($comment);
 
-            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+            // broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
             $produit = ProduitService::with('user')->find($this->idProd);
 
