@@ -393,6 +393,7 @@ class NotificationShow extends Component
             'userSender' => Auth::id(),
             'photoProd' => $this->produit->photoProd1,
             'idProd' => $this->produit_id,
+            'code_unique' => $this->code_unique,
         ];
         // Retrieve the trader's user model
         $userTrader = User::find($produit->user_id);
