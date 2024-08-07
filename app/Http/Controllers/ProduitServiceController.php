@@ -242,4 +242,8 @@ class ProduitServiceController extends Controller
             return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
     }
+    public function postProduit()
+    {
+        return view('biicf.AjoutProduit');
+    }
 }

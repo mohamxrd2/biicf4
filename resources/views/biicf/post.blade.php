@@ -22,7 +22,7 @@
         class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 dark:bg-gray-900">
 
         <div>
-            <h1 class="bold" style="font-size: 24px;">Liste des publications</h1>
+            <h1 class="bold" style="font-size: 24px;">Liste Des Publications & Produits</h1>
         </div>
 
         <div class="flex items-center">
@@ -35,14 +35,13 @@
                             d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                     </svg>
                 </div>
-                <input type="text" id="searchInput" onkeyup="searchTable()"
+                <input type="text"
                     class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Rechercher...">
             </div>
-            <button type="button"
-                class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                data-hs-overlay="#hs-static-backdrop-modal">
-                Ajouter
+            <a href="{{ route('biicf.postProduit') }}"
+                class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                AJOUTER
 
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-6 h-6">
@@ -50,313 +49,9 @@
                         d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
 
-            </button>
-
-            <div id="hs-static-backdrop-modal"
-                class="hs-overlay size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto [--overlay-backdrop:static] @if ($errors->any()) open opened @else hidden @endif bg-black bg-opacity-50"
-                data-hs-overlay-keyboard="false" aria-overlay="true" tabindex="-1">
-
-                <div
-                    class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-
-                    <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
+            </a>
 
 
-
-                        <form action="{{ route('biicf.pubstore', ['username' => $user->username]) }}" method="POST"
-                            enctype="multipart/form-data">
-                            @csrf
-                            <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto form1">
-
-                                <div class="flex justify-between items-center py-3 px-4 border-b">
-                                    <h3 class="font-bold text-gray-800">
-                                        Ajouter des publications
-                                    </h3>
-
-                                    <button type="button"
-                                        class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
-                                        data-hs-overlay="#hs-static-backdrop-modal">
-                                        <span class="sr-only">Close</span>
-                                        <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M18 6 6 18"></path>
-                                            <path d="m6 6 12 12"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                {{-- publication --}}
-                                <div class="p-4 overflow-y-auto">
-
-
-                                    <div class="max-w-md mx-auto">
-                                        <div class="gap-y-6">
-                                            <input type="hidden" name="user_id" value="{{ $user->id }}">
-
-                                            <div class="relative z-0 w-full mb-5 group">
-                                                <select name="type" id="choose"
-                                                    class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                                                    <option value="" disabled selected>Choisir le
-                                                        type</option>
-                                                    <option value="produits">Produit</option>
-                                                    <option value="services">Service</option>
-                                                </select>
-
-                                            </div>
-                                            {{-- les inputs suivants sont pour les produits --}}
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="text" name="name" id="floating_first_name"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder=" Nom du produit ou service " />
-                                            </div>
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="text" name="conditionnement" id="floating_cond"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="conditionnement" />
-                                            </div>
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="text" name="format" id="floating_format"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="format du produit " />
-                                            </div>
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="number" name="qteProd_min" id="floating_qtemin"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder=" Quantité Minimale " />
-                                            </div>
-
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="number" name="qteProd_max" id="floating_qtemax"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder=" Quantité Maxiamle" />
-                                            </div>
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="number" name="prix" id="floating_prix"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="Prix" />
-                                            </div>
-                                            <div class="relative z-0 w-full mb-5 group">
-                                                <select name="livraison" id="floating_livraison"
-                                                    class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                                                    <option value="" disabled selected>Capacité à
-                                                        livrer</option>
-                                                    <option value="oui">Oui</option>
-                                                    <option value="non">Non</option>
-                                                </select>
-
-                                            </div>
-                                            {{-- les inputs suivants sont pour les services --}}
-                                            <div class="relative z-0 w-full mb-5 group">
-                                                <select name="qualification" id="floating_qualification"
-                                                    class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                                                    <option value="" disabled selected>Experiance dans le
-                                                        domaine</option>
-                                                    <option value="Moins de 1 an">Moins de 1 an</option>
-                                                    <option value="De 1 à 5 ans">De 1 à 5 ans</option>
-                                                    <option value="De 5 à 10 ans">De 5 à 10 ans</option>
-                                                    <option value="Plus de 10 ans">Plus de 10 ans</option>
-                                                </select>
-
-                                            </div>
-
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="text" name="specialite" id="floating_specialite"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="Spécialite " />
-                                            </div>
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="number" name="qte_service" id="floating_qte_service"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="Nombre de personnel " />
-                                            </div>
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="text" name="ville" id="floating_ville"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="Département" />
-                                            </div>
-                                            <div class="space-y-3 w-full mb-3">
-                                                <input type="text" name="commune" id="floating_commune"
-                                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    placeholder="Localité" />
-                                            </div>
-
-
-
-                                            <div class="relative z-0 w-full mb-5 group">
-                                                <input id="floating_description" name="description"
-                                                    class="py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                    rows="3" placeholder="Specification">
-                                            </div>
-
-                                            <div class="relative z-0 flex justify-between items-center w-full flex-row">
-                                                <div class="flex items-center justify-center w-20" id="floating_photo1">
-                                                    <div class=" overflow-hidden rounded-md relative">
-                                                        <label for="file-upload1"
-                                                            class="flex flex-col items-center justify-center w-full h-30 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                                            <div
-                                                                class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                    viewBox="0 0 24 24" stroke-width="1.5"
-                                                                    stroke="currentColor" class="w-6 h-6">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                                                                </svg>
-
-                                                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                                                    <span class="font-semibold">Photo 1</span>
-                                                                </p>
-                                                            </div>
-                                                        </label>
-                                                        <input id="file-upload1" class="hidden rounded-md "
-                                                            type="file" onchange="previewImage(this)" name="image">
-                                                        <img id="image-preview1"
-                                                            class="absolute inset-0 w-full h-full object-cover hidden">
-                                                        <button type="button" onclick="removeImage()"
-                                                            id="remove-button1"
-                                                            class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">
-                                                            <svg class="w-full" xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor" class="w-6 h-6">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12" />
-                                                            </svg>
-
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="flex items-center justify-center w-20" id="floating_photo2">
-                                                    <div class=" overflow-hidden rounded-md relative">
-                                                        <label for="file-upload2"
-                                                            class="flex flex-col items-center justify-center w-full h-30 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                                            <div
-                                                                class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                    viewBox="0 0 24 24" stroke-width="1.5"
-                                                                    stroke="currentColor" class="w-6 h-6">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                                                                </svg>
-
-                                                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                                                    <span class="font-semibold">Photo 2</span>
-                                                                </p>
-                                                            </div>
-                                                        </label>
-                                                        <input id="file-upload2" class="hidden rounded-md" type="file"
-                                                            onchange="previewImage2(this)" name="image2">
-                                                        <img id="image-preview2"
-                                                            class="absolute inset-0 w-full h-full object-cover hidden">
-                                                        <button type="button" onclick="removeImage2()"
-                                                            id="remove-button2"
-                                                            class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">
-                                                            <svg class="w-full" xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor" class="w-6 h-6">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12" />
-                                                            </svg>
-
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-
-                                                <div class="flex items-center justify-center w-20" id="floating_photo3">
-                                                    <div class="overflow-hidden rounded-md relative">
-                                                        <label for="file-upload3"
-                                                            class="flex flex-col items-center justify-center w-full h-30 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                                            <div
-                                                                class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                    viewBox="0 0 24 24" stroke-width="1.5"
-                                                                    stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                                                                </svg>
-                                                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                                                    <span class="font-semibold">Photo 3</span>
-                                                                </p>
-                                                            </div>
-                                                        </label>
-                                                        <input id="file-upload3" class="hidden rounded-md" type="file"
-                                                            onchange="previewImage3(this)" name="image3">
-                                                        <img id="image-preview3"
-                                                            class="absolute inset-0 w-full h-full object-cover hidden">
-                                                        <button type="button" onclick="removeImage3()"
-                                                            id="remove-button3"
-                                                            class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">
-                                                            <svg class="w-full" xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="flex items-center justify-center w-20" id="floating_photo4">
-                                                    <div class="overflow-hidden rounded-md relative">
-                                                        <label for="file-upload4"
-                                                            class="flex flex-col items-center justify-center w-full h-30 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                                            <div
-                                                                class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                    viewBox="0 0 24 24" stroke-width="1.5"
-                                                                    stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                                                                </svg>
-                                                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                                                    <span class="font-semibold">Photo 4</span>
-                                                                </p>
-                                                            </div>
-                                                        </label>
-                                                        <input id="file-upload4" class="hidden rounded-md" type="file"
-                                                            onchange="previewImage4(this)" name="image4">
-                                                        <img id="image-preview4"
-                                                            class="absolute inset-0 w-full h-full object-cover hidden">
-                                                        <button type="button" onclick="removeImage4()"
-                                                            id="remove-button4"
-                                                            class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">
-                                                            <svg class="w-full" xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t">
-                                    <button type="button"
-                                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                                        data-hs-overlay="#hs-static-backdrop-modal">
-                                        Fermer
-                                    </button>
-                                    <button type="submit"
-                                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
-                                        Ajouter
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-
-                </div>
-            </div>
 
         </div>
     </div>
@@ -368,15 +63,15 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Nom &
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                    Nom &
                                     image</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Type</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Prix</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Status
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                    Type</th>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                    Prix</th>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                    Status
                                 </th>
                                 <th scope="col" class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase">
                                     Action</th>
@@ -407,8 +102,7 @@
                                         <th scope="row"
                                             class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
 
-                                            <a href="{{ route('biicf.postdet', $produit->id) }}"
-                                                class="flex items-center">
+                                            <a href="{{ route('biicf.postdet', $produit->id) }}" class="flex items-center">
                                                 <img class="w-10 h-10 rounded-md"
                                                     src="{{ $produit->photoProd1 ? asset($produit->photoProd1) : asset('img/noimg.jpeg') }}"
                                                     alt="Jese image">
