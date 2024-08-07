@@ -2,8 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Models\ProduitService;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Str;
+
 
 class AjoutProduitServices extends Component
 {
@@ -11,13 +14,16 @@ class AjoutProduitServices extends Component
     use WithFileUploads;
 
     public $type  = '';
+    public $generateReference = false; // Ajoutez cette propriété pour l'état de la case à cocher
+    public $reference = '';
     public $name  = '';
+    //  produit
     public $conditionnement  = '';
     public $format  = '';
     public $qteProd_min  = '';
     public $qteProd_max  = '';
     public $prix  = '';
-    public $livraison  = '';
+    //services
     public $qualification  = '';
     public $specialite  = '';
     public $qte_service  = '';
@@ -26,7 +32,22 @@ class AjoutProduitServices extends Component
 
     public $description  = '';
 
+    // Méthode appelée lors du clic sur la case à cocher
+    public function toggleGenerateReference()
+    {
+        $this->generateReference = !$this->generateReference; // Inverse l'état de la case à cocher
 
+        if ($this->generateReference) {
+            $this->reference = $this->generateUniqueReference();
+        } else {
+            $this->reference = ''; // Efface la référence si la case est décochée
+        }
+    }
+
+    protected function generateUniqueReference()
+    {
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
+    }
     public function submit()
     {
         dd($this->validate([
@@ -37,13 +58,11 @@ class AjoutProduitServices extends Component
             'qteProd_min' => 'required_if:type,produits|string',
             'qteProd_max' => 'required_if:type,produits|string',
             'prix' => 'required|integer',
-            'livraison' => 'required_if:type,produits|string|in:oui,non',
             'qualification' => 'required_if:type,services|string',
             'specialite' => 'required_if:type,services|string',
             'qte_service' => 'required_if:type,services|string',
             'ville' => 'required|string',
             'commune' => 'required|string',
-            'images' => 'image|mimes:jpeg,png|max:2048', // Adjust validation rules as needed
             'description' => 'required|string',
         ]));
 
@@ -65,7 +84,6 @@ class AjoutProduitServices extends Component
                 'commune' => $this->commune,
                 'desrip' => $this->description,
                 'user_id' => auth()->id(),
-                'images' => json_encode($imagePaths), // Stockage des chemins des images
             ]);
 
 
