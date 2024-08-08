@@ -11,19 +11,24 @@ class ProduitService extends Model
 
     protected $fillable = [
         'name',
+        'referencee',
         'type',
         'condProd',
         'formatProd',
         'qteProd_min',
         'qteProd_max',
+        'specification',
+        'origine',
+        //
         'prix',
+        //
         'LivreCapProd',
         'photoProd1',
         'photoProd2',
         'photoProd3',
         'photoProd4',
         'videoProd',
-        'desrip',
+        'Particularite',
         'qalifServ',
         'sepServ',
         'qteServ',

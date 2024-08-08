@@ -453,9 +453,7 @@ class UserController extends Controller
             'repeat-password' => 'required|string|same:password',
             'email' => 'required|email|max:255|unique:users',
             'phone' => 'required',
-            'local' => 'required',
-            'adress_geo' => 'required',
-            'proximity' => 'required',
+
         ], [
             'email.unique' => 'Email deja utlisé',
             'name.required' => 'Le champ nom est requis.',
@@ -468,9 +466,6 @@ class UserController extends Controller
             'email.required' => 'Le champ email est requis.',
             'email.email' => 'L\'adresse email doit être valide.',
             'phone.required' => 'Le champ téléphone est requis.',
-            'local.required' => 'Le champ localité est requis.',
-            'adress_geo.required' => 'Le champ adresse géographique est requis.',
-            'proximity.required' => 'Le champ zone d\'activité est requis.',
         ]);
 
         try {
@@ -480,9 +475,6 @@ class UserController extends Controller
             $user->password = Hash::make($validatedData['password']);
             $user->email = $validatedData['email'];
             $user->phone = $validatedData['phone'];
-            $user->local_area = $validatedData['local'];
-            $user->address = $validatedData['adress_geo'];
-            $user->active_zone = $validatedData['proximity'];
             $user->actor_type = $request->input('user_type');
             $user->gender = $request->input('user_sexe');
             $user->age = $request->input('user_age');

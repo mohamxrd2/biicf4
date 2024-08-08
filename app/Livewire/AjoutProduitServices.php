@@ -39,6 +39,7 @@ class AjoutProduitServices extends Component
     public $produits = [];
     public $selectedCategories = [];
 
+    public $selectedProduits = [];
 
 
     public function mount()
@@ -60,6 +61,43 @@ class AjoutProduitServices extends Component
         } else {
             $this->produits = collect(); // Reset if no categories selected
         }
+    }
+    public function updateProductDetails($productId)
+    {
+        $selectedProduct = ProduitService::find($productId);
+
+        if ($selectedProduct) {
+            // Remplir les propriétés avec les détails du produit sélectionné
+            $this->conditionnement = $selectedProduct->conditionnement;
+            $this->format = $selectedProduct->format;
+            $this->particularite = $selectedProduct->particularite;
+            $this->origine = $selectedProduct->origine;
+            $this->qteProd_min = $selectedProduct->qteProd_min;
+            $this->qteProd_max = $selectedProduct->qteProd_max;
+            $this->specification = $selectedProduct->specification;
+            $this->prix = $selectedProduct->prix;
+            $this->qualification = ''; // Reset qualifications for services
+            $this->specialite = ''; // Reset specialties for services
+            $this->qte_service = ''; // Reset service quantity
+        } else {
+            // Réinitialiser les propriétés si aucun produit n'est trouvé
+            $this->resetProductFields();
+        }
+    }
+
+    protected function resetProductFields()
+    {
+        $this->conditionnement = '';
+        $this->format = '';
+        $this->particularite = '';
+        $this->origine = '';
+        $this->qteProd_min = '';
+        $this->qteProd_max = '';
+        $this->specification = '';
+        $this->prix = '';
+        $this->qualification = '';
+        $this->specialite = '';
+        $this->qte_service = '';
     }
 
 
@@ -118,9 +156,9 @@ class AjoutProduitServices extends Component
             'reference' => $this->reference,
             'name' => $this->name, // Adjusted for 'Produit'
             //produit
-            'conditionnement' => $this->type === 'Produit' ? $this->conditionnement : null,
-            'format' => $this->type === 'Produit' ? $this->format : null,
-            'particularite' => $this->type === 'Produit' ? $this->particularite : null,
+            'condProd' => $this->type === 'Produit' ? $this->conditionnement : null,
+            'formatProd' => $this->type === 'Produit' ? $this->format : null,
+            'Particularite' => $this->type === 'Produit' ? $this->particularite : null,
             'origine' => $this->type === 'Produit' ? $this->origine : null,
             'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
             'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
@@ -128,13 +166,13 @@ class AjoutProduitServices extends Component
             //
             'prix' => $this->prix,
             //service
-            'qualification' => $this->type === 'Service' ? $this->qualification : null,
-            'specialite' => $this->type === 'Service' ? $this->specialite : null,
-            'qte_service' => $this->type === 'Service' ? $this->qte_service : null,
+            'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
+            'sepServ' => $this->type === 'Service' ? $this->specialite : null,
+            'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
             //
-            'depart' => $this->depart,
-            'ville' => $this->ville,
-            'commune' => $this->commune,
+            'zoneecoServ' => $this->depart,
+            'villeServ' => $this->ville,
+            'comnServ' => $this->commune,
             'user_id' => auth()->id(),
             'categorie_id' => $categorie->id ?? null,
         ]);

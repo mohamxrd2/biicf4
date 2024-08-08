@@ -340,35 +340,12 @@
                                     // Ajoutez d'autres attributs au besoin
                                 ])
                                 @include('admin.components.input', [
-                                    'name' => 'local',
-                                    'type' => 'text',
-                                    'placeholder' => 'Localité',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.input', [
-                                    'name' => 'adress_geo',
-                                    'type' => 'text',
-                                    'placeholder' => 'Adresse',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.input', [
                                     'name' => 'email',
                                     'type' => 'email',
                                     'placeholder' => 'Email',
                                     // Ajoutez d'autres attributs au besoin
                                 ])
-                                @include('admin.components.select', [
-                                    'name' => 'proximity',
-                                    'title' => 'Zone d\'activité',
-                                    'options' => [
-                                        'Proximité',
-                                        'Locale',
-                                        'Nationale',
-                                        'Sous Régionale',
-                                        'Continentale',
-                                        'Internationale',
-                                    ],
-                                ])
+
                                 <input type="number"
                                     class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                                     placeholder="Code de parrainage (Optionnel)">
