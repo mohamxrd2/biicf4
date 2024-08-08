@@ -31,7 +31,8 @@ class ProduitService extends Model
         'villeServ',
         'comnServ',
         'user_id',
-        'statuts'
+        'statuts',
+        'categorie_id',
     ];
 
     public function user()

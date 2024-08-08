@@ -13,7 +13,8 @@ class AjoutProduitServices extends Component
 {
 
     use WithFileUploads;
-
+    public $categories = [];
+    public $categorie  = '';
     public $type  = '';
     public $generateReference = false; // Ajoutez cette propriété pour l'état de la case à cocher
     public $reference = '';
@@ -35,15 +36,33 @@ class AjoutProduitServices extends Component
     public $depart  = '';
     public $ville  = '';
     public $commune  = '';
-    //
-    public $categories  = '';
+    public $produits = [];
+    public $selectedCategories = [];
+
 
 
     public function mount()
     {
         // Récupère toutes les catégories
         $this->categories = CategorieProduits_Servives::all();
+        $this->produits = collect(); // Ensure it's an empty Collection
+
     }
+
+
+    public function updateProducts(array $selectedCategories)
+    {
+        $this->selectedCategories = $selectedCategories;
+
+        // Update products based on selected categories
+        if ($this->selectedCategories) {
+            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)->get();
+        } else {
+            $this->produits = collect(); // Reset if no categories selected
+        }
+    }
+
+
     // Méthode appelée lors du clic sur la case à cocher
     public function toggleGenerateReference()
     {
@@ -63,6 +82,7 @@ class AjoutProduitServices extends Component
     public function submit()
     {
         $this->validate([
+            'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
             'reference' => 'required|string',
             'name' => 'required|string|max:255',
@@ -86,7 +106,12 @@ class AjoutProduitServices extends Component
             'commune' => 'required|string',
         ]);
 
-
+        // Création de la catégorie si elle n'existe pas encore
+        if ($this->categorie) {
+            $categorie = CategorieProduits_Servives::firstOrCreate([
+                'categorie_produit_services' => $this->categorie,
+            ]);
+        }
 
         ProduitService::create([
             'type' => $this->type,
@@ -111,6 +136,7 @@ class AjoutProduitServices extends Component
             'ville' => $this->ville,
             'commune' => $this->commune,
             'user_id' => auth()->id(),
+            'categorie_id' => $categorie->id ?? null,
         ]);
 
         session()->flash('message', 'Produit ou service ajouté avec succès!');
