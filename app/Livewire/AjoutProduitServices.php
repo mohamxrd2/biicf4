@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\CategorieProduits_Servives;
 use App\Models\ProduitService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -39,8 +40,12 @@ class AjoutProduitServices extends Component
     public $commune  = '';
     public $produits = [];
     public $selectedCategories = [];
-
     public $selectedProduits = [];
+    //photo
+    public $photoProd1;
+    public $photoProd2;
+    public $photoProd3;
+    public $photoProd4;
 
 
     public function mount()
@@ -145,6 +150,11 @@ class AjoutProduitServices extends Component
             'depart' => 'required|string',
             'ville' => 'required|string',
             'commune' => 'required|string',
+            //photo
+            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'photoProd2' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'photoProd3' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'photoProd4' => 'required|image|mimes:jpeg,png,jpg,gif',
         ]);
 
         try {
@@ -155,7 +165,7 @@ class AjoutProduitServices extends Component
                 ]);
             }
 
-            ProduitService::create([
+            $produitService = ProduitService::create([
                 'type' => $this->type,
                 'reference' => $this->reference,
                 'name' => $this->name, // Adjusted for 'Produit'
@@ -180,6 +190,13 @@ class AjoutProduitServices extends Component
                 'user_id' => auth()->id(),
                 'categorie_id' => $categorie->id ?? null,
             ]);
+
+            // Gestion des photos
+            $this->handlePhotoUpload($produitService, '1');
+            $this->handlePhotoUpload($produitService, '2');
+            $this->handlePhotoUpload($produitService, '3');
+            $this->handlePhotoUpload($produitService, '4');
+
             session()->flash('message', 'Produit ou service ajouté avec succès!');
 
             $this->resetForm(); // Réinitialise le formulaire après la soumission
@@ -210,8 +227,20 @@ class AjoutProduitServices extends Component
         $this->depart = '';
         $this->ville = '';
         $this->commune = '';
+        $this->photoProd1 = '';
+        $this->photoProd2 = '';
+        $this->photoProd3 = '';
+        $this->photoProd4 = '';
         // Réinitialiser les catégories si nécessaire
         $this->categories = CategorieProduits_Servives::all();
+    }
+    protected function handlePhotoUpload($produitService, $photoField)
+    {
+        if ($this->$photoField) {
+            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $this->$photoField->extension();
+            $this->$photoField->storeAs('all', $photoName);
+            $produitService->update([$photoField => $photoName]);
+        }
     }
     public function render()
     {

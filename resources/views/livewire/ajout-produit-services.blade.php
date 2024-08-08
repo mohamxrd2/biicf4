@@ -261,24 +261,40 @@
 
                 <!-- Images -->
                 <h1 class="text-center text-xl font-bold mb-8">Ajout D'Image</h1>
-                {{-- <div class="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                    <input type="file" class="w-full p-2 border border-gray-300 rounded-md">
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Image1</label>
+                        <input type="file" wire:model="photoProd1"
+                            class="w-full p-2 border border-gray-300 rounded-md">
+                        @error('photoProd1')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Image2</label>
+                        <input type="file" wire:model="photoProd2"
+                            class="w-full p-2 border border-gray-300 rounded-md">
+                        @error('photoProd2')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Image3</label>
+                        <input type="file" wire:model="photoProd3"
+                            class="w-full p-2 border border-gray-300 rounded-md">
+                        @error('photoProd3')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Image4</label>
+                        <input type="file" wire:model="photoProd4"
+                            class="w-full p-2 border border-gray-300 rounded-md">
+                        @error('photoProd4')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                    <input type="file" class="w-full p-2 border border-gray-300 rounded-md">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                    <input type="file" class="w-full p-2 border border-gray-300 rounded-md">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                    <input type="file" class="w-full p-2 border border-gray-300 rounded-md">
-                </div>
-            </div> --}}
 
                 <!-- Boutons d'action -->
                 <div class="text-right">
