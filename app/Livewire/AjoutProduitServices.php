@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\CategorieProduits_Servives;
 use App\Models\ProduitService;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
@@ -144,42 +145,47 @@ class AjoutProduitServices extends Component
             'commune' => 'required|string',
         ]);
 
-        // Création de la catégorie si elle n'existe pas encore
-        if ($this->categorie) {
-            $categorie = CategorieProduits_Servives::firstOrCreate([
-                'categorie_produit_services' => $this->categorie,
+        try {
+            // Création de la catégorie si elle n'existe pas encore
+            if ($this->categorie) {
+                $categorie = CategorieProduits_Servives::firstOrCreate([
+                    'categorie_produit_services' => $this->categorie,
+                ]);
+            }
+
+            ProduitService::create([
+                'type' => $this->type,
+                'reference' => $this->reference,
+                'name' => $this->name, // Adjusted for 'Produit'
+                //produit
+                'condProd' => $this->type === 'Produit' ? $this->conditionnement : null,
+                'formatProd' => $this->type === 'Produit' ? $this->format : null,
+                'Particularite' => $this->type === 'Produit' ? $this->particularite : null,
+                'origine' => $this->type === 'Produit' ? $this->origine : null,
+                'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
+                'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
+                'specification' => $this->type === 'Produit' ? $this->specification : null,
+                //
+                'prix' => $this->prix,
+                //service
+                'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
+                'sepServ' => $this->type === 'Service' ? $this->specialite : null,
+                'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
+                //
+                'zonecoServ' => $this->depart,
+                'villeServ' => $this->ville,
+                'comnServ' => $this->commune,
+                'user_id' => auth()->id(),
+                'categorie_id' => $categorie->id ?? null,
             ]);
+            session()->flash('message', 'Produit ou service ajouté avec succès!');
+
+            $this->resetForm(); // Réinitialise le formulaire après la soumission
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'ajout du produit ou service: ' . $e->getMessage());
+            session()->flash('error', 'Une erreur est survenue lors de l\'ajout du produit ou service.');
         }
-
-        ProduitService::create([
-            'type' => $this->type,
-            'reference' => $this->reference,
-            'name' => $this->name, // Adjusted for 'Produit'
-            //produit
-            'condProd' => $this->type === 'Produit' ? $this->conditionnement : null,
-            'formatProd' => $this->type === 'Produit' ? $this->format : null,
-            'Particularite' => $this->type === 'Produit' ? $this->particularite : null,
-            'origine' => $this->type === 'Produit' ? $this->origine : null,
-            'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
-            'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
-            'specification' => $this->type === 'Produit' ? $this->specification : null,
-            //
-            'prix' => $this->prix,
-            //service
-            'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
-            'sepServ' => $this->type === 'Service' ? $this->specialite : null,
-            'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
-            //
-            'zoneecoServ' => $this->depart,
-            'villeServ' => $this->ville,
-            'comnServ' => $this->commune,
-            'user_id' => auth()->id(),
-            'categorie_id' => $categorie->id ?? null,
-        ]);
-
-        session()->flash('message', 'Produit ou service ajouté avec succès!');
-
-        $this->resetForm(); // Réinitialise le formulaire après la soumission
     }
     // Méthode pour réinitialiser les champs du formulaire
     public function resetForm()

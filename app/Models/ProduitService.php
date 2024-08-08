@@ -11,7 +11,7 @@ class ProduitService extends Model
 
     protected $fillable = [
         'name',
-        'referencee',
+        'reference',
         'type',
         'condProd',
         'formatProd',
