@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\CategorieProduits_Servives;
 use App\Models\ProduitService;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -20,18 +21,29 @@ class AjoutProduitServices extends Component
     //  produit
     public $conditionnement  = '';
     public $format  = '';
+    public $particularite  = '';
+    public $origine  = '';
     public $qteProd_min  = '';
     public $qteProd_max  = '';
+    public $specification  = '';
+    //
     public $prix  = '';
-    //services
+    //Service
     public $qualification  = '';
     public $specialite  = '';
     public $qte_service  = '';
+    public $depart  = '';
     public $ville  = '';
     public $commune  = '';
+    //
+    public $categories  = '';
 
-    public $description  = '';
 
+    public function mount()
+    {
+        // Récupère toutes les catégories
+        $this->categories = CategorieProduits_Servives::all();
+    }
     // Méthode appelée lors du clic sur la case à cocher
     public function toggleGenerateReference()
     {
@@ -50,50 +62,84 @@ class AjoutProduitServices extends Component
     }
     public function submit()
     {
-        dd($this->validate([
-            'type' => 'required|string|in:produits,services',
+        $this->validate([
+            'type' => 'required|string|in:Produit,Service',
+            'reference' => 'required|string',
             'name' => 'required|string|max:255',
-            'conditionnement' => 'required_if:type,produits|string|max:255',
-            'format' => 'required_if:type,produits|string',
-            'qteProd_min' => 'required_if:type,produits|string',
-            'qteProd_max' => 'required_if:type,produits|string',
+            //produits
+            'conditionnement' => 'required_if:type,Produit|string|max:255',
+            'format' => 'required_if:type,Produit|string',
+            'particularite' => 'required_if:type,Produit|string',
+            'origine' => 'required_if:type,Produit|string',
+            'qteProd_min' => 'required_if:type,Produit|integer',
+            'qteProd_max' => 'required_if:type,Produit|integer',
+            'specification' => 'required_if:type,Produit|string',
+            //
             'prix' => 'required|integer',
-            'qualification' => 'required_if:type,services|string',
-            'specialite' => 'required_if:type,services|string',
-            'qte_service' => 'required_if:type,services|string',
+            //service
+            'qualification' => 'required_if:type,Service|string',
+            'specialite' => 'required_if:type,Service|string',
+            'qte_service' => 'required_if:type,Service|string',
+            //
+            'depart' => 'required|string',
             'ville' => 'required|string',
             'commune' => 'required|string',
-            'description' => 'required|string',
-        ]));
-
-        try {
-
-            ProduitService::create([
-                'type' => $this->type,
-                'name' => $this->name, // Adjusted for 'produits'
-                'conditionnement' => $this->type === 'produits' ? $this->conditionnement : null,
-                'format' => $this->type === 'produits' ? $this->format : null,
-                'qteProd_min' => $this->type === 'produits' ? $this->qteProd_min : null,
-                'qteProd_max' => $this->type === 'produits' ? $this->qteProd_max : null,
-                'prix' => $this->prix,
-                'livraison' => $this->type === 'produits' ? $this->livraison : null,
-                'qualification' => $this->type === 'services' ? $this->qualification : null,
-                'specialite' => $this->type === 'services' ? $this->specialite : null,
-                'qte_service' => $this->type === 'services' ? $this->qte_service : null,
-                'ville' => $this->ville,
-                'commune' => $this->commune,
-                'desrip' => $this->description,
-                'user_id' => auth()->id(),
-            ]);
+        ]);
 
 
 
+        ProduitService::create([
+            'type' => $this->type,
+            'reference' => $this->reference,
+            'name' => $this->name, // Adjusted for 'Produit'
+            //produit
+            'conditionnement' => $this->type === 'Produit' ? $this->conditionnement : null,
+            'format' => $this->type === 'Produit' ? $this->format : null,
+            'particularite' => $this->type === 'Produit' ? $this->particularite : null,
+            'origine' => $this->type === 'Produit' ? $this->origine : null,
+            'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
+            'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
+            'specification' => $this->type === 'Produit' ? $this->specification : null,
+            //
+            'prix' => $this->prix,
+            //service
+            'qualification' => $this->type === 'Service' ? $this->qualification : null,
+            'specialite' => $this->type === 'Service' ? $this->specialite : null,
+            'qte_service' => $this->type === 'Service' ? $this->qte_service : null,
+            //
+            'depart' => $this->depart,
+            'ville' => $this->ville,
+            'commune' => $this->commune,
+            'user_id' => auth()->id(),
+        ]);
 
+        session()->flash('message', 'Produit ou service ajouté avec succès!');
 
-            session()->flash('message', 'Produit ou service ajouté avec succès!');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Une erreur est survenue lors de l\'enregistrement.');
-        }
+        $this->resetForm(); // Réinitialise le formulaire après la soumission
+    }
+    // Méthode pour réinitialiser les champs du formulaire
+    public function resetForm()
+    {
+        $this->type = '';
+        $this->generateReference = false;
+        $this->reference = '';
+        $this->name = '';
+        $this->conditionnement = '';
+        $this->format = '';
+        $this->particularite = '';
+        $this->origine = '';
+        $this->qteProd_min = '';
+        $this->qteProd_max = '';
+        $this->specification = '';
+        $this->prix = '';
+        $this->qualification = '';
+        $this->specialite = '';
+        $this->qte_service = '';
+        $this->depart = '';
+        $this->ville = '';
+        $this->commune = '';
+        // Réinitialiser les catégories si nécessaire
+        $this->categories = CategorieProduits_Servives::all();
     }
     public function render()
     {

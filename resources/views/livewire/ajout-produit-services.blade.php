@@ -10,9 +10,11 @@
                     <input type="text" class="w-full p-2 border border-gray-300 rounded-md"
                         placeholder="Entrez le nom de la catégorie">
                     <select multiple class="w-full p-2 border border-gray-300 rounded-md mt-2">
-                        <option value="alimentaire">Produit alimentaire</option>
-                        <!-- Ajoutez d'autres options ici si nécessaire -->
+                        @foreach ($categories as $categorie)
+                            <option value="{{ $categorie->id }}">{{ $categorie->categorie_produit_services }}</option>
+                        @endforeach
                     </select>
+
 
                 </div>
 
@@ -62,7 +64,9 @@
             <!-- Détails du produit ou du service -->
             <div x-show="type === 'Produit'" class="mb-6">
                 <h1 class="text-center text-xl font-bold mb-8">Détails Du Produit</h1>
-                <div class="grid grid-cols-2 gap-6 mb-6">
+
+
+                <div class="grid grid-cols-3 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Conditionnement</label>
                         <input type="text" wire:model='conditionnement'
@@ -73,25 +77,19 @@
                         <input type="text" wire:model='format' class="w-full p-2 border border-gray-300 rounded-md"
                             placeholder="Tapez ici...">
                     </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Particularité</label>
-                        <input type="text" wire:model='name' class="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Tapez ici...">
+                        <input type="text" wire:model='particularite'
+                            class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Origine</label>
-                        <select wire:model='name' class="w-full p-2 border border-gray-300 rounded-md">
+                        <select wire:model='origine' class="w-full p-2 border border-gray-300 rounded-md">
                             <option>Choisissez une origine</option>
                             <option>Locale</option>
                             <option>Importé</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Maximal</label>
                         <input type="text" wire:model='qteProd_max'
@@ -103,19 +101,28 @@
                             class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                     </div>
                 </div>
+                <div class="grid grid-cols-2 gap-6 mb-6">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Spécification</label>
+                        <input type="text" wire:model='specification'
+                            class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prix</label>
+                        <input type="text" wire:model='prix' class="w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Tapez ici...">
+                    </div>
+                </div>
             </div>
 
             <div x-show="type === 'Service'" class="mb-6">
                 <h1 class="text-center text-xl font-bold mb-8">Détails Du Service</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Spécification</label>
-                        <input type="text" wire:model='qteProd_min'
-                            class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Qualification</label>
-                        <select wire:model='qteProd_min'
+                        <select wire:model='qualification'
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" disabled selected>Expérience dans le domaine</option>
                             <option value="Moins de 1 an">Moins de 1 an</option>
@@ -129,18 +136,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Spécialité</label>
-                        <input type="text" wire:model='qteProd_min'
+                        <input type="text" wire:model='specialite'
                             class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de personnel</label>
-                        <input type="text" wire:model='qteProd_min'
+                        <input type="text" wire:model='qte_service'
                             class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Prix Unitaire</label>
-                        <input type="text" wire:model='qteProd_min'
-                            class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                        <input type="text" wire:model='prix' class="w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Tapez ici...">
                     </div>
                 </div>
             </div>
@@ -150,20 +157,20 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="col-span-1 md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
-                    <input type="text" wire:model='qteProd_min'
-                        class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                    <input type="text" wire:model='depart' class="w-full p-2 border border-gray-300 rounded-md"
+                        placeholder="Tapez ici...">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Ville/Sous-Prefecture</label>
-                    <input type="text" wire:model='qteProd_min'
-                        class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                    <input type="text" wire:model='ville' class="w-full p-2 border border-gray-300 rounded-md"
+                        placeholder="Tapez ici...">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Localité</label>
-                    <input type="text" wire:model='qteProd_min'
-                        class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                    <input type="text" wire:model='commune' class="w-full p-2 border border-gray-300 rounded-md"
+                        placeholder="Tapez ici...">
                 </div>
             </div>
 
