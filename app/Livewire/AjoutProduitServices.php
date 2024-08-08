@@ -69,9 +69,11 @@ class AjoutProduitServices extends Component
 
         if ($selectedProduct) {
             // Remplir les propriétés avec les détails du produit sélectionné
-            $this->conditionnement = $selectedProduct->conditionnement;
-            $this->format = $selectedProduct->format;
-            $this->particularite = $selectedProduct->particularite;
+            $this->reference = $selectedProduct->reference;
+            $this->name = $selectedProduct->name;
+            $this->conditionnement = $selectedProduct->condProd;
+            $this->format = $selectedProduct->formatProd;
+            $this->particularite = $selectedProduct->Particularite;
             $this->origine = $selectedProduct->origine;
             $this->qteProd_min = $selectedProduct->qteProd_min;
             $this->qteProd_max = $selectedProduct->qteProd_max;
