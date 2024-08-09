@@ -281,24 +281,26 @@
                             </div>
                         @endforeach
                     </div>
-                    
-                    <h1>Listes des Elements avec leur references; Cliquez pour voir les details</h1>
+
+                    <h1>Listes Des Produits & Services avec leur references; Cliquez pour voir les details</h1>
 
                     @foreach ($results as $result)
                         <a href="{{ route('biicf.postdet', $result->id) }}">
-
-                            <div class="max-w-2xl mx-auto my-3">
-
-                                <div class="w-full flex items-center p-4 rounded-xl bg-gray-50 border border-gray-200">
-                                    <div class="h-10 w-10 mr-2 ">
-                                        <img class="w-full h-full rounded-md  object-cover"
+                            <div class="max-w-xl mx-auto my-4 p-4">
+                                <div class="w-full flex items-start p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                    <!-- Image -->
+                                    <div class="h-24 w-24 mr-4 flex-shrink-0">
+                                        <img class="w-full h-full rounded-lg object-cover"
                                             src="{{ $result->photoProd1 ? asset('post/all/' . $result->photoProd1) : asset('img/noimg.jpeg') }}"
-                                            alt="">
+                                            alt="{{ $result->name }}">
                                     </div>
-                                    <p class="text-xl font-semibold ">{{ $result->name }}</p>//\\{{ $result->reference }}
+                                    <!-- Text Content -->
+                                    <div>
+                                        <p class="text-xl font-semibold text-gray-900 mb-1">{{ $result->name }}</p>
+                                        <p class="text-base font-medium text-gray-700">{{ $result->reference }}</p>
+                                    </div>
                                 </div>
                             </div>
-
                         </a>
                     @endforeach
 

@@ -18,9 +18,10 @@
                     <p class="text-sm">{{ $lowestPricedProduct }} FCFA</p>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                    {{-- modifier le keyword par le name --}}
                     <input type="text"
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="Nom du produit" value="{{ $keyword }}" name="productName" required>
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm  disabled:opacity-50 disabled:pointer-events-none"
+                        placeholder="Nom du produit" value="{{ $keyword }}" name="productName" required readonly>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="number" required
@@ -42,9 +43,10 @@
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <select name="Livraison" id="" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                        <option value="" selected disabled>Livraison</option>
-                        <option value="Oui">Oui</option>
-                        <option value="Non">Non</option>
+                        <option value="" selected disabled>Choissez votre mode de livraison</option>
+                        <option value="moto">moto</option>
+                        <option value="voiture">voiture</option>
+                        <option value="camion">camion</option>
                     </select>
                 </div>
                 <div date-rangepicker class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
@@ -62,6 +64,7 @@
                             placeholder="Sélectionner la date de fin">
                     </div>
                 </div>
+                {{-- revenir sur la specificité --}}
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
@@ -70,7 +73,7 @@
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="localité" name="localite">
+                        placeholder="lieu de livraison" name="localite">
                 </div>
                 <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
                     <h3>Ajouter une photo (facultatif)</h3>
