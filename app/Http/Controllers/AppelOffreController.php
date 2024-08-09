@@ -50,7 +50,7 @@ class AppelOffreController extends Controller
             $produits->where('type', $type);
             Log::info('Applied type filter', ['type' => $type]);
         }
-//////////
+        //////////
         $results = $produits->where('user_id', '<>', $userId)->get();
         Log::info('Results fetched', ['results_count' => $results->count()]);
 
@@ -75,7 +75,7 @@ class AppelOffreController extends Controller
                 'items' => $groupData->toArray() // Convertit la collection en tableau
             ]);
         }
-///////
+        ///////
         $resultCount = $results->count();
 
         Log::info('Final results', [
@@ -264,8 +264,6 @@ class AppelOffreController extends Controller
             'quantite' => 'required|integer'
         ]);
 
-
-
         // Créer un nouvel enregistrement dans la table offregroupe
         $offregroupe = new AppelOffreGrouper();
         $offregroupe->codeunique = $validatedData['codeUnique'];
@@ -279,23 +277,6 @@ class AppelOffreController extends Controller
         $quantite->user_id = $validatedData['userId'];
         $quantite->quantite = $validatedData['quantite'];
         $quantite->save();
-
-        // Vérifier si un compte à rebours est déjà en cours pour ce code unique
-        // $existingCountdown = Countdown::where('code_unique', $validatedData['codeUnique'])
-        //     ->where('notified', false)
-        //     ->orderBy('start_time', 'desc')
-        //     ->first();
-
-        // if (!$existingCountdown) {
-        //     // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-        //     Countdown::create([
-        //         'user_id' => Auth::id(), // Assurez-vous que l'utilisateur est authentifié
-        //         'userSender' => $validatedData['userId'],
-        //         'start_time' => now(),
-        //         'code_unique' => $validatedData['codeUnique'],
-        //         'difference' => 'groupe', // Mettez à jour cette valeur si nécessaire
-        //     ]);
-        // }
 
         return redirect()->back()->with('success', 'Quantité ajouter avec succès');
     }

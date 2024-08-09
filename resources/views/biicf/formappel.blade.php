@@ -3,15 +3,12 @@
 @section('title', 'Formulaire de l\' Appel d\'offre')
 
 @section('content')
-
-    <div class=" px-4">
-
-
-
-        <form action="{{ route('biicf.formstore') }}" method="POST" enctype="multipart/form-data" id="mainForm">
+    <div class="px-4">
+        <form action="{{ route('biicf.formstore') }}" method="POST" enctype="multipart/form-data" id="mainForm"
+            x-data="{ isSubmitting: false }" x-on:submit="isSubmitting = true">
             @csrf
-            <div class="w-full flex flex-col justify-center items-center ">
-                <h1 class="font-meduim text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
+            <div class="w-full flex flex-col justify-center items-center">
+                <h1 class="font-medium text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
                 <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
                 @foreach ($prodUsers as $userId)
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
@@ -98,8 +95,8 @@
                             <img id="image-preview1" class="absolute inset-0 w-full h-full object-cover hidden">
                             <button type="button" onclick="removeImage()" id="remove-button1"
                                 class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">
-                                <svg class="w-full" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <svg class="w-full" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                                 </svg>
                             </button>
@@ -109,15 +106,12 @@
                 <div class="lg:w-2/3 w-full flex justify-center">
                     <button type="reset" class="px-2 py-1 rounded-md bg-gray-200 mr-3">Annuler</button>
                     <button type="submit" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3"
-                        id="submitEnvoie">Envoyé</button>
+                        x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Envoyé'"></button>
                     <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white"
-                        id="submitGroupe">Groupé</button>
+                        x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'"></button>
                 </div>
             </div>
         </form>
-
-
-
     </div>
 
     <script>
@@ -170,15 +164,5 @@
             removeButton.classList.add('hidden');
             fileInput.value = ''; // Clear the file input
         }
-
-        document.getElementById('submitEnvoie').addEventListener('click', function() {
-            document.getElementById('mainForm').action = "{{ route('biicf.formstore') }}";
-        });
-
-        document.getElementById('submitGroupe').addEventListener('click', function() {
-            document.getElementById('mainForm').action = "{{ route('biicf.formstoreGroupe') }}"; // Change this to your grouped form store route
-        });
-
     </script>
-
 @endsection

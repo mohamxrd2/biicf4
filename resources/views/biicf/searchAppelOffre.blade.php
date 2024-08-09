@@ -220,15 +220,14 @@
                     </div>
                 @else
                     <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
-
-
-
                         @foreach ($groupedByReference as $reference => $group)
                             @php
                                 // Extraire les noms distincts et les user_id distincts
                                 $distinctNames = $group->pluck('name')->unique();
                                 $distinctUserIds = $group->pluck('user_id')->unique();
                                 $distinctUserCount = $distinctUserIds->count();
+                                $lowestPrice = $group->pluck('prix')->min(); // Trouver le prix le plus bas
+
                             @endphp
 
                             <div
@@ -252,28 +251,37 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                @if ($distinctUserCount <= 1)
+                                    <p class="text-red-600 text-sm mt-2">
+                                        Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour effectuer
+                                        l'appel d'offre.
+                                    </p>
+                                @endif
+
                                 <form action="{{ route('biicf.form') }}" method="POST">
                                     @csrf
-                                    <div class="w-full text-center">
-                                        <input type="hidden" name="keyword" id=""
-                                            value="{{ $keyword }}">
-                                        <input type="hidden" name="lowestPricedProduct"
-                                            value="{{ $lowestPricedProduct }}">
-                                        @foreach ($prodUsers as $prodUser)
-                                            <input type="hidden" name="prodUsers[]" value="{{ $prodUser }}">
+                                    <div class="w-full text-center mt-4">
+                                        <input type="hidden" name="keyword" value="{{ $name }}">
+                                        <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPrice }}">
+                                        @foreach ($distinctUserIds as $userId)
+                                            <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                         @endforeach
 
-
-                                        <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire
-                                            un appel
-                                            d'offre</button>
+                                        <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit"
+                                            @if ($distinctUserCount <= 1) disabled @endif>
+                                            @if ($distinctUserCount <= 1)
+                                                Fournisseur insuffisant
+                                            @else
+                                                Faire un appel d'offre
+                                            @endif
+                                        </button>
                                     </div>
                                 </form>
                             </div>
                         @endforeach
-
-
                     </div>
+                    
                     <h1>Listes des Elements avec leur references; Cliquez pour voir les details</h1>
 
                     @foreach ($results as $result)
