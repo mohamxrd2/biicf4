@@ -50,7 +50,7 @@ class AppelOffreController extends Controller
             $produits->where('type', $type);
             Log::info('Applied type filter', ['type' => $type]);
         }
-
+//////////
         $results = $produits->where('user_id', '<>', $userId)->get();
         Log::info('Results fetched', ['results_count' => $results->count()]);
 
@@ -75,7 +75,7 @@ class AppelOffreController extends Controller
                 'items' => $groupData->toArray() // Convertit la collection en tableau
             ]);
         }
-
+///////
         $resultCount = $results->count();
 
         Log::info('Final results', [
@@ -128,7 +128,7 @@ class AppelOffreController extends Controller
         }
 
 
-        return view('biicf.searchAppelOffre', compact('results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct',  'appelOffreGroup', 'appelOffreGroupcount', 'participantsCount', 'groupedByCodeUnique', 'productNames', 'idOffre'));
+        return view('biicf.searchAppelOffre', compact('groupedByReference', 'results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct',  'appelOffreGroup', 'appelOffreGroupcount', 'participantsCount', 'groupedByCodeUnique', 'productNames', 'idOffre'));
     }
 
     public function formAppel(Request $request)

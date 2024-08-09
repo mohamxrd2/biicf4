@@ -5,7 +5,6 @@
 @section('content')
 
     <div class="grid grid-cols-3 gap-4">
-
         <div class="lg:col-span-2 col-span-3">
 
             @if (session('success'))
@@ -220,19 +219,63 @@
 
                     </div>
                 @else
-                    <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
-                        <div class="flex items-center gap-3 sm:p-4 p-2.5 text-sm font-medium">
-                            <div class="flex-1">
-                                <h4 class="text-lg text-black dark:text-white">{{ $keyword }}</h4>
-                            </div>
-                            <div class="flex">
-                                <div class="flex p-1 items-center text-xs bg-yellow-100/60 text-yellow-600 rounded">
-                                    <p class="mr-1">{{ $prodUsersCount }}</p>
-                                    <span> Fournisseurs</span>
+                    <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
+
+
+
+                        @foreach ($groupedByReference as $reference => $group)
+                            @php
+                                // Extraire les noms distincts et les user_id distincts
+                                $distinctNames = $group->pluck('name')->unique();
+                                $distinctUserIds = $group->pluck('user_id')->unique();
+                                $distinctUserCount = $distinctUserIds->count();
+                            @endphp
+
+                            <div
+                                class="mb-4 p-4 border border-gray-200 rounded-lg shadow-sm bg-white dark:bg-gray-800 dark:border-gray-700">
+                                <div class="flex items-start gap-4">
+                                    <div class="flex-1">
+                                        <h4 class="text-lg font-semibold text-black dark:text-white">
+                                            Référence : {{ $reference }}
+                                        </h4>
+                                        @foreach ($distinctNames as $name)
+                                            <p class="text-sm text-gray-700 dark:text-gray-300">
+                                                Nom : {{ $name }}
+                                            </p>
+                                        @endforeach
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div
+                                            class="flex p-2 items-center text-xs bg-yellow-100/60 text-yellow-600 rounded">
+                                            <p class="mr-1 font-semibold">{{ $distinctUserCount }}</p>
+                                            <span>Fournisseurs</span>
+                                        </div>
+                                    </div>
                                 </div>
+                                <form action="{{ route('biicf.form') }}" method="POST">
+                                    @csrf
+                                    <div class="w-full text-center">
+                                        <input type="hidden" name="keyword" id=""
+                                            value="{{ $keyword }}">
+                                        <input type="hidden" name="lowestPricedProduct"
+                                            value="{{ $lowestPricedProduct }}">
+                                        @foreach ($prodUsers as $prodUser)
+                                            <input type="hidden" name="prodUsers[]" value="{{ $prodUser }}">
+                                        @endforeach
+
+
+                                        <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire
+                                            un appel
+                                            d'offre</button>
+                                    </div>
+                                </form>
                             </div>
-                        </div>
+                        @endforeach
+
+
                     </div>
+                    <h1>Listes des Elements avec leur references; Cliquez pour voir les details</h1>
+
                     @foreach ($results as $result)
                         <a href="{{ route('biicf.postdet', $result->id) }}">
 
@@ -244,28 +287,12 @@
                                             src="{{ $result->photoProd1 ? asset('post/all/' . $result->photoProd1) : asset('img/noimg.jpeg') }}"
                                             alt="">
                                     </div>
-                                    <p class="text-xl font-semibold ">{{ $result->name }}</p>//\\{{$result->reference}}
+                                    <p class="text-xl font-semibold ">{{ $result->name }}</p>//\\{{ $result->reference }}
                                 </div>
                             </div>
 
                         </a>
                     @endforeach
-
-                    <form action="{{ route('biicf.form') }}" method="POST">
-                        @csrf
-                        <div class="w-full text-center">
-                            <input type="hidden" name="keyword" id="" value="{{ $keyword }}">
-                            <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
-                            @foreach ($prodUsers as $prodUser)
-                                <input type="hidden" name="prodUsers[]" value="{{ $prodUser }}">
-                            @endforeach
-
-
-                            <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit">Faire un appel
-                                d'offre</button>
-                        </div>
-                    </form>
-
 
                 @endif
 
