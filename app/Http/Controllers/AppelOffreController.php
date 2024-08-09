@@ -13,6 +13,7 @@ use App\Models\Countdown;
 use App\Models\userquantites;
 use App\Notifications\AppelOffre;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class AppelOffreController extends Controller
@@ -29,27 +30,68 @@ class AppelOffreController extends Controller
             ->where('statuts', 'Accepté')
             ->orderBy('created_at', 'desc');
 
+        Log::info('Initial query built', [
+            'keyword' => $keyword,
+            'zoneEconomique' => $zoneEconomique,
+            'type' => $type,
+        ]);
+
         if ($keyword) {
             $produits->where('name', 'like', '%' . $keyword . '%');
+            Log::info('Applied keyword filter', ['keyword' => $keyword]);
         }
 
         if ($zoneEconomique) {
             $produits->where('zonecoServ', $zoneEconomique);
+            Log::info('Applied zoneEconomique filter', ['zoneEconomique' => $zoneEconomique]);
         }
 
         if ($type) {
             $produits->where('type', $type);
+            Log::info('Applied type filter', ['type' => $type]);
         }
 
         $results = $produits->where('user_id', '<>', $userId)->get();
+        Log::info('Results fetched', ['results_count' => $results->count()]);
+
+        Log::info('References before grouping', ['references' => $results->pluck('reference')->unique()]);
+
+        // Grouper les résultats par code de référence
+        $groupedByReference = $results->groupBy('reference');
+
+        // Parcourir les groupes pour afficher les informations demandées
+        foreach ($groupedByReference as $reference => $group) {
+            $groupData = $group->map(function ($item) {
+                return [
+                    'reference' => $item->reference,
+                    'name' => $item->name,
+                    'user_id' => $item->user_id,
+                ];
+            });
+
+            // Afficher les éléments récupérés dans les logs
+            Log::info('Group for reference', [
+                'reference' => $reference,
+                'items' => $groupData->toArray() // Convertit la collection en tableau
+            ]);
+        }
+
         $resultCount = $results->count();
 
+        Log::info('Final results', [
+            'resultCount' => $resultCount,
+            'userId' => $userId,
+        ]);
+
         $prodUsers = $results->pluck('user.id')->unique()->toArray();
-
-        $lowestPricedProduct = $results->min('prix');;
-
+        $lowestPricedProduct = $results->min('prix');
         $prodUsersCount = $results->pluck('user')->unique('id')->count();
 
+        Log::info('Additional metrics', [
+            'prodUsers' => $prodUsers,
+            'lowestPricedProduct' => $lowestPricedProduct,
+            'prodUsersCount' => $prodUsersCount,
+        ]);
         $produitDims = ProduitService::with('user')
             ->where('statuts', 'Accepté')
             ->where('user_id', '<>', $userId)
@@ -207,7 +249,6 @@ class AppelOffreController extends Controller
                     // Notification::send($owner, new AppelOffre($data));
                 }
             }
-
         }
 
         // Passer les variables à la vue (si nécessaire)
@@ -388,8 +429,8 @@ class AppelOffreController extends Controller
                 $offre->image = $imagePath;
             }
 
-             // Save the model
-             $offre->save();
+            // Save the model
+            $offre->save();
 
 
             // Create a new instance of the model
@@ -400,7 +441,7 @@ class AppelOffreController extends Controller
             $quantite->save();
 
 
-           
+
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
@@ -417,5 +458,4 @@ class AppelOffreController extends Controller
 
         return $code;
     }
-
 }

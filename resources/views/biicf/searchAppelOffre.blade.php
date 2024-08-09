@@ -22,7 +22,7 @@
             @endif
 
             <form action="{{ route('biicf.appeloffre') }}" method="GET" class="max-w-2xl mx-auto">
-
+                @csrf
                 <label for="default-search"
                     class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
                 <div class="relative" data-hs-combo-box="">
@@ -44,7 +44,8 @@
                                 stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                            </svg></button>
+                            </svg>
+                        </button>
 
                     </div>
 
@@ -59,7 +60,7 @@
                                 tabindex="{{ $loop->index }}" data-hs-combo-box-output-item="{{ $produitDim->id }}">
                                 <div class="flex">
                                     <img class="w-8 h-8 mr-2 rounded-md"
-                                        src="{{ $produitDim->photoProd1 ? asset($produitDim->photoProd1) : asset('img/noimg.jpeg') }}"
+                                        src="{{ $produitDim->photoProd1 ? asset('post/all/' . $produitDim->photoProd1) : asset('img/noimg.jpeg') }}"
                                         alt="">
                                     <div class="flex justify-between items-center w-full">
                                         <span data-hs-combo-box-search-text="{{ $produitDim->name }} "
@@ -227,7 +228,7 @@
                             <div class="flex">
                                 <div class="flex p-1 items-center text-xs bg-yellow-100/60 text-yellow-600 rounded">
                                     <p class="mr-1">{{ $prodUsersCount }}</p>
-                                    <span> Fournisseur</span>
+                                    <span> Fournisseurs</span>
                                 </div>
                             </div>
                         </div>
@@ -243,7 +244,7 @@
                                             src="{{ $result->photoProd1 ? asset('post/all/' . $result->photoProd1) : asset('img/noimg.jpeg') }}"
                                             alt="">
                                     </div>
-                                    <p class="text-xl font-semibold ">{{ $result->name }}</p>
+                                    <p class="text-xl font-semibold ">{{ $result->name }}</p>//\\{{$result->reference}}
                                 </div>
                             </div>
 
@@ -280,21 +281,20 @@
                     <h1 class="text-xl font-medium text-center ml-4">Résultats pour les appels d'offre groupé</h1>
                 </div>
                 @foreach ($groupedByCodeUnique as $codeUnique => $group)
-                <a href="{{ route('biicf.detailoffre', ['id' => $idOffre[$codeUnique]]) }}">
+                    <a href="{{ route('biicf.detailoffre', ['id' => $idOffre[$codeUnique]]) }}">
 
-                    <div class="max-w-2xl mx-auto my-3">
-                        <div
-                            class="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
-                            <p class="text-xl font-semibold">{{ $productNames[$codeUnique] }} </p>
-                            <div class="bg-blue-500 text-white p-1 rounded">
-                                Participants: {{ $participantsCount }}
+                        <div class="max-w-2xl mx-auto my-3">
+                            <div
+                                class="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200 relative">
+                                <p class="text-xl font-semibold">{{ $productNames[$codeUnique] }} </p>
+                                <div class="bg-blue-500 text-white p-1 rounded">
+                                    Participants: {{ $participantsCount }}
+                                </div>
                             </div>
+
                         </div>
 
-                    </div>
-
-                </a>
-
+                    </a>
                 @endforeach
             @endif
 
