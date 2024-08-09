@@ -152,9 +152,9 @@ class AjoutProduitServices extends Component
             'commune' => 'required|string',
             //photo
             'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif',
-            'photoProd2' => 'required|image|mimes:jpeg,png,jpg,gif',
-            'photoProd3' => 'required|image|mimes:jpeg,png,jpg,gif',
-            'photoProd4' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
         ]);
 
         try {
@@ -192,10 +192,10 @@ class AjoutProduitServices extends Component
             ]);
 
             // Gestion des photos
-            $this->handlePhotoUpload($produitService, '1');
-            $this->handlePhotoUpload($produitService, '2');
-            $this->handlePhotoUpload($produitService, '3');
-            $this->handlePhotoUpload($produitService, '4');
+            $this->handlePhotoUpload($produitService, 'photoProd1');
+            $this->handlePhotoUpload($produitService, 'photoProd2');
+            $this->handlePhotoUpload($produitService, 'photoProd3');
+            $this->handlePhotoUpload($produitService, 'photoProd4');
 
             session()->flash('message', 'Produit ou service ajouté avec succès!');
 
@@ -227,18 +227,20 @@ class AjoutProduitServices extends Component
         $this->depart = '';
         $this->ville = '';
         $this->commune = '';
-        $this->photoProd1 = '';
-        $this->photoProd2 = '';
-        $this->photoProd3 = '';
-        $this->photoProd4 = '';
         // Réinitialiser les catégories si nécessaire
         $this->categories = CategorieProduits_Servives::all();
+        // Réinitialiser les photos
+        $this->photoProd1 = null;
+        $this->photoProd2 = null;
+        $this->photoProd3 = null;
+        $this->photoProd4 = null;
     }
+
     protected function handlePhotoUpload($produitService, $photoField)
     {
         if ($this->$photoField) {
             $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $this->$photoField->extension();
-            $this->$photoField->storeAs('all', $photoName);
+            $this->$photoField->storeAs('all', $photoName); // Assurez-vous de spécifier un répertoire
             $produitService->update([$photoField => $photoName]);
         }
     }

@@ -30,7 +30,7 @@
                             tabindex="{{ $loop->index }}">
                             <div class="flex">
                                 <img class="w-8 h-8 mr-2 rounded-md"
-                                    src="{{ $produit->photoProd1 ? asset($produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
                                     alt="">
                                 <div class="flex justify-between items-center w-full">
                                     <span>{{ $produit->name }}</span>
@@ -71,11 +71,6 @@
                     <input wire:model="qte_min" name="qte_min" type="number"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                         placeholder="Quantité minimale">
-
-                    <!-- Quantité Maximale -->
-                    <input wire:model="qte_max" name="qte_max" type="number"
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 mt-2"
-                        placeholder="Quantité maximale">
                 </div>
             </div>
         </div>
@@ -87,7 +82,7 @@
             <div class="w-full flex p-4 rounded-xl bg-white border border-gray-200">
                 <div class="h-32 w-32 mr-2 ">
                     <img class="w-full h-full rounded-xl  object-cover"
-                        src="{{ $produit->photoProd1 ? asset($produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                        src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
                         alt="">
                 </div>
 
@@ -113,7 +108,7 @@
                                 </div>
                             </div>
 
-                            @if ($produit->type == 'produits')
+                            @if ($produit->type == 'Produit')
                                 <span
                                     class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none  text-green-800 bg-green-100">Produit</span>
                             @else

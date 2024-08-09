@@ -22,7 +22,7 @@
         class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 dark:bg-gray-900">
 
         <div>
-            <h1 class="bold" style="font-size: 24px;">Liste Des Publications & Produits</h1>
+            <h1 class="bold" style="font-size: 24px;">Liste Des Publications</h1>
         </div>
 
         <div class="flex items-center">
@@ -104,8 +104,10 @@
 
                                             <a href="{{ route('biicf.postdet', $produit->id) }}" class="flex items-center">
                                                 <img class="w-10 h-10 rounded-md"
-                                                    src="{{ $produit->photoProd1 ? asset($produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
                                                     alt="Jese image">
+
+
                                                 <div class="ps-3">
                                                     <div class="text-base font-semibold">{{ $produit->name }}</div>
                                                 </div>

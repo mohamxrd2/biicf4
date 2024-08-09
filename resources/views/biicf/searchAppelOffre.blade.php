@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="grid grid-cols-3 gap-3 mt-2">
-                    <div class="col-span-1">
+                    {{-- <div class="col-span-1">
                         <select name="zone_economique"
                             class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none">
                             <option disabled selected>Zone economique</option>
@@ -105,7 +105,7 @@
                         <input name="qte_search" type="text"
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                             placeholder="Quantité souhaité">
-                    </div>
+                    </div> --}}
 
                 </div>
 
@@ -240,7 +240,7 @@
                                 <div class="w-full flex items-center p-4 rounded-xl bg-gray-50 border border-gray-200">
                                     <div class="h-10 w-10 mr-2 ">
                                         <img class="w-full h-full rounded-md  object-cover"
-                                            src="{{ $result->photoProd1 ? asset($result->photoProd1) : asset('img/noimg.jpeg') }}"
+                                            src="{{ $result->photoProd1 ? asset('post/all/' . $result->photoProd1) : asset('img/noimg.jpeg') }}"
                                             alt="">
                                     </div>
                                     <p class="text-xl font-semibold ">{{ $result->name }}</p>
@@ -290,11 +290,11 @@
                                 Participants: {{ $participantsCount }}
                             </div>
                         </div>
-                       
+
                     </div>
 
                 </a>
-                    
+
                 @endforeach
             @endif
 

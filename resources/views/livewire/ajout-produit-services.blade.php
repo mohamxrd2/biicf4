@@ -1,4 +1,15 @@
 <div x-data="{ type: @entangle('type') }">
+    @if (session()->has('message'))
+        <div class="bg-green-500 text-white p-4 rounded-md mb-4">
+            {{ session('message') }}
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="bg-red-500 text-white p-4 rounded-md mb-4">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-2xl font-bold mb-8">Ajouter un produit & Service</h1>
 
