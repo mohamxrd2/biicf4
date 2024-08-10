@@ -161,13 +161,31 @@
 
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-4 gap-6 mb-6">
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Spécification</label>
                             <input type="text" wire:model='specification'
                                 class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('specification')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Spécification 2</label>
+                            <input type="text" wire:model='specification2'
+                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                            @error('specification2')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Spécification 3</label>
+                            <input type="text" wire:model='specification3'
+                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                            @error('specification3')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
 

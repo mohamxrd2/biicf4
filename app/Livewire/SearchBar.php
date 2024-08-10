@@ -13,20 +13,20 @@ class SearchBar extends Component
     public $keyword;
     public $zone_economique;
     public $type;
-    public $qte_min;
-    public $qte_max;
+    public $qte;
+    public $prix;
 
     protected $updatesQueryString = [
         'keyword' => ['except' => ''],
         'zone_economique' => ['except' => ''],
         'type' => ['except' => ''],
-        'qte_min' => ['except' => ''],
-        'qte_max' => ['except' => ''],
+        'qte' => ['except' => ''],
+        'prix' => ['except' => ''],
     ];
 
     public function mount()
     {
-        $this->fill(request()->only('keyword', 'zone_economique', 'type', 'qte_min', 'qte_max'));
+        $this->fill(request()->only('keyword', 'zone_economique', 'type', 'qte', 'prix'));
     }
 
     public function render()
@@ -40,20 +40,29 @@ class SearchBar extends Component
         }
 
         if ($this->zone_economique) {
-            $produits->where('zonecoServ', $this->zone_economique);
+            $produits->where(function ($query) {
+                $query->where('zonecoServ', 'like', '%' . $this->zone_economique . '%')
+                    ->orWhere('villeServ', 'like', '%' . $this->zone_economique . '%')
+                    ->orWhere('comnServ', 'like', '%' . $this->zone_economique . '%');
+            });
         }
 
         if ($this->type) {
             $produits->where('type', $this->type);
         }
 
-        if ($this->qte_min) {
-            $produits->where('qteProd_min', '>=', $this->qte_min);
+        if ($this->prix) {
+            $produits->where('prix', $this->prix);
         }
 
-        if ($this->qte_max) {
-            $produits->where('qteProd_max', '<=', $this->qte_max);
+        if ($this->qte) {
+            $produits->where(function ($query) {
+                $query->where('qteProd_min', '>=', $this->qte)
+                    ->orWhere('qteProd_max', '<=', $this->qte);
+            });
         }
+
+
 
         $results = $produits->paginate(10);
 

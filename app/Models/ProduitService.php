@@ -18,6 +18,8 @@ class ProduitService extends Model
         'qteProd_min',
         'qteProd_max',
         'specification',
+        'specification2',
+        'specification3',
         'origine',
         //
         'prix',

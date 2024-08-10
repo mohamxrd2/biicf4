@@ -29,6 +29,8 @@ class AjoutProduitServices extends Component
     public $qteProd_min  = '';
     public $qteProd_max  = '';
     public $specification  = '';
+    public $specification2  = '';
+    public $specification3  = '';
     //
     public $prix  = '';
     //Service
@@ -83,6 +85,8 @@ class AjoutProduitServices extends Component
             $this->qteProd_min = $selectedProduct->qteProd_min;
             $this->qteProd_max = $selectedProduct->qteProd_max;
             $this->specification = $selectedProduct->specification;
+            $this->specification2 = $selectedProduct->specification2;
+            $this->specification3 = $selectedProduct->specification3;
             $this->prix = $selectedProduct->prix;
             $this->qualification = ''; // Reset qualifications for services
             $this->specialite = ''; // Reset specialties for services
@@ -102,6 +106,8 @@ class AjoutProduitServices extends Component
         $this->qteProd_min = '';
         $this->qteProd_max = '';
         $this->specification = '';
+        $this->specification2 = '';
+        $this->specification3 = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
@@ -140,6 +146,8 @@ class AjoutProduitServices extends Component
             'qteProd_min' => 'required_if:type,Produit|integer',
             'qteProd_max' => 'required_if:type,Produit|integer',
             'specification' => 'required_if:type,Produit|string',
+            'specification2' => 'required_if:type,Produit|string',
+            'specification3' => 'required_if:type,Produit|string',
             //
             'prix' => 'required|integer',
             //service
@@ -177,6 +185,8 @@ class AjoutProduitServices extends Component
                 'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
                 'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
                 'specification' => $this->type === 'Produit' ? $this->specification : null,
+                'specification2' => $this->type === 'Produit' ? $this->specification2 : null,
+                'specification3' => $this->type === 'Produit' ? $this->specification3 : null,
                 //
                 'prix' => $this->prix,
                 //service
@@ -220,6 +230,8 @@ class AjoutProduitServices extends Component
         $this->qteProd_min = '';
         $this->qteProd_max = '';
         $this->specification = '';
+        $this->specification2 = '';
+        $this->specification3 = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';

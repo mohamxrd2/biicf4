@@ -37,7 +37,7 @@
                                     <div class="hs-carousel-slide w-full flex-shrink-0">
                                         <div class="flex justify-center bg-gray-100 dark:bg-neutral-900">
                                             <img class="max-w-full h-auto max-h-[500px] rounded-md object-contain"
-                                                src="{{ asset($photo) }}" alt="Image">
+                                                src="{{ asset('post/all/' . $photo) }}" alt="Image">
                                         </div>
                                     </div>
                                 @endif
@@ -83,9 +83,6 @@
                 @endif
             </div>
         </div>
-
-
-
 
         <!-- Right Side: Product Details -->
         <div class="lg:h-500px h-auto overflow-y-auto p-4 lg:col-span-2 col-span-5">

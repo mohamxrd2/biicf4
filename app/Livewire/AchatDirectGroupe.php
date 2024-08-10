@@ -18,6 +18,7 @@ use App\Models\NotificationLog;
 use App\Notifications\AchatBiicf;
 use App\Notifications\AchatGroupBiicf;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 
 class AchatDirectGroupe extends Component
@@ -25,10 +26,18 @@ class AchatDirectGroupe extends Component
     public $id;
     public $produit;
     public $userId;
+    public $selectedOption;
+    public $options = [
+        'Achact avec livraison',
+        'Take Away',
+        'Reservation',
+    ];
     //
     public $quantité = "";
     public $localite = "";
-    public $specificite = "";
+    public $specificite1 = false;
+    public $specificite2 = false;
+    public $specificite3 = false;
     public $userTrader;
     public $nameProd;
     public $userSender;
@@ -36,18 +45,6 @@ class AchatDirectGroupe extends Component
     public $photoProd;
     public $idProd;
     public $prix;
-
-    protected $listeners = ['sendNotification' => 'verifierEtEnvoyerNotification'];
-    protected $rules = [
-        'nameProd' => 'required|string',
-        'quantité' => 'required|integer',
-        'prix' => 'required|numeric',
-        'localite' => 'required|string|max:255',
-        'userTrader' => 'required|exists:users,id',
-        'userSender' => 'required|exists:users,id',
-        'photoProd' => 'required|string',
-        'idProd' => 'required|exists:produit_services,id',
-    ];
 
     public function mount($id)
     {
@@ -63,13 +60,25 @@ class AchatDirectGroupe extends Component
     }
     public function AchatDirectForm()
     {
-        $validated = $this->validate();
+        $validated = $this->validate([
+            'nameProd' => 'required|string',
+            'quantité' => 'required|integer',
+            'prix' => 'required|numeric',
+            'selectedOption' => 'required|string',
+            'localite' => 'required|string|max:255',
+            'userTrader' => 'required|exists:users,id',
+            'userSender' => 'required|exists:users,id',
+            'photoProd' => 'required|string',
+            'idProd' => 'required|exists:produit_services,id',
+        ]);
+
+        Log::info('Validation réussie.', $validated);
 
         $userId = Auth::id();
-
-        $montanTotal = $validated['quantité'] * $validated['prix'];
+        $montantTotal = $validated['quantité'] * $validated['prix'];
 
         if (!$userId) {
+            Log::error('Utilisateur non authentifié.');
             session()->flash('error', 'Utilisateur non authentifié.');
             return;
         }
@@ -77,52 +86,90 @@ class AchatDirectGroupe extends Component
         $userWallet = Wallet::where('user_id', $userId)->first();
 
         if (!$userWallet) {
+            Log::error('Portefeuille introuvable.', ['userId' => $userId]);
             session()->flash('error', 'Portefeuille introuvable.');
             return;
         }
 
-        $requiredAmount = $montanTotal;
-
-        if ($userWallet->balance < $requiredAmount) {
+        if ($userWallet->balance < $montantTotal) {
+            Log::warning('Fonds insuffisants pour effectuer cet achat.', [
+                'userId' => $userId,
+                'requiredAmount' => $montantTotal,
+                'walletBalance' => $userWallet->balance,
+            ]);
             session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
             return;
         }
 
         try {
+            // Créez un tableau pour stocker les spécifications sélectionnées
+            $selectedSpecificites = [];
+
+            if ($this->specificite1) {
+                $selectedSpecificites[] = $this->produit->specification;
+            }
+            if ($this->specificite2) {
+                $selectedSpecificites[] = $this->produit->specification2;
+            }
+            if ($this->specificite3) {
+                $selectedSpecificites[] = $this->produit->specification3;
+            }
+
+            // Vérifiez que le tableau $selectedSpecificites n'est pas vide avant de l'utiliser
+            $specificites = !empty($selectedSpecificites) ? implode(', ', $selectedSpecificites) : null;
+
             $achat = AchatDirectModel::create([
                 'nameProd' => $validated['nameProd'],
                 'quantité' => $validated['quantité'],
-                'montantTotal' => $montanTotal,
+                'montantTotal' => $montantTotal,
                 'localite' => $validated['localite'],
                 'userTrader' => $validated['userTrader'],
                 'userSender' => $validated['userSender'],
-                'specificite' => $this->specificite,
+                'specificite' => $specificites,
                 'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
             ]);
 
-            $userWallet->decrement('balance', $requiredAmount);
+            $userWallet->decrement('balance', $montantTotal);
 
             $transaction = new Transaction();
             $transaction->sender_user_id = $userId;
             $transaction->receiver_user_id = $validated['userTrader'];
             $transaction->type = 'Gele';
-            $transaction->amount = $montanTotal;
+            $transaction->amount = $montantTotal;
             $transaction->save();
 
+            Log::info('Transaction enregistrée.', [
+                'transactionId' => $transaction->id,
+                'amount' => $montantTotal,
+            ]);
+
             $owner = User::find($validated['userTrader']);
+            $selectedOption = $this->selectedOption;
             Notification::send($owner, new AchatBiicf($achat));
+            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+            $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
+
+            if ($notification) {
+                // Mettez à jour le champ 'type_achat' dans la notification
+                $notification->update(['type_achat' => $selectedOption]);
+            }
 
             $user = User::find($userId);
-            // event(new MyEvent($user));
-
-            $this->reset(['quantité', 'localite', 'specificite']);
+            $this->reset(['quantité', 'localite', 'specificite1', 'specificite2', 'specificite3']);
             session()->flash('success', 'Achat passé avec succès.');
-            $this->dispatch('sendNotification', $user );
+            $this->dispatch('sendNotification', $user);
         } catch (\Exception $e) {
-            session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
+            Log::error('Erreur lors de l\'achat direct.', [
+                'error' => $e->getMessage(),
+                'userId' => $userId,
+                'data' => $validated,
+            ]);
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
+
+
 
     public function render()
     {

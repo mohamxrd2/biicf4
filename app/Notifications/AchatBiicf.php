@@ -24,7 +24,7 @@ class AchatBiicf extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     public function toDatabase($notifiable)
@@ -44,33 +44,4 @@ class AchatBiicf extends Notification implements ShouldQueue
         ];
     }
 
-    public function toBroadcast($notifiable)
-    {
-        return new BroadcastMessage([
-            'nameProd' => $this->achat['nameProd'],
-            'quantité' => $this->achat['quantité'],
-            'montantTotal' => $this->achat['montantTotal'],
-            'localite' => $this->achat['localite'],
-            'specificite' => $this->achat['specificite'],
-            'userTrader' => $this->achat['userTrader'],
-            'userSender' => $this->achat['userSender'],
-            'photoProd' => $this->achat['photoProd'],
-            'idProd' => $this->achat['idProd'],
-        ]);
-    }
-
-    public function toArray($notifiable)
-    {
-        return [
-            'nameProd' => $this->achat['nameProd'],
-            'quantité' => $this->achat['quantité'],
-            'montantTotal' => $this->achat['montantTotal'],
-            'localite' => $this->achat['localite'],
-            'specificite' => $this->achat['specificite'],
-            'userTrader' => $this->achat['userTrader'],
-            'userSender' => $this->achat['userSender'],
-            'photoProd' => $this->achat['photoProd'],
-            'idProd' => $this->achat['idProd'],
-        ];
-    }
 }
