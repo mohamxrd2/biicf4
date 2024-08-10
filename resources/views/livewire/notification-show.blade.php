@@ -255,9 +255,10 @@
                                 <p class="text-md font-medium text-center">Réponse envoyée</p>
                             </div>
                         @elseif ($notification->type_achat == 'Take Away')
-                            <div class="w-full bg-gray-300 border p-2 rounded-md">
-                                <p class="text-md font-medium text-center">take away btn</p>
-                            </div>
+                            <button wire:click="takeaway"
+                                class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
+                            <button wire:click="refuser" id="btn-refuser" type="submit"
+                                class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
                         @elseif ($notification->type_achat == 'Reservation')
                             <div class="w-full bg-gray-300 border p-2 rounded-md">
                                 <p class="text-md font-medium text-center">reserveation btn</p>
@@ -1358,6 +1359,20 @@
 
         </div>
     @elseif ($notification->type === 'App\Notifications\CountdownNotification')
+        {{-- Afficher les messages de succès --}}
+        @if (session()->has('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        {{-- Afficher les messages d'erreur --}}
+        @if (session()->has('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
             <header class="mb-9">
                 <h1 class="text-3xl font-bold mb-4">Facture Proformat</h1>

@@ -39,6 +39,7 @@ use App\Notifications\livraisonVerif;
 use App\Notifications\mainleveclient;
 use App\Notifications\OffreNegosDone;
 use App\Notifications\AppelOffreTerminer;
+use App\Notifications\CountdownNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -329,6 +330,63 @@ class NotificationShow extends Component
         }
     }
 
+
+    public function takeaway()
+    {
+        // Log pour vérifier que la méthode est appelée
+        Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
+
+        // Extraire les données correctement
+        $notificationData = $this->notification->data;
+
+
+        // Récupérer le produit par son ID
+        $produit = ProduitService::find($notificationData['idProd']);
+
+        // Vérifier si le produit existe
+        if ($produit) {
+            $prixProd = $produit->prix;
+        } else {
+            Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
+            session()->flash('error', 'Produit non trouvé.');
+            return;
+        }
+
+        $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
+
+
+        $details = [
+            'code_unique' => $code_livr ?? null,
+            'id_trader' => $notificationData['userTrader'] ?? null, // Correction: Utiliser 'userTrader'
+            'idProd' => $notificationData['idProd'] ?? null,
+            'quantiteC' => $notificationData['quantité'] ?? null, // Correction: Utiliser 'quantité'
+            'prixProd' => $prixProd ?? null,
+        ];
+
+        // Log pour vérifier les détails avant l'envoi de la notification
+        Log::info('Détails de la notification préparés.', ['details' => $details]);
+
+        // Assurez-vous que 'userSender' est un utilisateur valide et que CountdownNotification est bien défini
+        if (isset($notificationData['userSender'])) {
+            $userSender = User::find($notificationData['userSender']);
+            if ($userSender) {
+                Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
+
+                // Envoi de la notification
+                Notification::send($userSender, new CountdownNotification($details));
+                Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
+            } else {
+                Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $notificationData['userSender']]);
+                session()->flash('error', 'Utilisateur expéditeur non trouvé.');
+            }
+        } else {
+            Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
+            session()->flash('error', 'Détails de notification non valides.');
+        }
+        $this->notification->update(['reponse' => 'accepte']);
+    }
+
+
     public function acceptoffre()
     {
 
@@ -512,77 +570,86 @@ class NotificationShow extends Component
 
     public function valider()
     {
-        // Déterminer le prix unitaire
-        if (isset($this->notification->data['prixProd'])) {
-            $prixUnitaire = $this->notification->data['prixProd'];
-        } else {
-            $prixUnitaire = $this->notification->data['prixTrade'];
+        try {
+
+            // Déterminer le prix unitaire
+            if (isset($this->notification->data['prixProd'])) {
+                $prixUnitaire = $this->notification->data['prixProd'];
+            } else {
+                $prixUnitaire = $this->notification->data['prixTrade'];
+            }
+            Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
+
+            // Calculer le prix total
+            $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
+            Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
+
+            // Vérifier si l'utilisateur est authentifié
+            if (!$this->user) {
+                Log::error('Utilisateur non authentifié.');
+                session()->flash('error', 'Utilisateur non authentifié.');
+                return;
+            }
+
+            $userSender = User::find($this->user); // Assurez-vous de récupérer l'objet utilisateur
+
+            if (!$userSender) {
+                Log::error('Utilisateur non trouvé avec ID', ['userId' => $this->user]);
+                session()->flash('error', 'Utilisateur non authentifié.');
+                return;
+            }
+            Log::info('Utilisateur trouvé', ['userSender' => $userSender]);
+
+            $userWallet = Wallet::where('user_id', $userSender->id)->first();
+
+            if (!$userWallet) {
+                Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $userSender->id]);
+                session()->flash('error', 'Portefeuille introuvable.');
+                return;
+            }
+            Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
+
+            $requiredAmount = $this->totalPrice;
+
+            if ($userWallet->balance < $requiredAmount) {
+                Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
+                session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
+                return;
+            }
+
+            $userWallet->decrement('balance', $requiredAmount);
+            Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
+            $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
+
+
+            // Envoyer la notification normale au userSender
+            $data = [
+                'idProd' => $this->notification->data['idProd'],
+                'code_unique' => $this->code_unique,
+                'id_trader' => $this->namefourlivr->user->id,
+                'localité' => $this->localite,
+                'quantite' => $this->notification->data['quantiteC'],
+                'id_livreur' => $this->userFour->id,
+                'prixTrade' => $this->notification->data['prixTrade'],
+                'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
+            ];
+            Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
+            Notification::send($userSender, new commandVerif($data));
+
+
+            // Mettre à jour la notification et valider
+            $this->notification->update(['reponse' => 'valide']);
+            Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
+
+            // Ajouter un message de succès
+            session()->flash('success', 'Validation effectuée avec succès.');
+        } catch (Exception $e) {
+            // Enregistrement de l'erreur dans les logs
+            Log::error('Erreur dans la méthode valider', ['message' => $e->getMessage()]);
+
+            // Affichage du message d'erreur pour l'utilisateur
+            // session()->flash('error', $e->getMessage());
         }
-        Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
-
-        // Calculer le prix total
-        $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
-        Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
-
-        // Vérifier si l'utilisateur est authentifié
-        if (!$this->user) {
-            Log::error('Utilisateur non authentifié.');
-            session()->flash('error', 'Utilisateur non authentifié.');
-            return;
-        }
-
-        $userSender = User::find($this->user); // Assurez-vous de récupérer l'objet utilisateur
-
-        if (!$userSender) {
-            Log::error('Utilisateur non trouvé avec ID', ['userId' => $this->user]);
-            session()->flash('error', 'Utilisateur non authentifié.');
-            return;
-        }
-        Log::info('Utilisateur trouvé', ['userSender' => $userSender]);
-
-        $userWallet = Wallet::where('user_id', $userSender->id)->first();
-
-        if (!$userWallet) {
-            Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $userSender->id]);
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
-        }
-        Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
-
-        $requiredAmount = $this->totalPrice;
-
-        if ($userWallet->balance < $requiredAmount) {
-            Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
-            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-            return;
-        }
-
-        $userWallet->decrement('balance', $requiredAmount);
-        Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
-        $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
-
-
-        // Envoyer la notification normale au userSender
-        $data = [
-            'idProd' => $this->notification->data['idProd'],
-            'code_unique' => $this->code_unique,
-            'id_trader' => $this->namefourlivr->user->id,
-            'localité' => $this->localite,
-            'quantite' => $this->notification->data['quantiteC'],
-            'id_livreur' => $this->userFour->id,
-            'prixTrade' => $this->notification->data['prixTrade'],
-            'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
-        ];
-        Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
-        Notification::send($userSender, new commandVerif($data));
-
-
-        // Mettre à jour la notification et valider
-        $this->notification->update(['reponse' => 'valide']);
-        Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
-
-
-        $this->validate();
     }
 
 
