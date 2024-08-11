@@ -190,15 +190,18 @@
                                     </p>
                                 </div>
                                 <div class="flex justify-between items-center w-full h-full">
-                                    <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Vous avez reçu une
-                                        commande de cet article en achat direct
+                                    <p class="text-sm text-slate-500 max-w-1/2 font-normal">
+                                        Vous avez reçu une commande de cet article en achat direct
                                     </p>
                                     @if ($notification->read_at == null)
                                         <div class="w-10 flex justify-center items-center">
                                             <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+
                                         </div>
                                     @endif
                                 </div>
+
+
                             </div>
                         </div>
                     </a>
@@ -601,8 +604,9 @@
 
                         <div class="flex w-full">
                             <div class=" w-16 h-16  overflow-hidden mr-3">
-                                <img src="{{ asset($produit->photoProd1) }}" alt="Product Image"
-                                    class="w-full h-full object-cover">
+                                <img class="w-full h-full rounded-xl  object-cover"
+                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="">
                             </div>
 
                             <div class="flex flex-col justify-between w-full">
@@ -626,6 +630,40 @@
                         </div>
 
                     </a>
+                @elseif ($notification->type === 'App\Notifications\attenteclient')
+                    <a href="{{ route('notification.show', $notification->id) }}">
+                        @php
+                            $produit = ProduitService::find($notification->data['idProd']);
+                        @endphp
+
+                        <div class="flex w-full">
+                            <div class=" w-16 h-16  overflow-hidden mr-3">
+                                <img class="w-full h-full rounded-xl  object-cover"
+                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="">
+                            </div>
+
+                            <div class="flex flex-col justify-between w-full">
+                                <div class="flex justify-between items-center w-full">
+                                    <h3 class="text-md font-semibold">{{ $produit->name }}</h3>
+                                    <p class="text-[12px] text-gray-400 text-right">
+                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
+                                    </p>
+                                </div>
+                                <div class="flex justify-between items-center w-full h-full">
+                                    <p class="text-sm text-slate-500 l max-w-1/2 font-normal">Attente du client pour recuperation du colis et
+                                        verification de confromité</p>
+                                    @if ($notification->read_at == null)
+                                        <div class="w-10 flex justify-center items-center">
+                                            <span class="w-2 h-2 rounded-full bg-purple-700"></span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </a>
                 @elseif ($notification->type === 'App\Notifications\mainleveclient')
                     <a href="{{ route('notification.show', $notification->id) }}">
                         @php
@@ -634,8 +672,9 @@
 
                         <div class="flex w-full">
                             <div class=" w-16 h-16  overflow-hidden mr-3">
-                                <img src="{{ asset($produit->photoProd1) }}" alt="Product Image"
-                                    class="w-full h-full object-cover">
+                                <img class="w-full h-full rounded-xl  object-cover"
+                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="">
                             </div>
 
                             <div class="flex flex-col justify-between w-full">

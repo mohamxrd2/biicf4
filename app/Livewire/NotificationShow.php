@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Events\CommentSubmitted;
 use App\Models\AchatDirect;
 use App\Models\userquantites;
+use App\Notifications\attenteclient;
 use Exception;
 use App\Models\User;
 use App\Models\Wallet;
@@ -794,9 +795,14 @@ class NotificationShow extends Component
 
             ];
 
-            Notification::send($livreur, new mainleve($data));
 
-            Notification::send($fournisseur, new mainlevefour($data));
+            if ($this->notification->type_achat) {
+                Notification::send($fournisseur, new attenteclient($data));
+            } else {
+                Notification::send($livreur, new mainleve($data));
+
+                Notification::send($fournisseur, new mainlevefour($data));
+            }
         }
 
 
@@ -1073,7 +1079,6 @@ class NotificationShow extends Component
 
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
-
     }
     private function genererCodeAleatoire($longueur)
     {

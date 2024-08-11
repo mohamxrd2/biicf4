@@ -35,9 +35,7 @@ class AchatDirectGroupe extends Component
     //
     public $quantité = "";
     public $localite = "";
-    public $specificite1 = false;
-    public $specificite2 = false;
-    public $specificite3 = false;
+    public $selectedSpec = false;
     public $userTrader;
     public $nameProd;
     public $userSender;
@@ -102,21 +100,11 @@ class AchatDirectGroupe extends Component
         }
 
         try {
-            // Créez un tableau pour stocker les spécifications sélectionnées
-            $selectedSpecificites = [];
+            // Utilisez `selectedSpec` pour obtenir la spécification sélectionnée
+            $selectedSpec = $this->selectedSpec;
 
-            if ($this->specificite1) {
-                $selectedSpecificites[] = $this->produit->specification;
-            }
-            if ($this->specificite2) {
-                $selectedSpecificites[] = $this->produit->specification2;
-            }
-            if ($this->specificite3) {
-                $selectedSpecificites[] = $this->produit->specification3;
-            }
-
-            // Vérifiez que le tableau $selectedSpecificites n'est pas vide avant de l'utiliser
-            $specificites = !empty($selectedSpecificites) ? implode(', ', $selectedSpecificites) : null;
+            // Assurez-vous que `selectedSpec` est bien défini
+            $specificites = !empty($selectedSpec) ? $selectedSpec : null;
 
             $achat = AchatDirectModel::create([
                 'nameProd' => $validated['nameProd'],
@@ -147,6 +135,7 @@ class AchatDirectGroupe extends Component
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
             Notification::send($owner, new AchatBiicf($achat));
+
             // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
             $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
 
@@ -156,7 +145,7 @@ class AchatDirectGroupe extends Component
             }
 
             $user = User::find($userId);
-            $this->reset(['quantité', 'localite', 'specificite1', 'specificite2', 'specificite3']);
+            $this->reset(['quantité', 'localite', 'selectedSpec']);
             session()->flash('success', 'Achat passé avec succès.');
             $this->dispatch('sendNotification', $user);
         } catch (\Exception $e) {
@@ -168,6 +157,7 @@ class AchatDirectGroupe extends Component
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
+
 
 
 
