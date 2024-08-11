@@ -389,6 +389,14 @@ class NotificationShow extends Component
                 Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $notificationData['userSender']]);
                 session()->flash('error', 'Utilisateur expéditeur non trouvé.');
             }
+
+            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+            $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
+
+            if ($notification) {
+                // Mettez à jour le champ 'type_achat' dans la notification
+                $notification->update(['type_achat' => 'reserv/take']);
+            }
         } else {
             Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
             session()->flash('error', 'Détails de notification non valides.');
@@ -694,7 +702,20 @@ class NotificationShow extends Component
                 'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
             ];
             Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
-            Notification::send($userSender, new commandVerif($data));
+            if ($this->notification->type_achat = 'reserv/take') {
+                Notification::send($userSender, new commandVerif($data));
+
+                // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+                $notification = $userSender->notifications()->where('type', commandVerif::class)->latest()->first();
+
+                if ($notification) {
+                    // Mettez à jour le champ 'type_achat' dans la notification
+                    $notification->update(['type_achat' => 'reserv/take']);
+                }
+            } else {
+                Notification::send($userSender, new commandVerif($data));
+            }
+
 
 
             // Mettre à jour la notification et valider
@@ -796,7 +817,7 @@ class NotificationShow extends Component
             ];
 
 
-            if ($this->notification->type_achat) {
+            if ($this->notification->type_achat = 'reserv/take') {
                 Notification::send($fournisseur, new attenteclient($data));
             } else {
                 Notification::send($livreur, new mainleve($data));

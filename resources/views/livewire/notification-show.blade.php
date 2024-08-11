@@ -288,9 +288,10 @@
                             <button wire:click="refuser" id="btn-refuser" type="submit"
                                 class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
                         @elseif ($notification->type_achat == 'Reservation')
-                            <div class="w-full bg-gray-300 border p-2 rounded-md">
-                                <p class="text-md font-medium text-center">reserveation btn</p>
-                            </div>
+                            <button wire:click="takeaway"
+                                class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
+                            <button wire:click="refuser" id="btn-refuser" type="submit"
+                                class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
                         @else
                             <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...' }" x-cloak>
                                 <!-- Buttons to open modal and refuse -->
@@ -1467,16 +1468,19 @@
                         <tr>
                             <td class="py-2 px-4 border-b">Produit commandé: {{ $produitfat->name }}</td>
                             <td class="py-2 px-4 border-b">{{ $notification->data['quantiteC'] }}</td>
-                            <td class="py-2 px-4 border-b">{{ number_format( ($this->notification->data['prixProd']), 0, ',', '.') }} FCFA</td>
                             <td class="py-2 px-4 border-b">
-                                {{number_format((int) ($notification->data['quantiteC'] * $this->notification->data['prixProd']), 0, ',', '.')  }}
+                                {{ number_format($this->notification->data['prixProd'], 0, ',', '.') }} FCFA</td>
+                            <td class="py-2 px-4 border-b">
+                                {{ number_format((int) ($notification->data['quantiteC'] * $this->notification->data['prixProd']), 0, ',', '.') }}
                                 FCFA</td>
                         </tr>
                         <tr>
                             <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
                             <td class="py-2 px-4 border-b">1</td>
-                            <td class="py-2 px-4 border-b">{{ number_format($notification->data['prixTrade'], 0, ',', '.') }} FCFA</td>
-                            <td class="py-2 px-4 border-b">{{ number_format($notification->data['prixTrade'], 0, ',', '.') }} FCFA</td>
+                            <td class="py-2 px-4 border-b">
+                                {{ number_format($notification->data['prixTrade'], 0, ',', '.') }} FCFA</td>
+                            <td class="py-2 px-4 border-b">
+                                {{ number_format($notification->data['prixTrade'], 0, ',', '.') }} FCFA</td>
                         </tr>
                     </tbody>
                 </table>
@@ -2014,7 +2018,8 @@
                 </h2>
 
                 <div class="lg:w-1/2 w-full mr-2 relative">
-                    <input type="date" id="datePickerStart" name="dateLivr" wire:model.defer="dateLivr" required
+                    <input type="date" id="datePickerStart" name="dateLivr" wire:model.defer="dateLivr"
+                        required
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Ajouter une date de livraison">
 
