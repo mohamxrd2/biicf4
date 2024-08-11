@@ -97,10 +97,13 @@
                                         placeholder="Ajouter une quantité..." required>
 
                                     <button type="submit" id="submitBtn"
-                                        class=" justify-center p-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                          </svg>
+                                        class=" justify-center p-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600"
+                                        x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 4.5v15m7.5-7.5h-15" />
+                                        </svg>
                                     </button>
                                 </div>
                                 <div class="w-full flex justify-center">
@@ -180,7 +183,7 @@
                     clearInterval(countdownTimer);
                     countdownElement.innerHTML = "Temps écoulé !";
                     document.getElementById('submitBtn').hidden = true;
-                    qteInput.disabled  = true;
+                    qteInput.disabled = true;
                 }
             }
         </script>

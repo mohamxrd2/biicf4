@@ -136,8 +136,8 @@ class AjoutProduitServices extends Component
         $this->validate([
             'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
-            'reference' => 'required|string',
-            'name' => 'required|string|max:255',
+            'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
+            'name' => 'required|string|max:255|unique:produit_services,name,NULL,id,user_id,' . auth()->id(),
             //produits
             'conditionnement' => 'required_if:type,Produit|string|max:255',
             'format' => 'required_if:type,Produit|string',
@@ -146,8 +146,8 @@ class AjoutProduitServices extends Component
             'qteProd_min' => 'required_if:type,Produit|integer',
             'qteProd_max' => 'required_if:type,Produit|integer',
             'specification' => 'required_if:type,Produit|string',
-            'specification2' => 'required_if:type,Produit|string',
-            'specification3' => 'required_if:type,Produit|string',
+            'specification2' => 'nullable_if:type,Produit|string',
+            'specification3' => 'nullable_if:type,Produit|string',
             //
             'prix' => 'required|integer',
             //service
@@ -163,6 +163,11 @@ class AjoutProduitServices extends Component
             'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+        ], [
+            'name.required' => 'Le nom est requis.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'name.unique' => 'Vous ne pouvez pas inscrit deux fois le meme nom de produit',
+            'reference.unique' => 'Vous ne pouvez pas inscrit deux fois le meme nom de produit',
         ]);
 
         try {

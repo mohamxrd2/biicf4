@@ -5,9 +5,9 @@
 @section('content')
 
 
-@livewire('postuler-component')
+    @livewire('postuler-component')
 
-@livewireScripts
+    @livewireScripts
 
 
 

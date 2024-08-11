@@ -1,6 +1,6 @@
 @extends('biicf.layout.navside')
 
-@section('title', 'Formulaire de l\' Appel d\'offre')
+@section('title', 'Formulaire de l\'Appel d\'offre')
 
 @section('content')
     <div class="px-4">
@@ -18,9 +18,8 @@
                     <p class="text-sm">{{ $lowestPricedProduct }} FCFA</p>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    {{-- modifier le keyword par le name --}}
                     <input type="text"
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm  disabled:opacity-50 disabled:pointer-events-none"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Nom du produit" value="{{ $keyword }}" name="productName" required readonly>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
@@ -29,51 +28,49 @@
                         placeholder="Quantité" name="quantity">
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <select name="payment" id="" required
+                    <select name="payment" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                         <option value="" selected disabled>Payment</option>
                         <option value="Payment comptant">Payment comptant</option>
                         <option value="Avance partielle" disabled>Avance partielle</option>
                         <option value="A credit" disabled>A credit</option>
                         <option value="Vente a terme" disabled>Vente a terme</option>
-                        <option value="Quotidiennement / garantie de prêt" disabled>Quotidiennement / garantie de prêt
-                        </option>
+                        <option value="Quotidiennement / garantie de prêt" disabled>Quotidiennement / garantie de prêt</option>
                     </select>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <select name="Livraison" id="" required
+                    <select name="Livraison" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                        <option value="" selected disabled>Choissez votre mode de livraison</option>
-                        <option value="moto">moto</option>
-                        <option value="voiture">voiture</option>
-                        <option value="camion">camion</option>
+                        <option value="" selected disabled>Choisissez votre mode de livraison</option>
+                        <option value="moto">Moto</option>
+                        <option value="voiture">Voiture</option>
+                        <option value="camion">Camion</option>
                     </select>
                 </div>
                 <div date-rangepicker class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
                     <div class="w-1/2 mr-2 relative">
-                        <label for="datePicker">Au plus tôt</label>
+                        <label for="datePickerStart">Au plus tôt</label>
                         <input type="date" id="datePickerStart" name="dateTot" required
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
                             placeholder="Sélectionner la date de début">
                     </div>
                     <span class="mx-4 text-gray-500 items-center h-full justify-center flex">à</span>
                     <div class="w-1/2 ml-2 relative">
                         <label for="datePickerEnd" class="mb-1">Au plus tard</label>
                         <input type="date" id="datePickerEnd" name="dateTard" required
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
                             placeholder="Sélectionner la date de fin">
                     </div>
                 </div>
-                {{-- revenir sur la specificité --}}
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="Specificité" name="specificity">
+                        placeholder="Spécificité" name="specificity">
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="lieu de livraison" name="localite">
+                        placeholder="Lieu de livraison" name="localite">
                 </div>
                 <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
                     <h3>Ajouter une photo (facultatif)</h3>
@@ -93,7 +90,7 @@
                                     </p>
                                 </div>
                             </label>
-                            <input id="file-upload1" class="hidden rounded-md " type="file" onchange="previewImage(this)"
+                            <input id="file-upload1" class="hidden rounded-md" type="file" onchange="previewImage(this)"
                                 name="image">
                             <img id="image-preview1" class="absolute inset-0 w-full h-full object-cover hidden">
                             <button type="button" onclick="removeImage()" id="remove-button1"
@@ -108,9 +105,9 @@
                 </div>
                 <div class="lg:w-2/3 w-full flex justify-center">
                     <button type="reset" class="px-2 py-1 rounded-md bg-gray-200 mr-3">Annuler</button>
-                    <button type="submit" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3"
-                        x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Envoyé'"></button>
-                    <button type="submit" class="px-2 py-1 rounded-md bg-green-500 text-white"
+                    <button type="submit" id="submitEnvoie" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3"
+                        x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Envoyer'"></button>
+                    <button type="submit" id="submitGroupe" class="px-2 py-1 rounded-md bg-green-500 text-white"
                         x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'"></button>
                 </div>
             </div>
@@ -126,7 +123,7 @@
             const today = new Date();
             today.setDate(today.getDate() + 2);
             const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Mois de 0 à 11
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
 
             const minDate = `${yyyy}-${mm}-${dd}`;
@@ -167,5 +164,13 @@
             removeButton.classList.add('hidden');
             fileInput.value = ''; // Clear the file input
         }
+
+        document.getElementById('submitEnvoie').addEventListener('click', function() {
+            document.getElementById('mainForm').action = "{{ route('biicf.formstore') }}";
+        });
+
+        document.getElementById('submitGroupe').addEventListener('click', function() {
+            document.getElementById('mainForm').action = "{{ route('biicf.formstoreGroupe') }}";
+        });
     </script>
 @endsection

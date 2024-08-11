@@ -95,52 +95,10 @@ class ProduitServiceController extends Controller
 
     public function homeBiicf()
     {
-
-        // $produits = ProduitService::with('user')
-        //     ->where('statuts', 'Accepté')
-        //     ->orderBy('created_at', 'desc')
-        //     ->paginate(10);
-        // $users = User::orderBy('created_at', 'DESC')
-        //     ->paginate(10);
-
         return view('biicf.acceuil');
     }
 
-    // public function search(Request $request)
-    // {
-    //     $keyword = $request->input('keyword');
-    //     $zoneEconomique = $request->input('zone_economique');
-    //     $type = $request->input('type');
 
-    //     // Faire la recherche dans la base de données en fonction des filtres
-    //     $produits = ProduitService::with('user')
-    //         ->where('statuts', 'Accepté')
-    //         ->orderBy('created_at', 'desc');
-
-
-    //     if ($keyword) {
-    //         $produits->where('name', 'like', '%' . $keyword . '%');
-    //     }
-
-    //     if ($zoneEconomique) {
-    //         $produits->where('zonecoServ', $zoneEconomique);
-    //     }
-
-    //     if ($type) {
-    //         $produits->where('type', $type);
-    //     }
-
-    //     $results = $produits->paginate(10);
-
-    //     $resultCount = $results->total();
-
-    //     $produitDims = ProduitService::with('user')
-    //         ->where('statuts', 'Accepté')
-    //         ->orderBy('created_at', 'desc')
-    //         ->paginate(10);
-
-    //     return view('biicf.search', compact('results', 'produits', 'resultCount', 'produitDims'));
-    // }
 
 
     public function pubDet($id)
