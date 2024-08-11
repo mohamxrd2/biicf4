@@ -127,8 +127,17 @@ class NotificationShow extends Component
     public $oldestNotificationDate;
     public $prixArticleNegos;
     public $quantitE;
-    public $isDelivering = false;
-    public $isRefusing = false;
+    //achat direct de l'offre
+    public $specificite1 = false;
+    public $specificite2 = false;
+    public $specificite3 = false;
+    public $selectedOption;
+    public $options = [
+        'Achact avec livraison',
+        'Take Away',
+        'Reservation',
+    ];
+    public $photoProd;
 
 
     protected $rules = [
@@ -469,19 +478,24 @@ class NotificationShow extends Component
     {
 
         $validated = $this->validate([
-            'nameProd' => 'required|string',
             'quantite' => 'required|integer',
-            'prix' => 'required|numeric',
+            'selectedOption' => 'required|string',
             'localite' => 'required|string|max:255',
-            'userTrader' => 'required|numeric',
-            'specificite' => 'required|string',
-            'idProd' => 'required|numeric',
+            'nameProd' => 'required|string',
+            'userTrader' => 'required|exists:users,id',
+            'idProd' => 'required|exists:produit_services,id',
+            'prix' => 'required|numeric',
         ]);
-        $userId = Auth::id();
 
-        $montanTotal = $validated['quantite'] * $this->prixProd;
+        // dd($validated);
+
+        Log::info('Validation réussie.', $validated);
+
+        $userId = Auth::id();
+        $montantTotal = $validated['quantite'] * $validated['prix'];
 
         if (!$userId) {
+            Log::error('Utilisateur non authentifié.');
             session()->flash('error', 'Utilisateur non authentifié.');
             return;
         }
@@ -489,45 +503,90 @@ class NotificationShow extends Component
         $userWallet = Wallet::where('user_id', $userId)->first();
 
         if (!$userWallet) {
+            Log::error('Portefeuille introuvable.', ['userId' => $userId]);
             session()->flash('error', 'Portefeuille introuvable.');
             return;
         }
 
-        $requiredAmount = $montanTotal;
-
-        if ($userWallet->balance < $requiredAmount) {
+        if ($userWallet->balance < $montantTotal) {
+            Log::warning('Fonds insuffisants pour effectuer cet achat.', [
+                'userId' => $userId,
+                'requiredAmount' => $montantTotal,
+                'walletBalance' => $userWallet->balance,
+            ]);
             session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
             return;
         }
-        $id_prod = ProduitService::findOrFail($validated['idProd']);
-        $photo1 =  $id_prod->photoProd1;
 
-        $achat = AchatDirect::create([
-            'nameProd' => $validated['nameProd'],
-            'photoProd' => $photo1,
-            'quantité' => $validated['quantite'],
-            'montantTotal' => $montanTotal,
-            'localite' => $validated['localite'],
-            'userTrader' => $validated['userTrader'],
-            'userSender' => $userId,
-            'specificite' => $this->specificite,
-            'idProd' => $validated['idProd'],
-        ]);
+        try {
+            // Créez un tableau pour stocker les spécifications sélectionnées
+            $selectedSpecificites = [];
 
-        $userWallet->decrement('balance', $requiredAmount);
+            if ($this->specificite1) {
+                $selectedSpecificites[] = $this->produit->specification;
+            }
+            if ($this->specificite2) {
+                $selectedSpecificites[] = $this->produit->specification2;
+            }
+            if ($this->specificite3) {
+                $selectedSpecificites[] = $this->produit->specification3;
+            }
 
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $userId;
-        $transaction->receiver_user_id = $validated['userTrader'];
-        $transaction->type = 'Gele';
-        $transaction->amount = $montanTotal;
-        $transaction->save();
+            // Vérifiez que le tableau $selectedSpecificites n'est pas vide avant de l'utiliser
+            $specificites = !empty($selectedSpecificites) ? implode(', ', $selectedSpecificites) : null;
 
-        $owner = User::find($validated['userTrader']);
-        Notification::send($owner, new AchatBiicf($achat));
+            $idProd = ProduitService::find($validated['idProd']);
+            $photo = $idProd->photoProd1;
 
-        $this->reset(['quantite', 'localite', 'specificite']);
-        session()->flash('success', 'Achat passé avec succès.');
+            $achat = AchatDirect::create([
+                'nameProd' => $validated['nameProd'],
+                'quantité' => $validated['quantite'],
+                'montantTotal' => $montantTotal,
+                'localite' => $validated['localite'],
+                'userTrader' => $validated['userTrader'],
+                'userSender' => $userId,
+                'specificite' => $specificites,
+                'photoProd' => $photo,
+                'idProd' => $validated['idProd'],
+            ]);
+
+            $userWallet->decrement('balance', $montantTotal);
+
+            $transaction = new Transaction();
+            $transaction->sender_user_id = $userId;
+            $transaction->receiver_user_id = $validated['userTrader'];
+            $transaction->type = 'Gele';
+            $transaction->amount = $montantTotal;
+            $transaction->save();
+
+            Log::info('Transaction enregistrée.', [
+                'transactionId' => $transaction->id,
+                'amount' => $montantTotal,
+            ]);
+
+            $owner = User::find($validated['userTrader']);
+            $selectedOption = $this->selectedOption;
+            Notification::send($owner, new AchatBiicf($achat));
+            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+            $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
+
+            if ($notification) {
+                // Mettez à jour le champ 'type_achat' dans la notification
+                $notification->update(['type_achat' => $selectedOption]);
+            }
+
+            // $user = User::find($userId);
+            $this->reset(['quantite', 'localite', 'specificite1', 'specificite2', 'specificite3']);
+            session()->flash('success', 'Achat passé avec succès.');
+            // $this->dispatch('sendNotification', $user);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de l\'achat direct.', [
+                'error' => $e->getMessage(),
+                'userId' => $userId,
+                'data' => $validated,
+            ]);
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
+        }
     }
     public function add()
     {
@@ -778,7 +837,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'mainleveclient']);
 
         session()->flash('message', 'Livraison marquée comme livrée.');
-        $this->isDelivering = false;
     }
 
     public function verifyCode()

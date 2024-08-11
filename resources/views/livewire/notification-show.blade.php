@@ -17,7 +17,7 @@
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">PASSEZ A L'ACHAT DIRECT</h2>
                 <h1>Le prix au quel vous negocier est {{ $prixProd }} FCFA</h1>
 
-                <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
+                {{-- <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
                     class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
                     @csrf
                     <div class="space-y-3 mb-3 w-full">
@@ -62,54 +62,111 @@
                             <span wire:loading>Envoi en cours...</span>
                         </button>
                     </div>
+                </form> --}}
+                <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
+                    class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
+                    <h1 class="text-xl text-center mb-3">Achat direct</h1>
+
+                    <div class="space-y-3 mb-3 w-full">
+                        <input type="number" id="quantityInput" name="quantite" wire:model.defer="quantite"
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Quantité" data-min="{{ $produit->qteProd_min }}"
+                            data-max="{{ $produit->qteProd_max }}" oninput="updateMontantTotalDirect()" required>
+                    </div>
+                    <div class="space-y-3 mb-3 w-full">
+                        <input type="text" id="locationInput" name="localite" wire:model.defer="localite"
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Lieu de livraison" required>
+                    </div>
+
+                    <div class="space-y-3 mb-3 w-full">
+                        @if (!empty($produit->specification))
+                            <div class="block">
+                                <input type="checkbox" id="specificite_1" name="specificite[]"
+                                    value="{{ $produit->specification }}" wire:model.defer="specificite1"
+                                    class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                                <label for="specificite_1" class="text-sm text-gray-700 dark:text-gray-300">
+                                    {{ $produit->specification }}
+                                </label>
+                            </div>
+                        @endif
+
+                        @if (!empty($produit->specification2))
+                            <div class="block">
+                                <input type="checkbox" id="specificite_2" name="specificite[]"
+                                    value="{{ $produit->specification2 }}" wire:model.defer="specificite2"
+                                    class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                                <label for="specificite_2" class="text-sm text-gray-700 dark:text-gray-300">
+                                    {{ $produit->specification2 }}
+                                </label>
+                            </div>
+                        @endif
+
+                        @if (!empty($produit->specification3))
+                            <div class="block">
+                                <input type="checkbox" id="specificite_3" name="specificite[]"
+                                    value="{{ $produit->specification3 }}" wire:model.defer="specificite3"
+                                    class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                                <label for="specificite_3" class="text-sm text-gray-700 dark:text-gray-300">
+                                    {{ $produit->specification3 }}
+                                </label>
+                            </div>
+                        @endif
+
+                        <select wire:model="selectedOption" name="type"
+                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                            <option value=""  selected>Type de livraison</option>
+                            @foreach ($options as $option)
+                                <option value="{{ $option }}">{{ $option }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="nameProd" wire:model.defer="nameProd">
+                    <input type="hidden" name="userSender" wire:model.defer="userTrader">
+                    <input type="hidden" name="idProd" wire:model.defer="idProd">
+                    <input type="hidden" name="prix" wire:model.defer="prix">
+
+                    <div class="flex justify-between px-4 mb-3 w-full">
+                        <p class="font-semibold text-sm text-gray-500">Prix total:</p>
+                        <p class="text-sm text-purple-600" id="montantTotal">0 FCFA</p>
+                        <input type="hidden" name="montantTotal" id="montant_total_input">
+                    </div>
+
+                    <p id="errorMessage" class="text-sm text-center text-red-500 hidden">Erreur</p>
+
+                    <div class="w-full text-center mt-3">
+                        <button type="reset"
+                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-gray-200 text-black hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none">Annuler</button>
+                        <button type="submit" id="submitButton"
+                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
+                            wire:loading.attr="disabled" disabled>
+                            <span wire:loading.remove>Envoyer</span>
+                            <span wire:loading>Envoi en cours...</span>
+                        </button>
+                    </div>
                 </form>
+
             </div>
         </div>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const btnAchatDirect = document.getElementById('btnAchatDirect');
-                const formAchatDirect = document.getElementById('formAchatDirect');
-
-                // Vous pouvez ajouter des écouteurs d'événements ou d'autres actions ici
-                if (btnAchatDirect) {
-                    btnAchatDirect.addEventListener('click', () => {
-                        toggleVisibility();
-                    });
-                }
-            });
-
-            function toggleVisibility() {
-                const contentDiv = document.getElementById('formAchatDirect');
-
-                if (contentDiv.classList.contains('hidden')) {
-                    contentDiv.classList.remove('hidden');
-                    // Forcer le reflow pour activer la transition
-                    contentDiv.offsetHeight;
-                    contentDiv.classList.add('show');
-                } else {
-                    contentDiv.classList.remove('show');
-                    contentDiv.addEventListener('transitionend', () => {
-                        contentDiv.classList.add('hidden');
-                    }, {
-                        once: true
-                    });
-                }
-            }
-
+            // Fonction pour mettre à jour le montant total pour l'achat direct
             function updateMontantTotalDirect() {
                 const quantityInput = document.getElementById('quantityInput');
-                const price = parseFloat(quantityInput.getAttribute('data-price')) || 0;
-                const minQuantity = parseInt(quantityInput.getAttribute('data-min'), 10);
-                const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
-                const quantity = parseInt(quantityInput.value, 10);
+                const price = document.querySelector('[data-price]');
+                const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
+                const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
+                const quantity = parseInt(quantityInput.value);
                 const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
                 const montantTotalElement = document.getElementById('montantTotal');
                 const errorMessageElement = document.getElementById('errorMessage');
                 const submitButton = document.getElementById('submitButton');
                 const montantTotalInput = document.getElementById('montant_total_input');
 
-                const userBalance = parseFloat("{{ $userWallet->balance }}") || 0;
+                // Exemple de solde utilisateur à adapter
+                const userBalance = {{ $userWallet->balance }};
 
+                // Validation et mise à jour du montant total
                 if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
                     errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
                     errorMessageElement.classList.remove('hidden');
@@ -126,6 +183,25 @@
                     montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
                     montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
                     submitButton.disabled = false;
+                }
+            }
+
+            // Fonction pour gérer la visibilité du contenu
+            function toggleVisibility() {
+                const contentDiv = document.getElementById('toggleContent');
+
+                if (contentDiv.classList.contains('hidden')) {
+                    contentDiv.classList.remove('hidden');
+                    // Forcing reflow to enable transition
+                    contentDiv.offsetHeight;
+                    contentDiv.classList.add('show');
+                } else {
+                    contentDiv.classList.remove('show');
+                    contentDiv.addEventListener('transitionend', () => {
+                        contentDiv.classList.add('hidden');
+                    }, {
+                        once: true
+                    });
                 }
             }
         </script>
@@ -157,7 +233,8 @@
                     <!-- Liste des Produits -->
                     <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
                         <h2 class="text-lg font-semibold text-gray-700 mb-2">Éléments de la Commande</h2>
-                        <p class="my-3 text-sm text-gray-500">Vous serez débité de 10% sur le prix de la marchandise</p>
+                        <p class="my-3 text-sm text-gray-500">Vous serez débité de 10% sur le prix de la marchandise
+                        </p>
 
                         <!-- Tableau pour écrans moyens et plus grands -->
                         <div class="hidden md:block">
@@ -923,7 +1000,7 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     const prixTradeInput = document.getElementById('prixTrade');
                     const submitBtn = document.getElementById(
-                    'submitBtnAppel'); // Assurez-vous que cet identifiant est correct
+                        'submitBtnAppel'); // Assurez-vous que cet identifiant est correct
                     const prixTradeError = document.getElementById('prixTradeError');
                     const produitPrix = parseFloat('{{ $notification->data['produit_prix'] }}');
 
@@ -2005,8 +2082,8 @@
 
                     <button wire:click='refuseVerifLivreur'
                         class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6 mr-2">
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>
