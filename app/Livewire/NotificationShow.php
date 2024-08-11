@@ -576,7 +576,7 @@ class NotificationShow extends Component
             }
 
             // $user = User::find($userId);
-            $this->reset(['quantite', 'localite', 'specificite1', 'specificite2', 'specificite3']);
+            $this->reset(['quantite', 'localite', 'selectedSpec', 'selectedOption']);
             session()->flash('success', 'Achat passé avec succès.');
             // $this->dispatch('sendNotification', $user);
         } catch (Exception $e) {
