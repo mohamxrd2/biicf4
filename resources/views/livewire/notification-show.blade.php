@@ -1695,6 +1695,16 @@
                     <p class="text-md font-semibold">Conditionnement du colis</p>
                     <p class="text-md font-medium text-gray-600">{{ $notification->data['textareaContent'] }}</p>
                 </div>
+
+                <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
+                    class="mb-3 text-blue-700 hover:underline flex items-center">
+                    Voir le produit
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </a>
             </div>
             <div class="lg:col-span-1 col-span-2">
 
