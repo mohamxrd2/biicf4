@@ -17,7 +17,7 @@
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">PASSEZ A L'ACHAT DIRECT</h2>
                 <h1>Le prix au quel vous negocier est {{ $prixProd }} FCFA</h1>
 
-                
+
                 <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
                     class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
                     <h1 class="text-xl text-center mb-3">Achat direct</h1>
@@ -70,7 +70,7 @@
 
                         <select wire:model="selectedOption" name="type"
                             class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                            <option value=""  selected>Type de livraison</option>
+                            <option value="" selected>Type de livraison</option>
                             @foreach ($options as $option)
                                 <option value="{{ $option }}">{{ $option }}</option>
                             @endforeach
@@ -1132,18 +1132,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-white rounded shadow-lg" x-data="{ open: false }">
-                        <!-- Button -->
-                        <button @click="open = !open"
-                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                            Ajouter le nouveau Conditionnement
-                        </button>
 
-                        <!-- Textarea -->
-                        <div x-show="open" class="mt-4">
-                            <textarea class="w-full p-2 border border-gray-300 rounded" rows="4" placeholder="Tapez ici..."></textarea>
-                        </div>
-                    </div>
                     {{-- <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
                         class="mb-3 text-blue-700 hover:underline flex items-center">
                         Voir le produit
@@ -1160,11 +1149,12 @@
                                 <p class="text-md font-medium text-center">Réponse envoyée</p>
                             </div>
                         @else
-                            <div x-data="{ isOpen: false }" x-cloak>
+                            {{-- <div x-data="{ isOpen: false }" x-cloak>
                                 <button @click="isOpen = true"
                                     class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
                                 <button wire:click="refuser" id="btn-refuser" type="submit"
                                     class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+
 
                                 <div x-show="isOpen" id="hs-basic-modal"
                                     class="hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500 fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 overflow-y-auto">
@@ -1194,19 +1184,100 @@
                                                 </p>
                                             </div>
                                             <div class="flex justify-end items-center py-3 px-4 border-t">
-                                                <button @click="isOpen = false"
-                                                    class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded mr-2">Annuler</button>
-                                                <button @click.prevent="isOpen = false; $wire.accepter()"
-                                                    @if ($nombreLivr == 0) disabled @endif
-                                                    class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
-                                                    <span wire:loading.remove>Envoyer</span>
-                                                    <span wire:loading>En cours...</span>
+                                                <div class="p-4 rounded shadow-lg" x-data="{ open: false }">
+
+                                                    <!-- Button to toggle textarea visibility -->
+                                                    <button @click="open = !open"
+                                                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                                        Ajouter le nouveau Conditionnement
+                                                    </button>
+
+                                                    <!-- Textarea and action buttons -->
+                                                    <div x-show="open" class="mt-4">
+                                                        <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6">
+                                                            Emballage:,
+                                                            Dimension:,
+                                                            Poids:, Autre:
+                                                        </textarea>
+                                                        <div class="mt-2 flex justify-end space-x-2">
+                                                            <button @click="open = false"
+                                                                class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded">
+                                                                Annuler
+                                                            </button>
+                                                            <button @click.prevent="open = false; $wire.accepter()"
+                                                                @if ($nombreLivr == 0) disabled @endif
+                                                                class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
+                                                                <span wire:loading.remove>Envoyer</span>
+                                                                <span wire:loading>En cours...</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> --}}
+                            <div x-data="{ isOpen: false, open: false, textareaValue: '' }" x-cloak>
+                                <!-- Buttons to open modal and refuse -->
+                                <button @click="isOpen = true" class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
+                                <button wire:click="refuser" id="btn-refuser" type="submit" class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+
+                                <!-- Modal -->
+                                <div x-show="isOpen" id="hs-basic-modal" class="hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500 fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 overflow-y-auto">
+                                    <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+                                        <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
+                                            <div class="flex justify-between items-center py-3 px-4 border-b">
+                                                <h3 class="font-bold text-gray-800">Envoi au livreur</h3>
+                                                <button @click="isOpen = false" class="text-gray-800 hover:text-gray-600">
+                                                    <span class="sr-only">Close</span>
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
                                                 </button>
+                                            </div>
+                                            <div class="p-4">
+                                                <p class="text-gray-800">
+                                                    @if ($nombreLivr)
+                                                        Le nombre de livreurs disponibles dans cette zone est: {{ $nombreLivr }}
+                                                    @else
+                                                        Aucun livreur dans la zone
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            <div class="flex justify-end items-center py-3 px-4 border-t">
+                                                <div x-data="{ open: false }">
+                                                    <!-- Button to toggle textarea visibility -->
+                                                    <button @click="open = !open" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                                        Ajouter le nouveau Conditionnement
+                                                    </button>
+
+                                                    <!-- Textarea and action buttons -->
+                                                    <div x-show="open" class="mt-4">
+                                                        <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6">
+                                                            Emballage:, Dimension:, Poids:, Autre:
+                                                        </textarea>
+                                                        <div class="mt-2 flex justify-end space-x-2">
+                                                            <button @click="open = false" class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded">
+                                                                Annuler
+                                                            </button>
+                                                            <button @click.prevent="$wire.accepter(textareaValue)" @if ($nombreLivr == 0) disabled @endif class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
+                                                                <span wire:loading.remove>Envoyer</span>
+                                                                <span wire:loading>En cours...</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
 
                         @endif
                     </div>

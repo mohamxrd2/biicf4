@@ -1013,11 +1013,12 @@ class NotificationShow extends Component
         $this->validate();
     }
 
-    public function accepter()
+    public function accepter($textareaContent = null)
     {
 
 
-        $this->notification->update(['reponse' => 'accepte']);
+        // Récupérez le contenu du textarea depuis la requête
+        $textareaContent = $textareaContent ?? '';
 
         $userId = Auth::id();
         $userWallet = Wallet::where('user_id', $userId)->first();
@@ -1057,7 +1058,8 @@ class NotificationShow extends Component
             'localite' =>  $this->notification->data['localite'],
             'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
             'code_livr' => $code_livr,
-            'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix
+            'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
+            'textareaContent' => $textareaContent
 
         ];
 
@@ -1070,6 +1072,8 @@ class NotificationShow extends Component
         session()->flash('success', 'Achat accepté.');
 
         $this->modalOpen = false;
+        $this->notification->update(['reponse' => 'accepte']);
+
     }
     private function genererCodeAleatoire($longueur)
     {
