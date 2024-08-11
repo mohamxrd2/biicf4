@@ -129,9 +129,7 @@ class NotificationShow extends Component
     public $prixArticleNegos;
     public $quantitE;
     //achat direct de l'offre
-    public $specificite1 = false;
-    public $specificite2 = false;
-    public $specificite3 = false;
+    public $selectedSpec = false;
     public $selectedOption;
     public $options = [
         'Achact avec livraison',
@@ -528,18 +526,11 @@ class NotificationShow extends Component
         }
 
         try {
-            // Créez un tableau pour stocker les spécifications sélectionnées
-            $selectedSpecificites = [];
+            // Utilisez `selectedSpec` pour obtenir la spécification sélectionnée
+            $selectedSpec = $this->selectedSpec;
 
-            if ($this->specificite1) {
-                $selectedSpecificites[] = $this->produit->specification;
-            }
-            if ($this->specificite2) {
-                $selectedSpecificites[] = $this->produit->specification2;
-            }
-            if ($this->specificite3) {
-                $selectedSpecificites[] = $this->produit->specification3;
-            }
+            // Assurez-vous que `selectedSpec` est bien défini
+            $specificites = !empty($selectedSpec) ? $selectedSpec : null;
 
             // Vérifiez que le tableau $selectedSpecificites n'est pas vide avant de l'utiliser
             $specificites = !empty($selectedSpecificites) ? implode(', ', $selectedSpecificites) : null;

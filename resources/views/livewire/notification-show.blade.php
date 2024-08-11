@@ -37,9 +37,9 @@
                     <div class="space-y-3 mb-3 w-full">
                         @if (!empty($produit->specification))
                             <div class="block">
-                                <input type="checkbox" id="specificite_1" name="specificite[]"
-                                    value="{{ $produit->specification }}" wire:model.defer="specificite1"
-                                    class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                                <input type="radio" id="specificite_1" name="specificite"
+                                    value="{{ $produit->specification }}" wire:model.defer="selectedSpec"
+                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
                                 <label for="specificite_1" class="text-sm text-gray-700 dark:text-gray-300">
                                     {{ $produit->specification }}
                                 </label>
@@ -48,9 +48,9 @@
 
                         @if (!empty($produit->specification2))
                             <div class="block">
-                                <input type="checkbox" id="specificite_2" name="specificite[]"
-                                    value="{{ $produit->specification2 }}" wire:model.defer="specificite2"
-                                    class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                                <input type="radio" id="specificite_2" name="specificite"
+                                    value="{{ $produit->specification2 }}" wire:model.defer="selectedSpec"
+                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
                                 <label for="specificite_2" class="text-sm text-gray-700 dark:text-gray-300">
                                     {{ $produit->specification2 }}
                                 </label>
@@ -59,9 +59,9 @@
 
                         @if (!empty($produit->specification3))
                             <div class="block">
-                                <input type="checkbox" id="specificite_3" name="specificite[]"
-                                    value="{{ $produit->specification3 }}" wire:model.defer="specificite3"
-                                    class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                                <input type="radio" id="specificite_3" name="specificite"
+                                    value="{{ $produit->specification3 }}" wire:model.defer="selectedSpec"
+                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
                                 <label for="specificite_3" class="text-sm text-gray-700 dark:text-gray-300">
                                     {{ $produit->specification3 }}
                                 </label>
