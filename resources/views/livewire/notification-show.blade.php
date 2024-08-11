@@ -778,6 +778,7 @@
             </script>
         </div>
     @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
+        <h1 class="text-center text-3xl font-semibold mb-2">L'Enchere Des Clients </h1>
         <div class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
 
@@ -786,7 +787,7 @@
                 <div class="w-full gap-y-2  my-4">
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
-                        <p class="text-md font-semibold">Prix unitaire maximal</p>
+                        <p class="text-md font-semibold">Prix unitaire minimum</p>
                         <p class="text-md font-medium text-gray-600">
                             {{ number_format($notification->data['produit_prix'], 2, ',', ' ') }}
                         </p>
@@ -921,77 +922,85 @@
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtn');
+                    const submitBtn = document.getElementById(
+                    'submitBtnAppel'); // Assurez-vous que cet identifiant est correct
                     const prixTradeError = document.getElementById('prixTradeError');
+                    const produitPrix = parseFloat('{{ $notification->data['produit_prix'] }}');
 
                     prixTradeInput.addEventListener('input', function() {
                         const prixTradeValue = parseFloat(prixTradeInput.value);
-                        const produit_prix = parseFloat('{{ $notification->data['produit_prix'] }}');
 
-                        if (prixTradeValue < produit_prix) {
-                            submitBtn.disabled = true;
-                            prixTradeError.textContent = 'Le prix  doit  etre superieur ' + produit_prix;
+                        if (prixTradeValue < produitPrix) {
+                            // Si le prix est invalide
+                            submitBtn.disabled = true; // Désactiver le bouton
+                            prixTradeError.textContent = `Le prix doit être supérieur à ${produitPrix} FCFA`;
                             prixTradeError.classList.remove('hidden');
+                            submitBtn.classList.add('hidden'); // Masquer le bouton
                         } else {
-                            submitBtn.disabled = false;
+                            // Si le prix est valide
+                            submitBtn.disabled = false; // Activer le bouton
                             prixTradeError.textContent = '';
                             prixTradeError.classList.add('hidden');
+                            submitBtn.classList.remove('hidden'); // Afficher le bouton
                         }
                     });
-                });
 
-                // Convertir la date de départ en objet Date JavaScript
-                const startDate = new Date("{{ $oldestCommentDate }}");
+                    // Convertir la date de départ en objet Date JavaScript
+                    const startDate = new Date("{{ $oldestCommentDate }}");
+                    startDate.setMinutes(startDate.getMinutes() + 1); // Ajouter 1 minute pour la date de départ
 
-                // Ajouter 5 jours à la date de départ
-                // Ajouter 5 heures à la date de départ
-                startDate.setMinutes(startDate.getMinutes() + 1);
+                    // Mettre à jour le compte à rebours à intervalles réguliers
+                    const countdownTimer = setInterval(updateCountdown, 1000);
 
-                // Mettre à jour le compte à rebours à intervalles réguliers
-                const countdownTimer = setInterval(updateCountdown, 1000);
+                    function updateCountdown() {
+                        // Obtenir la date et l'heure actuelles
+                        const currentDate = new Date();
 
-                function updateCountdown() {
-                    // Obtenir la date et l'heure actuelles
-                    const currentDate = new Date();
+                        // Calculer la différence entre la date cible et la date de départ en millisecondes
+                        const difference = startDate.getTime() - currentDate.getTime();
 
-                    // Calculer la différence entre la date cible et la date de départ en millisecondes
-                    const difference = startDate.getTime() - currentDate.getTime();
+                        // Convertir la différence en jours, heures, minutes et secondes
+                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-                    // Convertir la différence en jours, heures, minutes et secondes
-                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                        // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+                        const countdownElement = document.getElementById('countdown');
+                        countdownElement.innerHTML = `
+                            <div>${hours}h</div>:
+                            <div>${minutes}m</div>:
+                            <div>${seconds}s</div>
+                        `;
 
-                    // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                    const countdownElement = document.getElementById('countdown');
-                    countdownElement.innerHTML = `
+                        // Arrêter le compte à rebours lorsque la date cible est atteinte
+                        if (difference <= 0) {
+                            clearInterval(countdownTimer);
+                            countdownElement.innerHTML = "Temps écoulé !";
+                            prixTradeInput.disabled = true;
+                            submitBtn.classList.add('hidden'); // Masquer le bouton lorsque le temps est écoulé
 
-                 <div>${hours}h</div>:
-                 <div>${minutes}m</div>:
-                 <div>${seconds}s</div>
-                `;
+                            // Obtenir le commentaire avec le prix le plus élevé
+                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
+                                .prix > max.prix ? comment : max, {
+                                    prix: -Infinity
+                                });
 
-                    // Arrêter le compte à rebours lorsque la date cible est atteinte
-                    if (difference <= 0) {
-                        clearInterval(countdownTimer);
-                        countdownElement.innerHTML = "Temps écoulé !";
-                        document.getElementById('prixTrade').disabled = true;
-                        document.getElementById('submitBtn').hidden = true;
-
-
-                        // const highestPricedComment = ;
-
-                        // if (highestPricedComment && highestPricedComment.user) {
-                        //     prixTradeError.textContent =
-                        //         `L'utilisateur avec le prix le plus bas est ${highestPricedComment.user.name} avec ${highestPricedComment.prixTrade} FCFA!`;
-                        // } else {
-                        //     prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                        // }
-                        // prixTradeError.classList.remove('hidden');
+                            if (highestPricedComment && highestPricedComment.nameUser) {
+                                prixTradeError.textContent =
+                                    `L'utilisateur avec le prix le plus élevé est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                            } else {
+                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                            }
+                            prixTradeError.classList.remove('hidden');
+                        }
                     }
-                }
+                });
             </script>
+
+
+
+
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
         <div class="container mx-auto px-4 py-6">
