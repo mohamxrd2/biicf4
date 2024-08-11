@@ -1222,7 +1222,7 @@
                                     </div>
                                 </div>
                             </div> --}}
-                            <div x-data="{ isOpen: false, open: false, textareaValue: '' }" x-cloak>
+                            <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...' }" x-cloak>
                                 <!-- Buttons to open modal and refuse -->
                                 <button @click="isOpen = true" class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
                                 <button wire:click="refuser" id="btn-refuser" type="submit" class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
@@ -1258,8 +1258,7 @@
 
                                                     <!-- Textarea and action buttons -->
                                                     <div x-show="open" class="mt-4">
-                                                        <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6">
-                                                            Emballage:, Dimension:, Poids:, Autre:
+                                                        <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6" required>
                                                         </textarea>
                                                         <div class="mt-2 flex justify-end space-x-2">
                                                             <button @click="open = false" class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded">
@@ -1692,10 +1691,10 @@
                     <p class="text-md font-medium text-gray-600">{{ $userFour->phone }}</p>
                 </div>
 
-                {{-- <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Code de livrasion</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['code_livr'] }}</p>
-                </div> --}}
+                <div class="w-full flex justify-between items-center py-4  border-b-2">
+                    <p class="text-md font-semibold">Conditionnement du colis</p>
+                    <p class="text-md font-medium text-gray-600">{{ $notification->data['textareaContent'] }}</p>
+                </div>
             </div>
             <div class="lg:col-span-1 col-span-2">
 

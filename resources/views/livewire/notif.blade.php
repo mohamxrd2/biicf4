@@ -178,8 +178,8 @@
                     <a href="{{ route('notification.show', $notification->id) }}" class="">
                         <div class="flex w-full">
                             <div class="w-16 h-16 overflow-hidden mr-3">
-                                <img src="{{ asset('post/all/' . $notification->data['photoProd']) }}" alt="Product Image"
-                                    class="w-full h-full object-cover">
+                                <img src="{{ asset('post/all/' . $notification->data['photoProd']) }}"
+                                    alt="Product Image" class="w-full h-full object-cover">
                             </div>
 
                             <div class="flex flex-col justify-between w-full">
@@ -327,7 +327,8 @@
                                 </p>
                                 <div class="flex justify-between items-center w-full h-full">
                                     <p class="text-sm text-slate-500 l max-w-1/2 font-normal">
-                                        Vous venez de gagnez l'enchere sur le produit... Cliquez pour ajouter la quantité que vous voulez commander</p>
+                                        Vous venez de gagnez l'enchere sur le produit... Cliquez pour ajouter la
+                                        quantité que vous voulez commander</p>
                                     @if ($notification->read_at == null)
                                         <div class="w-10 flex justify-center items-center">
                                             <span class="w-2 h-2 rounded-full bg-purple-700"></span>
@@ -521,8 +522,9 @@
                         @endphp
                         <div class="flex w-full">
                             <div class=" w-16 h-16  overflow-hidden mr-3">
-                                <img src="{{ asset($produit->photoProd1) }}" alt="Product Image"
-                                    class="w-full h-full object-cover">
+                                <img class="w-full h-full rounded-xl  object-cover"
+                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="">
                             </div>
 
                             <div class="flex flex-col justify-between w-full">
