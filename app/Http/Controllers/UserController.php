@@ -103,6 +103,7 @@ class UserController extends Controller
             $user->construction = $request->input('building_type');
             $user->commerce = $request->input('commerce_sector');
             $user->services = $request->input('transport_sector');
+            $user->address = $request->input('address');
             $user->country = $request->input('country');
             $user->parrain = $request->input('parrain');
 
