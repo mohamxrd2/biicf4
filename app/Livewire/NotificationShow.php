@@ -693,7 +693,8 @@ class NotificationShow extends Component
                 'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
             ];
             Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
-            if ($this->notification->type_achat = 'reserv/take') {
+            
+            if ($this->notification->type_achat == 'reserv/take') {
                 Notification::send($userSender, new commandVerif($data));
 
                 // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
@@ -708,13 +709,13 @@ class NotificationShow extends Component
             }
 
 
-
             // Mettre à jour la notification et valider
             $this->notification->update(['reponse' => 'valide']);
             Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
 
             // Ajouter un message de succès
             session()->flash('success', 'Validation effectuée avec succès.');
+
         } catch (Exception $e) {
             // Enregistrement de l'erreur dans les logs
             Log::error('Erreur dans la méthode valider', ['message' => $e->getMessage()]);
