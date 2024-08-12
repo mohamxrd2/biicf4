@@ -693,7 +693,7 @@ class NotificationShow extends Component
                 'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
             ];
             Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
-            
+
             if ($this->notification->type_achat == 'reserv/take') {
                 Notification::send($userSender, new commandVerif($data));
 
@@ -809,7 +809,7 @@ class NotificationShow extends Component
             ];
 
 
-            if ($this->notification->type_achat = 'reserv/take') {
+            if ($this->notification->type_achat == 'reserv/take') {
                 Notification::send($fournisseur, new attenteclient($data));
             } else {
                 Notification::send($livreur, new mainleve($data));
