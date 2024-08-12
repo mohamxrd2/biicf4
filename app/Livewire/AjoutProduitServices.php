@@ -146,15 +146,13 @@ class AjoutProduitServices extends Component
             'qteProd_min' => 'required_if:type,Produit|integer',
             'qteProd_max' => 'required_if:type,Produit|integer',
             'specification' => 'required_if:type,Produit|string',
-            'specification2' => 'nullable_if:type,Produit|string',
-            'specification3' => 'nullable_if:type,Produit|string',
-            //
+            'specification2' => 'nullable|string',
+            'specification3' => 'nullable|string',
             'prix' => 'required|integer',
             //service
             'qualification' => 'required_if:type,Service|string',
             'specialite' => 'required_if:type,Service|string',
             'qte_service' => 'required_if:type,Service|string',
-            //
             'depart' => 'required|string',
             'ville' => 'required|string',
             'commune' => 'required|string',
@@ -166,9 +164,10 @@ class AjoutProduitServices extends Component
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
-            'name.unique' => 'Vous ne pouvez pas inscrit deux fois le meme nom de produit',
-            'reference.unique' => 'Vous ne pouvez pas inscrit deux fois le meme nom de produit',
+            'name.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
+            'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
         ]);
+
 
         try {
             // Création de la catégorie si elle n'existe pas encore
