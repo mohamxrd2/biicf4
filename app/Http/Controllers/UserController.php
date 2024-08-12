@@ -59,9 +59,7 @@ class UserController extends Controller
             'repeat-password' => 'required|string|same:password',
             'email' => 'required|email|max:255|unique:users',
             'phone' => 'required',
-            'local' => 'required',
-            'adress_geo' => 'required',
-            'proximity' => 'required',
+            'address' => 'required',
         ], [
             'email.unique' => 'Email deja utlisé',
             'name.required' => 'Le champ nom est requis.',
