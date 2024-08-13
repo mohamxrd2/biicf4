@@ -1221,7 +1221,7 @@ class NotificationShow extends Component
                 $typeAchat = $info['type_achat'];
                 $quantite = $info['quantite'];
 
-                if ($typeAchat === 'Take Away') {
+                if ($typeAchat === 'Take Away' || $typeAchat === 'Reservation') {
                     // Envoyez la notification au client directement
                     $userSender = User::find($userId);
                     if ($userSender) {
@@ -1248,7 +1248,6 @@ class NotificationShow extends Component
             foreach ($livreurs as $livreur) {
                 Notification::send($livreur, new livraisonVerif($data));
             }
-
         }
 
         session()->flash('success', 'Achat accepté.');
