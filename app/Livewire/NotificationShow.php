@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
 use App\Models\AchatDirect;
+use App\Models\AppelOffreGrouper;
 use App\Models\userquantites;
 use App\Notifications\attenteclient;
 use Exception;
@@ -132,11 +133,17 @@ class NotificationShow extends Component
     public $selectedSpec = false;
     public $selectedOption;
     public $options = [
-        'Achact avec livraison',
+        'Achat avec livraison',
         'Take Away',
         'Reservation',
     ];
     public $photoProd;
+
+    // appel offre grouper
+    public $appelOffreGroup;
+    public $sumquantite;
+    public $datePlusAncienne;
+    public $appelOffreGroupcount;
 
 
     protected $rules = [
@@ -222,6 +229,7 @@ class NotificationShow extends Component
             || $this->notification->type === 'App\Notifications\NegosTerminer'
             || $this->notification->type === 'App\Notifications\OffreNegosNotif'
             || $this->notification->type === 'App\Notifications\OffreNegosDone'
+            || $this->notification->type === 'App\Notifications\AOGrouper'
             ||  $this->notification->type === 'App\Notifications\OffreNotif')
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
@@ -336,8 +344,63 @@ class NotificationShow extends Component
             $this->produit = null;
             $this->nameProd = $this->userTrader = $this->idProd = $this->prix = null;
         }
+
+        // //appeloffregrouper Notification
+        // $Idoffre =  $this->notification->data['offre_id'] ?? null;
+        // // Récupérer l'offre groupée par son ID
+        // $this->appelOffreGroup = AppelOffreGrouper::findOrFail($Idoffre) ?? null;
+        // $codesUniques = $this->appelOffreGroup->codeunique;
+
+        // // Récupérer la date la plus ancienne pour le code unique
+        // $this->datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
+        // $this->sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
+        // $this->appelOffreGroupcount = $this->appelOffreGroup->count();
     }
 
+    public function storeoffre()
+    {
+        try {
+            // Valider les données du formulaire
+            Log::info('Début de la validation des données du formulaire.');
+            $validatedData = $this->validate([
+                'quantite' => 'required|integer',
+                'localite' => 'required|string',
+                'selectedOption' => 'required|string',
+            ]);
+            Log::info('Données du formulaire validées.', ['validated_data' => $validatedData]);
+
+            // Créer un nouvel enregistrement dans la table offregroupe
+            Log::info('Création d\'un nouvel enregistrement dans AppelOffreGrouper.');
+            $offregroupe = new AppelOffreGrouper();
+            $offregroupe->codeunique = $this->appelOffreGroup->codeunique;
+            $offregroupe->user_id = Auth::id();
+            $offregroupe->quantity = $validatedData['quantite'];
+            $offregroupe->save();
+            Log::info('Enregistrement dans AppelOffreGrouper sauvegardé.', ['offregroupe_id' => $offregroupe->id]);
+
+            // Ajouter dans la table userquantites
+            Log::info('Ajout d\'une nouvelle quantité dans userquantites.');
+            $quantite = new userquantites();
+            $quantite->code_unique = $this->appelOffreGroup->codeunique; // Vous devez définir `codeUnique` correctement
+            $quantite->user_id = Auth::id(); // Vous devez définir `userId` correctement
+            $quantite->localite = $validatedData['localite']; // Vous devez définir `userId` correctement
+            $quantite->quantite = $validatedData['quantite'];
+            $quantite->type_achat = $validatedData['selectedOption'];
+            $quantite->save();
+
+            Log::info('Enregistrement dans userquantites sauvegardé.', ['quantite_id' => $quantite->id]);
+            $this->reset('quantite', 'localite', 'selectedOption');
+
+            // Flash success message
+            session()->flash('success', 'Quantité ajoutée avec succès');
+            Log::info('Message de succès flashé.', ['message' => 'Quantité ajoutée avec succès']);
+        } catch (Exception $e) {
+            // Log l'erreur
+            Log::error('Erreur lors de l\'enregistrement des données.', ['error' => $e->getMessage()]);
+            // Vous pouvez également définir un message d'erreur pour la session si nécessaire
+            session()->flash('error', 'Erreur lors de l\'ajout de la quantité.');
+        }
+    }
 
     public function takeaway()
     {
@@ -715,7 +778,6 @@ class NotificationShow extends Component
 
             // Ajouter un message de succès
             session()->flash('success', 'Validation effectuée avec succès.');
-
         } catch (Exception $e) {
             // Enregistrement de l'erreur dans les logs
             Log::error('Erreur dans la méthode valider', ['message' => $e->getMessage()]);
@@ -1032,13 +1094,73 @@ class NotificationShow extends Component
         $this->validate();
     }
 
+    // public function accepter($textareaContent = null)
+    // {
+    //     // Récupérez le contenu du textarea depuis la requête
+    //     $textareaContent = $textareaContent ?? '';
+
+    //     $userId = Auth::id();
+    //     $userWallet = Wallet::where('user_id', $userId)->first();
+    //     if (!$userWallet) {
+    //         session()->flash('error', 'Portefeuille introuvable.');
+    //         return;
+    //     }
+
+    //     $notification = NotificationEd::find($this->notification->id);
+    //     $notification->reponse = 'accepte';
+    //     $notification->save();
+
+    //     // $userSender = User::find($this->notification->data['userSender']);
+    //     $requiredAmount = $this->notification->data['montantTotal'];
+    //     $pourcentSomme  = $requiredAmount * 0.1;
+    //     $totalSom = $requiredAmount - $pourcentSomme;
+
+    //     $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
+
+    //     $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
+
+    //     // $userTrader = User::find($userId);
+    //     // $this->handleCommission($userTrader, $pourcentSomme, 'Trader');
+    //     // $this->handleCommission($userSender, $pourcentSomme, 'Sender');
+
+    //     // $userWallet->increment('balance', $totalSom);
+    //     // $this->createTransaction($userSender->id, $userId, 'Reception', $totalSom);
+    //     // $this->createTransaction($userSender->id, $userId, 'Envoie', $requiredAmount);
+
+    //     // Notification::send($userSender, new acceptAchat($this->messageA));
+
+    //     $data = [
+    //         'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
+    //         'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
+    //         'totalSom' => $requiredAmount,
+    //         'quantite' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
+    //         'localite' =>  $this->notification->data['localite'],
+    //         'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
+    //         'code_livr' => $code_livr,
+    //         'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
+    //         'textareaContent' => $textareaContent
+
+    //     ];
+
+    //     $livreurs = User::where('actor_type', 'livreur')->get();
+
+    //     foreach ($livreurs as $livreur) {
+    //         Notification::send($livreur, new livraisonVerif($data));
+    //     }
+
+    //     session()->flash('success', 'Achat accepté.');
+
+    //     $this->modalOpen = false;
+    //     $this->notification->update(['reponse' => 'accepte']);
+    // }
+
+
     public function accepter($textareaContent = null)
     {
-
-
         // Récupérez le contenu du textarea depuis la requête
         $textareaContent = $textareaContent ?? '';
 
+        // Vérifiez si l'utilisateur a un portefeuille
         $userId = Auth::id();
         $userWallet = Wallet::where('user_id', $userId)->first();
         if (!$userWallet) {
@@ -1046,46 +1168,87 @@ class NotificationShow extends Component
             return;
         }
 
+        // Mettez à jour la notification
         $notification = NotificationEd::find($this->notification->id);
+        if (!$notification) {
+            session()->flash('error', 'Notification introuvable.');
+            return;
+        }
         $notification->reponse = 'accepte';
         $notification->save();
 
-        // $userSender = User::find($this->notification->data['userSender']);
+        // Calculez le montant total et le code unique
         $requiredAmount = $this->notification->data['montantTotal'];
-        $pourcentSomme  = $requiredAmount * 0.1;
+        $pourcentSomme = $requiredAmount * 0.1;
         $totalSom = $requiredAmount - $pourcentSomme;
 
-        $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
-
+        $code_livr = $this->code_unique ?? $this->genererCodeAleatoire(10);
         $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
 
-        // $userTrader = User::find($userId);
-        // $this->handleCommission($userTrader, $pourcentSomme, 'Trader');
-        // $this->handleCommission($userSender, $pourcentSomme, 'Sender');
-
-        // $userWallet->increment('balance', $totalSom);
-        // $this->createTransaction($userSender->id, $userId, 'Reception', $totalSom);
-        // $this->createTransaction($userSender->id, $userId, 'Envoie', $requiredAmount);
-
-        // Notification::send($userSender, new acceptAchat($this->messageA));
-
+        // Préparez les données pour la notification
         $data = [
             'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
             'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
             'totalSom' => $requiredAmount,
             'quantite' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
-            'localite' =>  $this->notification->data['localite'],
-            'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
+            'localite' => $this->notification->data['localite'],
+            'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
             'code_livr' => $code_livr,
             'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
             'textareaContent' => $textareaContent
-
         ];
 
-        $livreurs = User::where('actor_type', 'livreur')->get();
+        // Vérifiez si le code_unique existe dans userquantites
+        $userQuantites = userquantites::where('code_unique', $code_livr)->get();
 
-        foreach ($livreurs as $livreur) {
-            Notification::send($livreur, new livraisonVerif($data));
+        // Log l'état initial de la récupération des données
+        Log::info('Recherche du code_unique', ['code_unique' => $code_livr, 'count' => $userQuantites->count()]);
+
+        if ($userQuantites->isNotEmpty()) {
+            // Récupérez les IDs des utilisateurs et faites la somme des quantités
+            $userQuantities = $userQuantites->groupBy('user_id')->map(function ($items) {
+                return [
+                    'quantite' => $items->sum('quantite'),
+                    'type_achat' => $items->first()->type_achat
+                ];
+            });
+
+            // Log le résultat de la somme des quantités et des types d'achat
+            Log::info('Quantités groupées par utilisateur et type d\'achat', ['user_quantities' => $userQuantities]);
+
+            // Traitez chaque utilisateur en fonction de leur type_achat
+            foreach ($userQuantities as $userId => $info) {
+                $typeAchat = $info['type_achat'];
+                $quantite = $info['quantite'];
+
+                if ($typeAchat === 'Take Away') {
+                    // Envoyez la notification au client directement
+                    $userSender = User::find($userId);
+                    if ($userSender) {
+                        Notification::send($userSender, new livraisonVerif($data));
+                        // Log l'envoi de la notification
+                        Log::info('Notification envoyée au client', ['user_id' => $userSender->id]);
+                    } else {
+                        // Log un avertissement si aucun utilisateur trouvé
+                        Log::warning('Utilisateur non trouvé pour l\'ID', ['user_id' => $userId]);
+                    }
+                } else {
+                    // Envoyez la notification aux livreurs
+                    $livreurs = User::where('actor_type', 'livreur')->get();
+                    foreach ($livreurs as $livreur) {
+                        Notification::send($livreur, new livraisonVerif($data));
+                        // Log l'envoi de la notification
+                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                    }
+                }
+            }
+        } else {
+            $livreurs = User::where('actor_type', 'livreur')->get();
+
+            foreach ($livreurs as $livreur) {
+                Notification::send($livreur, new livraisonVerif($data));
+            }
+
         }
 
         session()->flash('success', 'Achat accepté.');
@@ -1093,6 +1256,10 @@ class NotificationShow extends Component
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
     }
+
+
+
+
     private function genererCodeAleatoire($longueur)
     {
         $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -1283,7 +1450,7 @@ class NotificationShow extends Component
             'nameprod' => 'required|string',
             'difference' => 'required|string',
             'localite' => 'required|string',
-            'specificite' => 'required|string',
+            'specificite' => 'nullable|string',
 
         ]);
 

@@ -35,16 +35,17 @@
                         <option value="Avance partielle" disabled>Avance partielle</option>
                         <option value="A credit" disabled>A credit</option>
                         <option value="Vente a terme" disabled>Vente a terme</option>
-                        <option value="Quotidiennement / garantie de prêt" disabled>Quotidiennement / garantie de prêt</option>
+                        <option value="Quotidiennement / garantie de prêt" disabled>Quotidiennement / garantie de prêt
+                        </option>
                     </select>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <select name="Livraison" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                        <option value="" selected disabled>Choisissez votre mode de livraison</option>
-                        <option value="moto">Moto</option>
-                        <option value="voiture">Voiture</option>
-                        <option value="camion">Camion</option>
+                        <option value="" selected disabled>Type de livraison</option>
+                        <option value="moto">Achat avec livreur</option>
+                        <option value="voiture">Take Away</option>
+                        <option value="voiture">Reservation</option>
                     </select>
                 </div>
                 <div date-rangepicker class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
@@ -62,18 +63,45 @@
                             placeholder="Sélectionner la date de fin">
                     </div>
                 </div>
-                <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <input type="text" required
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="Spécificité" name="specificity">
-                </div>
+                @if (!empty($produit->specification))
+                    <div class="block">
+                        <input type="radio" id="specificite_1" name="specificite" value="{{ $produit->specification }}"
+                            wire:model.defer="selectedSpec"
+                            class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                        <label for="specificite_1" class="text-sm text-gray-700 dark:text-gray-300">
+                            {{ $produit->specification }}
+                        </label>
+                    </div>
+                @endif
+
+                @if (!empty($produit->specification2))
+                    <div class="block">
+                        <input type="radio" id="specificite_2" name="specificite" value="{{ $produit->specification2 }}"
+                            wire:model.defer="selectedSpec"
+                            class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                        <label for="specificite_2" class="text-sm text-gray-700 dark:text-gray-300">
+                            {{ $produit->specification2 }}
+                        </label>
+                    </div>
+                @endif
+
+                @if (!empty($produit->specification3))
+                    <div class="block">
+                        <input type="radio" id="specificite_3" name="specificite" value="{{ $produit->specification3 }}"
+                            wire:model.defer="selectedSpec"
+                            class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                        <label for="specificite_3" class="text-sm text-gray-700 dark:text-gray-300">
+                            {{ $produit->specification3 }}
+                        </label>
+                    </div>
+                @endif
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Lieu de livraison" name="localite">
                 </div>
                 <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
-                    <h3>Ajouter une photo (facultatif)</h3>
+                    <h3>Ajouter un document (facultatif)</h3>
                     <div class="flex items-center justify-center w-20 z-10" id="floating_photo1">
                         <div class="overflow-hidden rounded-md relative w-full">
                             <label for="file-upload1"
@@ -86,12 +114,12 @@
                                             d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                                     </svg>
                                     <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                        <span class="font-semibold">Image</span>
+                                        <span class="font-semibold">document</span>
                                     </p>
                                 </div>
                             </label>
-                            <input id="file-upload1" class="hidden rounded-md" type="file" onchange="previewImage(this)"
-                                name="image">
+                            <input id="file-upload1" class="hidden rounded-md" type="file"
+                                onchange="previewImage(this)" name="image">
                             <img id="image-preview1" class="absolute inset-0 w-full h-full object-cover hidden">
                             <button type="button" onclick="removeImage()" id="remove-button1"
                                 class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">

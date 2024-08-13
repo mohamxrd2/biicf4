@@ -28,7 +28,7 @@ class AchatDirectGroupe extends Component
     public $userId;
     public $selectedOption;
     public $options = [
-        'Achact avec livraison',
+        'Achat avec livraison',
         'Take Away',
         'Reservation',
     ];

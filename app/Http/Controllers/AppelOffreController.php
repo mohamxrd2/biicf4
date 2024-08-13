@@ -9,9 +9,12 @@ use Illuminate\Http\Request;
 use App\Models\ProduitService;
 use App\Models\NotificationLog;
 use App\Models\AppelOffreGrouper;
+use App\Models\Consommation;
 use App\Models\Countdown;
 use App\Models\userquantites;
+use App\Notifications\AOGrouper;
 use App\Notifications\AppelOffre;
+use App\Notifications\AppelOffreGrouper as NotificationsAppelOffreGrouper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -60,21 +63,21 @@ class AppelOffreController extends Controller
         $groupedByReference = $results->groupBy('reference');
 
         // Parcourir les groupes pour afficher les informations demandées
-        foreach ($groupedByReference as $reference => $group) {
-            $groupData = $group->map(function ($item) {
-                return [
-                    'reference' => $item->reference,
-                    'name' => $item->name,
-                    'user_id' => $item->user_id,
-                ];
-            });
+        // foreach ($groupedByReference as $reference => $group) {
+        //     $groupData = $group->map(function ($item) {
+        //         return [
+        //             'reference' => $item->reference,
+        //             'name' => $item->name,
+        //             'user_id' => $item->user_id,
+        //         ];
+        //     });
 
-            // Afficher les éléments récupérés dans les logs
-            Log::info('Group for reference', [
-                'reference' => $reference,
-                'items' => $groupData->toArray() // Convertit la collection en tableau
-            ]);
-        }
+        //     // Afficher les éléments récupérés dans les logs
+        //     Log::info('Group for reference', [
+        //         'reference' => $reference,
+        //         'items' => $groupData->toArray() // Convertit la collection en tableau
+        //     ]);
+        // }
         ///////
         $resultCount = $results->count();
 
@@ -176,80 +179,80 @@ class AppelOffreController extends Controller
         $specificity = $appelOffreGroup->specificity;
         $lowestPricedProduct = $appelOffreGroup->lowestPricedProduct;
 
-        // Récupérer les utilisateurs associés à l'offre groupée
-        $usergroup = AppelOffreGrouper::where('codeunique', $codesUniques)
-            ->distinct()
-            ->pluck('user_id')
-            ->toArray();
+        // // Récupérer les utilisateurs associés à l'offre groupée
+        // $usergroup = AppelOffreGrouper::where('codeunique', $codesUniques)
+        //     ->distinct()
+        //     ->pluck('user_id')
+        //     ->toArray();
 
-        $prodUsers = AppelOffreGrouper::where('codeunique', $codesUniques)
-            ->distinct()
-            ->pluck('prodUsers')
-            ->toArray();
+        // $prodUsers = AppelOffreGrouper::where('codeunique', $codesUniques)
+        //     ->distinct()
+        //     ->pluck('prodUsers')
+        //     ->toArray();
 
-        // Décoder les valeurs JSON de $prodUsers en entiers
-        $decodedProdUsers = [];
-        foreach ($prodUsers as $prodUser) {
-            $decodedValues = json_decode($prodUser, true);
-            if (is_array($decodedValues)) {
-                $decodedProdUsers = array_merge($decodedProdUsers, $decodedValues);
-            }
-        }
+        // // Décoder les valeurs JSON de $prodUsers en entiers
+        // $decodedProdUsers = [];
+        // foreach ($prodUsers as $prodUser) {
+        //     $decodedValues = json_decode($prodUser, true);
+        //     if (is_array($decodedValues)) {
+        //         $decodedProdUsers = array_merge($decodedProdUsers, $decodedValues);
+        //     }
+        // }
 
-        // Récupérer la date la plus ancienne pour le code unique
-        $datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
+        // // Récupérer la date la plus ancienne pour le code unique
+        // $datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
 
-        // Ajouter 1 minute à la date la plus ancienne, s'il y en a une
-        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
+        // // Ajouter 1 minute à la date la plus ancienne, s'il y en a une
+        // $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
 
-        // Vérifier si $tempsEcoule est écoulé
-        $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
+        // // Vérifier si $tempsEcoule est écoulé
+        // $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
 
-        $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
+        // $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
 
-        // Compter le nombre distinct d'utilisateurs pour le code unique
-        $appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)
-            ->distinct('user_id')
-            ->count('user_id');
+        // // Compter le nombre distinct d'utilisateurs pour le code unique
+        // $appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)
+        //     ->distinct('user_id')
+        //     ->count('user_id');
 
-        $notificationExists = NotificationLog::where('code_unique', $codesUniques)->exists();
+        // $notificationExists = NotificationLog::where('code_unique', $codesUniques)->exists();
 
-        if ($isTempsEcoule && !$notificationExists) {
-            foreach ($decodedProdUsers as $prodUser) {
-                $data = [
-                    'dateTot' => $dateTot,
-                    'dateTard' => $dateTard,
-                    'productName' => $productName,
-                    'quantity' => $sumquantite,
-                    'payment' => $payment,
-                    'Livraison' => $livraison,
-                    'specificity' => $specificity,
-                    'difference' => 'grouper',
-                    'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
-                    'id_sender' => $usergroup,
-                    'prodUsers' => $prodUser,
-                    'lowestPricedProduct' => $lowestPricedProduct,
-                    'code_unique' => $codesUniques,
-                ];
+        // if ($isTempsEcoule && !$notificationExists) {
+        //     foreach ($decodedProdUsers as $prodUser) {
+        //         $data = [
+        //             'dateTot' => $dateTot,
+        //             'dateTard' => $dateTard,
+        //             'productName' => $productName,
+        //             'quantity' => $sumquantite,
+        //             'payment' => $payment,
+        //             'Livraison' => $livraison,
+        //             'specificity' => $specificity,
+        //             'difference' => 'grouper',
+        //             'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
+        //             'id_sender' => $usergroup,
+        //             'prodUsers' => $prodUser,
+        //             'lowestPricedProduct' => $lowestPricedProduct,
+        //             'code_unique' => $codesUniques,
+        //         ];
 
-                // Vérification que toutes les clés nécessaires sont présentes
-                $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
-                foreach ($requiredKeys as $key) {
-                    if (!array_key_exists($key, $data)) {
-                        throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
-                    }
-                }
+        //         // Vérification que toutes les clés nécessaires sont présentes
+        //         $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
+        //         foreach ($requiredKeys as $key) {
+        //             if (!array_key_exists($key, $data)) {
+        //                 throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
+        //             }
+        //         }
 
-                // Récupération de l'utilisateur destinataire
-                $owner = User::find($prodUser);
+        //         // Récupération de l'utilisateur destinataire
+        //         $owner = User::find($prodUser);
 
-                // Vérification si l'utilisateur existe
-                if ($owner) {
-                    // Envoi de la notification à l'utilisateur
-                    // Notification::send($owner, new AppelOffre($data));
-                }
-            }
-        }
+        //         // Vérification si l'utilisateur existe
+        //         if ($owner) {
+        //             // Envoi de la notification à l'utilisateur
+        //             // Notification::send($owner, new AppelOffre($data));
+        //         }
+        //     }
+        // }
 
         // Passer les variables à la vue (si nécessaire)
         return view('biicf.ajoutoffre', compact('userId', 'appelOffreGroup', 'datePlusAncienne', 'tempsEcoule', 'sumquantite', 'appelOffreGroupcount'));
@@ -362,11 +365,13 @@ class AppelOffreController extends Controller
         try {
             // Récupérer l'ID de l'utilisateur connecté
             $userId = Auth::guard('web')->id();
+            Log::info('Utilisateur connecté ID:', ['user_id' => $userId]);
 
             // Générer un code unique une seule fois pour tous les utilisateurs
             $codeunique = $this->genererCodeAleatoire(10);
+            Log::info('Code unique généré:', ['codeunique' => $codeunique]);
 
-            // Validate the request data
+            // Valider les données de la requête
             $request->validate([
                 'productName' => 'required|string',
                 'quantity' => 'required|integer',
@@ -380,17 +385,17 @@ class AppelOffreController extends Controller
                 'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'prodUsers' => 'required|array',
             ]);
+            Log::info('Données de la requête validées.');
 
-            // Handle file upload
+            // Gérer le téléchargement du fichier
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('images', 'public');
+                Log::info('Image téléchargée:', ['image_path' => $imagePath]);
             }
 
-            // Create a new instance of the model
+            // Créer une nouvelle instance du modèle
             $offre = new AppelOffreGrouper();
-
-            // Assign values
             $offre->productName = $request->input('productName');
             $offre->lowestPricedProduct = $request->input('lowestPricedProduct');
             $offre->quantity = $request->input('quantity');
@@ -405,29 +410,51 @@ class AppelOffreController extends Controller
             $offre->codeunique = $codeunique;
             $offre->user_id = $userId;
 
-            // Add the image path if it exists
+            // Ajouter le chemin de l'image s'il existe
             if ($imagePath) {
                 $offre->image = $imagePath;
             }
 
-            // Save the model
+            // Sauvegarder le modèle
             $offre->save();
+            Log::info('Offre enregistrée avec succès.', ['offre_id' => $offre->id]);
 
-
-            // Create a new instance of the model
+            // Créer une nouvelle instance du modèle userquantites
             $quantite = new userquantites();
-            $quantite->user_id = Auth::id();
+            $quantite->user_id = $userId;
             $quantite->quantite = $request->input('quantity');
             $quantite->code_unique = $codeunique;
             $quantite->save();
+            Log::info('Quantité enregistrée avec succès.', ['quantite_id' => $quantite->id]);
 
 
+
+            // Requête pour récupérer les IDs des propriétaires des consommations similaires
+            $idsProprietaires = Consommation::where('name', $offre->productName)
+                ->where('id_user', '!=', $userId)
+                ->where('statuts', 'Accepté')
+                ->distinct()
+                ->pluck('id_user')
+                ->toArray();
+            Log::info('IDs des propriétaires récupérés:', ['ids_proprietaires' => $idsProprietaires]);
+
+            // Envoyer une notification à chaque propriétaire
+            foreach ($idsProprietaires as $id) {
+                $user = User::find($id);
+                if ($user) {
+                    // Envoyer une notification avec le code unique
+                    Notification::send($user, new AOGrouper($codeunique, $offre->id));
+                    Log::info('Notification envoyée à l\'utilisateur:', ['user_id' => $id]);
+                }
+            }
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi de la notification:', ['error' => $e->getMessage()]);
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
+
     private function genererCodeAleatoire($longueur)
     {
         $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';

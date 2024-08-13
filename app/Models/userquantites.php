@@ -10,6 +10,8 @@ class userquantites extends Model
     use HasFactory;
 
     protected $fillable = [
+        'localite',
+        'type_achat',
         'user_id',
         'code_unique',
         'quantite',

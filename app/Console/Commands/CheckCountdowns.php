@@ -110,6 +110,14 @@ class CheckCountdowns extends Command
                     } else if ($countdown->difference === 'grouper') {
                         // Envoyer la notification avec le prix le plus bas
                         Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
+
+                        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+                        $notification = $lowestPriceComment->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
+
+                        if ($notification) {
+                            // Mettez à jour le champ 'type_achat' dans la notification
+                            $notification->update(['type_achat' => 'OFG']);
+                        }
                     } else {
                         // Envoyer une autre notification ou effectuer une autre action
                         Notification::send($countdown->sender, new CountdownNotification($details));
