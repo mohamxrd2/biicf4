@@ -1630,12 +1630,7 @@
             </div>
         @endif
 
-        {{-- Afficher les messages d'erreur --}}
-        @if (session()->has('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
+
 
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
             <header class="mb-9">
@@ -1720,13 +1715,24 @@
 
                 </div>
 
+                {{-- Afficher les messages d'erreur --}}
+                
+
                 <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
                     <p class="text-xl  text-center font-bold">Total TTC: <span
                             class="font-bold">{{ number_format((int) ($notification->data['quantiteC'] * $notification->data['prixProd']) + $notification->data['prixTrade'], 0, ',', '.') }}
 
                             FCFA</span></p>
                 </div>
+
+                
             </section>
+
+            @if (session()->has('error'))
+                    <div class="alert text-red-500">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
             <footer>
                 <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
