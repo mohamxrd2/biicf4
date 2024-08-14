@@ -73,7 +73,6 @@
                         </label>
                     </div>
                 @endif
-
                 @if (!empty($produit->specification2))
                     <div class="block">
                         <input type="radio" id="specificite_2" name="specificite" value="{{ $produit->specification2 }}"
