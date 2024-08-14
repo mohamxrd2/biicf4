@@ -104,7 +104,7 @@ class AjoutProduitServices extends Component
             $this->resetProductFields();
         }
     }
-    
+
     public function updatedName()
     {
         if (empty($this->name)) {
@@ -152,7 +152,7 @@ class AjoutProduitServices extends Component
             'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
             'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
-            'name' => 'required|string|max:255|unique:produit_services,name,NULL,id,user_id,' . auth()->id(),
+            'name' => 'required|string|max:255',
             //produits
             'conditionnement' => 'required_if:type,Produit|string|max:255',
             'format' => 'required_if:type,Produit|string',

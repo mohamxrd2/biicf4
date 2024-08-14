@@ -11,7 +11,9 @@ use App\Models\NotificationLog;
 use App\Models\AppelOffreGrouper;
 use App\Models\Consommation;
 use App\Models\Countdown;
+use App\Models\Transaction;
 use App\Models\userquantites;
+use App\Models\Wallet;
 use App\Notifications\AOGrouper;
 use App\Notifications\AppelOffre;
 use App\Notifications\AppelOffreGrouper as NotificationsAppelOffreGrouper;
@@ -142,24 +144,29 @@ class AppelOffreController extends Controller
 
     public function formAppel(Request $request)
     {
-        $keyword = $request->input('keyword');
+
+
+
+
+        $name = $request->input('name');
         $lowestPricedProduct = $request->input('lowestPricedProduct');
         $prodUsers = $request->input('prodUsers');
+        $reference = $request->input('reference');
+        $distinctSpecifications = $request->input('distinctSpecifications');
+        $distinctSpecification2s = $request->input('distinctSpecification2s');
+        $distinctSpecification3s = $request->input('distinctSpecification3s');
 
-        $products = $request->input('results');
-
-        // Vérifiez que $prodUsers n'est pas null
-        if ($prodUsers) {
-            // Si c'est une collection, utilisez toArray(), sinon, assurez-vous que c'est un tableau
-            $prodUsers = is_array($prodUsers) ? $prodUsers : (is_object($prodUsers) ? $prodUsers->toArray() : []);
-        } else {
-            // Si $prodUsers est null, initialisez-le comme un tableau vide
-            $prodUsers = [];
-        }
+        // Convert inputs to arrays if they are not already
+        $prodUsers = is_array($prodUsers) ? $prodUsers : (is_object($prodUsers) ? $prodUsers->toArray() : []);
+        $distinctSpecifications = is_array($distinctSpecifications) ? $distinctSpecifications : (is_string($distinctSpecifications) ? explode(',', $distinctSpecifications) : []);
+        $distinctSpecification2s = is_array($distinctSpecification2s) ? $distinctSpecification2s : (is_string($distinctSpecification2s) ? explode(',', $distinctSpecification2s) : []);
+        $distinctSpecification3s = is_array($distinctSpecification3s) ? $distinctSpecification3s : (is_string($distinctSpecification3s) ? explode(',', $distinctSpecification3s) : []);
 
 
-        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'keyword', 'products'));
+
+        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'name', 'reference', 'distinctSpecifications', 'distinctSpecification2s', 'distinctSpecification3s'));
     }
+
 
     public function detailoffre(Request $request, $id)
     {
@@ -300,27 +307,45 @@ class AppelOffreController extends Controller
                 'productName' => 'required|string',
                 'quantity' => 'required|integer',
                 'payment' => 'required|string',
-                'Livraison' => 'required|string',
+                'Livraison' => 'required|string', // Ensure consistent naming
                 'dateTot' => 'required|date',
                 'dateTard' => 'required|date',
-                'specificity' => 'nullable|string',
+                'specification' => 'nullable|string',
                 'localite' => 'nullable|string',
-                'id_prod' => 'id_prod',
                 'image' => 'nullable',
-                'prodUsers' => 'required|array', // Assurez-vous que prodUsers est un tableau
+                'prodUsers' => 'required|array',
             ]);
 
             $lowestPricedProduct = $request->input('lowestPricedProduct');
             $prodUsers = $request->input('prodUsers');
-            $produits = $request->input('products');
 
             // Vérification que $prodUsers est un tableau non vide
             if (empty($prodUsers)) {
                 return redirect()->back()->with('error', 'Aucun utilisateur de produit spécifié.');
             }
 
+
+
             // Générer un code unique une seule fois pour tous les utilisateurs
             $codeUnique = $this->genererCodeAleatoire(10);
+
+            // Vérifiez si l'utilisateur a un portefeuille
+            $userId = Auth::id();
+            $userWallet = Wallet::where('user_id', $userId)->first();
+            // Calculate the total cost (replace 'price' with the actual price logic)
+            $totalCost = $request->quantity * $lowestPricedProduct;
+
+            // Augmentation du solde du portefeuille du client
+            $userWallet->decrement('balance', $totalCost);
+
+            // Création de la transaction
+            $this->createTransaction($userId, $userId, 'Gele', $totalCost);
+
+
+            // Vérification du solde du portefeuille
+            if ($userWallet->balance < $totalCost) {
+                return redirect()->back()->with('error', 'Solde insuffisant dans le portefeuille pour effectuer cette transaction.');
+            }
 
             // Boucle sur chaque utilisateur pour envoyer la notification
             foreach ($prodUsers as $prodUser) {
@@ -330,13 +355,12 @@ class AppelOffreController extends Controller
                     'productName' => $request->productName,
                     'quantity' => $request->quantity,
                     'payment' => $request->payment,
-                    'Livraison' => $request->livraison,
-                    'specificity' => $request->specificity,
+                    'Livraison' => $request->Livraison, // Ensure consistent naming
+                    'specificity' => $request->specification,
                     'localite' => $request->localite,
                     'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
                     'id_sender' => $userId,
                     'prodUsers' => $prodUser,
-                    'produits' => $produits,
                     'lowestPricedProduct' => $lowestPricedProduct,
                     'code_unique' => $codeUnique,
                     'difference' => 'single',
@@ -364,6 +388,15 @@ class AppelOffreController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
+    }
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->save();
     }
 
     public function formstoreGroupe(Request $request)

@@ -20,7 +20,7 @@
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none"
-                        placeholder="Nom du produit" value="{{ $keyword }}" name="productName" required readonly>
+                        placeholder="Nom du produit" value="{{ $name }}" name="productName" required readonly>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="number" required
@@ -63,41 +63,33 @@
                             placeholder="Sélectionner la date de fin">
                     </div>
                 </div>
-                @if (!empty($produit->specification))
-                    <div class="block">
-                        <input type="radio" id="specificite_1" name="specificite" value="{{ $produit->specification }}"
-                            wire:model.defer="selectedSpec"
-                            class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
-                        <label for="specificite_1" class="text-sm text-gray-700 dark:text-gray-300">
-                            {{ $produit->specification }}
-                        </label>
-                    </div>
-                @endif
-                @if (!empty($produit->specification2))
-                    <div class="block">
-                        <input type="radio" id="specificite_2" name="specificite" value="{{ $produit->specification2 }}"
-                            wire:model.defer="selectedSpec"
-                            class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
-                        <label for="specificite_2" class="text-sm text-gray-700 dark:text-gray-300">
-                            {{ $produit->specification2 }}
-                        </label>
-                    </div>
-                @endif
-
-                @if (!empty($produit->specification3))
-                    <div class="block">
-                        <input type="radio" id="specificite_3" name="specificite" value="{{ $produit->specification3 }}"
-                            wire:model.defer="selectedSpec"
-                            class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
-                        <label for="specificite_3" class="text-sm text-gray-700 dark:text-gray-300">
-                            {{ $produit->specification3 }}
-                        </label>
-                    </div>
-                @endif
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Lieu de livraison" name="localite">
+                </div>
+                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                    <select name="specification" required
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                        <option value="" selected disabled>choisir une specification</option>
+
+                        @if (!empty($distinctSpecifications))
+                            <option value="{{ implode(', ', $distinctSpecifications) }}">
+                                {{ implode(', ', $distinctSpecifications) }}</option>
+                        @endif
+
+                        @if (!empty($distinctSpecification2s))
+                            <option value="{{ implode(', ', $distinctSpecification2s) }}">
+                                {{ implode(', ', $distinctSpecification2s) }}</option>
+                        @endif
+
+                        @if (!empty($distinctSpecification3s))
+                            <option value="{{ implode(', ', $distinctSpecification3s) }}">
+                                {{ implode(', ', $distinctSpecification3s) }}</option>
+                        @endif
+                    </select>
+
+
                 </div>
                 <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
                     <h3>Ajouter un document (facultatif)</h3>
@@ -117,8 +109,8 @@
                                     </p>
                                 </div>
                             </label>
-                            <input id="file-upload1" class="hidden rounded-md" type="file"
-                                onchange="previewImage(this)" name="image">
+                            <input id="file-upload1" class="hidden rounded-md" type="file" onchange="previewImage(this)"
+                                name="image">
                             <img id="image-preview1" class="absolute inset-0 w-full h-full object-cover hidden">
                             <button type="button" onclick="removeImage()" id="remove-button1"
                                 class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">

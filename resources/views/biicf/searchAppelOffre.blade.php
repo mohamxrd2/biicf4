@@ -224,6 +224,13 @@
                             @php
                                 // Extraire les noms distincts et les user_id distincts
                                 $distinctNames = $group->pluck('name')->unique();
+                                $distinctTypes = $group->pluck('type')->unique();
+                                $distinctCondProds = $group->pluck('condProd')->unique();
+                                $distinctFormatProds = $group->pluck('formatProd')->unique();
+                                $distinctSpecifications = $group->pluck('specification')->unique();
+                                $distinctSpecification2s = $group->pluck('specification2')->unique();
+                                $distinctSpecification3s = $group->pluck('specification3')->unique();
+                                $distinctParticularites = $group->pluck('Particularite')->unique();
                                 $distinctUserIds = $group->pluck('user_id')->unique();
                                 $distinctUserCount = $distinctUserIds->count();
                                 $lowestPrice = $group->pluck('prix')->min(); // Trouver le prix le plus bas
@@ -242,6 +249,40 @@
                                                 Nom : {{ $name }}
                                             </p>
                                         @endforeach
+                                        <div x-data="{ open: false }">
+                                            <!-- Bouton pour ouvrir le pop-up -->
+                                            <button @click="open = true" class="bg-blue-500 text-white px-4 py-2 rounded">
+                                                Details
+                                            </button>
+
+                                            <!-- Pop-up -->
+                                            <div x-show="open"
+                                                class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                                                style="display: none;">
+                                                <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                                                    <h2 class="text-xl font-bold mb-4">Titre du Pop-up</h2>
+                                                    <p>Référence : {{ $reference }}</p>
+
+                                                    <!-- Afficher d'autres détails ici -->
+                                                    <p>Type : {{ $distinctTypes->join(', ') }}</p>
+                                                    <p>Condition : {{ $distinctCondProds->join(', ') }}</p>
+                                                    <p>Format : {{ $distinctFormatProds->join(', ') }}</p>
+                                                    <p>Spécification : {{ $distinctSpecifications->join(', ') }}</p>
+                                                    @if ($distinctSpecification2s->isNotEmpty())
+                                                        <p>Spécification 2 : {{ $distinctSpecification2s->join(', ') }}</p>
+                                                    @endif
+                                                    @if ($distinctSpecification3s->isNotEmpty())
+                                                        <p>Spécification 3 : {{ $distinctSpecification3s->join(', ') }}</p>
+                                                    @endif
+                                                    <p>Particularité : {{ $distinctParticularites->join(', ') }}</p>
+                                                    <button @click="open = false"
+                                                        class="bg-red-500 text-white px-4 py-2 rounded">
+                                                        Fermer
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                     <div class="flex items-center">
                                         <div
@@ -262,8 +303,19 @@
                                 <form action="{{ route('biicf.form') }}" method="POST">
                                     @csrf
                                     <div class="w-full text-center mt-4">
-                                        <input type="hidden" name="keyword" value="{{ $name }}">
+                                        <input type="hidden" name="distinctSpecifications"
+                                            value="{{ $distinctSpecifications->join(', ') }}">
+                                        @if ($distinctSpecification2s->isNotEmpty())
+                                            <input type="hidden" name="distinctSpecification2s"
+                                                value="{{ $distinctSpecification2s->join(', ') }}">
+                                        @endif
+                                        @if ($distinctSpecification3s->isNotEmpty())
+                                            <input type="hidden" name="distinctSpecification3s"
+                                                value="{{ $distinctSpecification3s->join(', ') }}">
+                                        @endif
+                                        <input type="hidden" name="name" value="{{ $name }}">
                                         <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPrice }}">
+                                        <input type="hidden" name="reference" value="{{ $reference }}">
                                         @foreach ($distinctUserIds as $userId)
                                             <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                         @endforeach
@@ -281,28 +333,6 @@
                             </div>
                         @endforeach
                     </div>
-
-                    {{-- <h1>Listes Des Produits & Services avec leur references; Cliquez pour voir les details</h1> --}}
-
-                    {{-- @foreach ($results as $result)
-                        <a href="{{ route('biicf.postdet', $result->id) }}">
-                            <div class="max-w-xl mx-auto my-4 p-4">
-                                <div class="w-full flex items-start p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
-                                    <!-- Image -->
-                                    <div class="h-24 w-24 mr-4 flex-shrink-0">
-                                        <img class="w-full h-full rounded-lg object-cover"
-                                            src="{{ $result->photoProd1 ? asset('post/all/' . $result->photoProd1) : asset('img/noimg.jpeg') }}"
-                                            alt="{{ $result->name }}">
-                                    </div>
-                                    <!-- Text Content -->
-                                    <div>
-                                        <p class="text-xl font-semibold text-gray-900 mb-1">{{ $result->name }}</p>
-                                        <p class="text-base font-medium text-gray-700">{{ $result->reference }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    @endforeach --}}
 
                 @endif
 
