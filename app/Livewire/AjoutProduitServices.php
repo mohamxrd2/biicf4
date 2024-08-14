@@ -82,12 +82,12 @@ class AjoutProduitServices extends Component
             $this->format = $selectedProduct->formatProd;
             $this->particularite = $selectedProduct->Particularite;
             $this->origine = $selectedProduct->origine;
-            $this->qteProd_min = $selectedProduct->qteProd_min;
-            $this->qteProd_max = $selectedProduct->qteProd_max;
             $this->specification = $selectedProduct->specification;
             $this->specification2 = $selectedProduct->specification2;
             $this->specification3 = $selectedProduct->specification3;
-            $this->prix = $selectedProduct->prix;
+            $this->qteProd_min = '';
+            $this->qteProd_max = '';
+            $this->prix = '';
             $this->qualification = ''; // Reset qualifications for services
             $this->specialite = ''; // Reset specialties for services
             $this->qte_service = ''; // Reset service quantity

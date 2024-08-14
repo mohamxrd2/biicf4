@@ -56,7 +56,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <!-- Référence -->
-                    <div class="col-span-1 md:col-span-2">
+                    <div class="col-span-1 md:col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
                             Référence (
                             <span>Générer</span>
@@ -69,11 +69,10 @@
                         @error('reference')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
-
                     </div>
 
-
-                    <div>
+                    <!-- Type -->
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
                         <select x-model="type" wire:model='type' class="w-full p-2 border border-gray-300 rounded-md">
                             <option value="">Choisissez votre type</option>
@@ -83,19 +82,19 @@
                         @error('type')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
-
                     </div>
 
-                    <div class="col-span-1 md:col-span-2">
+                    <!-- Nom -->
+                    <div class="col-span-1 md:col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                        <input type="text" wire:model='name' class="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Tapez ici...">
+                        <input type="text" wire:model='name' id="product-name" class="w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Tapez ici..." >
+                        @error('name')
+                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                        @enderror
                     </div>
-                    @error('name')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-
                 </div>
+
 
                 <!-- Détails du produit ou du service -->
                 <div x-show="type === 'Produit'" class="mb-6">
@@ -142,20 +141,21 @@
                             @enderror
 
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Maximal</label>
-                            <input type="text" wire:model='qteProd_max'
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                            @error('qteProd_max')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
 
-                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Minimal</label>
                             <input type="text" wire:model='qteProd_min'
                                 class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('qteProd_min')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Maximal</label>
+                            <input type="text" wire:model='qteProd_max'
+                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                            @error('qteProd_max')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
 
@@ -257,36 +257,34 @@
                 <!-- Localisation (commune aux deux types) -->
                 <h1 class="text-center text-xl font-bold mb-8">Localisation Du Produit & Service</h1>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="col-span-1 md:col-span-2">
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
                         <input type="text" wire:model='depart'
                             class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                         @error('depart')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
-
                     </div>
 
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Ville/Sous-Prefecture</label>
                         <input type="text" wire:model='ville' class="w-full p-2 border border-gray-300 rounded-md"
                             placeholder="Tapez ici...">
                         @error('ville')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
-
                     </div>
 
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Localité</label>
                         <input type="text" wire:model='commune'
                             class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                         @error('commune')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
-
                     </div>
                 </div>
+
 
                 <!-- Images -->
                 <h1 class="text-center text-xl font-bold mb-8">Ajout D'Image</h1>
@@ -355,6 +353,7 @@
                 // Appel de la méthode Livewire avec l'ID du produit sélectionné
                 @this.call('updateProductDetails', selectedProductId)
                     .then(() => {
+
                         // Affiche un message de confirmation dans la console après l'appel réussi
                         console.log('Product details updated successfully.');
                     })
