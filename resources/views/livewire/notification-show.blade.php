@@ -564,9 +564,11 @@
             </div>
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
-        <h1 class="text-center text-xl font-semibold mb-2">Negociation de l'offre sur le produit
-            <span class="text-3xl">{{ $notification->data['productName'] }}</span>
-        </h1>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-center text-xl font-semibold mb-2">Negociation de l'offre sur
+                <span class="text-3xl">{{ $notification->data['productName'] }}</span>
+            </h1>
+        </div>
         <div class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
 
@@ -723,69 +725,87 @@
                         @endif
                     </div>
                 </div>
+                <span>A la fin du temps la page seras supprimé</span>
 
             </div>
-
-
 
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const prixTradeInput = document.getElementById('prixTrade');
                     const submitBtn = document.getElementById('submitBtnAppel');
                     const prixTradeError = document.getElementById('prixTradeError');
-                    const countdownElement = document.getElementById('countdown');
+                    const produitPrix = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
 
-                    // Vérification du prix d'offre
+                    // Vérifiez l'état du bouton depuis le stockage local
+                    const isCountdownFinished = localStorage.getItem('countdownFinished') === 'true';
+
+                    if (isCountdownFinished) {
+                        submitBtn.classList.add('hidden');
+                        prixTradeInput.disabled = true;
+                    }
+
                     prixTradeInput.addEventListener('input', function() {
                         const prixTradeValue = parseFloat(prixTradeInput.value);
-                        const lowestPricedProduct = parseFloat(
-                            '{{ $notification->data['lowestPricedProduct'] ?? 0 }}');
 
-                        if (prixTradeValue > lowestPricedProduct) {
+                        if (prixTradeValue > produitPrix) {
                             submitBtn.disabled = true;
-                            prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
+                            prixTradeError.textContent = `Le prix doit être inférieur à ${produitPrix} FCFA`;
                             prixTradeError.classList.remove('hidden');
+                            submitBtn.classList.add('hidden');
                         } else {
                             submitBtn.disabled = false;
                             prixTradeError.textContent = '';
                             prixTradeError.classList.add('hidden');
+                            submitBtn.classList.remove('hidden');
                         }
                     });
 
-                    // Convertir la date de départ en objet Date JavaScript
                     const startDate = new Date("{{ $oldestCommentDate }}");
-                    if (!isNaN(startDate.getTime())) { // Vérifier si la date est valide
-                        startDate.setMinutes(startDate.getMinutes() + 1);
+                    startDate.setMinutes(startDate.getMinutes() + 1);
 
-                        // Mettre à jour le compte à rebours à intervalles réguliers
-                        const countdownTimer = setInterval(updateCountdown, 1000);
+                    const countdownTimer = setInterval(updateCountdown, 1000);
 
-                        function updateCountdown() {
-                            // Obtenir la date et l'heure actuelles
-                            const currentDate = new Date();
+                    function updateCountdown() {
+                        const currentDate = new Date();
+                        const difference = startDate.getTime() - currentDate.getTime();
 
-                            // Calculer la différence entre la date cible et la date de départ en millisecondes
-                            const difference = startDate.getTime() - currentDate.getTime();
+                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-                            // Convertir la différence en heures, minutes et secondes
-                            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                            // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
+                        const countdownElement = document.getElementById('countdown');
+                        if (countdownElement) {
                             countdownElement.innerHTML = `
-                                <div>${hours}h</div>:
-                                <div>${minutes}m</div>:
-                                <div>${seconds}s</div>
-                            `;
+                <div>${hours}h</div>:
+                <div>${minutes}m</div>:
+                <div>${seconds}s</div>
+            `;
+                        }
 
-                            // Arrêter le compte à rebours lorsque la date cible est atteinte
-                            if (difference <= 0) {
-                                clearInterval(countdownTimer);
+                        if (difference <= 0) {
+                            clearInterval(countdownTimer);
+                            if (countdownElement) {
                                 countdownElement.innerHTML = "Temps écoulé !";
-                                submitBtn.hidden = true; // Cache le bouton après la fin du compte à rebours
-                                prixTradeInput.hidden = true; // Cache le champ d'entrée après la fin du compte à rebours
                             }
+                            prixTradeInput.disabled = true;
+                            submitBtn.classList.add('hidden');
+
+                            localStorage.setItem('countdownFinished',
+                            'true'); // Enregistrez l'état du bouton dans le stockage local
+
+                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
+                                .prix > max.prix ? comment : max, {
+                                    prix: -Infinity
+                                });
+
+                            if (highestPricedComment && highestPricedComment.nameUser) {
+                                prixTradeError.textContent =
+                                    `L'utilisateur avec le prix le plus bas est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                            } else {
+                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                            }
+                            prixTradeError.classList.remove('hidden');
                         }
                     }
                 });
@@ -1716,7 +1736,7 @@
                 </div>
 
                 {{-- Afficher les messages d'erreur --}}
-                
+
 
                 <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
                     <p class="text-xl  text-center font-bold">Total TTC: <span
@@ -1725,14 +1745,14 @@
                             FCFA</span></p>
                 </div>
 
-                
+
             </section>
 
             @if (session()->has('error'))
-                    <div class="alert text-red-500">
-                        {{ session('error') }}
-                    </div>
-                @endif
+                <div class="alert text-red-500">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <footer>
                 <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
