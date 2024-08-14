@@ -29,6 +29,8 @@ class OffreNegos extends Controller
 
         $differance = $request->input('differance');
 
+        $quantité = $request->input('quantite');
+
         // Trouver le produit ou échouer
         $produit = ProduitService::findOrFail($produitId);
         $nomProduit = $produit->name;
@@ -49,7 +51,7 @@ class OffreNegos extends Controller
                 $data = [
                     'produit_id' => $produitId,
                     'produit_name' => $produit->name,
-                    'quantite' => $produit->qteProd_max,
+                    'quantite' => $quantité,
                     'code_unique' => $Uniquecode
                 ];
 
@@ -63,7 +65,7 @@ class OffreNegos extends Controller
         // Insérer dans la table OffreGroupe
         OffreGroupe::create([
             'name' => $produit->name,
-            'quantite' => $produit->qteProd_max,
+            'quantite' => $quantité,
             'code_unique' => $Uniquecode,
             'produit_id' => $produitId,
             'user_id' => $user_id,

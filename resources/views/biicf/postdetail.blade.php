@@ -373,19 +373,38 @@
                                         @csrf
                                         @method('POST')
 
+                                        <div class="flex flex-col">
+
+                                            <input type="number" name="quantite" class="rounded-md" placeholder="Entrez la quantité">
+
                                         <!-- Champ caché pour l'ID du produit -->
                                         <input type="hidden" name="produit_id" value="{{ $produit->id }}">
 
-                                        <button type="submit" @if ($nomFournisseurCount == 0) disabled @endif
-                                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                            soumettre
-                                        </button>
+                                        <div class="flex my-3">
+                                            <button type="submit" @if ($nomFournisseurCount == 0) disabled @endif
+                                                class="py-2 px-3 mr-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
+                                                soumettre
+                                            </button>
+
+                                            <button type="button"
+                                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                                                data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
+                                                Annuler
+                                            </button>
+
+                                        </div>
+
+
+                                        </div>
+
+
+
+                                        
+
+
+
                                     </form>
-                                    <button type="button"
-                                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                                        data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
-                                        Annuler
-                                    </button>
+
                                 </div>
 
                             </div>
