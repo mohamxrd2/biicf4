@@ -725,9 +725,17 @@
                         @endif
                     </div>
                 </div>
-                <span>A la fin du temps la page seras supprimé</span>
 
             </div>
+            <!-- Footer Section -->
+            <footer class="bg-gray-800 text-white py-4 mt-8 w-full">
+                <div class="container mx-auto text-center">
+                    <span class="text-sm font-medium">
+                        À la fin du temps, la page sera supprimée.
+                    </span>
+                </div>
+            </footer>
+
 
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -777,10 +785,10 @@
                         const countdownElement = document.getElementById('countdown');
                         if (countdownElement) {
                             countdownElement.innerHTML = `
-                <div>${hours}h</div>:
-                <div>${minutes}m</div>:
-                <div>${seconds}s</div>
-            `;
+                          <div>${hours}h</div>:
+                          <div>${minutes}m</div>:
+                          <div>${seconds}s</div>
+                        `;
                         }
 
                         if (difference <= 0) {
@@ -792,7 +800,7 @@
                             submitBtn.classList.add('hidden');
 
                             localStorage.setItem('countdownFinished',
-                            'true'); // Enregistrez l'état du bouton dans le stockage local
+                                'true'); // Enregistrez l'état du bouton dans le stockage local
 
                             const highestPricedComment = @json($comments).reduce((max, comment) => comment
                                 .prix > max.prix ? comment : max, {
@@ -1644,9 +1652,16 @@
         </div>
     @elseif ($notification->type === 'App\Notifications\CountdownNotification')
         {{-- Afficher les messages de succès --}}
-        @if (session()->has('success'))
-            <div class="alert alert-success">
+        @if (session('success'))
+            <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- Afficher les messages d'erreur -->
+        @if (session('error'))
+            <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
+                {{ session('error') }}
             </div>
         @endif
 
@@ -2020,6 +2035,8 @@
                             @endif
 
                         </div>
+                        <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
+
                     </div>
 
                     <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
@@ -2042,46 +2059,67 @@
                         });
                     </script> --}}
                     <script>
-                        // Convertir la date de départ en objet Date JavaScript
-                        const startDate = new Date("{{ $oldestCommentDate }}");
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const prixTradeInput = document.getElementById('prixTrade');
+                            const submitBtn = document.getElementById('submitBtnAppel');
+                            const prixTradeError = document.getElementById('prixTradeError');
 
-                        // Ajouter 5 jours à la date de départ
-                        // Ajouter 5 heures à la date de départ
-                        startDate.setMinutes(startDate.getMinutes() + 1);
+                            // Vérifiez l'état du bouton depuis le stockage local
+                            const isCountdownFinished = localStorage.getItem('countdownFinished') === 'true';
 
-                        // Mettre à jour le compte à rebours à intervalles réguliers
-                        const countdownTimer = setInterval(updateCountdown, 1000);
-
-                        function updateCountdown() {
-                            // Obtenir la date et l'heure actuelles
-                            const currentDate = new Date();
-
-                            // Calculer la différence entre la date cible et la date de départ en millisecondes
-                            const difference = startDate.getTime() - currentDate.getTime();
-
-                            // Convertir la différence en jours, heures, minutes et secondes
-                            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                            // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                            const countdownElement = document.getElementById('countdown');
-                            countdownElement.innerHTML = `
-
-                             <div>${hours}h</div>:
-                             <div>${minutes}m</div>:
-                             <div>${seconds}s</div>
-                            `;
-
-                            // Arrêter le compte à rebours lorsque la date cible est atteinte
-                            if (difference <= 0) {
-                                clearInterval(countdownTimer);
-                                countdownElement.innerHTML = "Temps écoulé !";
-                                document.getElementById('prixTrade').disabled = true;
-                                document.getElementById('submitBtn').hidden = true;
+                            if (isCountdownFinished) {
+                                submitBtn.classList.add('hidden');
+                                prixTradeInput.disabled = true;
                             }
-                        }
+
+                            const startDate = new Date("{{ $oldestCommentDate }}");
+                            startDate.setMinutes(startDate.getMinutes() + 1);
+
+                            const countdownTimer = setInterval(updateCountdown, 1000);
+
+                            function updateCountdown() {
+                                const currentDate = new Date();
+                                const difference = startDate.getTime() - currentDate.getTime();
+
+                                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                                const countdownElement = document.getElementById('countdown');
+                                if (countdownElement) {
+                                    countdownElement.innerHTML = `
+                                        <div>${hours}h</div>:
+                                        <div>${minutes}m</div>:
+                                        <div>${seconds}s</div>
+                                    `;
+                                }
+
+                                if (difference <= 0) {
+                                    clearInterval(countdownTimer);
+                                    if (countdownElement) {
+                                        countdownElement.innerHTML = "Temps écoulé !";
+                                    }
+                                    prixTradeInput.disabled = true;
+                                    submitBtn.classList.add('hidden');
+
+                                    localStorage.setItem('countdownFinished',
+                                        'true'); // Enregistrez l'état du bouton dans le stockage local
+
+                                    const highestPricedComment = @json($comments).reduce((max, comment) => comment
+                                        .prix > max.prix ? comment : max, {
+                                            prix: -Infinity
+                                        });
+
+                                    if (highestPricedComment && highestPricedComment.nameUser) {
+                                        prixTradeError.textContent =
+                                            `L'utilisateur avec le prix le plus élevé est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                                    } else {
+                                        prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                                    }
+                                    prixTradeError.classList.remove('hidden');
+                                }
+                            }
+                        });
                     </script>
 
 
@@ -2110,29 +2148,44 @@
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mt-3">
             <h2 class="text-xl font-semibold my-2">Avis de conformité</h2>
 
-            <div class="flex mb-3">
-                <input type="checkbox"
-                    class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600  disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-default-checkbox">
-                <label for="hs-default-checkbox"
-                    class="text-md text-gray-600 ms-3 dark:text-neutral-400">Quantité</label>
+            <div class="space-y-3">
+                <!-- Quantité -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Quantité :</label>
+                    <input type="radio" id="quantite-oui" name="quantite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="quantite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="quantite-non" name="quantite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="quantite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
+
+                <!-- Qualité Apparente -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Qualité Apparente :</label>
+                    <input type="radio" id="qualite-oui" name="qualite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="qualite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="qualite-non" name="qualite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="qualite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
+
+                <!-- Diversité -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Diversité :</label>
+                    <input type="radio" id="diversite-oui" name="diversite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="diversite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="diversite-non" name="diversite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="diversite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
             </div>
 
-            <div class="flex mb-3">
-                <input type="checkbox"
-                    class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checked-checkbox1">
-                <label for="hs-checked-checkbox1" class="text-md text-gray-600 ms-3 dark:text-neutral-400">Qualité
-                    apparante</label>
-            </div>
 
-            <div class="flex">
-                <input type="checkbox"
-                    class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checked-checkbox">
-                <label for="hs-checked-checkbox"
-                    class="text-md text-gray-600 ms-3 dark:text-neutral-400">Diversité</label>
-            </div>
+
+
         </div>
 
         <div class="max-w-4xl mt-6 flex">
@@ -2212,28 +2265,39 @@
 
             <h2 class="text-xl font-semibold mb-2">Avis de conformité</h2>
 
-            <div class="flex mb-3">
-                <input type="checkbox"
-                    class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600  disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-default-checkbox">
-                <label for="hs-default-checkbox"
-                    class="text-md text-gray-600 ms-3 dark:text-neutral-400">Quantité</label>
-            </div>
+            <div class="space-y-3">
+                <!-- Quantité -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Quantité :</label>
+                    <input type="radio" id="quantite-oui" name="quantite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="quantite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="quantite-non" name="quantite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="quantite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
 
-            <div class="flex mb-3">
-                <input type="checkbox"
-                    class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checked-checkbox1">
-                <label for="hs-checked-checkbox1" class="text-md text-gray-600 ms-3 dark:text-neutral-400">Qualité
-                    apparante</label>
-            </div>
+                <!-- Qualité Apparente -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Qualité Apparente :</label>
+                    <input type="radio" id="qualite-oui" name="qualite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="qualite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="qualite-non" name="qualite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="qualite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
 
-            <div class="flex">
-                <input type="checkbox"
-                    class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checked-checkbox">
-                <label for="hs-checked-checkbox"
-                    class="text-md text-gray-600 ms-3 dark:text-neutral-400">Diversité</label>
+                <!-- Diversité -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Diversité :</label>
+                    <input type="radio" id="diversite-oui" name="diversite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="diversite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="diversite-non" name="diversite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="diversite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
             </div>
 
         </div>
@@ -2569,29 +2633,39 @@
 
                 <h2 class="text-xl font-semibold mb-2">Avis de conformité</h2>
 
-                <div class="flex mb-3">
-                    <input type="checkbox"
-                        class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600  disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                        id="hs-default-checkbox">
-                    <label for="hs-default-checkbox"
-                        class="text-md text-gray-600 ms-3 dark:text-neutral-400">Quantité</label>
-                </div>
+                <div class="space-y-3">
+                    <!-- Quantité -->
+                    <div class="flex items-center mb-3">
+                        <label class="mr-2 text-gray-600 dark:text-neutral-400">Quantité :</label>
+                        <input type="radio" id="quantite-oui" name="quantite" value="oui"
+                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        <label for="quantite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                        <input type="radio" id="quantite-non" name="quantite" value="non"
+                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        <label for="quantite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                    </div>
 
-                <div class="flex mb-3">
-                    <input type="checkbox"
-                        class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                        id="hs-checked-checkbox1">
-                    <label for="hs-checked-checkbox1"
-                        class="text-md text-gray-600 ms-3 dark:text-neutral-400">Qualité
-                        apparante</label>
-                </div>
+                    <!-- Qualité Apparente -->
+                    <div class="flex items-center mb-3">
+                        <label class="mr-2 text-gray-600 dark:text-neutral-400">Qualité Apparente :</label>
+                        <input type="radio" id="qualite-oui" name="qualite" value="oui"
+                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        <label for="qualite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                        <input type="radio" id="qualite-non" name="qualite" value="non"
+                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        <label for="qualite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                    </div>
 
-                <div class="flex">
-                    <input type="checkbox"
-                        class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                        id="hs-checked-checkbox">
-                    <label for="hs-checked-checkbox"
-                        class="text-md text-gray-600 ms-3 dark:text-neutral-400">Diversité</label>
+                    <!-- Diversité -->
+                    <div class="flex items-center mb-3">
+                        <label class="mr-2 text-gray-600 dark:text-neutral-400">Diversité :</label>
+                        <input type="radio" id="diversite-oui" name="diversite" value="oui"
+                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        <label for="diversite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                        <input type="radio" id="diversite-non" name="diversite" value="non"
+                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        <label for="diversite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                    </div>
                 </div>
 
             </div>

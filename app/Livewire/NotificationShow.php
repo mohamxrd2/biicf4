@@ -739,8 +739,10 @@ class NotificationShow extends Component
                 return;
             }
 
+            // Déduire le montant requis du portefeuille de l'utilisateur
             $userWallet->decrement('balance', $requiredAmount);
             Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
+            
             $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
 
 

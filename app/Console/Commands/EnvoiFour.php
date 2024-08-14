@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Notifications\AppelOffreTerminer;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 class EnvoiFour extends Command
@@ -78,5 +80,16 @@ class EnvoiFour extends Command
         //         $countdown->update(['notified' => true]);
         //     }
         // }
+
+        $expirationTime = Carbon::now()->subMinute(); // Time one minute ago
+
+        // Assuming notifications are stored in a 'notifications' table
+        DB::table('notifications')
+            ->whereIn('type', ['App\Notifications\AppelOffre', 'App\Notifications\livraisonVerif'])
+            ->where('created_at', '<', $expirationTime)
+            ->delete();
+
+
+        $this->info('Expired notifications deleted successfully.');
     }
 }
