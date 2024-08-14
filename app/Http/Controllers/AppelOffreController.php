@@ -63,21 +63,27 @@ class AppelOffreController extends Controller
         $groupedByReference = $results->groupBy('reference');
 
         // Parcourir les groupes pour afficher les informations demandées
-        // foreach ($groupedByReference as $reference => $group) {
-        //     $groupData = $group->map(function ($item) {
-        //         return [
-        //             'reference' => $item->reference,
-        //             'name' => $item->name,
-        //             'user_id' => $item->user_id,
-        //         ];
-        //     });
+        foreach ($groupedByReference as $reference => $group) {
+            $groupData = $group->map(function ($item) {
+                return [
+                    'reference' => $item->reference,
+                    'type' => $item->type,
+                    'name' => $item->name,
+                    'formatProd' => $item->formatProd,
+                    'specification' => $item->specification,
+                    'specification2' => $item->specification2,
+                    'specification3' => $item->specification3,
+                    'origine' => $item->origine,
+                    'user_id' => $item->user_id,
+                ];
+            });
 
-        //     // Afficher les éléments récupérés dans les logs
-        //     Log::info('Group for reference', [
-        //         'reference' => $reference,
-        //         'items' => $groupData->toArray() // Convertit la collection en tableau
-        //     ]);
-        // }
+            // Afficher les éléments récupérés dans les logs
+            Log::info('Group for reference', [
+                'reference' => $reference,
+                'items' => $groupData->toArray() // Convertit la collection en tableau
+            ]);
+        }
         ///////
         $resultCount = $results->count();
 

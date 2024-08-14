@@ -282,9 +282,9 @@
                         @endforeach
                     </div>
 
-                    <h1>Listes Des Produits & Services avec leur references; Cliquez pour voir les details</h1>
+                    {{-- <h1>Listes Des Produits & Services avec leur references; Cliquez pour voir les details</h1> --}}
 
-                    @foreach ($results as $result)
+                    {{-- @foreach ($results as $result)
                         <a href="{{ route('biicf.postdet', $result->id) }}">
                             <div class="max-w-xl mx-auto my-4 p-4">
                                 <div class="w-full flex items-start p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -302,7 +302,7 @@
                                 </div>
                             </div>
                         </a>
-                    @endforeach
+                    @endforeach --}}
 
                 @endif
 

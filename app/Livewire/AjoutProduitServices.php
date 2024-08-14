@@ -49,6 +49,7 @@ class AjoutProduitServices extends Component
     public $photoProd3;
     public $photoProd4;
 
+    public $locked = false; // Déverrouillé par défaut
 
     public function mount()
     {
@@ -85,15 +86,29 @@ class AjoutProduitServices extends Component
             $this->specification = $selectedProduct->specification;
             $this->specification2 = $selectedProduct->specification2;
             $this->specification3 = $selectedProduct->specification3;
+            $this->photoProd1 = $selectedProduct->photoProd1;
+            $this->photoProd2 = $selectedProduct->photoProd2;
+            $this->photoProd3 = $selectedProduct->photoProd3;
+            $this->photoProd4 = $selectedProduct->photoProd4;
+            $this->locked = true;
+
             $this->qteProd_min = '';
             $this->qteProd_max = '';
             $this->prix = '';
             $this->qualification = ''; // Reset qualifications for services
             $this->specialite = ''; // Reset specialties for services
             $this->qte_service = ''; // Reset service quantity
+
         } else {
             // Réinitialiser les propriétés si aucun produit n'est trouvé
             $this->resetProductFields();
+        }
+    }
+    
+    public function updatedName()
+    {
+        if (empty($this->name)) {
+            $this->locked = false; // Déverrouille l'input si le champ est vide
         }
     }
 
