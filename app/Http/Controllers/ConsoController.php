@@ -60,4 +60,9 @@ class ConsoController extends Controller
 
         return view('biicf.consodetail', compact('consommation'));
     }
+    public function postCons()
+    {
+
+        return view('biicf.AjoutConsommation');
+    }
 }

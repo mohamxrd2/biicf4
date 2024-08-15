@@ -21,8 +21,9 @@
         class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4  dark:bg-gray-900">
 
         <div>
-            <h1 class="bold" style="font-size: 24px;">Liste des publications</h1>
+            <h1 class="bold" style="font-size: 24px;">Liste des Consommations</h1>
         </div>
+
 
         <div class="flex items-center">
             <label for="table-search" class="sr-only">Search</label>
@@ -34,157 +35,23 @@
                             d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                     </svg>
                 </div>
-                <input type="text" id="searchInput" onkeyup="searchTable()"
+                <input type="text"
                     class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Rechercher...">
             </div>
-            <button type="button"
-            class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-            data-hs-overlay="#hs-static-backdrop-model">
-            Ajouter
+            <a href="{{ route('biicf.postCons') }}"
+                class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                AJOUTER
 
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-            </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
 
-        </button>
-            <div id="hs-static-backdrop-model"
-            class="hs-overlay size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto [--overlay-backdrop:static]  hidden  bg-black bg-opacity-50"
-            data-hs-overlay-keyboard="false" aria-overlay="true" tabindex="-1">
-
-            <div
-                class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+            </a>
 
 
-                {{-- consommation --}}
-                <form action="{{ route('biicf.storeCons', ['username' => $user->username]) }}"
-                    method="POST">
-                    @csrf
-                    <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
-
-
-
-                        <div class="flex justify-between items-center py-3 px-4 border-b">
-                            <h3 class="font-bold text-gray-800">
-                                Ajouter des consommations
-                            </h3>
-
-                            <button type="button"
-                                class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
-                                data-hs-overlay="#hs-static-backdrop-model">
-                                <span class="sr-only">Close</span>
-                                <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg"
-                                    width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M18 6 6 18"></path>
-                                    <path d="m6 6 12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="p-4 overflow-y-auto">
-                            <div class="max-w-md mx-auto">
-
-                                <input type="text" name="user_id" hidden value="{{ $user->id }}">
-
-                                <div class="relative z-0 w-full mb-5 group">
-                                    <select name="type" id="chooseC"
-                                        class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                                        <option value="" disabled selected>Choisir le
-                                            type</option>
-                                        <option value="produits">Produit</option>
-                                        <option value="services">Service</option>
-                                    </select>
-
-                                </div>
-                                {{-- les inputs suivants sont pour les produits --}}
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="text" name="nameC" id="floating_nameC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder=" Nom de la consommation" />
-                                </div>
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="text" name="conditionnementC"
-                                        id="floating_conditionnementC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Conditionnement" />
-                                </div>
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="text" name="formatC" id="floating_formatC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Format de consommations " />
-                                </div>
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="number" name="qteC" id="floating_quantiteC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="quantité de consommations " />
-                                </div>
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="number" name="prixC" id="floating_prixC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="prix" />
-                                </div>
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="number" name="frequenceC" id="floating_cons"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="frequence de consommation [0-10]" />
-                                </div>
-
-                                <div class="relative z-0 w-full mb-5 group">
-                                    <select name="jour_achat" id="floating_jour_achat"
-                                        class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                                        <option value="" disabled selected>Jour d'achat</option>
-                                        <option value="Lundi">Lundi</option>
-                                        <option value="Mardi">Mardi</option>
-                                        <option value="Mercredi">Mercredi</option>
-                                        <option value="Jeudi">Jeudi</option>
-                                        <option value="Vendredi">Vendredi</option>
-                                        <option value="Samedi">Samedi</option>
-                                        <option value="Dimanche">Dimanche</option>
-                                        <option value="Plusieur jour de la semaine">Plusieur jour de la
-                                            semaine</option>
-                                    </select>
-
-                                </div>
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="text" name="qualificationC" id="floating_qualifC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="qualification service" />
-                                </div>
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="text" name="specialité" id="floating_specialiteC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="specialité " />
-                                </div>
-
-
-                                <div class="space-y-3 w-full mb-3">
-                                    <input type="text" name="villeC" id="floating_villeC"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="ville " />
-                                </div>
-
-
-                            </div>
-
-                        </div>
-                        <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t">
-                            <button type="button"
-                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                                data-hs-overlay="#hs-static-backdrop-model">
-                                Fermer
-                            </button>
-                            <button type="submit"
-                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
-                                Ajouter
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
 
         </div>
     </div>

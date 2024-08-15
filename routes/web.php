@@ -146,6 +146,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('publication/{id}', [ProduitServiceController::class, 'pubDet'])->name('biicf.postdet');
 
 
+    Route::get('consommation/creer-consommation', [ConsoController::class, 'postCons'])->name('biicf.postCons');
     Route::get('consommation', [ConsoController::class, 'consoBiicf'])->name('biicf.conso');
     Route::post('consommation/ajouter', [UserController::class, 'storeCons'])->name('biicf.storeCons');
     Route::delete('consommation/supprimer/{conso}', [ConsoController::class, 'destroConsom'])->name('biicf.consodelete');
