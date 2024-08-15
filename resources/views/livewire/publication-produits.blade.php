@@ -79,8 +79,8 @@
                             class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
                             <a href="{{ route('produit.pubShow', $produit->id) }}" class="flex items-center">
                                 <img class="w-10 h-10 rounded-md"
-                                    src="{{ $produit->photoProd1 ? asset($produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                                    alt="Jese image">
+                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="produits image">
                                 <div class="ps-3  hover:underline hover:text-blue-500 cursor-pointer">
                                     <div class="text-base font-semibold">{{ $produit->name }}</div>
                                     <div class="font-normal text-gray-500">{{ $produit->username }}</div>

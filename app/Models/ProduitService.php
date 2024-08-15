@@ -34,6 +34,8 @@ class ProduitService extends Model
         'qalifServ',
         'sepServ',
         'qteServ',
+        'continent',
+        'Sous-Region',
         'zonecoServ',
         'villeServ',
         'comnServ',

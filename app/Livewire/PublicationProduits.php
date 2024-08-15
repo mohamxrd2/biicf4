@@ -16,8 +16,8 @@ class PublicationProduits extends Component
     }
     public function render()
     {
-        
-        $produits = ProduitService::where('type', 'produits')
+
+        $produits = ProduitService::where('type', 'Produit')
             ->where('name', 'like', "%{$this->search}%")
             ->orderBy('created_at', 'DESC')
             ->paginate(10);
@@ -28,12 +28,12 @@ class PublicationProduits extends Component
 
         //  l'agent connecté
         $adminId = Auth::guard('admin')->id();
-        // Récupérer les produits avec l'utilisateur associé ayant le même admin_id
+        // Récupérer les Produit avec l'utilisateur associé ayant le même admin_id
         $produitAgents = ProduitService::with('user')
             ->whereHas('user', function ($query) use ($adminId) {
                 $query->where('admin_id', $adminId);
             })
-            ->where('type', 'produits')
+            ->where('type', 'Produit')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         // Compter le nombre de produits qui correspondent aux critères spécifiés
@@ -41,7 +41,7 @@ class PublicationProduits extends Component
             ->whereHas('user', function ($query) use ($adminId) {
                 $query->where('admin_id', $adminId);
             })
-            ->where('type', 'produits')
+            ->where('type', 'Produit')
             ->count();
 
 

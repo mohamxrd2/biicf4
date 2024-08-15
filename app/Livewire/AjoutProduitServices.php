@@ -40,6 +40,24 @@ class AjoutProduitServices extends Component
     public $depart  = '';
     public $ville  = '';
     public $commune  = '';
+    public $selectedContinent;
+    public $continents = [
+        'Afrique',
+        'Amérique du Nord',
+        'Amérique du Sud',
+        'Antarctique',
+        'Asie',
+        'Europe',
+        'Océanie'
+    ];
+    public $selectedSous_region;
+    public $sousregions = [
+        'Afrique du Nord', 'Afrique de l\'Ouest', 'Afrique Centrale', 'Afrique de l\'Est', 'Afrique Australe',
+        'Amérique du Nord', 'Amérique Centrale ', 'Amérique du Sud  ', 'Caraïbes',
+        'Asie de l\'Est', 'Asie du Sud', 'Asie du Sud-Est', 'Asie Centrale', 'Asie de l\'Ouest ',
+        'Europe de l\'Est', 'Europe de l\'Ouest', 'Europe du Nord', 'Europe du Sud',
+        'Australie et Nouvelle-Zélande', 'Mélanésie ', 'Polynésie ', 'Micronésie '
+    ];
     public $produits = [];
     public $selectedCategories = [];
     public $selectedProduits = [];
@@ -168,6 +186,8 @@ class AjoutProduitServices extends Component
             'qualification' => 'required_if:type,Service|string',
             'specialite' => 'required_if:type,Service|string',
             'qte_service' => 'required_if:type,Service|string',
+            'selectedSous_region' => 'required|string',
+            'selectedContinent' => 'required|string',
             'depart' => 'required|string',
             'ville' => 'required|string',
             'commune' => 'required|string',

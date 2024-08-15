@@ -41,8 +41,8 @@
                         <div x-data="{ selectedProduits: @entangle('selectedProduits') }">
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Entrez le nom du
-                                    produit</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Recherchez votre produit ou
+                                    service</label>
                                 <input type="text" class="w-full p-2 border border-gray-300 rounded-md"
                                     placeholder="Entrez le nom du produit">
 
@@ -266,6 +266,36 @@
                     <!-- Localisation (commune aux deux types) -->
                     <h1 class="text-center text-xl font-bold mb-8">Localisation Du Produit & Service</h1>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+                        <div class="col-span-1">
+                            <label for="continent"
+                                class="block text-sm font-medium text-gray-700 mb-2">Continent:</label>
+                            <select id="continent" name="continent" wire:model='selectedContinent'
+                                class="w-full p-2 border border-gray-300 rounded-md">
+                                <option value="">Sélectionnez un continent</option>
+                                @foreach ($continents as $continent)
+                                    <option value="{{ $continent }}">{{ $continent }}</option>
+                                @endforeach
+                            </select>
+                            @error('continent')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sous-Régions</label>
+
+                            <select id="continent" name="continent" wire:model='selectedSous_region'
+                                class="w-full p-2 border border-gray-300 rounded-md">
+                                <option value="">Sélectionnez un continent</option>
+                                @foreach ($sousregions as $sousregion)
+                                    <option value="{{ $sousregion }}">{{ $sousregion }}</option>
+                                @endforeach
+                            </select>
+                            @error('sous_region')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+                        </div>
                         <div class="col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
                             <input type="text" wire:model='depart'
