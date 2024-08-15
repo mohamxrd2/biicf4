@@ -569,7 +569,7 @@ class NotificationShow extends Component
             'nameProd' => 'required|string',
             'userTrader' => 'required|exists:users,id',
             'idProd' => 'required|exists:produit_services,id',
-            'prix' => 'required|numeric',
+            'prixProd' => 'required|numeric',
         ]);
 
         // dd($validated);
@@ -577,7 +577,7 @@ class NotificationShow extends Component
         Log::info('Validation réussie.', $validated);
 
         $userId = Auth::id();
-        $montantTotal = $validated['quantite'] * $validated['prix'];
+        $montantTotal = $validated['quantite'] * $validated['prixProd'];
 
         if (!$userId) {
             Log::error('Utilisateur non authentifié.');
@@ -604,14 +604,14 @@ class NotificationShow extends Component
         }
 
         try {
-            // Utilisez `selectedSpec` pour obtenir la spécification sélectionnée
-            $selectedSpec = $this->selectedSpec;
-
-            // Assurez-vous que `selectedSpec` est bien défini
+            $selectedSpec = $this->selectedSpec; // Assurez-vous que `selectedSpec` est bien défini et récupère la spécification sélectionnée
             $specificites = !empty($selectedSpec) ? $selectedSpec : null;
 
+
             // Vérifiez que le tableau $selectedSpecificites n'est pas vide avant de l'utiliser
-            $specificites = !empty($selectedSpecificites) ? implode(', ', $selectedSpecificites) : null;
+            // $specificites = !empty($selectedSpecificites) ? implode(', ', $selectedSpecificites) : null;
+            Log::info('Selected Specification:', ['selectedSpec' => $this->selectedSpec]);
+
 
             $idProd = ProduitService::find($validated['idProd']);
             $photo = $idProd->photoProd1;
@@ -703,8 +703,6 @@ class NotificationShow extends Component
         // Trigger JavaScript event
         $this->dispatch('form-submitted');
     }
-
-
     public function valider()
     {
         try {
@@ -831,9 +829,6 @@ class NotificationShow extends Component
             session()->flash('error', 'Une erreur est survenue lors de la validation.');
         }
     }
-
-
-
     public function mainleve()
     {
 

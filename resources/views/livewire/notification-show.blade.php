@@ -237,7 +237,7 @@
                             <div class="block">
                                 <input type="radio" id="specificite_1" name="specificite"
                                     value="{{ $produit->specification }}" wire:model.defer="selectedSpec"
-                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
+                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500" required>
                                 <label for="specificite_1" class="text-sm text-gray-700 dark:text-gray-300">
                                     {{ $produit->specification }}
                                 </label>
@@ -278,7 +278,7 @@
                     <input type="hidden" name="nameProd" wire:model.defer="nameProd">
                     <input type="hidden" name="userSender" wire:model.defer="userTrader">
                     <input type="hidden" name="idProd" wire:model.defer="idProd">
-                    <input type="hidden" name="prix" wire:model.defer="prix">
+                    <input type="hidden" name="prix" wire:model.defer="prixProd">
 
                     <div class="flex justify-between px-4 mb-3 w-full">
                         <p class="font-semibold text-sm text-gray-500">Prix total:</p>
