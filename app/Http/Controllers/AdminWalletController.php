@@ -8,6 +8,7 @@ use App\Models\Wallet;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AdminWalletController extends Controller
 {
@@ -31,6 +32,7 @@ class AdminWalletController extends Controller
                 'amount.required' => 'Veuillez entrer le montant.',
             ]
         );
+        dd($validatedData);
 
         // Calculate commission
         $pourcentSomme = $request->input('comAmount');
@@ -120,16 +122,20 @@ class AdminWalletController extends Controller
     public function indexBiicf()
     {
         $userId = Auth::guard('web')->id();
+        Log::info('User ID:', ['user_id' => $userId]);
 
         $userWallet = Wallet::where('user_id', $userId)->first();
+        Log::info('User Wallet:', ['wallet' => $userWallet]);
 
         // Récupérer les utilisateurs à exclure l'utilisateur authentifié
         $users = User::with('admin')
             ->where('id', '!=', $userId) // Exclure l'utilisateur authentifié
             ->orderBy('created_at', 'DESC')
             ->get();
+        Log::info('Users (excluding authenticated user):', ['users' => $users]);
 
         $userCount = User::where('id', '!=', $userId)->count();
+        Log::info('User Count (excluding authenticated user):', ['user_count' => $userCount]);
 
         // Récupérer les transactions impliquant l'utilisateur authentifié
         $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
@@ -139,13 +145,14 @@ class AdminWalletController extends Controller
             })
             ->orderBy('created_at', 'DESC')
             ->get();
+        Log::info('Transactions involving authenticated user:', ['transactions' => $transactions]);
 
         $transacCount = Transaction::where(function ($query) use ($userId) {
             $query->where('sender_user_id', $userId)
                 ->orWhere('receiver_user_id', $userId);
         })->count();
+        Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $transacCount]);
 
         return view('biicf.wallet', compact('userWallet', 'users', 'userCount', 'transactions', 'transacCount', 'userId'));
     }
-
 }

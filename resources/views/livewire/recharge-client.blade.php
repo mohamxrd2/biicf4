@@ -1,6 +1,4 @@
 <div>
-
-
     <div wire:loading.delay.longest>
         <span class="text-green-500">Sending...</span>
     </div>
