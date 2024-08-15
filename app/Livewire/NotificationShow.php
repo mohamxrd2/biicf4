@@ -6,7 +6,9 @@ use App\Events\CommentSubmitted;
 use App\Models\AchatDirect;
 use App\Models\AppelOffreGrouper;
 use App\Models\userquantites;
+use App\Notifications\AllerChercher;
 use App\Notifications\attenteclient;
+use App\Notifications\VerifUser;
 use Exception;
 use App\Models\User;
 use App\Models\Wallet;
@@ -345,16 +347,29 @@ class NotificationShow extends Component
             $this->nameProd = $this->userTrader = $this->idProd = $this->prix = null;
         }
 
-        // //appeloffregrouper Notification
-        // $Idoffre =  $this->notification->data['offre_id'] ?? null;
-        // // Récupérer l'offre groupée par son ID
-        // $this->appelOffreGroup = AppelOffreGrouper::findOrFail($Idoffre) ?? null;
-        // $codesUniques = $this->appelOffreGroup->codeunique;
+        $Idoffre = $this->notification->data['offre_id'] ?? null;
 
-        // // Récupérer la date la plus ancienne pour le code unique
-        // $this->datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
-        // $this->sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
-        // $this->appelOffreGroupcount = $this->appelOffreGroup->count();
+        // Attempt to retrieve the grouped offer by its ID
+        $this->appelOffreGroup = AppelOffreGrouper::find($Idoffre);
+
+        // Check if $appelOffreGroup is null before proceeding
+        if ($this->appelOffreGroup) {
+            $codesUniques = $this->appelOffreGroup->codeunique;
+
+            // Retrieve the oldest date for the unique code
+            $this->datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
+
+            // Sum the quantities for the unique code
+            $this->sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
+
+            // Count the number of grouped offers
+            $this->appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)->count();
+        } else {
+            // Handle the case where no offer was found
+            $this->datePlusAncienne = null;
+            $this->sumquantite = 0;
+            $this->appelOffreGroupcount = 0;
+        }
     }
 
     public function storeoffre()
@@ -693,17 +708,14 @@ class NotificationShow extends Component
     public function valider()
     {
         try {
-
             // Déterminer le prix unitaire
-            if (isset($this->notification->data['prixProd'])) {
-                $prixUnitaire = $this->notification->data['prixProd'];
-            } else {
-                $prixUnitaire = $this->notification->data['prixTrade'];
-            }
+            $prixUnitaire = $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'];
             Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
 
+            $quantite = $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'];
+
             // Calculer le prix total
-            $this->totalPrice = (int) ($this->notification->data['quantiteC'] * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
+            $this->totalPrice = (int) ($quantite * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
             Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
 
             // Vérifier si l'utilisateur est authentifié
@@ -713,7 +725,7 @@ class NotificationShow extends Component
                 return;
             }
 
-            $userSender = User::find($this->user); // Assurez-vous de récupérer l'objet utilisateur
+            $userSender = User::find($this->user);
 
             if (!$userSender) {
                 Log::error('Utilisateur non trouvé avec ID', ['userId' => $this->user]);
@@ -742,52 +754,84 @@ class NotificationShow extends Component
             // Déduire le montant requis du portefeuille de l'utilisateur
             $userWallet->decrement('balance', $requiredAmount);
             Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
-            
+
             $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
 
+            // Vérifiez si $this->userFour est défini
+            if (!isset($this->userFour) || !$this->userFour) {
+                Log::error('Livreur introuvable.');
+                session()->flash('error', 'Livreur introuvable.');
+                return;
+            }
+            Log::info('Vérification de userFour', ['userFour' => $this->userFour]);
 
-            // Envoyer la notification normale au userSender
+            // Préparer les données de notification
             $data = [
                 'idProd' => $this->notification->data['idProd'],
-                'code_unique' => $this->code_unique,
+                'code_unique' => $this->code_unique ?? $this->notification->data['code_livr'],
                 'id_trader' => $this->namefourlivr->user->id,
                 'localité' => $this->localite,
-                'quantite' => $this->notification->data['quantiteC'],
-                'id_livreur' => $this->userFour->id,
-                'prixTrade' => $this->notification->data['prixTrade'],
+                'quantite' => $quantite,
+                'id_livreur' => $this->userFour->id, // Assurez-vous que $this->userFour est défini
+                'prixTrade' => $this->notification->data['prixTrade'] ?? null,
                 'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
             ];
+
+            $user = [
+                'idProd' => $this->notification->data['idProd'],
+                'code_unique' => $this->code_unique ?? $this->notification->data['code_livr'],
+                'id_trader' => $this->userFour->id,
+                'localité' => $this->localite,
+                'quantite' => $quantite,
+                'id_client' => Auth::id(),
+                'prixProd' => $this->notification->data['prixProd']
+            ];
+
+            $id_trader = $this->userFour->id;
+            $traderUser = User::find($id_trader);
+
             Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
 
             if ($this->notification->type_achat == 'reserv/take') {
                 Notification::send($userSender, new commandVerif($data));
 
-                // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
                 $notification = $userSender->notifications()->where('type', commandVerif::class)->latest()->first();
 
                 if ($notification) {
-                    // Mettez à jour le champ 'type_achat' dans la notification
                     $notification->update(['type_achat' => 'reserv/take']);
                 }
+            } elseif (!empty($this->notification->data['code_livr']) && !empty($this->notification->data['prixProd'])) {
+                // Utilisez && pour vérifier que les deux conditions sont vraies
+                Notification::send($traderUser, new VerifUser($user));
+
+                $userWallet = Wallet::where('user_id', $traderUser->id)->first();
+
+                if (!$userWallet) {
+                    Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $userSender->id]);
+                    session()->flash('error', 'Portefeuille introuvable.');
+                    return;
+                }
+                Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
+                // Déduire le montant requis du portefeuille de l'utilisateur
+                $userWallet->decrement('balance', $requiredAmount);
+                Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
+
+                $this->createTransaction($userSender->id, $traderUser->id, 'Reception', $requiredAmount);
             } else {
                 Notification::send($userSender, new commandVerif($data));
             }
-
 
             // Mettre à jour la notification et valider
             $this->notification->update(['reponse' => 'valide']);
             Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
 
-            // Ajouter un message de succès
             session()->flash('success', 'Validation effectuée avec succès.');
         } catch (Exception $e) {
-            // Enregistrement de l'erreur dans les logs
             Log::error('Erreur dans la méthode valider', ['message' => $e->getMessage()]);
-
-            // Affichage du message d'erreur pour l'utilisateur
-            // session()->flash('error', $e->getMessage());
+            session()->flash('error', 'Une erreur est survenue lors de la validation.');
         }
     }
+
 
 
     public function mainleve()
@@ -871,7 +915,6 @@ class NotificationShow extends Component
                 'prixProd' => $this->notification->data['prixProd']
 
             ];
-
 
             if ($this->notification->type_achat == 'reserv/take') {
                 Notification::send($fournisseur, new attenteclient($data));
@@ -1200,6 +1243,8 @@ class NotificationShow extends Component
             'textareaContent' => $textareaContent
         ];
 
+
+
         // Vérifiez si le code_unique existe dans userquantites
         $userQuantites = userquantites::where('code_unique', $code_livr)->get();
 
@@ -1227,7 +1272,7 @@ class NotificationShow extends Component
                     // Envoyez la notification au client directement
                     $userSender = User::find($userId);
                     if ($userSender) {
-                        Notification::send($userSender, new livraisonVerif($data));
+                        Notification::send($userSender, new AllerChercher($data));
                         // Log l'envoi de la notification
                         Log::info('Notification envoyée au client', ['user_id' => $userSender->id]);
                     } else {
@@ -1257,9 +1302,6 @@ class NotificationShow extends Component
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
     }
-
-
-
 
     private function genererCodeAleatoire($longueur)
     {

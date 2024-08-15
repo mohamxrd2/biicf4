@@ -995,58 +995,79 @@
                     const prixTradeInput = document.getElementById('prixTrade');
                     const submitBtn = document.getElementById('submitBtnAppel');
                     const prixTradeError = document.getElementById('prixTradeError');
+                    const produitPrix = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
+
+                    // Vérifiez l'état du bouton depuis le stockage local
+                    // const isCountdownFinished = localStorage.getItem('countdownFinished') === 'true';
+
+                    // if (isCountdownFinished) {
+                    //     submitBtn.classList.add('hidden');
+                    //     prixTradeInput.disabled = true;
+                    // }
 
                     prixTradeInput.addEventListener('input', function() {
                         const prixTradeValue = parseFloat(prixTradeInput.value);
-                        const lowestPricedProduct = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
 
-                        if (prixTradeValue > lowestPricedProduct) {
+                        if (prixTradeValue > produitPrix) {
                             submitBtn.disabled = true;
-                            prixTradeError.textContent = 'Le prix ne doit pas dépasser ' + lowestPricedProduct;
+                            prixTradeError.textContent = `Le prix doit être inférieur à ${produitPrix} FCFA`;
                             prixTradeError.classList.remove('hidden');
+                            submitBtn.classList.add('hidden');
                         } else {
                             submitBtn.disabled = false;
                             prixTradeError.textContent = '';
                             prixTradeError.classList.add('hidden');
+                            submitBtn.classList.remove('hidden');
                         }
                     });
 
-                    // Convertir la date de départ en objet Date JavaScript
                     const startDate = new Date("{{ $oldestCommentDate }}");
-
-                    // Ajouter 5 heures à la date de départ
                     startDate.setMinutes(startDate.getMinutes() + 1);
 
-                    // Mettre à jour le compte à rebours à intervalles réguliers
                     const countdownTimer = setInterval(updateCountdown, 1000);
 
                     function updateCountdown() {
-                        // Obtenir la date et l'heure actuelles
                         const currentDate = new Date();
-
-                        // Calculer la différence entre la date cible et la date de départ en millisecondes
                         const difference = startDate.getTime() - currentDate.getTime();
 
-                        // Convertir la différence en jours, heures, minutes et secondes
+                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-                        // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
                         const countdownElement = document.getElementById('countdown');
-                        countdownElement.innerHTML = `
-                        <div>${hours}h</div>:
-                        <div>${minutes}m</div>:
-                        <div>${seconds}s</div>
-                    `;
-
-                        // Arrêter le compte à rebours lorsque la date cible est atteinte
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            countdownElement.innerHTML = "Temps écoulé !";
-
+                        if (countdownElement) {
+                            countdownElement.innerHTML = `
+                          <div>${hours}h</div>:
+                          <div>${minutes}m</div>:
+                          <div>${seconds}s</div>
+                        `;
                         }
 
+                        if (difference <= 0) {
+                            clearInterval(countdownTimer);
+                            if (countdownElement) {
+                                countdownElement.innerHTML = "Temps écoulé !";
+                            }
+                            prixTradeInput.disabled = true;
+                            submitBtn.classList.add('hidden');
+
+                            // localStorage.setItem('countdownFinished',
+                            //     'true'); // Enregistrez l'état du bouton dans le stockage local
+
+                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
+                                .prix > max.prix ? comment : max, {
+                                    prix: -Infinity
+                                });
+
+                            if (highestPricedComment && highestPricedComment.nameUser) {
+                                prixTradeError.textContent =
+                                    `L'utilisateur avec le prix le plus bas est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                            } else {
+                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                            }
+                            prixTradeError.classList.remove('hidden');
+                        }
                     }
                 });
             </script>
@@ -1773,6 +1794,128 @@
                 <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
             </footer>
         </div>
+    @elseif ($notification->type === 'App\Notifications\AllerChercher')
+        {{-- Afficher les messages de succès --}}
+        @if (session('success'))
+            <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- Afficher les messages d'erreur -->
+        @if (session('error'))
+            <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
+                {{ session('error') }}
+            </div>
+        @endif
+
+
+
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+            <header class="mb-9">
+                <h1 class="text-3xl font-bold mb-4">Facture Proformat</h1>
+                <div class="text-gray-600">
+                    <p>Code la de Facture: <span class="font-semibold">#{{ $notification->data['code_livr'] }}</span>
+                    </p>
+                    <p>Date: <span
+                            class="font-semibold">{{ \Carbon\Carbon::parse($notification->created_at)->translatedFormat('d F Y') }}</span>
+                    </p>
+                </div>
+            </header>
+
+
+
+            <section class="mb-6 overflow-x-auto">
+                <h2 class="text-xl font-semibold mb-4">Détails de la Facture</h2>
+                <table class="min-w-full bg-white ">
+                    <thead>
+                        <tr class="w-full bg-gray-200">
+                            <th class="py-2 px-4 border-b">Elements</th>
+                            <th class="py-2 px-4 border-b">Quantité commandé</th>
+                            <th class="py-2 px-4 border-b">Prix Unitaire</th>
+                            <th class="py-2 px-4 border-b">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="py-2 px-4 border-b">Produit commandé: {{ $produitfat->name }}</td>
+                            <td class="py-2 px-4 border-b">{{ $notification->data['quantite'] }}</td>
+                            <td class="py-2 px-4 border-b">
+                                {{ number_format($this->notification->data['prixProd'], 0, ',', '.') }} FCFA</td>
+                            <td class="py-2 px-4 border-b">
+                                {{ number_format((int) ($notification->data['quantite'] * $this->notification->data['prixProd']), 0, ',', '.') }}
+                                FCFA</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-4 border-b">Fournisseur: {{ $userFour->name }}</td>
+                            <td class="py-2 px-4 border-b">N/A</td>
+                            <td class="py-2 px-4 border-b">
+                                N/A
+                            <td class="py-2 px-4 border-b">
+                                N/A
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="mb-6 flex justify-between">
+                <div class="w-1/3  p-4 rounded-lg">
+                    @if ($notification->reponse)
+                        <div class="flex space-x-2 mt-4">
+                            <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
+                                <!-- Texte du bouton et icône -->
+                                Validé
+
+                            </div>
+
+                        </div>
+                    @else
+                        <div class="flex space-x-2 mt-4">
+                            <button wire:click.prevent='valider'
+                                class="bg-green-800 text-white px-4 py-2 rounded-lg relative">
+                                <!-- Texte du bouton et icône -->
+                                <span wire:loading.remove>
+                                    Payez au paiement
+                                </span>
+                                <span wire:loading>
+                                    Chargement...
+                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                    </svg>
+                                </span>
+                            </button>
+
+                        </div>
+                    @endif
+
+                </div>
+
+                {{-- Afficher les messages d'erreur --}}
+
+
+                <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
+                    <p class="text-xl  text-center font-bold">Total TTC: <span
+                            class="font-bold">{{ number_format((int) ($notification->data['quantite'] * $notification->data['prixProd']) , 0, ',', '.') }}
+
+                            FCFA</span></p>
+                </div>
+
+
+            </section>
+
+            @if (session()->has('error'))
+                <div class="alert text-red-500">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <footer>
+                <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
+            </footer>
+        </div>
     @elseif ($notification->type === 'App\Notifications\GrouperFactureNotifications')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
             <header class="mb-9">
@@ -2064,13 +2207,6 @@
                             const submitBtn = document.getElementById('submitBtnAppel');
                             const prixTradeError = document.getElementById('prixTradeError');
 
-                            // Vérifiez l'état du bouton depuis le stockage local
-                            const isCountdownFinished = localStorage.getItem('countdownFinished') === 'true';
-
-                            if (isCountdownFinished) {
-                                submitBtn.classList.add('hidden');
-                                prixTradeInput.disabled = true;
-                            }
 
                             const startDate = new Date("{{ $oldestCommentDate }}");
                             startDate.setMinutes(startDate.getMinutes() + 1);
@@ -2102,8 +2238,6 @@
                                     prixTradeInput.disabled = true;
                                     submitBtn.classList.add('hidden');
 
-                                    localStorage.setItem('countdownFinished',
-                                        'true'); // Enregistrez l'état du bouton dans le stockage local
 
                                     const highestPricedComment = @json($comments).reduce((max, comment) => comment
                                         .prix > max.prix ? comment : max, {
@@ -2537,6 +2671,80 @@
 
 
 
+                    </div>
+
+
+                </div>
+            </div>
+        @endif
+    @elseif ($notification->type === 'App\Notifications\VerifUser')
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h2 class="text-xl font-semibold mb-4">Verification du client</h2>
+
+
+            <form wire:submit.prevent="verifyCode" method="POST">
+                @csrf
+                <div class="flex w-full">
+                    <input type="text" name="code_verif" wire:model.defer="code_verif"
+                        placeholder="Entrez le code de livraison"
+                        class="peer py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+
+
+
+                    <button type="submit" wire:loading.attr="disabled"
+                        class="bg-green-400 text-white font-semibold rounded-md px-2 ml-3">
+                        <span wire:loading.remove>Valider</span>
+                        <span wire:loading>
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            @error('code_verif')
+                <span class="text-red-500 mt-4">{{ $message }}</span>
+            @enderror
+
+            @if (session()->has('succes'))
+                <div class="text-green-500 mt-4">
+                    {{ session('succes') }}
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="text-red-500 mt-4">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+        </div>
+
+        @if (session()->has('succes'))
+            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+                <h2 class="text-xl font-semibold mb-4">Information sur le client</h2>
+
+                <div class=" w-full flex-col">
+                    <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
+
+                        <img src="{{ asset($client->photo) }}" alt="photot" class="">
+
+                    </div>
+
+                    <div class="flex flex-col">
+                        <p class="mb-3 text-md">Nom du livreur: <span
+                                class=" font-semibold">{{ $client->name }}</span>
+                        </p>
+                        <p class="mb-3 text-md">Adress du livreur: <span
+                                class=" font-semibold">{{ $client->address }}</span></p>
+                        <p class="mb-3 text-md">Contact du livreur: <span
+                                class=" font-semibold">{{ $client->phone }}</span></p>
+                        <p class="mb-3 text-md">Engin du livreur : <span class=" font-semibold">Moto</span></p>
+                        <p class="mb-3 text-md">Produit à recuperer: <span
+                                class= " font-semibold">{{ $produitfat->name }}</span></p>
                     </div>
 
 
