@@ -8,6 +8,7 @@ use App\Notifications\AppelOffreTerminer;
 use App\Notifications\CountdownNotification;
 use App\Notifications\NegosTerminer;
 use Illuminate\Console\Command;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Notification;
 
 class CheckCountdowns extends Command
@@ -127,13 +128,13 @@ class CheckCountdowns extends Command
                     Comment::where('code_unique', $code_unique)->delete();
 
                     // Vérifiez si une notification avec le type 'livraison' et le code unique existe
-                    $notificationExists = Notification::where('type', 'App\Notifications\livraisonVerif')
+                    $notificationExists = DatabaseNotification::where('type', 'App\Notifications\livraisonVerif')
                         ->whereJsonContains('data->code_livr', $code_unique)
                         ->exists();
 
                     if ($notificationExists) {
                         // Supprimez toutes les notifications qui contiennent ce code unique dans 'data'
-                        Notification::whereJsonContains('data->code_livr', $code_unique)
+                        DatabaseNotification::whereJsonContains('data->code_livr', $code_unique)
                             ->delete();
                     }
 

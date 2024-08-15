@@ -820,6 +820,9 @@ class NotificationShow extends Component
                 $this->createTransaction($userSender->id, $traderUser->id, 'Reception', $requiredAmount);
             } else {
                 Notification::send($userSender, new commandVerif($data));
+
+                // Utilisez && pour vérifier que les deux conditions sont vraies
+                Notification::send($traderUser, new VerifUser($user));
             }
 
             // Mettre à jour la notification et valider
