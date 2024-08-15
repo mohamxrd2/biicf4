@@ -237,7 +237,8 @@
                             <div class="block">
                                 <input type="radio" id="specificite_1" name="specificite"
                                     value="{{ $produit->specification }}" wire:model.defer="selectedSpec"
-                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500" required>
+                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500"
+                                    required>
                                 <label for="specificite_1" class="text-sm text-gray-700 dark:text-gray-300">
                                     {{ $produit->specification }}
                                 </label>
@@ -1898,7 +1899,7 @@
 
                 <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
                     <p class="text-xl  text-center font-bold">Total TTC: <span
-                            class="font-bold">{{ number_format((int) ($notification->data['quantite'] * $notification->data['prixProd']) , 0, ',', '.') }}
+                            class="font-bold">{{ number_format((int) ($notification->data['quantite'] * $notification->data['prixProd']), 0, ',', '.') }}
 
                             FCFA</span></p>
                 </div>
@@ -2263,7 +2264,7 @@
         </div>
     @elseif ($notification->type === 'App\Notifications\commandVerif')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-semibold mb-2">Informations du fournisseur</h2>
+            <h2 class="text-xl font-semibold mb-2">Informations Sur Le Fournisseur</h2>
             <div class="bg-gray-100 p-4 rounded-lg">
                 <p class="mb-2">Nom du fournisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->name }}</span>
@@ -2276,6 +2277,9 @@
                 </p>
                 <p class="mb-2">Téléphone founisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->phone }}</span>
+                </p>
+                <p class="mb-2">Code de Vérification : <span
+                        class="font-semibold">{{ $notification->data['code_unique'] }}</span>
                 </p>
             </div>
         </div>
@@ -2679,7 +2683,7 @@
         @endif
     @elseif ($notification->type === 'App\Notifications\VerifUser')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Verification du client</h2>
+            <h2 class="text-xl font-semibold mb-4">Vérification Du Client</h2>
 
 
             <form wire:submit.prevent="verifyCode" method="POST">
@@ -2688,8 +2692,6 @@
                     <input type="text" name="code_verif" wire:model.defer="code_verif"
                         placeholder="Entrez le code de livraison"
                         class="peer py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
-
-
 
                     <button type="submit" wire:loading.attr="disabled"
                         class="bg-green-400 text-white font-semibold rounded-md px-2 ml-3">

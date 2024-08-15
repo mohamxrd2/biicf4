@@ -43,6 +43,8 @@ class SearchBar extends Component
             $produits->where(function ($query) {
                 $query->where('zonecoServ', 'like', '%' . $this->zone_economique . '%')
                     ->orWhere('villeServ', 'like', '%' . $this->zone_economique . '%')
+                    ->orWhere('continent', 'like', '%' . $this->zone_economique . '%')
+                    ->orWhere('Sous-Region', 'like', '%' . $this->zone_economique . '%')
                     ->orWhere('comnServ', 'like', '%' . $this->zone_economique . '%');
             });
         }

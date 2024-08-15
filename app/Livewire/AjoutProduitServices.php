@@ -233,6 +233,8 @@ class AjoutProduitServices extends Component
                 'sepServ' => $this->type === 'Service' ? $this->specialite : null,
                 'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
                 //
+                'continent' => $this->selectedContinent,
+                'Sous-Region' => $this->selectedSous_region,
                 'zonecoServ' => $this->depart,
                 'villeServ' => $this->ville,
                 'comnServ' => $this->commune,

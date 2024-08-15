@@ -81,15 +81,15 @@ class EnvoiFour extends Command
         //     }
         // }
 
-        $expirationTime = Carbon::now()->subMinute(); // Time one minute ago
+        // $expirationTime = Carbon::now()->subMinute(); // Time one minute ago
 
-        // Assuming notifications are stored in a 'notifications' table
-        DB::table('notifications')
-            ->whereIn('type', ['App\Notifications\AppelOffre', 'App\Notifications\livraisonVerif'])
-            ->where('created_at', '<', $expirationTime)
-            ->delete();
+        // // Assuming notifications are stored in a 'notifications' table
+        // DB::table('notifications')
+        //     ->whereIn('type', ['App\Notifications\AppelOffre', 'App\Notifications\livraisonVerif'])
+        //     ->where('created_at', '<', $expirationTime)
+        //     ->delete();
 
 
-        $this->info('Expired notifications deleted successfully.');
+        // $this->info('Expired notifications deleted successfully.');
     }
 }

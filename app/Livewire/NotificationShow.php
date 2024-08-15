@@ -798,6 +798,9 @@ class NotificationShow extends Component
                 if ($notification) {
                     $notification->update(['type_achat' => 'reserv/take']);
                 }
+
+                // Utilisez && pour vérifier que les deux conditions sont vraies
+                Notification::send($traderUser, new VerifUser($user));
             } elseif (!empty($this->notification->data['code_livr']) && !empty($this->notification->data['prixProd'])) {
                 // Utilisez && pour vérifier que les deux conditions sont vraies
                 Notification::send($traderUser, new VerifUser($user));
@@ -831,18 +834,35 @@ class NotificationShow extends Component
     }
     public function mainleve()
     {
-
         $id_client = Auth::user()->id;
         Log::info('le id du client', ['id_client' => $id_client]);
-
+        $user = User::find( $id_client);
 
         $livreur = User::find($this->id_livreur);
         Log::info('le id du livreur', ['livreur' => $livreur]);
 
-
-
         $fournisseur = User::find($this->namefourlivr->user->id);
         Log::info('le id du fournisseur', ['fournisseur' => $fournisseur]);
+
+        // Déterminer le prix unitaire
+        $prixUnitaire = $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'];
+        Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
+
+        $quantite = $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'];
+
+        // Calculer le prix total
+        $this->totalPrice = (int) ($quantite * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
+        Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
+
+        // Vérifier si l'utilisateur est authentifié
+        if (!$fournisseur) {
+            Log::error('Utilisateur non authentifié.');
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
+
+
+        $userWallet = Wallet::where('user_id', $fournisseur->id)->first();
 
 
         // Vérifier si le code unique existe dans userquantites
@@ -912,7 +932,23 @@ class NotificationShow extends Component
             ];
 
             if ($this->notification->type_achat == 'reserv/take') {
-                Notification::send($fournisseur, new attenteclient($data));
+                Notification::send($fournisseur, new colisaccept($data));
+
+                $userWallet = Wallet::where('user_id', $fournisseur->id)->first();
+
+                if (!$userWallet) {
+                    Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $fournisseur->id]);
+                    session()->flash('error', 'Portefeuille introuvable.');
+                    return;
+                }
+                Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
+                // Déduire le montant requis du portefeuille de l'utilisateur
+                $userWallet->decrement('balance', $this->totalPrice);
+                Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
+
+                $this->createTransaction($user->id, $fournisseur->id, 'Reception', $this->totalPrice);
+
+                Notification::send($user, new colisaccept($data));
             } else {
                 Notification::send($livreur, new mainleve($data));
 
