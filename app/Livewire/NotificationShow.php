@@ -491,11 +491,8 @@ class NotificationShow extends Component
         $produit = ProduitService::find($this->notification->data['produit_id']);
 
         // Assurez-vous que $this->notification->data['quantite'] et $this->namefourlivr->prix sont définis et accessibles
-        $quantite = $this->notification->data['quantite'] ?? 0;
-        $prixUnitaire = $produit->prix ?? 0;
-
-        // Calcul du prix total de la négociation
-        $prixArticleNego = $quantite * $prixUnitaire;
+        //$quantite = $this->notification->data['quantite'] ?? 0;
+       
 
 
 
@@ -512,47 +509,102 @@ class NotificationShow extends Component
         Log::info('Processing userWallet: ' . $distinctUserIds);
 
 
-        foreach ($distinctUserIds as $id_trader) {
-            if (is_null($prixArticleNego) || is_null($id_trader) || is_null($this->notifId)) {
-                return redirect()->back()->with('error', 'Données manquantes dans la requête.');
-            }
+        
 
-            $traderWallet = Wallet::where('user_id', $id_trader)->first();
-            if (!$traderWallet) {
-                return redirect()->back()->with('error', 'Portefeuille du trader introuvable.');
-            }
-
-            // Update trader's wallet
-            $traderWallet->increment('balance', $prixArticleNego);
-
-            // Create transaction record for the trader
-            $this->createTransaction($userId, $id_trader, 'Reception', $prixArticleNego);
-        }
-
-
-        // Update the user's wallet
-        $userWallet->decrement('balance', $prixArticleNego);
-        // Create transaction record for the user
-        $this->createTransaction($userId, $id_trader, 'Envoie', $prixArticleNego);
-
-        $data = [
-            'nameProd' => $this->nameProd,
-            'quantité' => $this->notification->data['quantite'],
-            'montantTotal' => $prixArticleNego,
-            'localite' => User::findOrFail(Auth::id())->address,
-            'specificite' => null,
-            'userTrader' => $produit->user_id,
-            'userSender' => Auth::id(),
-            'photoProd' => $this->produit->photoProd1,
-            'idProd' => $this->produit_id,
-            'code_unique' => $this->code_unique,
-        ];
         // Retrieve the trader's user model
-        $userTrader = User::find($produit->user_id);
-        if (!$userTrader) {
-            return redirect()->back()->with('error', 'Utilisateur du trader introuvable.');
+        // $userTrader = User::find($produit->user_id);
+        // if (!$userTrader) {
+        //     return redirect()->back()->with('error', 'Utilisateur du trader introuvable.');
+        // }
+
+
+        // Vérifiez si le code_unique existe dans userquantites
+        // Vérifiez si le code_unique existe dans userquantites
+        // Vérifiez si le code_unique existe dans userquantites
+        $userQuantities = userquantites::where('code_unique', $this->code_unique)->get();
+
+        // Log l'état initial de la récupération des données
+        Log::info('Recherche du code_unique', ['code_unique' => $this->code_unique, 'count' => $userQuantities->count()]);
+
+        if ($userQuantities->isNotEmpty()) {
+            // Groupez par user_id et calculez les quantités totales
+            $groupedUserQuantities = $userQuantities->groupBy('user_id')->map(function ($items) {
+                return $items->sum('quantite');
+            });
+
+            // Log le résultat du regroupement et de la somme
+            Log::info('Quantités groupées par utilisateur', ['groupedUserQuantities' => $groupedUserQuantities]);
+
+            // Traitez chaque utilisateur et envoyez la notification
+            foreach ($groupedUserQuantities as $userId => $totalQuantite) {
+                $userTrader = User::find($userId);  // Trouve l'utilisateur correspondant à l'ID
+
+                if ($userTrader) {
+
+                    $prixUnitaire = $produit->prix ?? 0;
+
+                    // Calcul du prix total de la négociation
+                    $prixArticleNego = $totalQuantite * $prixUnitaire;
+
+                    $data = [
+                        'nameProd' => $this->nameProd,
+                        'quantité' => $totalQuantite,
+                        'montantTotal' => $prixArticleNego,
+                        'localite' => User::findOrFail(Auth::id())->address,
+                        'specificite' => null,
+                        'userTrader' => $userId,
+                        'userSender' => Auth::id(),
+                        'photoProd' => $this->produit->photoProd1,
+                        'idProd' => $this->produit_id,
+                        'code_unique' => $this->code_unique,
+                    ];
+
+                    foreach ($distinctUserIds as $id_trader) {
+                        if (is_null($prixArticleNego) || is_null($id_trader) || is_null($this->notifId)) {
+                            return redirect()->back()->with('error', 'Données manquantes dans la requête.');
+                        }
+            
+                        $traderWallet = Wallet::where('user_id', $id_trader)->first();
+                        if (!$traderWallet) {
+                            return redirect()->back()->with('error', 'Portefeuille du trader introuvable.');
+                        }
+            
+                        // Update trader's wallet
+                        $traderWallet->increment('balance', $prixArticleNego);
+            
+                        // Create transaction record for the trader
+                        $this->createTransaction($userId, $id_trader, 'Reception', $prixArticleNego);
+                    }
+            
+            
+                    // Update the user's wallet
+                    $userWallet->decrement('balance', $prixArticleNego);
+                    // Create transaction record for the user
+                    $this->createTransaction($userId, $id_trader, 'Envoie', $prixArticleNego);
+            
+
+                    // Envoyez la notification au client directement
+                    Notification::send($userTrader, new AchatBiicf($data));
+                    // Log l'envoi de la notification
+                    Log::info('Notification envoyée au client', ['user_id' => $userTrader->id, 'quantité' => $totalQuantite]);
+                } else {
+                    // Log un avertissement si aucun utilisateur n'est trouvé
+                    Log::warning('Utilisateur non trouvé pour l\'ID', ['user_id' => $userId]);
+                }
+            }
+        } else {
+            // Log si aucune donnée n'est trouvée
+            Log::info('Aucune donnée trouvée pour le code_unique', ['code_unique' => $this->code_unique]);
         }
-        Notification::send($userTrader, new AchatBiicf($data));
+
+
+
+
+
+        // Notification::send($userTrader, new AchatBiicf($data)); 
+
+
+        //  Notification::send($userTrader, new AchatBiicf($data));
         $this->notification->update(['reponse' => 'accepte']);
     }
     public function refusoffre()

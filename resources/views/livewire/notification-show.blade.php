@@ -456,7 +456,7 @@
                                 <div class="flex flex-col">
                                     <div class="font-semibold text-gray-700">Somme reçue:</div>
                                     @php
-                                        $prixArtiche = $notification->data['montantTotal'] ?? 0;
+                                        $prixArtiche = $notification->data['quantité'] ;
                                         $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
                                     @endphp
                                     <div class="text-gray-800">{{ number_format($sommeRecu, 2) }} Fcfa</div>
