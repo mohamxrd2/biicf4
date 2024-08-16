@@ -74,6 +74,8 @@ class AjoutConsommations extends Component
         'Micronésie '
     ];
     public $produits = [];
+    public $searchTerm = ''; // Add this property to hold the search term
+
     public $selectedCategories = [];
     public $selectedProduits = [];
 
@@ -88,7 +90,12 @@ class AjoutConsommations extends Component
 
     }
 
-
+    public function updatedSearchTerm()
+    {
+        $this->produits = ProduitService::where('name', 'like', '%' . $this->searchTerm . '%')
+            ->orWhere('name', 'like', '%' . $this->searchTerm . '%')
+            ->get();
+    }
     public function updateProducts(array $selectedCategories)
     {
         $this->selectedCategories = $selectedCategories;

@@ -43,7 +43,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Recherchez votre produit ou
                                     service</label>
-                                <input type="text" class="w-full p-2 border border-gray-300 rounded-md"
+                                <input type="text" wire:model.live="searchTerm"
+                                    class="w-full p-2 border border-gray-300 rounded-md"
                                     placeholder="Entrez le nom du produit">
 
                                 <select id="product-select" multiple x-model="selectedProduits"
@@ -54,6 +55,7 @@
                                 </select>
                             </div>
                         </div>
+
 
 
                     </div>
