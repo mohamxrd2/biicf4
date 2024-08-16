@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\Livraisons;
+use App\Models\Livraisons; // Correctly importing the Livraisons model
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -85,6 +85,18 @@ class PostulerComponent extends Component
     {
         $this->livraison = Livraisons::where('user_id', Auth::id())->first();
 
+        // Populate the properties if livraison is found
+        if ($this->livraison) {
+            $this->experience = $this->livraison->experience;
+            $this->license = $this->livraison->license;
+            $this->vehicle = $this->livraison->vehicle;
+            $this->matricule = $this->livraison->matricule;
+            $this->availability = $this->livraison->availability;
+            $this->identity = $this->livraison->identity;
+            $this->permis = $this->livraison->permis;
+            $this->assurance = $this->livraison->assurance;
+            $this->etat = $this->livraison->etat;
+        }
     }
     public function submit()
     {
