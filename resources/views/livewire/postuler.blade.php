@@ -102,8 +102,36 @@
             </div>
 
             <div>
-                <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule possédé:</label>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule option 1:</label>
                 <select id="vehicle" wire:model="vehicle"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                    <option value="" selected>Type d'engin</option>
+                    <option value="Moto" selected>Moto</option>
+                    <option value="Fourgonette">Fourgonette</option>
+                    <option value="Camion">Camion</option>
+                </select>
+                @error('vehicle')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
+            </div>
+            <div>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule option 2:</label>
+                <select id="vehicle" wire:model="vehicle2"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                    <option value="" selected>Type d'engin</option>
+                    <option value="Moto" selected>Moto</option>
+                    <option value="Fourgonette">Fourgonette</option>
+                    <option value="Camion">Camion</option>
+                </select>
+                @error('vehicle')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
+            </div>
+            <div>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule option 3:</label>
+                <select id="vehicle" wire:model="vehicle3"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
                     <option value="" selected>Type d'engin</option>
@@ -214,7 +242,7 @@
 
             <div>
 
-                <label for="identity" class="block text-sm font-medium text-gray-700">Piece d'identité:</label>
+                <label for="identity" class="block text-sm font-medium text-gray-700">Piece d'identité recto:</label>
                 <input type="file" id="identity" wire:model="identity"
                     class="mt-1 block w-full text-sm text-gray-900 bg-gray-50 rounded-md border-gray-300 cursor-pointer focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
                 @error('identity')
@@ -223,7 +251,7 @@
             </div>
 
             <div>
-                <label for="permis" class="block text-sm font-medium text-gray-700">Permis de conduire:</label>
+                <label for="permis" class="block text-sm font-medium text-gray-700">Piece d'identité verso:</label>
                 <input type="file" id="permis" wire:model="permis"
                     class="mt-1 block w-full text-sm text-gray-900 bg-gray-50 rounded-md border-gray-300 cursor-pointer focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
                 @error('permis')
@@ -232,7 +260,7 @@
             </div>
 
             <div>
-                <label for="assurance" class="block text-sm font-medium text-gray-700">Assurance du vehicule:</label>
+                <label for="assurance" class="block text-sm font-medium text-gray-700">Assurance Multirisques Professionnels:</label>
                 <input type="file" id="assurance" wire:model="assurance"
                     class="mt-1 block w-full text-sm text-gray-900 bg-gray-50 rounded-md border-gray-300 cursor-pointer focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
                 @error('assurance')

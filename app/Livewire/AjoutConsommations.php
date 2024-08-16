@@ -184,7 +184,7 @@ class AjoutConsommations extends Component
             'origine' => 'required_if:type,Produit|string',
             'qteProd' => 'required_if:type,Produit|integer',
             'specification' => 'required_if:type,Produit|string',
-            // service 
+            // service
             'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'qte_service' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
@@ -200,9 +200,6 @@ class AjoutConsommations extends Component
             'name.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
             'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
         ]);
-
-
-
 
         try {
             // Création de la catégorie si elle n'existe pas encore

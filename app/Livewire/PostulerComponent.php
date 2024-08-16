@@ -15,6 +15,8 @@ class PostulerComponent extends Component
     public $experience;
     public $license;
     public $vehicle;
+    public $vehicle2;
+    public $vehicle3;
     public $matricule;
     public $availability;
     public $identity;
@@ -69,6 +71,8 @@ class PostulerComponent extends Component
         'experience' => 'required|string',
         'license' => 'required|string',
         'vehicle' => 'required|string',
+        'vehicle2' => 'required|string',
+        'vehicle3' => 'required|string',
         'matricule' => 'required|string',
         'availability' => 'required|string',
         'selectedContinent' => 'required|string',
@@ -85,18 +89,7 @@ class PostulerComponent extends Component
     {
         $this->livraison = Livraisons::where('user_id', Auth::id())->first();
 
-        // Populate the properties if livraison is found
-        if ($this->livraison) {
-            $this->experience = $this->livraison->experience;
-            $this->license = $this->livraison->license;
-            $this->vehicle = $this->livraison->vehicle;
-            $this->matricule = $this->livraison->matricule;
-            $this->availability = $this->livraison->availability;
-            $this->identity = $this->livraison->identity;
-            $this->permis = $this->livraison->permis;
-            $this->assurance = $this->livraison->assurance;
-            $this->etat = $this->livraison->etat;
-        }
+
     }
     public function submit()
     {
@@ -108,6 +101,8 @@ class PostulerComponent extends Component
             'experience' => $this->experience,
             'license' => $this->license,
             'vehicle' => $this->vehicle,
+            'vehicle2' => $this->vehicle2,
+            'vehicle3' => $this->vehicle3,
             'matricule' => $this->matricule,
             'availability' => $this->availability,
             'continent' => $this->selectedContinent,
