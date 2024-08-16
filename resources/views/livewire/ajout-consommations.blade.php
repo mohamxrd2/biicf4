@@ -13,35 +13,68 @@
         @endif
 
         <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
-            <h1 class="text-2xl font-bold mb-8">Ajouter un produit & Service</h1>
+            <h1 class="text-2xl font-bold mb-8">Ajouter Une Consommation</h1>
 
-            <form wire:submit.prevent="submit" enctype="multipart/form-data">
+            <form wire:submit.prevent="submit" >
 
                 <!-- Sélecteur de catégorie -->
                 <div x-data="{ selectedCategories: @entangle('selectedCategories') }">
-                    <div class="grid grid-cols-1 gap-6 mb-6">
+                    <div class="grid grid-cols-2 gap-6 mb-6">
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">rechercher le nom de la
-                                consommation</label>
-                            <input type="text" wire:model.debounce.30ms="consommation"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Entrez le nom de la
+                                catégorie</label>
+                            <input type="text" wire:model.debounce.30ms="categorie"
                                 class="w-full p-2 border border-gray-300 rounded-md"
-                                placeholder="Entrez le nom de la consommation">
+                                placeholder="Entrez le nom de la catégorie">
                             @error('categorie')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
 
                             <select multiple x-model="selectedCategories"
                                 class="w-full p-2 border border-gray-300 rounded-md mt-2" @change="updateProducts()">
-                                @foreach ($consommations as $cons)
-                                    <option value="{{ $cons->id }}">{{ $cons->name }}</option>
+                                @foreach ($categories as $cat)
+                                    <option value="{{ $cat->id }}">{{ $cat->categorie_produit_services }}</option>
                                 @endforeach
                             </select>
                         </div>
+                        <div x-data="{ selectedProduits: @entangle('selectedProduits') }">
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Recherchez votre produit ou
+                                    service</label>
+                                <input type="text" class="w-full p-2 border border-gray-300 rounded-md"
+                                    placeholder="Entrez le nom du produit">
+
+                                <select id="product-select" multiple x-model="selectedProduits"
+                                    class="w-full p-2 border border-gray-300 rounded-md mt-2">
+                                    @foreach ($produits as $produit)
+                                        <option value="{{ $produit->id }}">{{ $produit->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <!-- Référence -->
+                        <div class="col-span-1 md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                                Référence (
+                                <span>Générer</span>
+                                <input wire:click="toggleGenerateReference" type="checkbox"
+                                    class="w-4 h-4 border border-gray-300 rounded-md" />
+                                )
+                            </label>
+                            <input type="text" wire:model="reference"
+                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici..."
+                                readonly>
+                            @error('reference')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
+                        </div>
 
                         <!-- Type -->
                         <div class="col-span-1">
@@ -67,12 +100,15 @@
                             @enderror
                         </div>
 
+
                     </div>
 
 
                     <!-- Détails du produit ou du service -->
                     <div x-show="type === 'Produit'" class="mb-6">
                         <h1 class="text-center text-xl font-bold mb-8">Détails Du Produit</h1>
+
+
                         <div class="grid grid-cols-3 gap-6 mb-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Conditionnement</label>
@@ -83,7 +119,15 @@
                                 @enderror
 
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                                <input type="text" wire:model='format' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                @error('format')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
 
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Particularité</label>
                                 <input type="text" wire:model='particularite' :disabled="locked"
@@ -94,29 +138,63 @@
 
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Periodicité</label>
-                                <select wire:model='Periodicite' :disabled="locked"
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Origine</label>
+                                <select wire:model='origine' :disabled="locked"
                                     class="w-full p-2 border border-gray-300 rounded-md">
-                                    <option>Choisissez une période</option>
-                                    <option>par jour</option>
-                                    <option>par semaine</option>
-                                    <option>par mois</option>
-                                    <option>par trimestre</option>
-                                    <option>par semestre</option>
-                                    <option>par année</option>
+                                    <option>Choisissez une origine</option>
+                                    <option>Locale</option>
+                                    <option>Importé</option>
                                 </select>
-
-                                @error('Periodicite')
+                                @error('origine')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
 
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
-                                <input type="text" wire:model='qteProd'
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Minimal</label>
+                                <input type="text" wire:model='qteProd_min'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('qteProd')
+                                @error('qteProd_min')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
+
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Maximal</label>
+                                <input type="text" wire:model='qteProd_max'
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                @error('qteProd_max')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
+
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-6 mb-6">
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécification</label>
+                                <input type="text" wire:model='specification' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                @error('specification')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
+
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécification 2</label>
+                                <input type="text" wire:model='specification2' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                @error('specification2')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
+
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécification 3</label>
+                                <input type="text" wire:model='specification3' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                @error('specification3')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
 
@@ -164,7 +242,15 @@
                                 @enderror
 
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de personnel</label>
+                                <input type="text" wire:model='qte_service' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                @error('qte_service')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
 
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Prix Unitaire</label>
                                 <input type="text" wire:model='prix'
@@ -180,85 +266,102 @@
                     <!-- Localisation (commune aux deux types) -->
                     <h1 class="text-center text-xl font-bold mb-8">Localisation Du Produit & Service</h1>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
                         <div class="col-span-1">
                             <label for="continent"
-                                class="block text-sm font-semibold text-gray-800 mb-2">Continent</label>
+                                class="block text-sm font-medium text-gray-700 mb-2">Continent:</label>
                             <select id="continent" name="continent" wire:model='selectedContinent'
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                class="w-full p-2 border border-gray-300 rounded-md">
                                 <option value="">Sélectionnez un continent</option>
                                 @foreach ($continents as $continent)
                                     <option value="{{ $continent }}">{{ $continent }}</option>
                                 @endforeach
                             </select>
                             @error('continent')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
 
                         <div class="col-span-1">
-                            <label for="sousregion"
-                                class="block text-sm font-semibold text-gray-800 mb-2">Sous-Régions</label>
-                            <select id="sousregion" name="continent" wire:model='selectedSous_region'
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Sélectionnez une sous-région</option>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sous-Régions</label>
+
+                            <select id="continent" name="continent" wire:model='selectedSous_region'
+                                class="w-full p-2 border border-gray-300 rounded-md">
+                                <option value="">Sélectionnez un continent</option>
                                 @foreach ($sousregions as $sousregion)
                                     <option value="{{ $sousregion }}">{{ $sousregion }}</option>
                                 @endforeach
                             </select>
                             @error('sous_region')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
-
                         <div class="col-span-1">
-                            <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays</label>
-                            <select name="country" id="country" wire:model='pays'
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <option value="" disabled selected>Choisissez un pays</option>
-                                <!-- Options added dynamically via JS -->
-                            </select>
-                            @error('country')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="col-span-1">
-                            <label for="depart"
-                                class="block text-sm font-semibold text-gray-800 mb-2">Département</label>
-                            <input type="text" id="depart" wire:model='depart'
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Tapez ici...">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
+                            <input type="text" wire:model='depart'
+                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('depart')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
 
                         <div class="col-span-1">
-                            <label for="ville"
-                                class="block text-sm font-semibold text-gray-800 mb-2">Ville/Sous-Prefecture</label>
-                            <input type="text" id="ville" wire:model='ville'
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Tapez ici...">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ville/Sous-Prefecture</label>
+                            <input type="text" wire:model='ville'
+                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('ville')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
 
                         <div class="col-span-1">
-                            <label for="commune"
-                                class="block text-sm font-semibold text-gray-800 mb-2">Localité</label>
-                            <input type="text" id="commune" wire:model='commune'
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Tapez ici...">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Localité</label>
+                            <input type="text" wire:model='commune'
+                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('commune')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
 
 
+                    <!-- Images -->
+                    <h1 class="text-center text-xl font-bold mb-8">Ajout D'Image</h1>
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image1</label>
+                            <input type="file" wire:model="photoProd1"
+                                class="w-full p-2 border border-gray-300 rounded-md">
+                            @error('photoProd1')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image2</label>
+                            <input type="file" wire:model="photoProd2"
+                                class="w-full p-2 border border-gray-300 rounded-md">
+                            @error('photoProd2')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image3</label>
+                            <input type="file" wire:model="photoProd3"
+                                class="w-full p-2 border border-gray-300 rounded-md">
+                            @error('photoProd3')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image4</label>
+                            <input type="file" wire:model="photoProd4"
+                                class="w-full p-2 border border-gray-300 rounded-md">
+                            @error('photoProd4')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-
+                    </div>
                     <!-- Boutons d'action -->
                     <div class="text-right">
                         <button type="reset" class="bg-red-500 text-white p-2 rounded-md">Annuler</button>
@@ -303,4 +406,3 @@
         });
     });
 </script>
-<script src="{{ asset('js/country.js') }}"></script>

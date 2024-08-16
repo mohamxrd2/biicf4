@@ -17,12 +17,12 @@ class PostulerComponent extends Component
     public $vehicle;
     public $matricule;
     public $availability;
-    public $zone;
     public $identity;
     public $permis;
     public $assurance;
     public $etat = 'En cours';
 
+    public $livraison;
 
     // Localisation properties
     public $selectedContinent;
@@ -81,8 +81,11 @@ class PostulerComponent extends Component
         'permis' => 'required|file|mimes:jpeg,png,pdf',
         'assurance' => 'required|file|mimes:jpeg,png,pdf',
     ];
-    
+    public function mount()
+    {
+        $this->livraison = livraisons::where('user_id', Auth::id())->first();
 
+    }
     public function submit()
     {
         $this->validate();
