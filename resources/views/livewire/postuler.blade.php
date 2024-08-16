@@ -196,14 +196,16 @@
                     @enderror
                 </div>
 
-                <div class="col-span-1">
+                <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
                     <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays</label>
-                    <select name="country" id="country" wire:model='pays'
+                    <select id="country" x-model="selectedCountry" wire:model="pays"
                         class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                         <option value="" disabled selected>Choisissez un pays</option>
-                        <!-- Options added dynamically via JS -->
+                        <template x-for="country in @js($countries)" :key="country">
+                            <option :value="country" x-text="country"></option>
+                        </template>
                     </select>
-                    @error('country')
+                    @error('pays')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
@@ -260,7 +262,8 @@
             </div>
 
             <div>
-                <label for="assurance" class="block text-sm font-medium text-gray-700">Assurance Multirisques Professionnels:</label>
+                <label for="assurance" class="block text-sm font-medium text-gray-700">Assurance Multirisques
+                    Professionnels:</label>
                 <input type="file" id="assurance" wire:model="assurance"
                     class="mt-1 block w-full text-sm text-gray-900 bg-gray-50 rounded-md border-gray-300 cursor-pointer focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
                 @error('assurance')

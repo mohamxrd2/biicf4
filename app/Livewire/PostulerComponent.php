@@ -7,6 +7,7 @@ use Livewire\WithFileUploads;
 use App\Models\Livraisons; // Correctly importing the Livraisons model
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class PostulerComponent extends Component
 {
@@ -66,6 +67,7 @@ class PostulerComponent extends Component
     public $pays;
     public $ville = '';
     public $localite;
+    public $countries = [];
 
     protected $rules = [
         'experience' => 'required|string',
@@ -88,8 +90,20 @@ class PostulerComponent extends Component
     public function mount()
     {
         $this->livraison = Livraisons::where('user_id', Auth::id())->first();
+        $this->fetchCountries();
 
 
+    }
+
+    public function fetchCountries()
+    {
+        try {
+            $response = Http::get('https://restcountries.com/v3.1/all');
+            $this->countries = collect($response->json())->pluck('name.common')->toArray();
+        } catch (\Exception $e) {
+            // Handle the error (e.g., log it, show an error message)
+            $this->countries = [];
+        }
     }
     public function submit()
     {

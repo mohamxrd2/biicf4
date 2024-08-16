@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\CategorieProduits_Servives;
 use App\Models\ProduitService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -88,12 +89,15 @@ class AjoutProduitServices extends Component
     public $photoProd4;
 
     public $locked = false; // Déverrouillé par défaut
+    public $countries = [];
 
     public function mount()
     {
         // Récupère toutes les catégories
         $this->categories = CategorieProduits_Servives::all();
         $this->produits = collect(); // Ensure it's an empty Collection
+        $this->fetchCountries();
+
 
     }
     public function updatedSearchTerm()
@@ -103,6 +107,18 @@ class AjoutProduitServices extends Component
             ->get();
     }
 
+
+
+    public function fetchCountries()
+    {
+        try {
+            $response = Http::get('https://restcountries.com/v3.1/all');
+            $this->countries = collect($response->json())->pluck('name.common')->toArray();
+        } catch (\Exception $e) {
+            // Handle the error (e.g., log it, show an error message)
+            $this->countries = [];
+        }
+    }
     public function updateProducts(array $selectedCategories)
     {
         $this->selectedCategories = $selectedCategories;

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\CategorieProduits_Servives;
 use App\Models\Consommation;
 use App\Models\ProduitService;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Illuminate\Support\Str;
@@ -81,12 +82,14 @@ class AjoutConsommations extends Component
 
 
     public $locked = false; // Déverrouillé par défaut
+    public $countries = [];
 
     public function mount()
     {
         // Récupère toutes les catégories
         $this->categories = CategorieProduits_Servives::all();
         $this->produits = collect(); // Ensure it's an empty Collection
+        $this->fetchCountries();
 
     }
 
@@ -95,6 +98,17 @@ class AjoutConsommations extends Component
         $this->produits = ProduitService::where('name', 'like', '%' . $this->searchTerm . '%')
             ->orWhere('name', 'like', '%' . $this->searchTerm . '%')
             ->get();
+    }
+
+    public function fetchCountries()
+    {
+        try {
+            $response = Http::get('https://restcountries.com/v3.1/all');
+            $this->countries = collect($response->json())->pluck('name.common')->toArray();
+        } catch (\Exception $e) {
+            // Handle the error (e.g., log it, show an error message)
+            $this->countries = [];
+        }
     }
     public function updateProducts(array $selectedCategories)
     {
