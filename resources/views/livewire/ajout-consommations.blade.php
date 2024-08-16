@@ -49,8 +49,8 @@
                             <select x-model="type" wire:model='type'
                                 class="w-full p-2 border border-gray-300 rounded-md">
                                 <option value="">Choisissez votre type</option>
-                                <option value="produits">Produit</option>
-                                <option value="services">Service</option>
+                                <option value="Produit">Produit</option>
+                                <option value="Service">Service</option>
                             </select>
                             @error('type')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -71,7 +71,7 @@
 
 
                     <!-- Détails du produit ou du service -->
-                    <div x-show="type === 'produits'" class="mb-6">
+                    <div x-show="type === 'Produit'" class="mb-6">
                         <h1 class="text-center text-xl font-bold mb-8">Détails Du Produit</h1>
                         <div class="grid grid-cols-3 gap-6 mb-6">
                             <div>
@@ -133,7 +133,7 @@
                         </div>
                     </div>
 
-                    <div x-show="type === 'services'" class="mb-6">
+                    <div x-show="type === 'Service'" class="mb-6">
                         <h1 class="text-center text-xl font-bold mb-8">Détails Du Service</h1>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
