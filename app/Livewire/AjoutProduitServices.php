@@ -53,13 +53,32 @@ class AjoutProduitServices extends Component
     ];
     public $selectedSous_region;
     public $sousregions = [
-        'Afrique du Nord', 'Afrique de l\'Ouest', 'Afrique Centrale', 'Afrique de l\'Est', 'Afrique Australe',
-        'Amérique du Nord', 'Amérique Centrale ', 'Amérique du Sud  ', 'Caraïbes',
-        'Asie de l\'Est', 'Asie du Sud', 'Asie du Sud-Est', 'Asie Centrale', 'Asie de l\'Ouest ',
-        'Europe de l\'Est', 'Europe de l\'Ouest', 'Europe du Nord', 'Europe du Sud',
-        'Australie et Nouvelle-Zélande', 'Mélanésie ', 'Polynésie ', 'Micronésie '
+        'Afrique du Nord',
+        'Afrique de l\'Ouest',
+        'Afrique Centrale',
+        'Afrique de l\'Est',
+        'Afrique Australe',
+        'Amérique du Nord',
+        'Amérique Centrale ',
+        'Amérique du Sud  ',
+        'Caraïbes',
+        'Asie de l\'Est',
+        'Asie du Sud',
+        'Asie du Sud-Est',
+        'Asie Centrale',
+        'Asie de l\'Ouest ',
+        'Europe de l\'Est',
+        'Europe de l\'Ouest',
+        'Europe du Nord',
+        'Europe du Sud',
+        'Australie et Nouvelle-Zélande',
+        'Mélanésie ',
+        'Polynésie ',
+        'Micronésie '
     ];
     public $produits = [];
+    public $searchTerm = ''; // Add this property to hold the search term
+
     public $selectedCategories = [];
     public $selectedProduits = [];
     //photo
@@ -77,7 +96,12 @@ class AjoutProduitServices extends Component
         $this->produits = collect(); // Ensure it's an empty Collection
 
     }
-
+    public function updatedSearchTerm()
+    {
+        $this->produits = ProduitService::where('name', 'like', '%' . $this->searchTerm . '%')
+            ->orWhere('name', 'like', '%' . $this->searchTerm . '%')
+            ->get();
+    }
 
     public function updateProducts(array $selectedCategories)
     {
