@@ -418,9 +418,9 @@ class AppelOffreController extends Controller
                 'Livraison' => 'required|string',
                 'dateTot' => 'required|date',
                 'dateTard' => 'required|date',
-                'specificity' => 'nullable|string',
-                'localite' => 'nullable|string',
-                'id_prod' => 'nullable|string',
+                'specification' => 'required|string',
+                'localite' => 'required|string',
+                'id_prod' => 'required|string',
                 'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'prodUsers' => 'required|array',
             ]);
@@ -442,7 +442,7 @@ class AppelOffreController extends Controller
             $offre->Livraison = $request->input('Livraison');
             $offre->dateTot = $request->input('dateTot');
             $offre->dateTard = $request->input('dateTard');
-            $offre->specificity = $request->input('specificity');
+            $offre->specificity = $request->input('specification');
             $offre->localite = $request->input('localite');
             $offre->id_prod = $request->input('id_prod');
             $offre->prodUsers = json_encode($request->input('prodUsers'));

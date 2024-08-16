@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
 use App\Models\AchatDirect;
+use App\Models\Admin;
 use App\Models\AppelOffreGrouper;
 use App\Models\userquantites;
 use App\Notifications\AllerChercher;
@@ -838,7 +839,7 @@ class NotificationShow extends Component
     {
         $id_client = Auth::user()->id;
         Log::info('le id du client', ['id_client' => $id_client]);
-        $user = User::find( $id_client);
+        $user = User::find($id_client);
 
         $livreur = User::find($this->id_livreur);
         Log::info('le id du livreur', ['livreur' => $livreur]);
@@ -1084,11 +1085,9 @@ class NotificationShow extends Component
 
         // debit
 
-        // $clientWallet->decrement('balance', $totalSom);
 
         $fournisseurWallet->increment('balance', $totalSom);
 
-        $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
 
 
         // transactions
@@ -1097,15 +1096,38 @@ class NotificationShow extends Component
 
         $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Reception', $totalSom);
 
-        //transaction client
+        // Montant total de la transaction
+        $prixTotal = $this->notification->data['prixTrade'];
 
-        // $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Envoie', $totalSom);
+        // Calcul des 10% pour l'admin
+        $montantAdmin = $prixTotal * 0.10;
 
+        // Montant restant pour le livreur après déduction
+        $montantLivreur = $prixTotal - $montantAdmin;
+
+        $livreurWallet->increment('balance', $montantLivreur);
         //transtion livreur
 
-        $this->createTransaction(Auth::user()->id, $this->notification->data['id_livreur'], 'Reception', $this->notification->data['prixTrade']);
+        $this->createTransaction(Auth::user()->id, $this->notification->data['id_livreur'], 'Reception', $montantLivreur);
 
 
+        // Trouver l'ID de l'administrateur (supposons qu'il s'agit de l'utilisateur avec l'ID 1)
+        $admin = Admin::find(1);
+
+        // Vérifier si l'administrateur existe
+        if ($admin) {
+            // Récupérer le portefeuille de l'administrateur en utilisant son user_id
+            $adminWallet = Wallet::where('user_id', $admin->user_id)->first();
+
+            // Vérifier si le portefeuille de l'administrateur existe
+            if ($adminWallet) {
+                // Incrémenter le solde du portefeuille de l'administrateur avec le montant calculé
+                $adminWallet->increment('balance', $montantAdmin);
+
+                // Créer une transaction pour l'administrateur
+                $this->createTransaction(Auth::user()->id, $admin->user_id, 'Commission', $montantAdmin);
+            }
+        }
 
 
         Notification::send($client, new colisaccept($data));

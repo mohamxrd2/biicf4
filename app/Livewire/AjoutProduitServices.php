@@ -108,15 +108,16 @@ class AjoutProduitServices extends Component
             $this->photoProd2 = $selectedProduct->photoProd2;
             $this->photoProd3 = $selectedProduct->photoProd3;
             $this->photoProd4 = $selectedProduct->photoProd4;
-            $this->locked = true;
 
+            $this->qualification = $selectedProduct->qalifServ;
+            $this->specialite = $selectedProduct->sepServ;
+            $this->qte_service = $selectedProduct->qteServ;
+            
             $this->qteProd_min = '';
             $this->qteProd_max = '';
             $this->prix = '';
-            $this->qualification = ''; // Reset qualifications for services
-            $this->specialite = ''; // Reset specialties for services
-            $this->qte_service = ''; // Reset service quantity
 
+            $this->locked = true;
         } else {
             // Réinitialiser les propriétés si aucun produit n'est trouvé
             $this->resetProductFields();
