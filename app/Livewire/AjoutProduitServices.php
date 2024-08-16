@@ -40,6 +40,7 @@ class AjoutProduitServices extends Component
     public $depart  = '';
     public $ville  = '';
     public $commune  = '';
+    public $pays  = '';
     public $selectedContinent;
     public $continents = [
         'Afrique',
@@ -112,7 +113,7 @@ class AjoutProduitServices extends Component
             $this->qualification = $selectedProduct->qalifServ;
             $this->specialite = $selectedProduct->sepServ;
             $this->qte_service = $selectedProduct->qteServ;
-            
+
             $this->qteProd_min = '';
             $this->qteProd_max = '';
             $this->prix = '';

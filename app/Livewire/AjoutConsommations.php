@@ -23,8 +23,7 @@ class AjoutConsommations extends Component
     public $format  = '';
     public $particularite  = '';
     public $origine  = '';
-    public $qteProd_min  = '';
-    public $qteProd_max  = '';
+    public $qteProd  = '';
     public $specification  = '';
     public $specification2  = '';
     public $specification3  = '';
@@ -36,6 +35,7 @@ class AjoutConsommations extends Component
     public $qte_service  = '';
     public $depart  = '';
     public $ville  = '';
+    public $pays  = '';
     public $commune  = '';
     public $selectedContinent;
     public $continents = [
@@ -167,18 +167,18 @@ class AjoutConsommations extends Component
             'format' => 'required_if:type,Produit|string',
             'particularite' => 'required_if:type,Produit|string',
             'origine' => 'required_if:type,Produit|string',
-            'qteProd_min' => 'required_if:type,Produit|integer',
-            'qteProd_max' => 'required_if:type,Produit|integer',
+            'qteProd' => 'required_if:type,Produit|integer',
             'specification' => 'required_if:type,Produit|string',
-            'specification2' => 'nullable|string',
-            'specification3' => 'nullable|string',
+            //
             'prix' => 'required|integer',
             //service
             'qualification' => 'required_if:type,Service|string',
             'specialite' => 'required_if:type,Service|string',
             'qte_service' => 'required_if:type,Service|string',
-            'selectedSous_region' => 'required|string',
+            //
             'selectedContinent' => 'required|string',
+            'selectedSous_region' => 'required|string',
+            // 'pays' => 'required|string',
             'depart' => 'required|string',
             'ville' => 'required|string',
             'commune' => 'required|string',
