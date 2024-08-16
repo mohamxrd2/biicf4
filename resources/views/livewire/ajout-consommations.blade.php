@@ -71,7 +71,7 @@
 
 
                     <!-- Détails du produit ou du service -->
-                    <div x-show="type === 'Produit'" class="mb-6">
+                    <div x-show="type === 'produits'" class="mb-6">
                         <h1 class="text-center text-xl font-bold mb-8">Détails Du Produit</h1>
                         <div class="grid grid-cols-3 gap-6 mb-6">
                             <div>
@@ -133,7 +133,7 @@
                         </div>
                     </div>
 
-                    <div x-show="type === 'Service'" class="mb-6">
+                    <div x-show="type === 'services'" class="mb-6">
                         <h1 class="text-center text-xl font-bold mb-8">Détails Du Service</h1>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 

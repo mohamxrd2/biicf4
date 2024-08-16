@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\livraisons;
+use App\Models\Livraisons;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -26,6 +26,47 @@ class PostulerComponent extends Component
 
     public $livraison;
 
+    // Localisation properties
+    public $selectedContinent;
+    public $continents = [
+        'Afrique',
+        'Amérique du Nord',
+        'Amérique du Sud',
+        'Antarctique',
+        'Asie',
+        'Europe',
+        'Océanie'
+    ];
+    public $selectedSous_region;
+    public $sousregions = [
+        'Afrique du Nord',
+        'Afrique de l\'Ouest',
+        'Afrique Centrale',
+        'Afrique de l\'Est',
+        'Afrique Australe',
+        'Amérique du Nord',
+        'Amérique Centrale',
+        'Amérique du Sud',
+        'Caraïbes',
+        'Asie de l\'Est',
+        'Asie du Sud',
+        'Asie du Sud-Est',
+        'Asie Centrale',
+        'Asie de l\'Ouest',
+        'Europe de l\'Est',
+        'Europe de l\'Ouest',
+        'Europe du Nord',
+        'Europe du Sud',
+        'Australie et Nouvelle-Zélande',
+        'Mélanésie',
+        'Polynésie',
+        'Micronésie'
+    ];
+    public $depart = '';
+    public $pays = '';
+    public $ville = '';
+    public $commune = '';
+
     protected $rules = [
         'experience' => 'required|string',
         'license' => 'required|string',
@@ -37,95 +78,50 @@ class PostulerComponent extends Component
         'identity' => 'required|file|mimes:jpeg,png,pdf',
         'permis' => 'required|file|mimes:jpeg,png,pdf',
         'assurance' => 'required|file|mimes:jpeg,png,pdf',
-        'etat' => 'required|string',
     ];
-
-    public function messages()
-    {
-        return [
-            'experience.required' => 'Le champ expérience est obligatoire.',
-            'license.required' => 'Le champ type de permis de conduire est obligatoire.',
-            'vehicle.required' => 'Le champ véhicule possédé est obligatoire.',
-            'matricule.required' => 'Le champ matricule du véhicule est obligatoire.',
-            'availability.required' => 'Le champ disponibilités est obligatoire.',
-            'zone.required' => 'Le champ zone de livraison est obligatoire.',
-            'comments.string' => 'Le champ questions ou commentaires doit être une chaîne de caractères.',
-            'identity.required' => 'Le champ pièce d\'identité est obligatoire.',
-            'identity.file' => 'Le champ pièce d\'identité doit être un fichier.',
-            'identity.mimes' => 'Le champ pièce d\'identité doit être un fichier de type : jpeg, png, pdf.',
-            'permis.required' => 'Le champ permis de conduire est obligatoire.',
-            'permis.file' => 'Le champ permis de conduire doit être un fichier.',
-            'permis.mimes' => 'Le champ permis de conduire doit être un fichier de type : jpeg, png, pdf.',
-            'assurance.required' => 'Le champ assurance du véhicule est obligatoire.',
-            'assurance.file' => 'Le champ assurance du véhicule doit être un fichier.',
-            'assurance.mimes' => 'Le champ assurance du véhicule doit être un fichier de type : jpeg, png, pdf.',
-            'etat.required' => 'Le champ état est obligatoire.',
-            'etat.string' => 'Le champ état doit être une chaîne de caractères.',
-        ];
-    }
-
-    public function mount()
-    {
-        $this->livraison = livraisons::where('user_id', Auth::id())->first();
-
-        if ($this->livraison) {
-            $this->experience = $this->livraison->experience;
-            $this->license = $this->livraison->license;
-            $this->vehicle = $this->livraison->vehicle;
-            $this->matricule = $this->livraison->matricule;
-            $this->availability = $this->livraison->availability;
-            $this->zone = implode(';', json_decode($this->livraison->zone, true));
-            $this->comments = $this->livraison->comments;
-            $this->identity = $this->livraison->identity;
-            $this->permis = $this->livraison->permis;
-            $this->assurance = $this->livraison->assurance;
-            $this->etat = $this->livraison->etat;
-        }
-    }
 
     public function submit()
     {
         $this->validate();
 
-        $livraisons = $this->livraison ?: new livraisons();
-        $livraisons->user_id = Auth::id();
-        $livraisons->experience = $this->experience;
-        $livraisons->license = $this->license;
-        $livraisons->vehicle = $this->vehicle;
-        $livraisons->matricule = $this->matricule;
-        $livraisons->availability = $this->availability;
-        $livraisons->zone = json_encode(explode(';', $this->zone));
-        $livraisons->comments = $this->comments;
-        $livraisons->etat = $this->etat;
-
         // Handle file uploads
-        if ($this->identity) {
-            $identityImageName = Carbon::now()->timestamp . '_1.' . $this->identity->extension();
-            $this->identity->storeAs('all', $identityImageName);
-            $livraisons->identity = $identityImageName;
-        }
+        $identityPath = $this->identity->store('identities', 'public');
+        $permisPath = $this->permis->store('permis', 'public');
+        $assurancePath = $this->assurance->store('assurances', 'public');
 
-        if ($this->permis) {
-            $permisImageName = Carbon::now()->timestamp . '_2.' . $this->permis->extension();
-            $this->permis->storeAs('all', $permisImageName);
-            $livraisons->permis = $permisImageName;
-        }
+        // Save the data in the database
+        $livraison = new Livraisons();
+        $livraison->user_id = Auth::id();
+        $livraison->experience = $this->experience;
+        $livraison->license = $this->license;
+        $livraison->vehicle = $this->vehicle;
+        $livraison->matricule = $this->matricule;
+        $livraison->availability = $this->availability;
+        $livraison->zone = $this->zone;
+        $livraison->comments = $this->comments;
+        $livraison->identity = $identityPath;
+        $livraison->permis = $permisPath;
+        $livraison->assurance = $assurancePath;
+        $livraison->etat = $this->etat;
+        $livraison->created_at = Carbon::now();
 
-        if ($this->assurance) {
-            $assuranceImageName = Carbon::now()->timestamp . '_3.' . $this->assurance->extension();
-            $this->assurance->storeAs('all', $assuranceImageName);
-            $livraisons->assurance = $assuranceImageName;
-        }
+        $livraison->save();
 
-        $livraisons->save();
+        session()->flash('message', 'Votre demande a été soumise avec succès!');
 
+        // Clear form fields after submission
         $this->reset([
-            'experience', 'license', 'vehicle', 'matricule',
-            'availability', 'zone', 'comments', 'identity',
-            'permis', 'assurance', 'etat'
+            'experience',
+            'license',
+            'vehicle',
+            'matricule',
+            'availability',
+            'zone',
+            'comments',
+            'identity',
+            'permis',
+            'assurance'
         ]);
-
-        session()->flash('message', 'Candidature soumise avec succès.');
     }
 
     public function render()

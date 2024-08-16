@@ -7,8 +7,6 @@
 
     @livewire('postuler-component')
 
-    @livewireScripts
-
 
 
 @endsection
