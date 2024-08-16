@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Countdown;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\Countdown;
 
 use App\Models\OffreGroupe;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Models\userquantites;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +44,12 @@ class OffreNegos extends Controller
             ->distinct()
             ->pluck('user_id')
             ->toArray();
+        
+            userquantites::create([
+                'quantite' =>  $quantité,
+                'code_unique' =>  $Uniquecode,
+                'user_id' =>  $user_id,
+            ]);
 
         foreach ($nomFournisseur as $userId) {
             $user = User::find($userId);
