@@ -14,12 +14,9 @@ class PostulerComponent extends Component
     use WithFileUploads;
 
     public $experience;
-    public $license;
     public $vehicle;
     public $vehicle2;
     public $vehicle3;
-    public $matricule;
-    public $availability;
     public $identity;
     public $permis;
     public $assurance;
@@ -71,12 +68,9 @@ class PostulerComponent extends Component
 
     protected $rules = [
         'experience' => 'required|string',
-        'license' => 'required|string',
         'vehicle' => 'required|string',
         'vehicle2' => 'required|string',
         'vehicle3' => 'required|string',
-        'matricule' => 'required|string',
-        'availability' => 'required|string',
         'selectedContinent' => 'required|string',
         'selectedSous_region' => 'required|string',
         // 'pays' => 'required|string',
@@ -113,12 +107,9 @@ class PostulerComponent extends Component
         $livraison = Livraisons::create([
             'user_id' => Auth::id(),
             'experience' => $this->experience,
-            'license' => $this->license,
             'vehicle' => $this->vehicle,
             'vehicle2' => $this->vehicle2,
             'vehicle3' => $this->vehicle3,
-            'matricule' => $this->matricule,
-            'availability' => $this->availability,
             'continent' => $this->selectedContinent,
             'Sous_Region' => $this->selectedSous_region,
             // 'pays' => $this->pays,
@@ -139,10 +130,7 @@ class PostulerComponent extends Component
         // Clear form fields after submission
         $this->reset([
             'experience',
-            'license',
             'vehicle',
-            'matricule',
-            'availability',
             'selectedContinent',
             'selectedSous_region',
             // 'pays' ,

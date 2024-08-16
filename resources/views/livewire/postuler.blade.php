@@ -83,23 +83,7 @@
 
 
 
-            <div>
-                <label for="license" class="block text-sm font-medium text-gray-700">Type de permis de
-                    conduire:</label>
 
-                <select id="license" wire:model="license"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-
-                    <option value="" selected>Selectionnez votre type de Permis</option>
-                    <option value="Permis A" selected>Permis A</option>
-                    <option value="Permis B">Permis B</option>
-                    <option value="Permis C">Permis C</option>
-                    <option value="Permis D">Permis D</option>
-                </select>
-                @error('license')
-                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                @enderror
-            </div>
 
             <div>
                 <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule option 1:</label>
@@ -144,24 +128,9 @@
                 @enderror
             </div>
 
-            <div>
-                <label for="matricule" class="block text-sm font-medium text-gray-700">Matricule du vehicule</label>
-                <input id="matricule" type="text" wire:model="matricule" placeholder="Matrucule du vehicule"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                @error('matricule')
-                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                @enderror
-            </div>
 
-            <div>
-                <label for="availability" class="block text-sm font-medium text-gray-700">Disponibilités:</label>
-                <input type="text" id="availability" wire:model="availability"
-                    placeholder="Dites-nous votre disponiblité"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                @error('availability')
-                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                @enderror
-            </div>
+
+            
 
             <!-- Localisation (commune aux deux types) -->
             <h1 class="text-center text-xl font-bold mb-8">Inscrivez votre Localisation </h1>
