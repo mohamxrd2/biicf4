@@ -184,10 +184,10 @@ class AjoutConsommations extends Component
             'origine' => 'required_if:type,Produit|string',
             'qteProd' => 'required_if:type,Produit|integer',
             'specification' => 'required_if:type,Produit|string',
-            // service
-            // 'qualification' => 'required_if:type,Service|string',
-            // 'specialite' => 'required_if:type,Service|string',
-            // 'qte_service' => 'required_if:type,Service|string',
+            // service 
+            'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'qte_service' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
             // location fields
             'selectedContinent' => 'required|string',
             'selectedSous_region' => 'required|string',

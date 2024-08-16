@@ -185,9 +185,9 @@ class AjoutProduitServices extends Component
             'specification3' => 'nullable|string',
             'prix' => 'required|integer',
             //service
-            'qualification' => 'required_if:type,Service|string',
-            'specialite' => 'required_if:type,Service|string',
-            'qte_service' => 'required_if:type,Service|string',
+            'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'qte_service' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
             'selectedSous_region' => 'required|string',
             'selectedContinent' => 'required|string',
             'depart' => 'required|string',
