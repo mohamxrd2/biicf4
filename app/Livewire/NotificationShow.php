@@ -480,7 +480,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'accepte']);
     }
 
-
     public function acceptoffre()
     {
 

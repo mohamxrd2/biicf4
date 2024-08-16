@@ -127,10 +127,13 @@ class CheckCountdowns extends Command
                     // Supprimer les commentaires avec ce code unique
                     Comment::where('code_unique', $code_unique)->delete();
 
-                    // Vérifiez si une notification avec le type 'livraison' et le code unique existe
-                    $notificationExists = DatabaseNotification::where('type', 'App\Notifications\livraisonVerif')
+                    $notificationExists = DatabaseNotification::where(function ($query) use ($code_unique) {
+                        $query->where('type', 'App\Notifications\livraisonVerif')
+                            ->orWhere('type', 'App\Notifications\AppelOffreGrouperNotification');
+                    })
                         ->whereJsonContains('data->code_livr', $code_unique)
                         ->exists();
+
 
                     if ($notificationExists) {
                         // Supprimez toutes les notifications qui contiennent ce code unique dans 'data'
