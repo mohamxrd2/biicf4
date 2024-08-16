@@ -83,7 +83,7 @@ class PostulerComponent extends Component
     ];
     public function mount()
     {
-        $this->livraison = livraisons::where('user_id', Auth::id())->first();
+        $this->livraison = Livraisons::where('user_id', Auth::id())->first();
 
     }
     public function submit()
