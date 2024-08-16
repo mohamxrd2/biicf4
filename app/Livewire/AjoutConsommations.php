@@ -49,11 +49,28 @@ class AjoutConsommations extends Component
     ];
     public $selectedSous_region;
     public $sousregions = [
-        'Afrique du Nord', 'Afrique de l\'Ouest', 'Afrique Centrale', 'Afrique de l\'Est', 'Afrique Australe',
-        'Amérique du Nord', 'Amérique Centrale ', 'Amérique du Sud  ', 'Caraïbes',
-        'Asie de l\'Est', 'Asie du Sud', 'Asie du Sud-Est', 'Asie Centrale', 'Asie de l\'Ouest ',
-        'Europe de l\'Est', 'Europe de l\'Ouest', 'Europe du Nord', 'Europe du Sud',
-        'Australie et Nouvelle-Zélande', 'Mélanésie ', 'Polynésie ', 'Micronésie '
+        'Afrique du Nord',
+        'Afrique de l\'Ouest',
+        'Afrique Centrale',
+        'Afrique de l\'Est',
+        'Afrique Australe',
+        'Amérique du Nord',
+        'Amérique Centrale ',
+        'Amérique du Sud  ',
+        'Caraïbes',
+        'Asie de l\'Est',
+        'Asie du Sud',
+        'Asie du Sud-Est',
+        'Asie Centrale',
+        'Asie de l\'Ouest ',
+        'Europe de l\'Est',
+        'Europe de l\'Ouest',
+        'Europe du Nord',
+        'Europe du Sud',
+        'Australie et Nouvelle-Zélande',
+        'Mélanésie ',
+        'Polynésie ',
+        'Micronésie '
     ];
     public $produits = [];
     public $selectedCategories = [];
@@ -103,8 +120,7 @@ class AjoutConsommations extends Component
             $this->specialite = $selectedProduct->sepServ;
             $this->qte_service = $selectedProduct->qteServ;
 
-            $this->qteProd_min = '';
-            $this->qteProd_max = '';
+            $this->qteProd = '';
             $this->prix = '';
 
             $this->locked = true;
@@ -127,8 +143,7 @@ class AjoutConsommations extends Component
         $this->format = '';
         $this->particularite = '';
         $this->origine = '';
-        $this->qteProd_min = '';
-        $this->qteProd_max = '';
+        $this->qteProd = '';
         $this->specification = '';
         $this->specification2 = '';
         $this->specification3 = '';
@@ -162,33 +177,31 @@ class AjoutConsommations extends Component
             'type' => 'required|string|in:Produit,Service',
             'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
             'name' => 'required|string|max:255',
-            //produits
+            // produits
             'conditionnement' => 'required_if:type,Produit|string|max:255',
             'format' => 'required_if:type,Produit|string',
             'particularite' => 'required_if:type,Produit|string',
             'origine' => 'required_if:type,Produit|string',
             'qteProd' => 'required_if:type,Produit|integer',
             'specification' => 'required_if:type,Produit|string',
-            //
-            'prix' => 'required|integer',
-            //service
-            'qualification' => 'required_if:type,Service|string',
-            'specialite' => 'required_if:type,Service|string',
-            'qte_service' => 'required_if:type,Service|string',
-            //
+            // service
+            // 'qualification' => 'required_if:type,Service|string',
+            // 'specialite' => 'required_if:type,Service|string',
+            // 'qte_service' => 'required_if:type,Service|string',
+            // location fields
             'selectedContinent' => 'required|string',
             'selectedSous_region' => 'required|string',
-            // 'pays' => 'required|string',
             'depart' => 'required|string',
             'ville' => 'required|string',
             'commune' => 'required|string',
-
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
             'name.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
             'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
         ]);
+
+
 
 
         try {
@@ -199,32 +212,29 @@ class AjoutConsommations extends Component
                 ]);
             }
 
-            ProduitService::create([
+            Consommation::create([
                 'type' => $this->type,
                 'reference' => $this->reference,
                 'name' => $this->name, // Adjusted for 'Produit'
                 //produit
-                'condProd' => $this->type === 'Produit' ? $this->conditionnement : null,
-                'formatProd' => $this->type === 'Produit' ? $this->format : null,
+                'conditionnement' => $this->type === 'Produit' ? $this->conditionnement : null,
+                'format' => $this->type === 'Produit' ? $this->format : null,
                 'Particularite' => $this->type === 'Produit' ? $this->particularite : null,
+                'qte' => $this->type === 'Produit' ? $this->qteProd : null,
                 'origine' => $this->type === 'Produit' ? $this->origine : null,
-                'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
-                'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
-                'specification' => $this->type === 'Produit' ? $this->specification : null,
-                'specification2' => $this->type === 'Produit' ? $this->specification2 : null,
-                'specification3' => $this->type === 'Produit' ? $this->specification3 : null,
+                'specialité' => $this->type === 'Produit' ? $this->specification : null,
                 //
                 'prix' => $this->prix,
                 //service
-                'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
+                'qalif_serv' => $this->type === 'Service' ? $this->qualification : null,
                 'sepServ' => $this->type === 'Service' ? $this->specialite : null,
                 'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
                 //
                 'continent' => $this->selectedContinent,
                 'Sous-Region' => $this->selectedSous_region,
-                'zonecoServ' => $this->depart,
-                'villeServ' => $this->ville,
-                'comnServ' => $this->commune,
+                'departe' => $this->depart,
+                'villeCons' => $this->ville,
+                'commune' => $this->commune,
                 'user_id' => auth()->id(),
                 'categorie_id' => $categorie->id ?? null,
             ]);
@@ -251,8 +261,7 @@ class AjoutConsommations extends Component
         $this->format = '';
         $this->particularite = '';
         $this->origine = '';
-        $this->qteProd_min = '';
-        $this->qteProd_max = '';
+        $this->qteProd = '';
         $this->specification = '';
         $this->specification2 = '';
         $this->specification3 = '';
@@ -265,7 +274,6 @@ class AjoutConsommations extends Component
         $this->commune = '';
         // Réinitialiser les catégories si nécessaire
         $this->categories = CategorieProduits_Servives::all();
-
     }
 
 
