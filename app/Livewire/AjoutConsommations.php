@@ -24,6 +24,7 @@ class AjoutConsommations extends Component
     public $particularite  = '';
     public $origine  = '';
     public $qteProd  = '';
+    public $periodicite = '';
     public $specification  = '';
     public $specification2  = '';
     public $specification3  = '';
@@ -220,6 +221,7 @@ class AjoutConsommations extends Component
                 'qte' => $this->type === 'Produit' ? $this->qteProd : null,
                 'origine' => $this->type === 'Produit' ? $this->origine : null,
                 'specialité' => $this->type === 'Produit' ? $this->specification : null,
+                // 'periodicite' => $this->type === 'Produit' ? $this->periodicite : null,
                 //
                 'prix' => $this->prix,
                 //service

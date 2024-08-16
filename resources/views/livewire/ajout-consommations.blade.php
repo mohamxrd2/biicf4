@@ -15,7 +15,7 @@
         <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
             <h1 class="text-2xl font-bold mb-8">Ajouter Une Consommation</h1>
 
-            <form wire:submit.prevent="submit" >
+            <form wire:submit.prevent="submit">
 
                 <!-- Sélecteur de catégorie -->
                 <div x-data="{ selectedCategories: @entangle('selectedCategories') }">
@@ -160,6 +160,23 @@
                                 @enderror
 
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité</label>
+                                <select wire:model='periodicite' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md">
+                                    <option value="">Choisissez une périodicité</option>
+                                    <option value="jour">Par Jour</option>
+                                    <option value="semaine">Par Semaine</option>
+                                    <option value="mois">Par Mois</option>
+                                    <option value="trimestre">Par Trimestre</option>
+                                    <option value="semestre">Par Semestre</option>
+                                    <option value="annee">Par An</option>
+                                </select>
+                                @error('periodicite')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
+                            </div>
+
                         </div>
                         <div class="grid grid-cols-4 gap-6 mb-6">
 
@@ -172,7 +189,7 @@
                                 @enderror
 
                             </div>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Prix</label>
                                 <input type="text" wire:model='prix'
