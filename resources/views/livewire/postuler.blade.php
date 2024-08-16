@@ -86,11 +86,11 @@
 
 
             <div>
-                <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule option 1:</label>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin :</label>
                 <select id="vehicle" wire:model="vehicle"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
-                    <option value="" selected>Type d'engin</option>
+                    <option value="" selected>option 1</option>
                     <option value="Moto" selected>Moto</option>
                     <option value="Fourgonette">Fourgonette</option>
                     <option value="Camion">Camion</option>
@@ -100,11 +100,11 @@
                 @enderror
             </div>
             <div>
-                <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule option 2:</label>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin :</label>
                 <select id="vehicle" wire:model="vehicle2"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
-                    <option value="" selected>Type d'engin</option>
+                    <option value="" selected>option 2</option>
                     <option value="Moto" selected>Moto</option>
                     <option value="Fourgonette">Fourgonette</option>
                     <option value="Camion">Camion</option>
@@ -114,11 +114,11 @@
                 @enderror
             </div>
             <div>
-                <label for="vehicle" class="block text-sm font-medium text-gray-700">Véhicule option 3:</label>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin :</label>
                 <select id="vehicle" wire:model="vehicle3"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
-                    <option value="" selected>Type d'engin</option>
+                    <option value="" selected>option 3</option>
                     <option value="Moto" selected>Moto</option>
                     <option value="Fourgonette">Fourgonette</option>
                     <option value="Camion">Camion</option>
@@ -130,7 +130,7 @@
 
 
 
-            
+
 
             <!-- Localisation (commune aux deux types) -->
             <h1 class="text-center text-xl font-bold mb-8">Inscrivez votre Localisation </h1>
@@ -155,7 +155,7 @@
 
                     <select id="continent" name="continent" wire:model='selectedSous_region'
                         class="w-full p-2 border border-gray-300 rounded-md">
-                        <option value="">Sélectionnez un continent</option>
+                        <option value="">Sélectionnez une Sous-Régions</option>
                         @foreach ($sousregions as $sousregion)
                             <option value="{{ $sousregion }}">{{ $sousregion }}</option>
                         @endforeach
