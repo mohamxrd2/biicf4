@@ -152,19 +152,10 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Minimal</label>
-                                <input type="text" wire:model='qteProd_min'
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
+                                <input type="text" wire:model='qteProd'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('qteProd_min')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité Maximal</label>
-                                <input type="text" wire:model='qteProd_max'
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('qteProd_max')
+                                @error('qteProd')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
 
@@ -181,24 +172,7 @@
                                 @enderror
 
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécification 2</label>
-                                <input type="text" wire:model='specification2' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('specification2')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécification 3</label>
-                                <input type="text" wire:model='specification3' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('specification3')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-
-                            </div>
+                            
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Prix</label>
                                 <input type="text" wire:model='prix'
@@ -296,6 +270,19 @@
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        <div class="col-span-1">
+                            <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays</label>
+                            <select name="country" id="country" wire:model='pays'
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="" disabled selected>Choisissez un pays</option>
+                                <!-- Options added dynamically via JS -->
+                            </select>
+                            @error('country')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
                         <div class="col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
                             <input type="text" wire:model='depart'
@@ -324,44 +311,6 @@
                         </div>
                     </div>
 
-
-                    <!-- Images -->
-                    <h1 class="text-center text-xl font-bold mb-8">Ajout D'Image</h1>
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image1</label>
-                            <input type="file" wire:model="photoProd1"
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                            @error('photoProd1')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image2</label>
-                            <input type="file" wire:model="photoProd2"
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                            @error('photoProd2')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image3</label>
-                            <input type="file" wire:model="photoProd3"
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                            @error('photoProd3')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image4</label>
-                            <input type="file" wire:model="photoProd4"
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                            @error('photoProd4')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                    </div>
                     <!-- Boutons d'action -->
                     <div class="text-right">
                         <button type="reset" class="bg-red-500 text-white p-2 rounded-md">Annuler</button>

@@ -296,6 +296,19 @@
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        <div class="col-span-1">
+                            <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays</label>
+                            <select name="country" id="country" wire:model='pays'
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="" disabled selected>Choisissez un pays</option>
+                                <!-- Options added dynamically via JS -->
+                            </select>
+                            @error('country')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        
                         <div class="col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
                             <input type="text" wire:model='depart'
