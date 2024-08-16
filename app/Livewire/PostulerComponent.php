@@ -18,13 +18,11 @@ class PostulerComponent extends Component
     public $matricule;
     public $availability;
     public $zone;
-    public $comments;
     public $identity;
     public $permis;
     public $assurance;
     public $etat = 'En cours';
 
-    public $livraison;
 
     // Localisation properties
     public $selectedContinent;
@@ -63,9 +61,9 @@ class PostulerComponent extends Component
         'Micronésie'
     ];
     public $depart = '';
-    public $pays = '';
+    public $pays;
     public $ville = '';
-    public $commune = '';
+    public $localite;
 
     protected $rules = [
         'experience' => 'required|string',
@@ -73,39 +71,44 @@ class PostulerComponent extends Component
         'vehicle' => 'required|string',
         'matricule' => 'required|string',
         'availability' => 'required|string',
-        'zone' => 'required|string',
-        'comments' => 'nullable|string',
+        'selectedContinent' => 'required|string',
+        'selectedSous_region' => 'required|string',
+        // 'pays' => 'required|string',
+        'depart' => 'required|string',
+        'ville' => 'required|string',
+        'localite' => 'required|string',
         'identity' => 'required|file|mimes:jpeg,png,pdf',
         'permis' => 'required|file|mimes:jpeg,png,pdf',
         'assurance' => 'required|file|mimes:jpeg,png,pdf',
     ];
+    
 
     public function submit()
     {
         $this->validate();
 
-        // Handle file uploads
-        $identityPath = $this->identity->store('identities', 'public');
-        $permisPath = $this->permis->store('permis', 'public');
-        $assurancePath = $this->assurance->store('assurances', 'public');
-
         // Save the data in the database
-        $livraison = new Livraisons();
-        $livraison->user_id = Auth::id();
-        $livraison->experience = $this->experience;
-        $livraison->license = $this->license;
-        $livraison->vehicle = $this->vehicle;
-        $livraison->matricule = $this->matricule;
-        $livraison->availability = $this->availability;
-        $livraison->zone = $this->zone;
-        $livraison->comments = $this->comments;
-        $livraison->identity = $identityPath;
-        $livraison->permis = $permisPath;
-        $livraison->assurance = $assurancePath;
-        $livraison->etat = $this->etat;
-        $livraison->created_at = Carbon::now();
+        $livraison = Livraisons::create([
+            'user_id' => Auth::id(),
+            'experience' => $this->experience,
+            'license' => $this->license,
+            'vehicle' => $this->vehicle,
+            'matricule' => $this->matricule,
+            'availability' => $this->availability,
+            'continent' => $this->selectedContinent,
+            'Sous_Region' => $this->selectedSous_region,
+            // 'pays' => $this->pays,
+            'departe' => $this->depart,
+            'ville' => $this->ville,
+            'commune' => $this->localite,
+            'etat' => $this->etat,
+        ]);
 
-        $livraison->save();
+
+        // Gestion des photos
+        $this->handlePhotoUpload($livraison, 'identity');
+        $this->handlePhotoUpload($livraison, 'permis');
+        $this->handlePhotoUpload($livraison, 'assurance');
 
         session()->flash('message', 'Votre demande a été soumise avec succès!');
 
@@ -116,14 +119,25 @@ class PostulerComponent extends Component
             'vehicle',
             'matricule',
             'availability',
-            'zone',
-            'comments',
+            'selectedContinent',
+            'selectedSous_region',
+            // 'pays' ,
+            'depart',
+            'ville',
+            'localite',
             'identity',
             'permis',
             'assurance'
         ]);
     }
-
+    protected function handlePhotoUpload($livreur, $photoField)
+    {
+        if ($this->$photoField) {
+            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $this->$photoField->extension();
+            $this->$photoField->storeAs('all', $photoName); // Assurez-vous de spécifier un répertoire
+            $livreur->update([$photoField => $photoName]);
+        }
+    }
     public function render()
     {
         return view('livewire.postuler');

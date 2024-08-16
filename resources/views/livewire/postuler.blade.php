@@ -71,6 +71,7 @@
                 <select id="experience" wire:model="experience"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
+                    <option value="" selected>Selectionnez vos années d'experience</option>
                     <option value="moins de 1 an" selected>Moins de 1 an</option>
                     <option value="entre 1 et 5 ans">Entre 1 et 5 ans</option>
                     <option value="5 ans et plus">5 ans et plus</option>
@@ -89,9 +90,11 @@
                 <select id="license" wire:model="license"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
+                    <option value="" selected>Selectionnez votre type de Permis</option>
                     <option value="Permis A" selected>Permis A</option>
                     <option value="Permis B">Permis B</option>
                     <option value="Permis C">Permis C</option>
+                    <option value="Permis D">Permis D</option>
                 </select>
                 @error('license')
                     <span class="text-red-500 text-xs">{{ $message }}</span>
@@ -103,6 +106,7 @@
                 <select id="vehicle" wire:model="vehicle"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
+                    <option value="" selected>Type d'engin</option>
                     <option value="Moto" selected>Moto</option>
                     <option value="Fourgonette">Fourgonette</option>
                     <option value="Camion">Camion</option>
@@ -196,7 +200,7 @@
 
                 <div class="col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Localité</label>
-                    <input type="text" wire:model='commune' class="w-full p-2 border border-gray-300 rounded-md"
+                    <input type="text" wire:model='localite' class="w-full p-2 border border-gray-300 rounded-md"
                         placeholder="Tapez ici...">
                     @error('commune')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -204,17 +208,9 @@
                 </div>
             </div>
 
-            <div>
-                <label for="comments" class="block text-sm font-medium text-gray-700">Questions ou commentaires:
-                    (facultatif)</label>
-                <textarea id="comments" wire:model="comments"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Ajouter un commentaire"></textarea>
 
-            </div>
-            <!-- Localisation (commune aux deux types) -->
+            <!-- Pieces d'identité -->
             <h1 class="text-center text-xl font-bold mb-8">Inscrivez Vos Pieces </h1>
-
 
             <div>
 

@@ -16,16 +16,15 @@ class livraisons extends Model
         'vehicle',
         'matricule',
         'availability',
-        'zone',
-        'comments',
+        'continent',
+        'Sous-Region',
+        'departe',
+        'commune',
+        'ville',
         'identity',
         'permis',
         'assurance',
         'etat',
-    ];
-
-    protected $casts = [
-        'zone' => 'array',
     ];
 
     public function user()
