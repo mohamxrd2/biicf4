@@ -390,9 +390,9 @@
                                     attente de validation</span></li>
                         </ul>
                     </div>
-                    
 
-                    <div>
+
+                    {{-- <div>
                         <h3>Détails de la commande</h3>
                         <p><strong>ID de l'expéditeur :</strong> {{ $Idsender }}</p>
                         <p><strong>Pays du client :</strong> {{ $clientPays }}</p>
@@ -405,12 +405,12 @@
                             <ul>
                                 @foreach ($livreurs as $livreur)
                                     <li>
-                                        Livreur ID: {{ $livreur->id }} - Expérience: {{ $livreur->experience }} ans
+                                        Livreur ID: {{ $livreur->id }} - Expérience: {{ $livreur->experience }} ans - Livreur ID: {{ $livreur->user_id }}
                                     </li>
                                 @endforeach
                             </ul>
                         @endif
-                    </div>
+                    </div> --}}
 
 
 
