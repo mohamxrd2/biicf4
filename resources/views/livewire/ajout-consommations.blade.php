@@ -164,7 +164,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité</label>
-                                <select wire:model='periodicite' :disabled="locked"
+                                <select wire:model='periodicite' 
                                     class="w-full p-2 border border-gray-300 rounded-md">
                                     <option value="">Choisissez une périodicité</option>
                                     <option value="jour">Par Jour</option>
@@ -256,7 +256,7 @@
                         </div>
                     </div>
 
-                    
+
 
                     <!-- Boutons d'action -->
                     <div class="text-right">

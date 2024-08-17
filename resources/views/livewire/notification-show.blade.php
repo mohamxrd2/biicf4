@@ -390,6 +390,30 @@
                                     attente de validation</span></li>
                         </ul>
                     </div>
+                    
+
+                    <div>
+                        <h3>Détails de la commande</h3>
+                        <p><strong>ID de l'expéditeur :</strong> {{ $Idsender }}</p>
+                        <p><strong>Pays du client :</strong> {{ $clientPays }}</p>
+                        <p><strong>Ville du client :</strong> {{ $clientVille }}</p>
+
+                        <h3>Liste des livreurs disponibles</h3>
+                        @if ($livreurs->isEmpty())
+                            <p>Aucun livreur disponible pour ce pays et cette ville.</p>
+                        @else
+                            <ul>
+                                @foreach ($livreurs as $livreur)
+                                    <li>
+                                        Livreur ID: {{ $livreur->id }} - Expérience: {{ $livreur->experience }} ans
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+
+
+
 
                     <!-- Liste des Produits -->
                     <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
@@ -456,7 +480,7 @@
                                 <div class="flex flex-col">
                                     <div class="font-semibold text-gray-700">Somme reçue:</div>
                                     @php
-                                        $prixArtiche = $notification->data['quantité'] ;
+                                        $prixArtiche = $notification->data['quantité'];
                                         $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
                                     @endphp
                                     <div class="text-gray-800">{{ number_format($sommeRecu, 2) }} Fcfa</div>
@@ -1382,7 +1406,8 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <div class="font-semibold text-gray-700">Prix de la commande:</div>
-                                    <div class="text-gray-800">{{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
+                                    <div class="text-gray-800">{{ $notification->data['montantTotal'] ?? 'N/A' }}
+                                        Fcfa
                                     </div>
                                 </div>
                                 <div class="flex flex-col">

@@ -22,6 +22,7 @@ use App\Models\Transaction;
 use Livewire\Attributes\On;
 use App\Models\Consommation;
 use App\Models\groupagefact;
+use App\Models\Livraisons;
 use App\Rules\ArrayOrInteger;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
@@ -316,7 +317,7 @@ class NotificationShow extends Component
             ->first();
 
 
-        $this->nombreLivr = User::where('actor_type', 'livreur')->count();
+
 
         // Recherche dans la table produit_service pour récupérer l'ID du produit
         if (isset($this->notification->data['nameprod']) && isset($this->notification->data['id_trader'])) {
@@ -371,6 +372,32 @@ class NotificationShow extends Component
             $this->sumquantite = 0;
             $this->appelOffreGroupcount = 0;
         }
+
+        //ciblage de livreur
+        $this->nombreLivr = User::where('actor_type', 'livreur')->count();
+
+        $this->loadDetails();
+    }
+
+    public $notificationId;
+    public $clientPays;
+    public $clientVille;
+    public $livreurs;
+    public $Idsender;
+
+
+
+    public function loadDetails()
+    {
+        $this->Idsender = $this->notification->data['userSender'];
+
+        $client = User::findOrFail($this->Idsender);
+        $this->clientPays = $client->country;
+        $this->clientVille = $client->address;
+
+        $this->livreurs = Livraisons::where('pays', $this->clientPays)
+            ->where('ville', $this->clientVille)
+            ->get();
     }
 
     public function storeoffre()
@@ -492,7 +519,7 @@ class NotificationShow extends Component
 
         // Assurez-vous que $this->notification->data['quantite'] et $this->namefourlivr->prix sont définis et accessibles
         //$quantite = $this->notification->data['quantite'] ?? 0;
-       
+
 
 
 
@@ -509,7 +536,7 @@ class NotificationShow extends Component
         Log::info('Processing userWallet: ' . $distinctUserIds);
 
 
-        
+
 
         // Retrieve the trader's user model
         // $userTrader = User::find($produit->user_id);
@@ -563,25 +590,25 @@ class NotificationShow extends Component
                         if (is_null($prixArticleNego) || is_null($id_trader) || is_null($this->notifId)) {
                             return redirect()->back()->with('error', 'Données manquantes dans la requête.');
                         }
-            
+
                         $traderWallet = Wallet::where('user_id', $id_trader)->first();
                         if (!$traderWallet) {
                             return redirect()->back()->with('error', 'Portefeuille du trader introuvable.');
                         }
-            
+
                         // Update trader's wallet
                         $traderWallet->increment('balance', $prixArticleNego);
-            
+
                         // Create transaction record for the trader
                         $this->createTransaction($userId, $id_trader, 'Reception', $prixArticleNego);
                     }
-            
-            
+
+
                     // Update the user's wallet
                     $userWallet->decrement('balance', $prixArticleNego);
                     // Create transaction record for the user
                     $this->createTransaction($userId, $id_trader, 'Envoie', $prixArticleNego);
-            
+
 
                     // Envoyez la notification au client directement
                     Notification::send($userTrader, new AchatBiicf($data));
@@ -601,7 +628,7 @@ class NotificationShow extends Component
 
 
 
-        // Notification::send($userTrader, new AchatBiicf($data)); 
+        // Notification::send($userTrader, new AchatBiicf($data));
 
 
         //  Notification::send($userTrader, new AchatBiicf($data));

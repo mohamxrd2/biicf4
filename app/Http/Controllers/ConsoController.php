@@ -15,31 +15,32 @@ class ConsoController extends Controller
         return view('admin.conso-produit');
     }
 
-    public function adminConsServ(){
+    public function adminConsServ()
+    {
 
         return view('admin.conso-service');
-
     }
 
     public function consoBiicf()
     {
         // Récupérer l'utilisateur connecté via le gardien web
+        $user = Auth::guard('web')->user();
 
-            // Récupérer les consommations associés à cet utilisateur
+        // Récupérer les consommations associées à cet utilisateur
+        $consommations = Consommation::where('id_user', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-            $user = Auth::guard('web')->user();
-            $consommations = Consommation::where('id_user', $user->id)->orderBy('created_at', 'desc')
-                ->paginate(10);
+        // Compter le nombre de consommations
+        $consoCount = $consommations->count();
 
-
-            // Compter le nombre de consommations
-            $consoCount = $consommations->count();
-
-            // Passer les consommations à la vue
-            return view('biicf.conso', ['consommations' => $consommations, 'consoCount' => $consoCount]);
-
-
+        // Passer les consommations à la vue
+        return view('biicf.conso', [
+            'consommations' => $consommations,
+            'consoCount' => $consoCount
+        ]);
     }
+
 
     public function destroConsom($id)
     {

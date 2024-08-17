@@ -35,45 +35,8 @@ class AjoutConsommations extends Component
     public $qualification  = '';
     public $specialite  = '';
     public $qte_service  = '';
-    public $depart  = '';
-    public $ville  = '';
-    public $pays  = '';
-    public $commune  = '';
-    public $selectedContinent;
-    public $continents = [
-        'Afrique',
-        'Amérique du Nord',
-        'Amérique du Sud',
-        'Antarctique',
-        'Asie',
-        'Europe',
-        'Océanie'
-    ];
-    public $selectedSous_region;
-    public $sousregions = [
-        'Afrique du Nord',
-        'Afrique de l\'Ouest',
-        'Afrique Centrale',
-        'Afrique de l\'Est',
-        'Afrique Australe',
-        'Amérique du Nord',
-        'Amérique Centrale ',
-        'Amérique du Sud  ',
-        'Caraïbes',
-        'Asie de l\'Est',
-        'Asie du Sud',
-        'Asie du Sud-Est',
-        'Asie Centrale',
-        'Asie de l\'Ouest ',
-        'Europe de l\'Est',
-        'Europe de l\'Ouest',
-        'Europe du Nord',
-        'Europe du Sud',
-        'Australie et Nouvelle-Zélande',
-        'Mélanésie ',
-        'Polynésie ',
-        'Micronésie '
-    ];
+
+
     public $produits = [];
     public $searchTerm = ''; // Add this property to hold the search term
 
@@ -210,12 +173,7 @@ class AjoutConsommations extends Component
             'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'qte_service' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
-            // location fields
-            'selectedContinent' => 'required|string',
-            'selectedSous_region' => 'required|string',
-            'depart' => 'required|string',
-            'ville' => 'required|string',
-            'commune' => 'required|string',
+
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
@@ -250,12 +208,8 @@ class AjoutConsommations extends Component
                 'sepServ' => $this->type === 'Service' ? $this->specialite : null,
                 'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
                 //
-                'continent' => $this->selectedContinent,
-                'Sous-Region' => $this->selectedSous_region,
-                'departe' => $this->depart,
-                'villeCons' => $this->ville,
-                'commune' => $this->commune,
-                'user_id' => auth()->id(),
+
+                'id_user' => auth()->id(),
                 'categorie_id' => $categorie->id ?? null,
             ]);
 
@@ -289,9 +243,7 @@ class AjoutConsommations extends Component
         $this->qualification = '';
         $this->specialite = '';
         $this->qte_service = '';
-        $this->depart = '';
-        $this->ville = '';
-        $this->commune = '';
+
         // Réinitialiser les catégories si nécessaire
         $this->categories = CategorieProduits_Servives::all();
     }
