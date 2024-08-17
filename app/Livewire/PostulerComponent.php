@@ -66,27 +66,10 @@ class PostulerComponent extends Component
     public $localite;
     public $countries = [];
 
-    protected $rules = [
-        'experience' => 'required|string',
-        'vehicle' => 'required|string',
-        'vehicle2' => 'required|string',
-        'vehicle3' => 'required|string',
-        'selectedContinent' => 'required|string',
-        'selectedSous_region' => 'required|string',
-        // 'pays' => 'required|string',
-        'depart' => 'required|string',
-        'ville' => 'required|string',
-        'localite' => 'required|string',
-        'identity' => 'required|file|mimes:jpeg,png,pdf',
-        'permis' => 'required|file|mimes:jpeg,png,pdf',
-        'assurance' => 'required|file|mimes:jpeg,png,pdf',
-    ];
     public function mount()
     {
         $this->livraison = Livraisons::where('user_id', Auth::id())->first();
         $this->fetchCountries();
-
-
     }
 
     public function fetchCountries()
@@ -101,23 +84,37 @@ class PostulerComponent extends Component
     }
     public function submit()
     {
-        $this->validate();
-
-        // Save the data in the database
-        $livraison = Livraisons::create([
-            'user_id' => Auth::id(),
-            'experience' => $this->experience,
-            'vehicle' => $this->vehicle,
-            'vehicle2' => $this->vehicle2,
-            'vehicle3' => $this->vehicle3,
-            'continent' => $this->selectedContinent,
-            'Sous_Region' => $this->selectedSous_region,
-            // 'pays' => $this->pays,
-            'departe' => $this->depart,
-            'ville' => $this->ville,
-            'commune' => $this->localite,
-            'etat' => $this->etat,
+        $this->validate([
+            'experience' => 'required|string',
+            'vehicle' => 'required|string',
+            'vehicle2' => 'required|string',
+            'vehicle3' => 'required|string',
+            'selectedContinent' => 'required|string',
+            'selectedSous_region' => 'required|string',
+            'pays' => 'required|string',
+            'depart' => 'required|string',
+            'ville' => 'required|string',
+            'localite' => 'required|string',
+            'identity' => 'required|file|mimes:jpeg,png,pdf',
+            'permis' => 'required|file|mimes:jpeg,png,pdf',
+            'assurance' => 'required|file|mimes:jpeg,png,pdf',
         ]);
+
+        $livraison = new Livraisons();
+        $livraison->user_id = Auth::id();
+        $livraison->experience = $this->experience;
+        $livraison->vehicle = $this->vehicle;
+        $livraison->vehicle2 = $this->vehicle2;
+        $livraison->vehicle3 = $this->vehicle3;
+        $livraison->continent = $this->selectedContinent;
+        $livraison->sous_region = $this->selectedSous_region;
+        $livraison->departe = $this->depart;
+        $livraison->ville = $this->ville;
+        $livraison->commune = $this->localite;
+        $livraison->etat = $this->etat;
+        $livraison->pays = $this->pays;
+
+        $livraison->save();
 
 
         // Gestion des photos
@@ -133,7 +130,7 @@ class PostulerComponent extends Component
             'vehicle',
             'selectedContinent',
             'selectedSous_region',
-            // 'pays' ,
+            'pays',
             'depart',
             'ville',
             'localite',

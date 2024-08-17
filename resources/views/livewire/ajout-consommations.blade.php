@@ -257,7 +257,7 @@
                     </div>
 
                     <!-- Localisation (commune aux deux types) -->
-                    <h1 class="text-center text-xl font-bold mb-8">Localisation Du Produit & Service</h1>
+                    <h1 class="text-center text-xl font-bold mb-8">Localisation</h1>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
                         <div class="col-span-1">
@@ -290,46 +290,7 @@
                             @enderror
                         </div>
 
-                        <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
-                            <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays</label>
-                            <select id="country" x-model="selectedCountry" wire:model="pays"
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <option value="" disabled selected>Choisissez un pays</option>
-                                <template x-for="country in @js($countries)" :key="country">
-                                    <option :value="country" x-text="country"></option>
-                                </template>
-                            </select>
-                            @error('pays')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                        </div>
 
-                        <div class="col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
-                            <input type="text" wire:model='depart'
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                            @error('depart')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ville/Sous-Prefecture</label>
-                            <input type="text" wire:model='ville'
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                            @error('ville')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Localité</label>
-                            <input type="text" wire:model='commune'
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                            @error('commune')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
                     </div>
 
                     <!-- Boutons d'action -->
