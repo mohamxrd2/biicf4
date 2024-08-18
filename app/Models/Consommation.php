@@ -11,10 +11,15 @@ class Consommation extends Model
 
     protected $fillable = [
         'name',
+        'reference',
         'type',
         'conditionnement',
         'format',
+        'Particularite',
+        'origine',
+        'periodicite',
         'qte',
+        'description',
         'prix',
         'frqce_cons',
         'jourAch_cons',

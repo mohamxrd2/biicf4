@@ -22,19 +22,17 @@ class AjoutConsommations extends Component
     //  produit
     public $conditionnement  = '';
     public $format  = '';
-    public $particularite  = '';
     public $origine  = '';
     public $qteProd  = '';
     public $periodicite = '';
     public $specification  = '';
-    public $specification2  = '';
-    public $specification3  = '';
+
     //
     public $prix  = '';
     //Service
     public $qualification  = '';
     public $specialite  = '';
-    public $qte_service  = '';
+    public $descrip  = '';
 
 
     public $produits = [];
@@ -91,19 +89,17 @@ class AjoutConsommations extends Component
         if ($selectedProduct) {
             // Remplir les propriétés avec les détails du produit sélectionné
             $this->reference = $selectedProduct->reference;
+            $this->type = $selectedProduct->type;
             $this->name = $selectedProduct->name;
             $this->conditionnement = $selectedProduct->condProd;
             $this->format = $selectedProduct->formatProd;
-            $this->particularite = $selectedProduct->Particularite;
             $this->origine = $selectedProduct->origine;
             $this->specification = $selectedProduct->specification;
-            $this->specification2 = $selectedProduct->specification2;
-            $this->specification3 = $selectedProduct->specification3;
 
 
             $this->qualification = $selectedProduct->qalifServ;
             $this->specialite = $selectedProduct->sepServ;
-            $this->qte_service = $selectedProduct->qteServ;
+            $this->descrip = $selectedProduct->description;
 
             $this->qteProd = '';
             $this->prix = '';
@@ -126,16 +122,13 @@ class AjoutConsommations extends Component
     {
         $this->conditionnement = '';
         $this->format = '';
-        $this->particularite = '';
         $this->origine = '';
         $this->qteProd = '';
         $this->specification = '';
-        $this->specification2 = '';
-        $this->specification3 = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
-        $this->qte_service = '';
+        $this->descrip = '';
     }
 
 
@@ -163,16 +156,16 @@ class AjoutConsommations extends Component
             'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
             'name' => 'required|string|max:255',
             // produits
-            'conditionnement' => 'required_if:type,Produit|string|max:255',
-            'format' => 'required_if:type,Produit|string',
-            'particularite' => 'required_if:type,Produit|string',
-            'origine' => 'required_if:type,Produit|string',
-            'qteProd' => 'required_if:type,Produit|integer',
-            'specification' => 'required_if:type,Produit|string',
+            'conditionnement' => $this->type == 'Produit' ? 'required|string|max:255' : 'nullable|string',
+            'format' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            'qteProd' => $this->type == 'Produit' ? 'required|integer' : 'nullable|integer',
+            //
+            'specification' => 'required|string',
+            'periodicite' => 'required|string',
+            'prix' => 'required|integer',
             // service
             'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
-            'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
-            'qte_service' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
 
         ], [
             'name.required' => 'Le nom est requis.',
@@ -196,17 +189,14 @@ class AjoutConsommations extends Component
                 //produit
                 'conditionnement' => $this->type === 'Produit' ? $this->conditionnement : null,
                 'format' => $this->type === 'Produit' ? $this->format : null,
-                'Particularite' => $this->type === 'Produit' ? $this->particularite : null,
                 'qte' => $this->type === 'Produit' ? $this->qteProd : null,
                 'origine' => $this->type === 'Produit' ? $this->origine : null,
-                'specialité' => $this->type === 'Produit' ? $this->specification : null,
-                // 'periodicite' => $this->type === 'Produit' ? $this->periodicite : null,
                 //
+                'specialité' => $this->specification,
+                'periodicite' => $this->periodicite,
                 'prix' => $this->prix,
                 //service
-                'qalif_serv' => $this->type === 'Service' ? $this->qualification : null,
-                'sepServ' => $this->type === 'Service' ? $this->specialite : null,
-                'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
+                'qualif_serv' => $this->type === 'Service' ? $this->qualification : null,
                 //
 
                 'id_user' => auth()->id(),
@@ -233,16 +223,13 @@ class AjoutConsommations extends Component
         $this->name = '';
         $this->conditionnement = '';
         $this->format = '';
-        $this->particularite = '';
         $this->origine = '';
         $this->qteProd = '';
         $this->specification = '';
-        $this->specification2 = '';
-        $this->specification3 = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
-        $this->qte_service = '';
+        $this->descrip = '';
 
         // Réinitialiser les catégories si nécessaire
         $this->categories = CategorieProduits_Servives::all();

@@ -37,7 +37,7 @@ class AjoutProduitServices extends Component
     //Service
     public $qualification  = '';
     public $specialite  = '';
-    public $qte_service  = '';
+    public $descrip  = '';
     public $depart  = '';
     public $ville  = '';
     public $commune  = '';
@@ -97,8 +97,6 @@ class AjoutProduitServices extends Component
         $this->categories = CategorieProduits_Servives::all();
         $this->produits = collect(); // Ensure it's an empty Collection
         $this->fetchCountries();
-
-
     }
     public function updatedSearchTerm()
     {
@@ -138,6 +136,7 @@ class AjoutProduitServices extends Component
             // Remplir les propriétés avec les détails du produit sélectionné
             $this->reference = $selectedProduct->reference;
             $this->name = $selectedProduct->name;
+            $this->type = $selectedProduct->type;
             $this->conditionnement = $selectedProduct->condProd;
             $this->format = $selectedProduct->formatProd;
             $this->particularite = $selectedProduct->Particularite;
@@ -152,7 +151,7 @@ class AjoutProduitServices extends Component
 
             $this->qualification = $selectedProduct->qalifServ;
             $this->specialite = $selectedProduct->sepServ;
-            $this->qte_service = $selectedProduct->qteServ;
+            $this->descrip = $selectedProduct->description;
 
             $this->qteProd_min = '';
             $this->qteProd_max = '';
@@ -186,7 +185,7 @@ class AjoutProduitServices extends Component
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
-        $this->qte_service = '';
+        $this->descrip = '';
     }
 
 
@@ -214,30 +213,32 @@ class AjoutProduitServices extends Component
             'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
             'name' => 'required|string|max:255',
             //produits
-            'conditionnement' => 'required_if:type,Produit|string|max:255',
-            'format' => 'required_if:type,Produit|string',
-            'particularite' => 'required_if:type,Produit|string',
-            'origine' => 'required_if:type,Produit|string',
-            'qteProd_min' => 'required_if:type,Produit|integer',
-            'qteProd_max' => 'required_if:type,Produit|integer',
-            'specification' => 'required_if:type,Produit|string',
-            'specification2' => 'nullable|string',
-            'specification3' => 'nullable|string',
+            'conditionnement' => $this->type == 'Produit' ? 'required|string|max:255' : 'nullable|string',
+            'format' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            'particularite' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            'qteProd_min' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
+            'qteProd_max' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
+            'specification' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            //
             'prix' => 'required|integer',
             //service
             'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
-            'qte_service' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
+            'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|integer',
+            //
             'selectedSous_region' => 'required|string',
             'selectedContinent' => 'required|string',
+            'pays' => 'required|string',
             'depart' => 'required|string',
             'ville' => 'required|string',
             'commune' => 'required|string',
             //photo
-            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif',
-            'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
+            'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
+            'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
+            'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
+
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
@@ -266,17 +267,18 @@ class AjoutProduitServices extends Component
                 'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
                 'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
                 'specification' => $this->type === 'Produit' ? $this->specification : null,
-                'specification2' => $this->type === 'Produit' ? $this->specification2 : null,
-                'specification3' => $this->type === 'Produit' ? $this->specification3 : null,
+                // 'specification2' => $this->type === 'Produit' ? $this->specification2 : null,
+                // 'specification3' => $this->type === 'Produit' ? $this->specification3 : null,
                 //
                 'prix' => $this->prix,
                 //service
                 'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
                 'sepServ' => $this->type === 'Service' ? $this->specialite : null,
-                'qteServ' => $this->type === 'Service' ? $this->qte_service : null,
-                //
+                'description' => $this->type === 'Service' ? $this->descrip : null,
+                //localisation
                 'continent' => $this->selectedContinent,
                 'Sous-Region' => $this->selectedSous_region,
+                'pays' => $this->pays,
                 'zonecoServ' => $this->depart,
                 'villeServ' => $this->ville,
                 'comnServ' => $this->commune,
@@ -318,7 +320,7 @@ class AjoutProduitServices extends Component
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
-        $this->qte_service = '';
+        $this->descrip = '';
         $this->depart = '';
         $this->ville = '';
         $this->commune = '';

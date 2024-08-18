@@ -130,15 +130,7 @@
                                 @enderror
 
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Particularité</label>
-                                <input type="text" wire:model='particularite' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('particularite')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
 
-                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Origine</label>
                                 <select wire:model='origine' :disabled="locked"
@@ -164,8 +156,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité</label>
-                                <select wire:model='periodicite' 
-                                    class="w-full p-2 border border-gray-300 rounded-md">
+                                <select wire:model='periodicite' class="w-full p-2 border border-gray-300 rounded-md">
                                     <option value="">Choisissez une périodicité</option>
                                     <option value="jour">Par Jour</option>
                                     <option value="semaine">Par Semaine</option>
@@ -180,7 +171,7 @@
                             </div>
 
                         </div>
-                        <div class="grid grid-cols-4 gap-6 mb-6">
+                        <div class="grid grid-cols-2 gap-6 mb-6">
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Spécification</label>
@@ -209,7 +200,8 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Qualification</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Experience <span
+                                        class="text-red-500 10px">*</span></label>
                                 <select wire:model='qualification' :disabled="locked"
                                     class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                                     <option value="" disabled selected>Expérience dans le domaine</option>
@@ -223,26 +215,31 @@
                                 @enderror
 
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécialité</label>
-                                <input type="text" wire:model='specialite' :disabled="locked"
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécialité<span
+                                        class="text-red-500 10px">*</span></label>
+                                <input type="text" wire:model='specification' :disabled="locked"
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('specialite')
+                                @error('specification')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
 
                             </div>
+
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de personnel</label>
-                                <input type="text" wire:model='qte_service' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('qte_service')
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité</label>
+                                <select wire:model='periodicite' class="w-full p-2 border border-gray-300 rounded-md">
+                                    <option value="">Choisissez une périodicité</option>
+                                    <option value="jour">Par Jour</option>
+                                    <option value="semaine">Par Semaine</option>
+                                    <option value="mois">Par Mois</option>
+                                    <option value="trimestre">Par Trimestre</option>
+                                    <option value="semestre">Par Semestre</option>
+                                    <option value="annee">Par An</option>
+                                </select>
+                                @error('periodicite')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
-
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Prix Unitaire</label>
