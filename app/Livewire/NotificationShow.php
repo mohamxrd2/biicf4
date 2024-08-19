@@ -864,7 +864,7 @@ class NotificationShow extends Component
                 'prixProd' => $this->notification->data['prixProd']
             ];
 
-            $id_trader = $this->userFour->id;
+            $id_trader = $this->namefourlivr->user->id;
             $traderUser = User::find($id_trader);
 
             Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
