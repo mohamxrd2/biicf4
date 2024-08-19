@@ -237,8 +237,7 @@
 
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécialité<span
-                                        class="text-red-500 10px">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécialité</label>
                                 <input type="text" wire:model='specialite' :disabled="locked"
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                                 @error('specialite')

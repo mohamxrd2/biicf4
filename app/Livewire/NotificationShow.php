@@ -376,7 +376,7 @@ class NotificationShow extends Component
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
 
-        $this->loadDetails();
+        // $this->loadDetails();
     }
 
     // public $notificationId;
