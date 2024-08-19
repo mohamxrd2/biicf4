@@ -275,7 +275,7 @@ class AjoutProduitServices extends Component
                 //service
                 'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
                 'sepServ' => $this->type === 'Service' ? $this->specialite : null,
-                'description' => $this->type === 'Service' ? $this->descrip : null,
+                // 'description' => $this->type === 'Service' ? $this->descrip : null,
                 //localisation
                 'continent' => $this->selectedContinent,
                 'Sous-Region' => $this->selectedSous_region,
