@@ -144,10 +144,10 @@ class AjoutProduitServices extends Component
             $this->specification = $selectedProduct->specification;
             $this->specification2 = $selectedProduct->specification2;
             $this->specification3 = $selectedProduct->specification3;
-            $this->photoProd1 = $selectedProduct->photoProd1;
-            $this->photoProd2 = $selectedProduct->photoProd2;
-            $this->photoProd3 = $selectedProduct->photoProd3;
-            $this->photoProd4 = $selectedProduct->photoProd4;
+            // $this->photoProd1 = $selectedProduct->photoProd1;
+            // $this->photoProd2 = $selectedProduct->photoProd2;
+            // $this->photoProd3 = $selectedProduct->photoProd3;
+            // $this->photoProd4 = $selectedProduct->photoProd4;
 
             $this->qualification = $selectedProduct->qalifServ;
             $this->specialite = $selectedProduct->sepServ;
