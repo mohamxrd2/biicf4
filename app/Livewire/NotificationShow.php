@@ -379,26 +379,26 @@ class NotificationShow extends Component
         $this->loadDetails();
     }
 
-    public $notificationId;
-    public $clientPays;
-    public $clientVille;
-    public $livreurs;
-    public $Idsender;
+    // public $notificationId;
+    // public $clientPays;
+    // public $clientVille;
+    // public $livreurs;
+    // public $Idsender;
 
 
 
-    public function loadDetails()
-    {
-        $this->Idsender = $this->notification->data['userSender'];
+    // public function loadDetails()
+    // {
+    //     $this->Idsender = $this->notification->data['userSender'];
 
-        $client = User::findOrFail($this->Idsender);
-        $this->clientPays = $client->country;
-        $this->clientVille = $client->address;
+    //     $client = User::findOrFail($this->Idsender);
+    //     $this->clientPays = $client->country;
+    //     $this->clientVille = $client->address;
 
-        $this->livreurs = Livraisons::where('pays', $this->clientPays)
-            ->where('ville', $this->clientVille)
-            ->get();
-    }
+    //     $this->livreurs = Livraisons::where('pays', $this->clientPays)
+    //         ->where('ville', $this->clientVille)
+    //         ->get();
+    // }
 
     public function storeoffre()
     {
