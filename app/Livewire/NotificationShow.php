@@ -1189,16 +1189,38 @@ class NotificationShow extends Component
         Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
         // Administrateur
-        $admin = Admin::find(1);
-        if ($admin) {
-            $adminWallet = Wallet::where('user_id', $admin->user_id)->first();
-            if ($adminWallet) {
-                $adminWallet->increment('balance', $montantAdmin);
-                Log::info('Solde du portefeuille de l\'administrateur mis à jour', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
-                $this->createTransaction(Auth::user()->id, $admin->user_id, 'Commission', $montantAdmin);
-                Log::info('Transaction administrateur créée', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
+        try {
+            $admin = Admin::find(1);
+
+            if (!$admin) {
+                Log::error('Administrateur introuvable', ['admin_id' => 1]);
+                return;
             }
+
+            $adminWallet = Wallet::where('user_id', $admin->user_id)->first();
+
+            if (!$adminWallet) {
+                Log::error('Portefeuille de l\'administrateur introuvable', ['admin_id' => $admin->user_id]);
+                return;
+            }
+
+            // Incrémenter le solde du portefeuille de l'administrateur avec le montant calculé
+            $adminWallet->increment('balance', $montantAdmin);
+
+            Log::info('Solde du portefeuille de l\'administrateur mis à jour', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
+
+            // Créer une transaction pour l'administrateur
+            $this->createTransaction(Auth::user()->id, $admin->user_id, 'Commission', $montantAdmin);
+
+            Log::info('Transaction administrateur créée', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour du portefeuille de l\'administrateur ou de la création de la transaction', [
+                'admin_id' => $admin->user_id ?? 'Inconnu',
+                'error' => $e->getMessage()
+            ]);
+            session()->flash('error', 'Une erreur est survenue lors de la mise à jour du portefeuille de l\'administrateur.');
         }
+
 
         Notification::send($client, new colisaccept($data));
         Notification::send($fournisseur, new colisaccept($data));
