@@ -1094,17 +1094,22 @@ class NotificationShow extends Component
         }
     }
 
+
     public function acceptColis()
     {
+        Log::info('Début de la fonction acceptColis', ['notification_id' => $this->notification->id]);
+
         $livreur = User::find($this->notification->data['id_livreur']);
         $fournisseur = User::find($this->notification->data['id_trader']);
         $client = User::find(Auth::user()->id);
         $produit = ProduitService::find($this->notification->data['idProd']);
 
-        if (!$livreur || !$fournisseur || !$client) {
-            session()->flash('error', 'Un des utilisateurs spécifiés est introuvable.');
-            return;
-        }
+        Log::info('Utilisateurs et produit récupérés', [
+            'livreur_id' => $livreur->id,
+            'fournisseur_id' => $fournisseur->id,
+            'client_id' => $client->id,
+            'produit_id' => $produit->id
+        ]);
 
         $data = [
             'idProd' => $this->notification->data['idProd'],
@@ -1118,73 +1123,80 @@ class NotificationShow extends Component
             'prixProd' => $this->notification->data['prixProd'],
         ];
 
-        // récupération de portefeuille
+        Log::info('Données préparées', ['data' => $data]);
+
+        // Récupération des portefeuilles
         $clientWallet = Wallet::where('user_id', Auth::user()->id)->first();
         if (!$clientWallet) {
+            Log::error('Portefeuille du client introuvable', ['user_id' => Auth::user()->id]);
             session()->flash('error', 'Portefeuille du client introuvable.');
             return;
         }
 
         $fournisseurWallet = Wallet::where('user_id', $this->notification->data['id_trader'])->first();
         if (!$fournisseurWallet) {
+            Log::error('Portefeuille du fournisseur introuvable', ['user_id' => $this->notification->data['id_trader']]);
             session()->flash('error', 'Portefeuille du fournisseur introuvable.');
             return;
         }
 
         $livreurWallet = Wallet::where('user_id', $this->notification->data['id_livreur'])->first();
         if (!$livreurWallet) {
+            Log::error('Portefeuille du livreur introuvable', ['user_id' => $this->notification->data['id_livreur']]);
             session()->flash('error', 'Portefeuille du livreur introuvable.');
             return;
         }
 
         $requiredAmount = $this->notification->data['quantite'] * $this->notification->data['prixProd'];
+        Log::info('Montant requis calculé', ['requiredAmount' => $requiredAmount]);
+
         $pourcentSomme  = $requiredAmount * 0.1;
         $totalSom = $requiredAmount - $pourcentSomme;
+
+        Log::info('Pourcentage et montant total calculés', ['pourcentSomme' => $pourcentSomme, 'totalSom' => $totalSom]);
 
         if ($fournisseur->parrain) {
             $commTraderParrain = $pourcentSomme * 0.05;
             $commTraderParrainWallet = Wallet::where('user_id', $fournisseur->parrain)->first();
-            if ($commTraderParrainWallet) {
-                $commTraderParrainWallet->increment('balance', $commTraderParrain);
-            }
+            $commTraderParrainWallet->increment('balance', $commTraderParrain);
+            Log::info('Commission parrain fournisseur ajouté', ['parrain_id' => $fournisseur->parrain, 'commission' => $commTraderParrain]);
         }
 
         if ($client->parrain) {
             $commSenderParrain = $pourcentSomme * 0.05;
             $commSenderParrainWallet = Wallet::where('user_id', $client->parrain)->first();
-            if ($commSenderParrainWallet) {
-                $commSenderParrainWallet->increment('balance', $commSenderParrain);
-            }
+            $commSenderParrainWallet->increment('balance', $commSenderParrain);
+            Log::info('Commission parrain client ajouté', ['parrain_id' => $client->parrain, 'commission' => $commSenderParrain]);
         }
 
-        // Créditer le portefeuille du fournisseur
+        // Débit
         $fournisseurWallet->increment('balance', $totalSom);
+        Log::info('Solde du portefeuille du fournisseur mis à jour', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
 
-        // transactions fournisseur
-        $this->createTransaction(Auth::user()->id, $fournisseur->id, 'Reception', $totalSom);
+        // Transactions
+        $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Reception', $totalSom);
+        Log::info('Transaction fournisseur créée', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
 
         // Montant total de la transaction
         $prixTotal = $this->notification->data['prixTrade'];
-
-        // Calcul des 10% pour l'admin
         $montantAdmin = $prixTotal * 0.10;
-
-        // Montant restant pour le livreur après déduction
         $montantLivreur = $prixTotal - $montantAdmin;
 
-        // Créditer le portefeuille du livreur
         $livreurWallet->increment('balance', $montantLivreur);
+        Log::info('Solde du portefeuille du livreur mis à jour', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
-        // transaction livreur
-        $this->createTransaction(Auth::user()->id, $livreur->id, 'Reception', $montantLivreur);
+        $this->createTransaction(Auth::user()->id, $this->notification->data['id_livreur'], 'Reception', $montantLivreur);
+        Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
-        // Trouver l'ID de l'administrateur
+        // Administrateur
         $admin = Admin::find(1);
         if ($admin) {
             $adminWallet = Wallet::where('user_id', $admin->user_id)->first();
             if ($adminWallet) {
                 $adminWallet->increment('balance', $montantAdmin);
+                Log::info('Solde du portefeuille de l\'administrateur mis à jour', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
                 $this->createTransaction(Auth::user()->id, $admin->user_id, 'Commission', $montantAdmin);
+                Log::info('Transaction administrateur créée', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
             }
         }
 
@@ -1192,11 +1204,11 @@ class NotificationShow extends Component
         Notification::send($fournisseur, new colisaccept($data));
         Notification::send($livreur, new colisaccept($data));
 
+        Log::info('Notifications envoyées', ['client_id' => $client->id, 'fournisseur_id' => $fournisseur->id, 'livreur_id' => $livreur->id]);
+
         $this->notification->update(['reponse' => 'colisaccept']);
-        $this->validate();
+        Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
     }
-
-
 
 
     public function refuseColis()
@@ -1533,6 +1545,7 @@ class NotificationShow extends Component
         $transaction->amount = $amount;
         $transaction->save();
     }
+
     public function commentFormGroupe()
     {
         // Récupérer l'utilisateur authentifié
