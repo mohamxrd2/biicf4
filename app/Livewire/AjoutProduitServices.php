@@ -234,10 +234,10 @@ class AjoutProduitServices extends Component
             'ville' => 'required|string',
             'commune' => 'required|string',
             //photo
-            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
-            'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
-            'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
-            'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
+            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
 
         ], [
             'name.required' => 'Le nom est requis.',
@@ -246,6 +246,7 @@ class AjoutProduitServices extends Component
             'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
         ]);
 
+        // 'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
 
         try {
             // Création de la catégorie si elle n'existe pas encore
