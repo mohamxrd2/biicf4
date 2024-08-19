@@ -1096,14 +1096,15 @@ class NotificationShow extends Component
 
     public function acceptColis()
     {
-
         $livreur = User::find($this->notification->data['id_livreur']);
-
         $fournisseur = User::find($this->notification->data['id_trader']);
-
         $client = User::find(Auth::user()->id);
-
         $produit = ProduitService::find($this->notification->data['idProd']);
+
+        if (!$livreur || !$fournisseur || !$client) {
+            session()->flash('error', 'Un des utilisateurs spécifiés est introuvable.');
+            return;
+        }
 
         $data = [
             'idProd' => $this->notification->data['idProd'],
@@ -1117,63 +1118,50 @@ class NotificationShow extends Component
             'prixProd' => $this->notification->data['prixProd'],
         ];
 
-        // recuperation de prote-feuille
-
+        // récupération de portefeuille
         $clientWallet = Wallet::where('user_id', Auth::user()->id)->first();
-
         if (!$clientWallet) {
             session()->flash('error', 'Portefeuille du client introuvable.');
             return;
         }
 
         $fournisseurWallet = Wallet::where('user_id', $this->notification->data['id_trader'])->first();
-
         if (!$fournisseurWallet) {
             session()->flash('error', 'Portefeuille du fournisseur introuvable.');
             return;
         }
 
         $livreurWallet = Wallet::where('user_id', $this->notification->data['id_livreur'])->first();
-
         if (!$livreurWallet) {
             session()->flash('error', 'Portefeuille du livreur introuvable.');
             return;
         }
 
         $requiredAmount = $this->notification->data['quantite'] * $this->notification->data['prixProd'];
-
         $pourcentSomme  = $requiredAmount * 0.1;
-
         $totalSom = $requiredAmount - $pourcentSomme;
 
         if ($fournisseur->parrain) {
             $commTraderParrain = $pourcentSomme * 0.05;
-
             $commTraderParrainWallet = Wallet::where('user_id', $fournisseur->parrain)->first();
-
-            $commTraderParrainWallet->increment('balance', $commTraderParrain);
+            if ($commTraderParrainWallet) {
+                $commTraderParrainWallet->increment('balance', $commTraderParrain);
+            }
         }
 
         if ($client->parrain) {
             $commSenderParrain = $pourcentSomme * 0.05;
-
             $commSenderParrainWallet = Wallet::where('user_id', $client->parrain)->first();
-
-            $commSenderParrainWallet->increment('balance', $commSenderParrain);
+            if ($commSenderParrainWallet) {
+                $commSenderParrainWallet->increment('balance', $commSenderParrain);
+            }
         }
 
-        // debit
-
-
+        // Créditer le portefeuille du fournisseur
         $fournisseurWallet->increment('balance', $totalSom);
 
-
-
-        // transactions
-
-        //transation fournisseur
-
-        $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Reception', $totalSom);
+        // transactions fournisseur
+        $this->createTransaction(Auth::user()->id, $fournisseur->id, 'Reception', $totalSom);
 
         // Montant total de la transaction
         $prixTotal = $this->notification->data['prixTrade'];
@@ -1184,41 +1172,32 @@ class NotificationShow extends Component
         // Montant restant pour le livreur après déduction
         $montantLivreur = $prixTotal - $montantAdmin;
 
+        // Créditer le portefeuille du livreur
         $livreurWallet->increment('balance', $montantLivreur);
-        //transtion livreur
 
-        $this->createTransaction(Auth::user()->id, $this->notification->data['id_livreur'], 'Reception', $montantLivreur);
+        // transaction livreur
+        $this->createTransaction(Auth::user()->id, $livreur->id, 'Reception', $montantLivreur);
 
-
-        // Trouver l'ID de l'administrateur (supposons qu'il s'agit de l'utilisateur avec l'ID 1)
+        // Trouver l'ID de l'administrateur
         $admin = Admin::find(1);
-
-        // Vérifier si l'administrateur existe
         if ($admin) {
-            // Récupérer le portefeuille de l'administrateur en utilisant son user_id
             $adminWallet = Wallet::where('user_id', $admin->user_id)->first();
-
-            // Vérifier si le portefeuille de l'administrateur existe
             if ($adminWallet) {
-                // Incrémenter le solde du portefeuille de l'administrateur avec le montant calculé
                 $adminWallet->increment('balance', $montantAdmin);
-
-                // Créer une transaction pour l'administrateur
                 $this->createTransaction(Auth::user()->id, $admin->user_id, 'Commission', $montantAdmin);
             }
         }
 
-
         Notification::send($client, new colisaccept($data));
-
         Notification::send($fournisseur, new colisaccept($data));
-
         Notification::send($livreur, new colisaccept($data));
-
 
         $this->notification->update(['reponse' => 'colisaccept']);
         $this->validate();
     }
+
+
+
 
     public function refuseColis()
 
@@ -1273,65 +1252,6 @@ class NotificationShow extends Component
         $this->validate();
     }
 
-    // public function accepter($textareaContent = null)
-    // {
-    //     // Récupérez le contenu du textarea depuis la requête
-    //     $textareaContent = $textareaContent ?? '';
-
-    //     $userId = Auth::id();
-    //     $userWallet = Wallet::where('user_id', $userId)->first();
-    //     if (!$userWallet) {
-    //         session()->flash('error', 'Portefeuille introuvable.');
-    //         return;
-    //     }
-
-    //     $notification = NotificationEd::find($this->notification->id);
-    //     $notification->reponse = 'accepte';
-    //     $notification->save();
-
-    //     // $userSender = User::find($this->notification->data['userSender']);
-    //     $requiredAmount = $this->notification->data['montantTotal'];
-    //     $pourcentSomme  = $requiredAmount * 0.1;
-    //     $totalSom = $requiredAmount - $pourcentSomme;
-
-    //     $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
-
-    //     $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
-
-    //     // $userTrader = User::find($userId);
-    //     // $this->handleCommission($userTrader, $pourcentSomme, 'Trader');
-    //     // $this->handleCommission($userSender, $pourcentSomme, 'Sender');
-
-    //     // $userWallet->increment('balance', $totalSom);
-    //     // $this->createTransaction($userSender->id, $userId, 'Reception', $totalSom);
-    //     // $this->createTransaction($userSender->id, $userId, 'Envoie', $requiredAmount);
-
-    //     // Notification::send($userSender, new acceptAchat($this->messageA));
-
-    //     $data = [
-    //         'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
-    //         'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
-    //         'totalSom' => $requiredAmount,
-    //         'quantite' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
-    //         'localite' =>  $this->notification->data['localite'],
-    //         'userSender' =>  $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
-    //         'code_livr' => $code_livr,
-    //         'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
-    //         'textareaContent' => $textareaContent
-
-    //     ];
-
-    //     $livreurs = User::where('actor_type', 'livreur')->get();
-
-    //     foreach ($livreurs as $livreur) {
-    //         Notification::send($livreur, new livraisonVerif($data));
-    //     }
-
-    //     session()->flash('success', 'Achat accepté.');
-
-    //     $this->modalOpen = false;
-    //     $this->notification->update(['reponse' => 'accepte']);
-    // }
 
 
     public function accepter($textareaContent = null)
@@ -1613,7 +1533,6 @@ class NotificationShow extends Component
         $transaction->amount = $amount;
         $transaction->save();
     }
-
     public function commentFormGroupe()
     {
         // Récupérer l'utilisateur authentifié

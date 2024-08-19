@@ -2491,11 +2491,12 @@
                 <div class="lg:w-1/2 w-full mr-2 relative mt-4">
                     <select id="select" wire:model.defer="matine" name="matine"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        <option selected disabled>Choisir matin ou le soir</option>
+                        <option value="" disabled selected>Choisir la période de la journée</option>
                         <option value="Matin">Matin</option>
-                        <option value="Matin">Apres-midi</option>
+                        <option value="Apres-midi">Après-midi</option>
                         <option value="Soir">Soir</option>
                     </select>
+
 
                     @error('matine')
                         <span class="text-red-500 mt-4">{{ $message }}</span>
