@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\livraisons;
+use App\Models\Livraisons;
 
 class Demande extends Component
 {
@@ -11,7 +11,7 @@ class Demande extends Component
 
     public function mount()
     {
-        $this->livraisons = livraisons::with('user')->get();
+        $this->livraisons = Livraisons::with('user')->get();
     }
 
 
@@ -20,5 +20,5 @@ class Demande extends Component
         return view('livewire.demande');
     }
 
-    
+
 }

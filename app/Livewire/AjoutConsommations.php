@@ -33,6 +33,7 @@ class AjoutConsommations extends Component
     public $qualification  = '';
     public $specialite  = '';
     public $descrip  = '';
+    public $Quantite  = '';
 
 
     public $produits = [];
@@ -150,7 +151,7 @@ class AjoutConsommations extends Component
     }
     public function submit()
     {
-        $this->validate([
+        dd($this->validate([
             'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
             'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
@@ -160,19 +161,21 @@ class AjoutConsommations extends Component
             'format' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'qteProd' => $this->type == 'Produit' ? 'required|integer' : 'nullable|integer',
+            'specification' => $this->type == 'Produit' ? 'required|string'  : 'nullable|string',
+            'periodicite' => $this->type == 'Produit' ? 'required|string'  : 'nullable|string',
             //
-            'specification' => 'required|string',
-            'periodicite' => 'required|string',
             'prix' => 'required|integer',
             // service
             'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'Quantite' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
+            'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
 
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
             'name.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
             'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
-        ]);
+        ]));
 
         try {
             // Création de la catégorie si elle n'existe pas encore
