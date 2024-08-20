@@ -79,8 +79,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-3 mt-2">
-                    {{-- <div class="col-span-1">
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <div class="col-span-1">
                         <select name="zone_economique"
                             class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none">
                             <option disabled selected>Zone economique</option>
@@ -101,12 +101,6 @@
 
                         </select>
                     </div>
-                    <div class="col-span-1">
-                        <input name="qte_search" type="text"
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Quantité souhaité">
-                    </div> --}}
-
                 </div>
 
             </form>
@@ -228,8 +222,6 @@
                                 $distinctCondProds = $group->pluck('condProd')->unique();
                                 $distinctFormatProds = $group->pluck('formatProd')->unique();
                                 $distinctSpecifications = $group->pluck('specification')->unique();
-                                $distinctSpecification2s = $group->pluck('specification2')->unique();
-                                $distinctSpecification3s = $group->pluck('specification3')->unique();
                                 $distinctParticularites = $group->pluck('Particularite')->unique();
                                 $distinctUserIds = $group->pluck('user_id')->unique();
                                 $distinctUserCount = $distinctUserIds->count();
@@ -268,12 +260,7 @@
                                                     <p>Condition : {{ $distinctCondProds->join(', ') }}</p>
                                                     <p>Format : {{ $distinctFormatProds->join(', ') }}</p>
                                                     <p>Spécification : {{ $distinctSpecifications->join(', ') }}</p>
-                                                    @if ($distinctSpecification2s->isNotEmpty())
-                                                        <p>Spécification 2 : {{ $distinctSpecification2s->join(', ') }}</p>
-                                                    @endif
-                                                    @if ($distinctSpecification3s->isNotEmpty())
-                                                        <p>Spécification 3 : {{ $distinctSpecification3s->join(', ') }}</p>
-                                                    @endif
+
                                                     <p>Particularité : {{ $distinctParticularites->join(', ') }}</p>
                                                     <button @click="open = false"
                                                         class="bg-red-500 text-white px-4 py-2 rounded">
@@ -305,14 +292,7 @@
                                     <div class="w-full text-center mt-4">
                                         <input type="hidden" name="distinctSpecifications"
                                             value="{{ $distinctSpecifications->join(', ') }}">
-                                        @if ($distinctSpecification2s->isNotEmpty())
-                                            <input type="hidden" name="distinctSpecification2s"
-                                                value="{{ $distinctSpecification2s->join(', ') }}">
-                                        @endif
-                                        @if ($distinctSpecification3s->isNotEmpty())
-                                            <input type="hidden" name="distinctSpecification3s"
-                                                value="{{ $distinctSpecification3s->join(', ') }}">
-                                        @endif
+                                        
                                         <input type="hidden" name="name" value="{{ $name }}">
                                         <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPrice }}">
                                         <input type="hidden" name="reference" value="{{ $reference }}">

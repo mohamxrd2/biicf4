@@ -268,8 +268,6 @@ class AjoutProduitServices extends Component
                 'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
                 'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
                 'specification' => $this->type === 'Produit' ? $this->specification : null,
-                // 'specification2' => $this->type === 'Produit' ? $this->specification2 : null,
-                // 'specification3' => $this->type === 'Produit' ? $this->specification3 : null,
                 //
                 'prix' => $this->prix,
                 //service

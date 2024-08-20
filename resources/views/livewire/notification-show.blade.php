@@ -378,16 +378,33 @@
                         <h2 class="text-lg font-semibold text-gray-700 mb-2">Informations de la Commande</h2>
                         <ul>
                             <li class="flex justify-between py-1"><span class="font-medium">Numéro de Commande:</span>
-                                <span>#12345</span>
+                                <span>{{ $notification->data['code_unique'] }}</span>
                             </li>
-                            <li class="flex justify-between py-1"><span class="font-medium">Date de Commande:</span>
-                                <span>2024-08-01</span>
+                            <li class="flex justify-between py-1"><span class="font-medium">Date de Commande/
+                                    Heure:</span>
+                                <span>{{ $notification->created_at }}</span>
                             </li>
                             <li class="flex justify-between py-1"><span class="font-medium">Fournisseur:</span>
-                                <span>XYZ Corp</span>
+                                <span>{{ Auth::user()->name }}</span>
                             </li>
-                            <li class="flex justify-between py-1"><span class="font-medium">Statut:</span> <span>En
-                                    attente de validation</span></li>
+                            <li class="flex justify-between py-1">
+                                <span class="font-medium">Statut:</span>
+                                <span
+                                    class="
+                                       @if ($notification->reponse == 'accepte') text-green-500
+                                       @elseif($notification->reponse == 'refuser') text-red-500
+                                       @else  text-yellow-500 @endif">
+                                    @if ($notification->reponse == 'accepte')
+                                        Validé
+                                    @elseif($notification->reponse == 'refuser')
+                                        Rejeté
+                                    @else
+                                        En attente de validation
+                                    @endif
+                                </span>
+
+                            </li>
+
                         </ul>
                     </div>
 

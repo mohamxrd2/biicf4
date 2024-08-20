@@ -18,7 +18,7 @@ class ProduitServiceFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'type' => $this->faker->randomElement(['services', 'produits']),
+            'type' => $this->faker->randomElement(['service', 'produit']),
             'condProd' => $this->faker->words(5, true), // Limite de 5 mots
             'formatProd' => $this->faker->words(5, true), // Limite de 5 mots
             'qteProd_min' => $this->faker->randomNumber(),

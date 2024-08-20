@@ -36,18 +36,23 @@ class SearchBar extends Component
             ->orderBy('created_at', 'desc');
 
         if ($this->keyword) {
-            $produits->where('name', 'like', '%' . $this->keyword . '%');
+            $keyword = strtolower(addslashes($this->keyword));
+            $produits->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%']);
         }
 
         if ($this->zone_economique) {
-            $produits->where(function ($query) {
-                $query->where('zonecoServ', 'like', '%' . $this->zone_economique . '%')
-                    ->orWhere('villeServ', 'like', '%' . $this->zone_economique . '%')
-                    ->orWhere('continent', 'like', '%' . $this->zone_economique . '%')
-                    ->orWhere('Sous-Region', 'like', '%' . $this->zone_economique . '%')
-                    ->orWhere('comnServ', 'like', '%' . $this->zone_economique . '%');
+            $zone_economique = strtolower(addslashes($this->zone_economique));
+            $produits->where(function ($query) use ($zone_economique) {
+                $query->whereRaw('LOWER(zonecoServ) LIKE ?', ['%' . $zone_economique . '%'])
+                    ->orWhereRaw('LOWER(villeServ) LIKE ?', ['%' . $zone_economique . '%'])
+                    ->orWhereRaw('LOWER(continent) LIKE ?', ['%' . $zone_economique . '%'])
+                    ->orWhereRaw('LOWER(sous_region) LIKE ?', ['%' . $zone_economique . '%'])
+                    ->orWhereRaw('LOWER(pays) LIKE ?', ['%' . $zone_economique . '%'])
+                    ->orWhereRaw('LOWER(comnServ) LIKE ?', ['%' . $zone_economique . '%']);
             });
         }
+
+
 
         if ($this->type) {
             $produits->where('type', $this->type);
@@ -59,10 +64,11 @@ class SearchBar extends Component
 
         if ($this->qte) {
             $produits->where(function ($query) {
-                $query->where('qteProd_min', '>=', $this->qte)
-                    ->orWhere('qteProd_max', '<=', $this->qte);
+                $query->where('qteProd_min', '<=', $this->qte)
+                    ->where('qteProd_max', '>=', $this->qte);
             });
         }
+
 
 
 

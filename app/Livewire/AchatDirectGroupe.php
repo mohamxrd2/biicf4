@@ -20,6 +20,7 @@ use App\Notifications\AchatGroupBiicf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
+use Illuminate\Support\Str;
 
 class AchatDirectGroupe extends Component
 {
@@ -116,6 +117,7 @@ class AchatDirectGroupe extends Component
                 'specificite' => $specificites,
                 'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
+                'code_unique' => $this->generateUniqueReference(),
             ]);
 
             $userWallet->decrement('balance', $montantTotal);
@@ -158,7 +160,10 @@ class AchatDirectGroupe extends Component
         }
     }
 
-
+    protected function generateUniqueReference()
+    {
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
+    }
 
 
     public function render()
