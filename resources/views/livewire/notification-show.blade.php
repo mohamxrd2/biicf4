@@ -2289,7 +2289,7 @@
 
                                     if (highestPricedComment && highestPricedComment.nameUser) {
                                         prixTradeError.textContent =
-                                            `L'utilisateur avec le prix le plus élevé est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                                            `Le livreur avec le meilleur prix  est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
                                     } else {
                                         prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
                                     }

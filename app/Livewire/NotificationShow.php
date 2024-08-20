@@ -320,6 +320,8 @@ class NotificationShow extends Component
         // Vérifier si $tempsEcoule est écoulé
         $this->isTempsEcoule = $this->tempsEcoule && $this->tempsEcoule->isPast();
 
+        
+
         //gestion du temps et de la soumission dans countdown table
         $countdown = Countdown::where('user_id', Auth::id())
             ->where('notified', false)
@@ -394,8 +396,13 @@ class NotificationShow extends Component
 
     public function ciblageLivreurs()
     {
-        $this->Idsender = $this->notification->data['userSender'];
+        // Vérification de l'existence de la clé 'userSender' dans les données de la notification
+        $this->Idsender = $this->notification->data['userSender'] ?? null;
 
+        if ($this->Idsender === null) {
+            // Gérer le cas où 'userSender' est null, par exemple, arrêter l'exécution ou continuer selon la logique souhaitée
+            return; // Arrêter l'exécution si 'userSender' est null
+        }
         // Récupérer les informations du client
         $client = User::findOrFail($this->Idsender);
         $this->clientContinent = $client->continent;
@@ -1801,6 +1808,7 @@ class NotificationShow extends Component
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
+        $this->dispatch('$refresh');
     }
     public function commentoffgroup()
     {
