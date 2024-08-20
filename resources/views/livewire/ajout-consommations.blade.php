@@ -200,30 +200,23 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Experience <span
-                                        class="text-red-500 10px">*</span></label>
-                                <select wire:model='qualification' :disabled="locked"
-                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                                    <option value="" disabled selected>Expérience dans le domaine</option>
-                                    <option value="Moins de 1 an">Moins de 1 an</option>
-                                    <option value="De 1 à 5 ans">De 1 à 5 ans</option>
-                                    <option value="De 5 à 10 ans">De 5 à 10 ans</option>
-                                    <option value="Plus de 10 ans">Plus de 10 ans</option>
-                                </select>
-                                @error('qualification')
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2">Prestation/Description<span
+                                    class="text-red-500 10px">*</span></label>
+                                <input type="text" wire:model='descrip' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md"
+                                    placeholder="Petite Description">
+                                @error('descrip')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
-
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécialité<span
-                                        class="text-red-500 10px">*</span></label>
-                                <input type="text" wire:model='specification' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('specification')
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
+                                <input type="number" wire:model='Quantite' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="">
+                                @error('Quantite')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
-
                             </div>
 
                             <div>
@@ -242,7 +235,8 @@
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Prix Unitaire</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Prix Unitaire<span
+                                    class="text-red-500 10px">*</span></label>
                                 <input type="text" wire:model='prix'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                                 @error('prix')

@@ -23,8 +23,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Entrez le nom de la
-                                catégorie<span
-                                class="text-red-500 10px">*</span></label>
+                                catégorie<span class="text-red-500 10px">*</span></label>
                             <input type="text" wire:model.debounce.30ms="categorie"
                                 class="w-full p-2 border border-gray-300 rounded-md"
                                 placeholder="Entrez le nom de la catégorie">
@@ -221,7 +220,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Experience <span
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Année d'Experience <span
                                         class="text-red-500 10px">*</span></label>
                                 <select wire:model='qualification' :disabled="locked"
                                     class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
@@ -245,41 +244,48 @@
                                 @enderror
 
                             </div>
+
+
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Particularité</label>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2">Prestation/Description</label>
                                 <input type="text" wire:model='descrip' :disabled="locked"
                                     class="w-full p-2 border border-gray-300 rounded-md"
                                     placeholder="Petite Description">
                                 @error('descrip')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
-
                             </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
+                                <input type="number" wire:model='Quantite' :disabled="locked"
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="">
+                                @error('Quantite')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Prix Unitaire<span
-                                    class="text-red-500 10px">*</span></label>
+                                        class="text-red-500 10px">*</span></label>
                                 <input type="text" wire:model='prix'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                                 @error('prix')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
-
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-
-                        </div>
                     </div>
-
                     <!-- Localisation (commune aux deux types) -->
                     <h1 class="text-center text-xl font-bold mb-8">Localisation Du Produit & Service</h1>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
                         <div class="col-span-1">
-                            <label for="continent"
-                                class="block text-sm font-medium text-gray-700 mb-2">Continent<span
-                                class="text-red-500 10px">*</span></label>
+                            <label for="continent" class="block text-sm font-medium text-gray-700 mb-2">Continent<span
+                                    class="text-red-500 10px">*</span></label>
                             <select id="continent" name="continent" wire:model='selectedContinent'
                                 class="w-full p-2 border border-gray-300 rounded-md">
                                 <option value="">Sélectionnez un continent</option>
@@ -294,7 +300,7 @@
 
                         <div class="col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Sous-Régions<span
-                                class="text-red-500 10px">*</span></label>
+                                    class="text-red-500 10px">*</span></label>
 
                             <select id="continent" name="continent" wire:model='selectedSous_region'
                                 class="w-full p-2 border border-gray-300 rounded-md">
@@ -311,7 +317,7 @@
 
                         <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
                             <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays<span
-                                class="text-red-500 10px">*</span></label>
+                                    class="text-red-500 10px">*</span></label>
                             <select id="country" x-model="selectedCountry" wire:model="pays"
                                 class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <option value="" disabled selected>Choisissez un pays</option>
@@ -326,7 +332,7 @@
 
                         <div class="col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Département<span
-                                class="text-red-500 10px">*</span></label>
+                                    class="text-red-500 10px">*</span></label>
                             <input type="text" wire:model='depart'
                                 class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('depart')
@@ -336,7 +342,7 @@
 
                         <div class="col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ville/Sous-Prefecture<span
-                                class="text-red-500 10px">*</span></label>
+                                    class="text-red-500 10px">*</span></label>
                             <input type="text" wire:model='ville'
                                 class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('ville')
@@ -346,7 +352,7 @@
 
                         <div class="col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Localité<span
-                                class="text-red-500 10px">*</span></label>
+                                    class="text-red-500 10px">*</span></label>
                             <input type="text" wire:model='commune'
                                 class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                             @error('commune')
@@ -360,12 +366,13 @@
                     <h1 class="text-center text-xl font-bold mb-8">Ajout D'Image</h1>
                     <div class="grid grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image1<label>
-                            <input type="file" wire:model="photoProd1"
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                            @error('photoProd1')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image1<span
+                                    class="text-red-500 10px">*</span><label>
+                                    <input type="file" wire:model="photoProd1"
+                                        class="w-full p-2 border border-gray-300 rounded-md">
+                                    @error('photoProd1')
+                                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                                    @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Image2</label>
