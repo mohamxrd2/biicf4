@@ -1808,7 +1808,6 @@ class NotificationShow extends Component
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
-        $this->dispatch('form-submitted');
     }
     public function commentoffgroup()
     {
