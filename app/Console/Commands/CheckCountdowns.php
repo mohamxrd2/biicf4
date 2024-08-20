@@ -127,12 +127,12 @@ class CheckCountdowns extends Command
                     // Supprimer les commentaires avec ce code unique
                     Comment::where('code_unique', $code_unique)->delete();
 
-                    // $notificationExists = DatabaseNotification::where(function ($query) use ($code_unique) {
-                    //     $query->where('type', 'App\Notifications\livraisonVerif')
-                    //         ->orWhere('type', 'App\Notifications\AppelOffreGrouperNotification');
-                    // })
-                    //     ->whereJsonContains('data->code_livr', $code_unique)
-                    //     ->exists();
+                    $notificationExists = DatabaseNotification::where(function ($query) use ($code_unique) {
+                        $query->where('type', 'App\Notifications\livraisonVerif')
+                            ->orWhere('type', 'App\Notifications\AppelOffreGrouperNotification');
+                    })
+                        ->whereJsonContains('data->code_livr', $code_unique)
+                        ->exists();
 
 
                     // if ($notificationExists) {

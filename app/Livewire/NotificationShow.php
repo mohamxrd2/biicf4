@@ -320,7 +320,7 @@ class NotificationShow extends Component
         // Vérifier si $tempsEcoule est écoulé
         $this->isTempsEcoule = $this->tempsEcoule && $this->tempsEcoule->isPast();
 
-        
+
 
         //gestion du temps et de la soumission dans countdown table
         $countdown = Countdown::where('user_id', Auth::id())
@@ -1808,7 +1808,7 @@ class NotificationShow extends Component
 
         // Réinitialiser le champ du formulaire
         $this->reset(['prixTrade']);
-        $this->dispatch('$refresh');
+        $this->dispatch('form-submitted');
     }
     public function commentoffgroup()
     {

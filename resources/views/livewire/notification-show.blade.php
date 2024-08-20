@@ -540,12 +540,18 @@
                                                         <div>
                                                             <h3>Détails de la commande</h3>
                                                             <p><strong>ID de client :</strong> {{ $Idsender }}</p>
-                                                            <p><strong>Continent du client :</strong> {{ $clientContinent }}</p>
-                                                            <p><strong>Sous-Region du client :</strong> {{ $clientSous_Region }}</p>
-                                                            <p><strong>Pays du client :</strong> {{ $clientPays }}</p>
-                                                            <p><strong>Departement du client :</strong> {{ $clientDepartement }}</p>
-                                                            <p><strong>Commune du client :</strong>{{ $clientCommune }}</p>
-                                                            <p><strong>le nombre total disponible :</strong>{{ $livreursCount }}</p>
+                                                            <p><strong>Continent du client :</strong>
+                                                                {{ $clientContinent }}</p>
+                                                            <p><strong>Sous-Region du client :</strong>
+                                                                {{ $clientSous_Region }}</p>
+                                                            <p><strong>Pays du client :</strong> {{ $clientPays }}
+                                                            </p>
+                                                            <p><strong>Departement du client :</strong>
+                                                                {{ $clientDepartement }}</p>
+                                                            <p><strong>Commune du client :</strong>{{ $clientCommune }}
+                                                            </p>
+                                                            <p><strong>le nombre total disponible
+                                                                    :</strong>{{ $livreursCount }}</p>
 
                                                             <h3>Liste des livreurs disponibles</h3>
                                                             @if ($livreurs->isEmpty())
@@ -2093,6 +2099,7 @@
                 </a>
             </div>
             <div class="lg:col-span-1 col-span-2">
+                <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
 
                 <div class="p-4">
 
@@ -2122,6 +2129,8 @@
 
                             {{-- deux form  --}}
                             @if (is_array($nameSender))
+                                <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
+
                                 <form wire:submit.prevent="commentFormLivrGroup">
 
                                     <div
@@ -2170,6 +2179,7 @@
                                     </div>
                                 </form>
                             @else
+
                                 <form wire:submit.prevent="commentFormLivr">
 
                                     <div
@@ -2221,7 +2231,6 @@
                             @endif
 
                         </div>
-                        <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
 
                     </div>
 
@@ -2238,12 +2247,19 @@
                             </div>
                         @endif
                     </div>
-                    {{-- <script>
+                    <div class="timer" x-data="timer(new Date().setDate(new Date().getDate() + 1))" x-init="init();">
+                        <h1 x-text="time().days"></h1>
+                        <h1 x-text="time().hours"></h1>
+                        <h1 x-text="time().minutes"></h1>
+                        <h1 x-text="time().seconds"></h1>
+                    </div>
+
+                    <script>
                         window.addEventListener('form-submitted', function() {
                             // Reload the page
                             location.reload();
                         });
-                    </script> --}}
+                    </script>
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const prixTradeInput = document.getElementById('prixTrade');
@@ -2298,6 +2314,7 @@
                             }
                         });
                     </script>
+
 
 
                 </div>
