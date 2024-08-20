@@ -165,8 +165,9 @@
                     @enderror
                 </div>
 
-                <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
-                    <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays</label>
+                {{-- <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
+                    <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays<span
+                        class="text-red-500 10px">*</span></label>
                     <select id="country" x-model="selectedCountry" wire:model="pays"
                         class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                         <option value="" disabled selected>Choisissez un pays</option>
@@ -177,7 +178,7 @@
                     @error('pays')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
-                </div>
+                </div> --}}
 
                 <div class="col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>
@@ -254,4 +255,3 @@
 
 
 </div>
-<script src="{{ asset('js/country.js') }}"></script>

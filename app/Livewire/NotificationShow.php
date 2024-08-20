@@ -148,6 +148,15 @@ class NotificationShow extends Component
     public $sumquantite;
     public $datePlusAncienne;
     public $appelOffreGroupcount;
+    //ciblage des livreur
+    public $clientPays;
+    public $clientCommune;
+    public $clientContinent;
+    public $clientSous_Region;
+    public $clientDepartement;
+    public $livreurs;
+    public $Idsender;
+    public $livreursCount;
 
 
     protected $rules = [
@@ -376,29 +385,33 @@ class NotificationShow extends Component
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
 
-        // $this->loadDetails();
+        $this->ciblageLivreurs();
     }
 
-    // public $notificationId;
-    // public $clientPays;
-    // public $clientVille;
-    // public $livreurs;
-    // public $Idsender;
 
 
 
-    // public function loadDetails()
-    // {
-    //     $this->Idsender = $this->notification->data['userSender'];
+    public function ciblageLivreurs()
+    {
+        $this->Idsender = $this->notification->data['userSender'];
 
-    //     $client = User::findOrFail($this->Idsender);
-    //     $this->clientPays = $client->country;
-    //     $this->clientVille = $client->address;
+        $client = User::findOrFail($this->Idsender);
+        $this->clientContinent = $client->continent;
+        $this->clientSous_Region = $client->sous_region;
+        $this->clientPays = $client->country;
+        $this->clientDepartement = $client->departe;
+        $this->clientCommune = $client->commune;
 
-    //     $this->livreurs = Livraisons::where('pays', $this->clientPays)
-    //         ->where('ville', $this->clientVille)
-    //         ->get();
-    // }
+        $this->livreurs = Livraisons::whereRaw('LOWER(pays) = ?', [strtolower($this->clientPays)])
+            ->whereRaw('LOWER(commune) = ?', [strtolower($this->clientCommune)])
+            ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
+            ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)])
+            ->whereRaw('LOWER(departe) = ?', [strtolower($this->clientDepartement)])
+            ->get();
+
+
+        $this->livreursCount = $this->livreurs->count();
+    }
 
     public function storeoffre()
     {
@@ -1263,9 +1276,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'refuseVereif']);
         $this->validate();
     }
-
-
-
     public function accepter($textareaContent = null)
     {
         // Récupérez le contenu du textarea depuis la requête

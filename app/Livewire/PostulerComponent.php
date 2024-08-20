@@ -91,7 +91,7 @@ class PostulerComponent extends Component
             'vehicle3' => 'required|string',
             'selectedContinent' => 'required|string',
             'selectedSous_region' => 'required|string',
-            'pays' => 'required|string',
+            // 'pays' => 'required|string',
             'depart' => 'required|string',
             'ville' => 'required|string',
             'localite' => 'required|string',
@@ -112,7 +112,7 @@ class PostulerComponent extends Component
         $livraison->ville = $this->ville;
         $livraison->commune = $this->localite;
         $livraison->etat = $this->etat;
-        $livraison->pays = $this->pays;
+        // $livraison->pays = $this->pays;
 
         $livraison->save();
 

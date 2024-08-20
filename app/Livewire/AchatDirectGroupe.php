@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 
 class AchatDirectGroupe extends Component
 {
-    public $id;
+    public $produitId;
     public $produit;
     public $userId;
     public $selectedOption;
@@ -44,10 +44,11 @@ class AchatDirectGroupe extends Component
     public $photoProd;
     public $idProd;
     public $prix;
+    public $code_unique;
 
     public function mount($id)
     {
-        $this->id = $id;
+        $this->produitId = $id;
         $this->produit = ProduitService::findOrFail($id);
         $this->userId = Auth::guard('web')->id();
         $this->nameProd = $this->produit->name;
@@ -56,7 +57,13 @@ class AchatDirectGroupe extends Component
         $this->photoProd = $this->produit->photoProd1;
         $this->idProd = $this->produit->id;
         $this->prix = $this->produit->prix;
+        $this->code_unique = $this->generateUniqueReference();
     }
+    protected function generateUniqueReference()
+    {
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
+    }
+
     public function AchatDirectForm()
     {
         $validated = $this->validate([
@@ -117,9 +124,10 @@ class AchatDirectGroupe extends Component
                 'specificite' => $specificites,
                 'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
-                'code_unique' => $this->generateUniqueReference(),
-            ]);
+                'code_unique' => $this->code_unique,
 
+            ]);
+            // dd($achat);
             $userWallet->decrement('balance', $montantTotal);
 
             $transaction = new Transaction();
@@ -160,16 +168,12 @@ class AchatDirectGroupe extends Component
         }
     }
 
-    protected function generateUniqueReference()
-    {
-        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
-    }
 
 
     public function render()
     {
         // Récupérer le produit ou échouer
-        $produit = ProduitService::findOrFail($this->id);
+        $produit = ProduitService::findOrFail($this->produitId);
 
         // Récupérer l'identifiant de l'utilisateur connecté
         $userId = Auth::guard('web')->id();
