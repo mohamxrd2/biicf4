@@ -135,11 +135,11 @@ class CheckCountdowns extends Command
                         ->exists();
 
 
-                    // if ($notificationExists) {
-                    //     // Supprimez toutes les notifications qui contiennent ce code unique dans 'data'
-                    //     DatabaseNotification::whereJsonContains('data->code_livr', $code_unique)
-                    //         ->delete();
-                    // }
+                    if ($notificationExists) {
+                        // Supprimez toutes les notifications qui contiennent ce code unique dans 'data'
+                        DatabaseNotification::whereJsonContains('data->code_livr', $code_unique)
+                            ->delete();
+                    }
 
                     // Mettre à jour le statut notified à true
                     $countdown->update(['notified' => true]);
