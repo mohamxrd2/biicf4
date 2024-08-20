@@ -156,6 +156,7 @@ class NotificationShow extends Component
     public $clientDepartement;
     public $livreurs;
     public $Idsender;
+    public $livreursIds;
     public $livreursCount;
 
 
@@ -395,6 +396,7 @@ class NotificationShow extends Component
     {
         $this->Idsender = $this->notification->data['userSender'];
 
+        // Récupérer les informations du client
         $client = User::findOrFail($this->Idsender);
         $this->clientContinent = $client->continent;
         $this->clientSous_Region = $client->sous_region;
@@ -402,16 +404,45 @@ class NotificationShow extends Component
         $this->clientDepartement = $client->departe;
         $this->clientCommune = $client->commune;
 
-        $this->livreurs = Livraisons::whereRaw('LOWER(pays) = ?', [strtolower($this->clientPays)])
-            ->whereRaw('LOWER(commune) = ?', [strtolower($this->clientCommune)])
-            ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
-            ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)])
-            ->whereRaw('LOWER(departe) = ?', [strtolower($this->clientDepartement)])
+        // Récupérer les livreurs éligibles en fonction de leurs préférences
+        $this->livreurs = Livraisons::where(function ($query) {
+            $query->where(function ($subQuery) {
+                $subQuery->where('zone', 'proximite')
+                    ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
+                    ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)])
+                    ->whereRaw('LOWER(pays) = ?', [strtolower($this->clientPays)])
+                    ->whereRaw('LOWER(departe) = ?', [strtolower($this->clientDepartement)])
+                    ->whereRaw('LOWER(commune) = ?', [strtolower($this->clientCommune)]);
+            })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'locale')
+                        ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
+                        ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)])
+                        ->whereRaw('LOWER(pays) = ?', [strtolower($this->clientPays)])
+                        ->whereRaw('LOWER(departe) = ?', [strtolower($this->clientDepartement)]);
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'nationale')
+                        ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
+                        ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)]);
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'sous_regionale')
+                        ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)]);
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'continentale');
+                });
+        })
+            ->where('etat', 'Accepté')  // Filtrer les livreurs éligibles
             ->get();
 
-
+        // Extraire les IDs des livreurs éligibles
+        $this->livreursIds = $this->livreurs->pluck('user_id');
         $this->livreursCount = $this->livreurs->count();
     }
+
+
 
     public function storeoffre()
     {
@@ -1357,19 +1388,24 @@ class NotificationShow extends Component
                     }
                 } else {
                     // Envoyez la notification aux livreurs
-                    $livreurs = User::where('actor_type', 'livreur')->get();
-                    foreach ($livreurs as $livreur) {
-                        Notification::send($livreur, new livraisonVerif($data));
-                        // Log l'envoi de la notification
-                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                    if (!empty($this->livreursIds)) {
+                        $livreurs = User::whereIn('id', $this->livreursIds)->get();
+                        foreach ($livreurs as $livreur) {
+                            Notification::send($livreur, new livraisonVerif($data));
+                            // Log l'envoi de la notification
+                            Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                        }
                     }
                 }
             }
         } else {
-            $livreurs = User::where('actor_type', 'livreur')->get();
-
-            foreach ($livreurs as $livreur) {
-                Notification::send($livreur, new livraisonVerif($data));
+            if (!empty($this->livreursIds)) {
+                $livreurs = User::whereIn('id', $this->livreursIds)->get();
+                foreach ($livreurs as $livreur) {
+                    Notification::send($livreur, new livraisonVerif($data));
+                    // Log l'envoi de la notification
+                    Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                }
             }
         }
 

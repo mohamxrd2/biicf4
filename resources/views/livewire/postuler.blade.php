@@ -127,6 +127,21 @@
                     <span class="text-red-500 text-xs">{{ $message }}</span>
                 @enderror
             </div>
+            <div>
+                <label for="zone" class="block text-sm font-medium text-gray-700">Zone D'Activité :</label>
+                <select id="zone" wire:model="zone"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                    <option value="" selected>choisissez votre votre zone </option>
+                    <option value="Proximite" selected>Proximité</option>
+                    <option value="Locale">Locale</option>
+                    <option value="Sous-Regionale">Sous-Regionale</option>
+                    <option value="Continentale">Continentale</option>
+                </select>
+                @error('zone')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
+            </div>
 
 
 
@@ -165,7 +180,7 @@
                     @enderror
                 </div>
 
-                {{-- <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
+                <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
                     <label for="country" class="block text-sm font-semibold text-gray-800 mb-2">Pays<span
                         class="text-red-500 10px">*</span></label>
                     <select id="country" x-model="selectedCountry" wire:model="pays"
@@ -178,7 +193,7 @@
                     @error('pays')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
-                </div> --}}
+                </div>
 
                 <div class="col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Département</label>

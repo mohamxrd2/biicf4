@@ -23,6 +23,7 @@ class PostulerComponent extends Component
     public $etat = 'En cours';
 
     public $livraison;
+    public $zone;
 
     // Localisation properties
     public $selectedContinent;
@@ -89,9 +90,10 @@ class PostulerComponent extends Component
             'vehicle' => 'required|string',
             'vehicle2' => 'required|string',
             'vehicle3' => 'required|string',
+            'zone' => 'required|string',
             'selectedContinent' => 'required|string',
             'selectedSous_region' => 'required|string',
-            // 'pays' => 'required|string',
+            'pays' => 'required|string',
             'depart' => 'required|string',
             'ville' => 'required|string',
             'localite' => 'required|string',
@@ -106,13 +108,14 @@ class PostulerComponent extends Component
         $livraison->vehicle = $this->vehicle;
         $livraison->vehicle2 = $this->vehicle2;
         $livraison->vehicle3 = $this->vehicle3;
+        $livraison->zone = $this->zone;
         $livraison->continent = $this->selectedContinent;
         $livraison->sous_region = $this->selectedSous_region;
         $livraison->departe = $this->depart;
         $livraison->ville = $this->ville;
         $livraison->commune = $this->localite;
         $livraison->etat = $this->etat;
-        // $livraison->pays = $this->pays;
+        $livraison->pays = $this->pays;
 
         $livraison->save();
 
