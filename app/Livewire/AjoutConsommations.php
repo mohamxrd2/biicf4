@@ -52,7 +52,6 @@ class AjoutConsommations extends Component
         $this->categories = CategorieProduits_Servives::all();
         $this->produits = collect(); // Ensure it's an empty Collection
         $this->fetchCountries();
-
     }
 
     public function updatedSearchTerm()
@@ -151,7 +150,7 @@ class AjoutConsommations extends Component
     }
     public function submit()
     {
-        dd($this->validate([
+        $this->validate([
             'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
             'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
@@ -162,11 +161,11 @@ class AjoutConsommations extends Component
             'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'qteProd' => $this->type == 'Produit' ? 'required|integer' : 'nullable|integer',
             'specification' => $this->type == 'Produit' ? 'required|string'  : 'nullable|string',
-            'periodicite' => $this->type == 'Produit' ? 'required|string'  : 'nullable|string',
             //
+            'periodicite' => 'required|string',
             'prix' => 'required|integer',
             // service
-            'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            // 'periodicite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'Quantite' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
             'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
 
@@ -175,7 +174,7 @@ class AjoutConsommations extends Component
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
             'name.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
             'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
-        ]));
+        ]);
 
         try {
             // Création de la catégorie si elle n'existe pas encore
@@ -194,12 +193,13 @@ class AjoutConsommations extends Component
                 'format' => $this->type === 'Produit' ? $this->format : null,
                 'qte' => $this->type === 'Produit' ? $this->qteProd : null,
                 'origine' => $this->type === 'Produit' ? $this->origine : null,
+                'specialité' => $this->type === 'Produit' ? $this->specification : null,
                 //
-                'specialité' => $this->specification,
                 'periodicite' => $this->periodicite,
                 'prix' => $this->prix,
                 //service
                 'qualif_serv' => $this->type === 'Service' ? $this->qualification : null,
+                'description' => $this->type === 'Service' ? $this->descrip : null,
                 //
 
                 'id_user' => auth()->id(),

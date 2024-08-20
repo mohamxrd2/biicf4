@@ -261,7 +261,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
-                                <input type="number" wire:model='Quantite' :disabled="locked"
+                                <input type="number" wire:model='Quantite'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="">
                                 @error('Quantite')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>

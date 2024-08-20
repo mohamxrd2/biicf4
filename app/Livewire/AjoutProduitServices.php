@@ -30,14 +30,16 @@ class AjoutProduitServices extends Component
     public $qteProd_min  = '';
     public $qteProd_max  = '';
     public $specification  = '';
-    public $specification2  = '';
-    public $specification3  = '';
+
     //
     public $prix  = '';
     //Service
     public $qualification  = '';
     public $specialite  = '';
+    public $Quantite  = '';
     public $descrip  = '';
+
+    //
     public $depart  = '';
     public $ville  = '';
     public $commune  = '';
@@ -142,8 +144,7 @@ class AjoutProduitServices extends Component
             $this->particularite = $selectedProduct->Particularite;
             $this->origine = $selectedProduct->origine;
             $this->specification = $selectedProduct->specification;
-            $this->specification2 = $selectedProduct->specification2;
-            $this->specification3 = $selectedProduct->specification3;
+
             // $this->photoProd1 = $selectedProduct->photoProd1;
             // $this->photoProd2 = $selectedProduct->photoProd2;
             // $this->photoProd3 = $selectedProduct->photoProd3;
@@ -180,8 +181,6 @@ class AjoutProduitServices extends Component
         $this->qteProd_min = '';
         $this->qteProd_max = '';
         $this->specification = '';
-        $this->specification2 = '';
-        $this->specification3 = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
@@ -225,7 +224,8 @@ class AjoutProduitServices extends Component
             //service
             'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
-            'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|integer',
+            'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'Quantite' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
             //
             'selectedSous_region' => 'required|string',
             'selectedContinent' => 'required|string',
@@ -274,9 +274,10 @@ class AjoutProduitServices extends Component
                 'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
                 'sepServ' => $this->type === 'Service' ? $this->specialite : null,
                 'description' => $this->type === 'Service' ? $this->descrip : null,
+                'quantite' => $this->type === 'Service' ? $this->Quantite : null,
                 //localisation
                 'continent' => $this->selectedContinent,
-                'Sous-Region' => $this->selectedSous_region,
+                'sous-region' => $this->selectedSous_region,
                 'pays' => $this->pays,
                 'zonecoServ' => $this->depart,
                 'villeServ' => $this->ville,
@@ -314,12 +315,11 @@ class AjoutProduitServices extends Component
         $this->qteProd_min = '';
         $this->qteProd_max = '';
         $this->specification = '';
-        $this->specification2 = '';
-        $this->specification3 = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
         $this->descrip = '';
+        $this->Quantite = '';
         $this->depart = '';
         $this->ville = '';
         $this->commune = '';
