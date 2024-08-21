@@ -2,42 +2,43 @@
 
 namespace App\Livewire;
 
-use App\Events\CommentSubmitted;
-use App\Models\AchatDirect;
-use App\Models\Admin;
-use App\Models\AppelOffreGrouper;
-use App\Models\userquantites;
-use App\Notifications\AllerChercher;
-use App\Notifications\attenteclient;
-use App\Notifications\VerifUser;
 use Exception;
 use App\Models\User;
+use App\Models\Admin;
 use App\Models\Wallet;
 use App\Models\Comment;
 use Livewire\Component;
 use App\Models\Countdown;
-
+use App\Models\AchatDirect;
 use App\Models\OffreGroupe;
 use App\Models\Transaction;
 use Livewire\Attributes\On;
 use App\Models\Consommation;
 use App\Models\groupagefact;
+use App\Models\userquantites;
+
 use App\Rules\ArrayOrInteger;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use Illuminate\Support\Carbon;
 use App\Models\NotificationLog;
 use App\Notifications\mainleve;
+use App\Events\CommentSubmitted;
+use App\Notifications\VerifUser;
+use App\Models\AppelOffreGrouper;
+use App\Notifications\AchatBiicf;
 use App\Notifications\AppelOffre;
-
 use App\Notifications\RefusAchat;
+
 use App\Notifications\RefusVerif;
 use App\Notifications\acceptAchat;
-use App\Notifications\AchatBiicf;
 use App\Notifications\colisaccept;
+use Illuminate\Support\Facades\DB;
 use App\Notifications\commandVerif;
 use App\Notifications\mainlevefour;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\AllerChercher;
+use App\Notifications\attenteclient;
 use App\Notifications\NegosTerminer;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\livraisonVerif;
@@ -148,6 +149,14 @@ class NotificationShow extends Component
     public $datePlusAncienne;
     public $appelOffreGroupcount;
 
+    public $psap;
+
+    public $amount;
+
+    public $userId;
+
+    public $demandeur;
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -176,6 +185,14 @@ class NotificationShow extends Component
         $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
+
+        $this->psap = $this->notification->data['psap'] ?? null;
+
+        $this->amount = $this->notification->data['amount'] ?? null;
+
+        $this->userId = $this->notification->data['userId'] ?? null;
+
+        $this->demandeur = User::find($this->notification->data['userId'] ?? null);
 
 
 
@@ -233,7 +250,8 @@ class NotificationShow extends Component
             || $this->notification->type === 'App\Notifications\OffreNegosNotif'
             || $this->notification->type === 'App\Notifications\OffreNegosDone'
             || $this->notification->type === 'App\Notifications\AOGrouper'
-            ||  $this->notification->type === 'App\Notifications\OffreNotif')
+            ||  $this->notification->type === 'App\Notifications\OffreNotif'
+            || $this->notification->type === 'App\Notifications\Retrait')
             ? null
             : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
 
@@ -373,6 +391,46 @@ class NotificationShow extends Component
         }
     }
 
+    public function accepteRetrait()
+    {
+        $userWallet = Wallet::where('user_id', $this->demandeur->id)->first();
+        if (!$userWallet) {
+            Log::info('Processing userWallet: ' . $userWallet);
+            return redirect()->back()->with('error', 'Portefeuille de l\'utilisateur introuvable.');
+        }
+
+        $psapWallet = Wallet::where('user_id', $this->psap)->first();
+        if (!$psapWallet) {
+            Log::info('Processing psapWallet: ' . $psapWallet);
+            return redirect()->back()->with('error', 'Portefeuille du PSA introuvable.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $this->notification->update(['reponse' => 'accepter']);
+
+            $userWallet->decrement('balance', $this->amount);
+            $psapWallet->increment('balance', $this->amount);
+
+            $this->createTransaction( $this->demandeur->id, Auth::id(), 'Reception', $this->amount);
+            $this->createTransaction($this->demandeur->id,  Auth::id(), 'withdrawal', $this->amount);
+
+            DB::commit();
+
+            session()->flash('success', 'Le retrait a été accepté.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Une erreur est survenue lors du retrait.');
+        }
+    }
+
+    public function refusRetrait()
+    {
+        $this->notification->update(['reponse' => 'accepter']);
+
+        session()->flash('error', 'Le retrait a été refusé.');
+    }
     public function storeoffre()
     {
         try {
@@ -492,7 +550,7 @@ class NotificationShow extends Component
 
         // Assurez-vous que $this->notification->data['quantite'] et $this->namefourlivr->prix sont définis et accessibles
         //$quantite = $this->notification->data['quantite'] ?? 0;
-       
+
 
 
 
@@ -509,7 +567,7 @@ class NotificationShow extends Component
         Log::info('Processing userWallet: ' . $distinctUserIds);
 
 
-        
+
 
         // Retrieve the trader's user model
         // $userTrader = User::find($produit->user_id);
@@ -563,25 +621,25 @@ class NotificationShow extends Component
                         if (is_null($prixArticleNego) || is_null($id_trader) || is_null($this->notifId)) {
                             return redirect()->back()->with('error', 'Données manquantes dans la requête.');
                         }
-            
+
                         $traderWallet = Wallet::where('user_id', $id_trader)->first();
                         if (!$traderWallet) {
                             return redirect()->back()->with('error', 'Portefeuille du trader introuvable.');
                         }
-            
+
                         // Update trader's wallet
                         $traderWallet->increment('balance', $prixArticleNego);
-            
+
                         // Create transaction record for the trader
                         $this->createTransaction($userId, $id_trader, 'Reception', $prixArticleNego);
                     }
-            
-            
+
+
                     // Update the user's wallet
                     $userWallet->decrement('balance', $prixArticleNego);
                     // Create transaction record for the user
                     $this->createTransaction($userId, $id_trader, 'Envoie', $prixArticleNego);
-            
+
 
                     // Envoyez la notification au client directement
                     Notification::send($userTrader, new AchatBiicf($data));
@@ -1015,7 +1073,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'mainleve']);
         $this->validate();
     }
-
     public function departlivr()
     {
 
@@ -1050,7 +1107,6 @@ class NotificationShow extends Component
 
         session()->flash('message', 'Livraison marquée comme livrée.');
     }
-
     public function verifyCode()
     {
         $this->validate([
