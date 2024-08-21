@@ -86,8 +86,8 @@
 
 
             <div>
-                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin :</label>
-                <select id="vehicle" wire:model="vehicle"
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin </label>
+                <select id="vehicle" wire:model="vehicle" required
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
                     <option value="" selected>option 1</option>
@@ -100,7 +100,7 @@
                 @enderror
             </div>
             <div>
-                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin :</label>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin </label>
                 <select id="vehicle" wire:model="vehicle2"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
@@ -114,7 +114,7 @@
                 @enderror
             </div>
             <div>
-                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin :</label>
+                <label for="vehicle" class="block text-sm font-medium text-gray-700">Type d'engin </label>
                 <select id="vehicle" wire:model="vehicle3"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
@@ -133,10 +133,11 @@
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
                     <option value="" selected>choisissez votre votre zone </option>
-                    <option value="Proximite" selected>Proximité</option>
-                    <option value="Locale">Locale</option>
-                    <option value="Sous-Regionale">Sous-Regionale</option>
-                    <option value="Continentale">Continentale</option>
+                    <option value="proximite" selected>Proximité</option>
+                    <option value="pocale">Locale</option>
+                    <option value="nationale">Nationale</option>
+                    <option value="sous-Regionale">Sous-Regionale</option>
+                    <option value="continentale">Continentale</option>
                 </select>
                 @error('zone')
                     <span class="text-red-500 text-xs">{{ $message }}</span>

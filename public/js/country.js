@@ -5,8 +5,8 @@ fetch("https://restcountries.com/v3.1/all")
 
         // Ajouter la Côte d'Ivoire en tant que première option
         const optionIvoryCoast = document.createElement("option");
-        optionIvoryCoast.value = "Cote d'ivoire";
-        optionIvoryCoast.textContent = "Côte d'Ivoire";
+        optionIvoryCoast.value = "Ivory Coast";
+        optionIvoryCoast.textContent = "Ivory Coast";
         countryDropdown.appendChild(optionIvoryCoast);
 
         // Ajouter les autres pays

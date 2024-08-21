@@ -3,6 +3,7 @@
 @endphp
 
 <div wire:poll.150ms>
+    
     @if ($unreadCount == 0)
         <div class="flex flex-col justify-center items-center h-96 w-full">
 

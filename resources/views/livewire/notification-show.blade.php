@@ -2781,14 +2781,14 @@
                     </div>
 
                     <div class="flex flex-col">
-                        <p class="mb-3 text-md">Nom du livreur: <span
+                        <p class="mb-3 text-md">Nom du client: <span
                                 class=" font-semibold">{{ $client->name }}</span>
                         </p>
-                        <p class="mb-3 text-md">Adress du livreur: <span
-                                class=" font-semibold">{{ $client->address }}</span></p>
-                        <p class="mb-3 text-md">Contact du livreur: <span
+                        {{-- <p class="mb-3 text-md">Adress du client: <span
+                                class=" font-semibold">{{ $client->address }}</span></p> --}}
+                        <p class="mb-3 text-md">Contact du client: <span
                                 class=" font-semibold">{{ $client->phone }}</span></p>
-                        <p class="mb-3 text-md">Engin du livreur : <span class=" font-semibold">Moto</span></p>
+                        <p class="mb-3 text-md">Engin du client : <span class=" font-semibold">Moto</span></p>
                         <p class="mb-3 text-md">Produit à recuperer: <span
                                 class= " font-semibold">{{ $produitfat->name }}</span></p>
                     </div>

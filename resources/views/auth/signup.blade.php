@@ -147,8 +147,7 @@
                         <!-- End First Contnet -->
 
                         <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{"index": 2 }'
-                            style="display: none;">
+                        <div data-hs-stepper-content-item='{"index": 2 }' style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
 
@@ -323,16 +322,42 @@
                         <!-- End First Contnet -->
 
                         <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{ "index": 3}'
-                            style="display: none;">
+                        <div data-hs-stepper-content-item='{ "index": 3}' style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
 
-                                @include('admin.components.select', [
+                                @include('admin.components.selectcon', [
+                                    'name' => 'continent',
+                                    'title' => 'Choisissez un continent',
+                                    'options' => [],
+                                ])
+                                @include('admin.components.selectreg', [
+                                    'name' => 'sous_region',
+                                    'title' => 'Choisissez une sous-region',
+                                    'options' => [],
+                                ])
+                                @include('admin.components.selectpays', [
                                     'name' => 'country',
                                     'title' => 'Choisissez un pays',
                                     'options' => [],
                                 ])
+                                @include('admin.components.input', [
+                                    'name' => 'departement',
+                                    'type' => 'text',
+                                    'placeholder' => 'Saisissez votre departement',
+                                    // Ajoutez d'autres attributs au besoin
+                                ])@include('admin.components.input', [
+                                    'name' => 'ville',
+                                    'type' => 'text',
+                                    'placeholder' => 'Saisissez votre ville',
+                                    // Ajoutez d'autres attributs au besoin
+                                ])@include('admin.components.input', [
+                                    'name' => 'commune',
+                                    'type' => 'text',
+                                    'placeholder' => 'Saisissez votre commune',
+                                    // Ajoutez d'autres attributs au besoin
+                                ])
+
                                 @include('admin.components.input', [
                                     'name' => 'phone',
                                     'type' => 'tel',
@@ -360,8 +385,7 @@
                         <!-- End First Contnet -->
 
                         <!-- Final Contnet -->
-                        <div data-hs-stepper-content-item='{"isFinal": true}'
-                            style="display: none;">
+                        <div data-hs-stepper-content-item='{"isFinal": true}' style="display: none;">
                             <div
                                 class="p-4 h-48 bg-gray-50 flex justify-center items-center border border-dashed border-gray-200 rounded-xl">
                                 <h3>
@@ -427,7 +451,7 @@
 
     </div>
 
-    <script src="{{ asset('js/country.js') }}"></script>
+    {{-- <script src="{{ asset('js/country.js') }}"></script> --}}
     <script src="{{ asset('js/select.js') }}"></script>
 </body>
 

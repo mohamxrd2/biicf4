@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\ProduitService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 class UserController extends Controller
 {
@@ -85,7 +86,7 @@ class UserController extends Controller
             $user->email = $validatedData['email'];
             $user->phone = $validatedData['phone'];
             $user->local_area = $validatedData['local'];
-            $user->address = $validatedData['adress_geo'];
+            $user->address = $validatedData['address'];
             $user->active_zone = $validatedData['proximity'];
             $user->actor_type = $request->input('user_type');
             $user->gender = $request->input('user_sexe');
@@ -211,201 +212,6 @@ class UserController extends Controller
         return view('admin.consoVerif',  compact('id'));
     }
 
-    public function storePub(Request $request)
-    {
-        $userId = $request->input('user_id');
-
-
-        $validatedData = $request->validate([
-            'type' => 'required|string|in:produits,services', // Type doit être soit 'product' soit 'service'
-            'name' =>  'required|string|max:255|unique:produit_services,name,NULL,id,user_id,' . auth()->id(),
-            'conditionnement' => $request->type == 'produits' ? 'required|string|max:255' : 'nullable|string|max:255',
-            'format' => $request->type == 'produits' ? 'required|string' : 'nullable|string',
-            'qteProd_min' => $request->type == 'produits' ? 'required|string' : 'nullable|string',
-            'qteProd_max' => $request->type == 'produits' ? 'required|string' : 'nullable|string',
-            'prix' => $request->type == 'produits' ? 'required' : 'nullable', // Prix requis uniquement pour les produits
-            'livraison' =>  $request->type == 'produits' ? 'required|string|in:oui,non' : 'nullable|string|in:oui,non',
-            'qualification'  => $request->type == 'services' ? 'required|string' : 'nullable|string',
-            'specialite' => $request->type == 'services' ? 'required|string' : 'nullable|string',
-            'qte_service' => $request->type == 'services' ? 'required|string' : 'nullable|string', // Quantité de service requise uniquement pour les services
-            'ville' => 'required|string',
-            'commune' => 'required|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif', // Modifier les types de fichiers acceptés et la taille maximale si nécessaire
-            'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic,heif',
-            'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic,heif',
-            'image4' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic,heif',
-
-            'description' => 'required|string'
-        ], [
-            // Messages d'erreur personnalisés
-            'type.required' => 'Le type est requis.',
-            'type.in' => 'Le type doit être soit "produit" soit "service".',
-            'name.required' => 'Le nom est requis.',
-            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
-            'name.unique' => 'Vous ne pouvez pas inscrit deux fois le meme nom de produit',
-            'conditionnement.required' => 'Le conditionnement est requis pour les produits.',
-            'conditionnement.max' => 'Le conditionnement ne doit pas dépasser 255 caractères.',
-            'format.required' => 'Le format est requis pour les produits.',
-            'qteProd_min.required' => 'La quantité minimale est requise pour les produits.',
-            'qteProd_max.required' => 'La quantité maximale est requise pour les produits.',
-            'prix.required' => 'Le prix est requis pour les produits.',
-            'livraison.required' => 'La livraison est requise pour les produits.',
-            'qualification.required' => 'La qualification est requise pour les services.',
-            'specialite.required' => 'La spécialité est requise pour les services.',
-            'qte_service.required' => 'La quantité de service est requise pour les services.',
-
-            'ville.required' => 'La ville est requise.',
-            'commune.required' => 'La commune est requise.',
-
-
-            'image.image' => 'Le fichier doit être une image.',
-            'image.required' => 'La photo 1 est obligatoire',
-            'image.mimes' => 'Le fichier doit être de type :jpeg, :png, :jpg ou :gif.',
-
-
-            'image2.image' => 'Le fichier doit être une image2.',
-            'image2.mimes' => 'Le fichier doit être de type :jpeg, :png, :jpg ou :gif.2',
-
-
-            'image3.image' => 'Le fichier doit être une image.3',
-            'image3.mimes' => 'Le fichier doit être de type :jpeg, :png, :jpg ou :gif.3',
-
-
-            'image4.image' => 'Le fichier doit être une image.4',
-            'image4.mimes' => 'Le fichier doit être de type :jpeg, :png, :jpg ou :gif.4',
-
-
-            'description.required' => 'La description est requise.'
-        ]);
-
-        try {
-            $produitsServices = new ProduitService();
-            $produitsServices->type = $validatedData['type'];
-            $produitsServices->name = $validatedData['name'];
-            $produitsServices->condProd = $validatedData['conditionnement'];
-            $produitsServices->formatProd = $validatedData['format'];
-            $produitsServices->qteProd_min = $validatedData['qteProd_min'];
-            $produitsServices->qteProd_max = $validatedData['qteProd_max'];
-            $produitsServices->prix = $validatedData['prix'];
-            $produitsServices->LivreCapProd = $validatedData['livraison'] ?? null;
-            $produitsServices->qalifServ = $validatedData['qualification'] ?? null;
-            $produitsServices->sepServ = $validatedData['specialite'];
-            $produitsServices->qteServ = $validatedData['qte_service'];
-
-            $produitsServices->villeServ = $validatedData['ville'];
-            $produitsServices->comnServ = $validatedData['commune'];
-            $produitsServices->desrip = $validatedData['description'];
-            $produitsServices->user_id = $userId; // Ajout de l'ID de l'utilisateur
-
-
-            if ($request->hasFile('image') || $request->hasFile('image2') || $request->hasFile('image3') || $request->hasFile('image4')) {
-                $path = 'post/';
-
-                // Vérifiez si la première image est téléchargée
-                if ($request->hasFile('image')) {
-                    $image = $request->file('image');
-                    $imageName = time() . '_1.' . $image->getClientOriginalExtension();
-                    $image->move($path, $imageName);
-                    $produitsServices->photoProd1 = $path . $imageName;
-                }
-
-                // Vérifiez si la deuxième image est téléchargée
-                if ($request->hasFile('image2')) {
-                    $image2 = $request->file('image2');
-                    $imageName2 = time() . '_2.' . $image2->getClientOriginalExtension();
-                    $image2->move($path, $imageName2);
-                    $produitsServices->photoProd2 = $path . $imageName2;
-                }
-                // Vérifiez si la deuxième image est téléchargée
-                if ($request->hasFile('image3')) {
-                    $image3 = $request->file('image3');
-                    $imageName3 = time() . '_3.' . $image3->getClientOriginalExtension();
-                    $image3->move($path, $imageName3);
-                    $produitsServices->photoProd3 = $path . $imageName3;
-                }
-                // Vérifiez si la deuxième image est téléchargée
-                if ($request->hasFile('image4')) {
-                    $image4 = $request->file('image4');
-                    $imageName4 = time() . '_4.' . $image4->getClientOriginalExtension();
-                    $image4->move($path, $imageName4);
-                    $produitsServices->photoProd4 = $path . $imageName4;
-                }
-            }
-
-            $produitsServices->save();
-
-
-
-            return back()->with('success', 'Produit ou service ajouté avec succès!');
-        } catch (\Exception $e) {
-            dd($e->getMessage());
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
-        }
-    }
-    public function storeCons(Request $request)
-    {
-        $userId = $request->input('user_id');
-
-
-        $validatedData = $request->validate(
-            [
-                'nameC' => 'required|string|max:255',
-                'type' => 'required|string|in:produits,services',
-                'conditionnementC' => $request->type == 'produits' ? 'required|string|max:255' : 'nullable|string|max:255',
-                'formatC' => $request->type == 'produits' ? 'required|string' : 'nullable|string',
-                'qteC' => $request->type == 'produits' ? 'required|string' : 'nullable|string',
-                'prixC' => $request->type == 'produits' ? 'required' : 'nullable',
-                'frequenceC' => 'required|string', // Attention à l'espace dans le nom du champ
-                'jour_achat' => 'required|string',
-                'qualificationC' => $request->type == 'services' ? 'required|string' : 'nullable|string',
-                'specialité' => $request->type == 'services' ? 'required|string' : 'nullable|string',
-                'villeC' => 'required|string',
-            ],
-            [
-                'nameC.required' => 'Le nom de la consommation est obligatoire.',
-                'type.required' => 'Le type est requis.',
-                'type.in' => 'Le type doit être soit "product" soit "service".',
-                'conditionnementC.required' => 'Le conditionnement est requis pour les produits.',
-                'formatC.required' => 'Le format est requis pour les produits.',
-                'qteC.required' => 'La quantité est requise pour les produits.',
-                'prixC.required' => 'Le prix est requis pour les produits.',
-                'frequenceC.required' => 'La fréquence d\'achat est requise.',
-                'jour_achat.required' => 'Le jour d\'achat est requis.',
-                'qualificationC.required' => 'La qualification est requise pour les services.',
-                'specialité.required' => 'La spécialité est requise pour les services.',
-                'villeC.required' => 'La ville est requise.',
-            ]
-        );
-
-        try {
-            // Créer une nouvelle instance de Consommation avec les données validées
-            $consommation = new Consommation();
-            $consommation->name = $validatedData['nameC'];
-            $consommation->type = $validatedData['type'];
-            $consommation->conditionnement = $validatedData['conditionnementC'];
-            $consommation->format = $validatedData['formatC'];
-            $consommation->qte = $validatedData['qteC'];
-            $consommation->prix = $validatedData['prixC'];
-            $consommation->frqce_cons = $validatedData['frequenceC']; // Attention à l'espace dans le nom du champ
-            $consommation->jourAch_cons = $validatedData['jour_achat'];
-            $consommation->qualif_serv = $validatedData['qualificationC'];
-            $consommation->specialité = $validatedData['specialité'];
-            $consommation->villeCons = $validatedData['villeC'];
-            $consommation->id_user = $userId; // Ajout de l'ID de l'utilisateur
-
-
-            // Enregistrer la nouvelle consommation dans la base de données
-            $consommation->save();
-
-            // Rediriger avec un message de succès
-            return back()->with('success', 'Consommation ajoutée avec succès!');
-        } catch (\Exception $e) {
-            dd($e->getMessage());
-
-            // En cas d'erreur, afficher un message d'erreur et rediriger vers la page précédente
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
-        }
-    }
     public function editAgent($username)
     {
         $user = User::with('admin')->where('username', $username)->firstOrFail();
@@ -439,9 +245,26 @@ class UserController extends Controller
         return back()->with('success', 'Administrateur mis à jour avec succès.');
     }
 
+    public $countries = [];
+
+    public function fetchCountries()
+    {
+        try {
+            $response = Http::get('https://restcountries.com/v3.1/all');
+            $this->countries = collect($response->json())->pluck('name.common')->sort()->toArray();
+        } catch (\Exception $e) {
+            // Handle the error (e.g., log it, show an error message)
+            $this->countries = [];
+        }
+    }
+
     public function createPageBiicf()
     {
-        return view('auth.signup');
+        $this->fetchCountries();
+
+        return view('auth.signup', [
+            'countries' => $this->countries,
+        ]);
     }
     public function createUserBiicf(Request $request)
     {
@@ -490,7 +313,12 @@ class UserController extends Controller
             $user->construction = $request->input('building_type');
             $user->commerce = $request->input('commerce_sector');
             $user->services = $request->input('transport_sector');
+            $user->continent = $request->input('continent');
+            $user->sous_region = $request->input('sous_region');
             $user->country = $request->input('country');
+            $user->departe = $request->input('departement');
+            $user->ville = $request->input('ville');
+            $user->commune = $request->input('commune');
 
             $user->save();
 
@@ -504,7 +332,7 @@ class UserController extends Controller
 
             return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
         }
     }
@@ -619,5 +447,4 @@ class UserController extends Controller
     {
         return view('admin.detail-livraison', compact('id'));
     }
-
 }

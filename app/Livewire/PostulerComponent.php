@@ -88,8 +88,8 @@ class PostulerComponent extends Component
         $this->validate([
             'experience' => 'required|string',
             'vehicle' => 'required|string',
-            'vehicle2' => 'required|string',
-            'vehicle3' => 'required|string',
+            'vehicle2' => 'nullable|string',
+            'vehicle3' => 'nullable|string',
             'zone' => 'required|string',
             'selectedContinent' => 'required|string',
             'selectedSous_region' => 'required|string',
