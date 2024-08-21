@@ -570,7 +570,7 @@
                                                             @endif
                                                         </div>
                                                     @else
-                                                        Aucun livreur dans la zone
+                                                        Aucun livreur disponible dans la zone
                                                     @endif
                                                 </p>
                                             </div>
@@ -2996,7 +2996,7 @@
 
         </div>
     @elseif ($notification->type === 'App\Notifications\Retrait')
-      
+
 
 
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">

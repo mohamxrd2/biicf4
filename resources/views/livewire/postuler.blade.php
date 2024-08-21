@@ -136,7 +136,7 @@
                     <option value="proximite" selected>Proximité</option>
                     <option value="pocale">Locale</option>
                     <option value="nationale">Nationale</option>
-                    <option value="sous-Regionale">Sous-Regionale</option>
+                    <option value="sous_regionale">Sous-Regionale</option>
                     <option value="continentale">Continentale</option>
                 </select>
                 @error('zone')

@@ -1,17 +1,4 @@
 <div>
-    @if (session('success'))
-        <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <!-- Afficher les messages d'erreur -->
-    @if (session('error'))
-        <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
         class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md" style="display: none;" method="POST">
         @csrf
@@ -31,7 +18,7 @@
         </div>
 
         <div class="space-y-3 mb-3 w-full">
-            
+
 
             @if (!empty($produit->specification))
                 <div class="block">

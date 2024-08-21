@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Transaction;
 use App\Events\MyEvent;
+use App\Events\NotificationSent;
 use App\Models\AchatGrouper;
 use App\Models\Consommation;
 use App\Models\NotificationLog;
@@ -145,6 +146,8 @@ class AchatDirectGroupe extends Component
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
             Notification::send($owner, new AchatBiicf($achat));
+            // Après l'envoi de la notification
+            event(new NotificationSent($owner));
 
             // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
             $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
@@ -157,7 +160,8 @@ class AchatDirectGroupe extends Component
             $user = User::find($userId);
             $this->reset(['quantité', 'localite', 'selectedSpec']);
             session()->flash('success', 'Achat passé avec succès.');
-            $this->dispatch('sendNotification', $user);
+            // Émettre un événement après la soumission
+            $this->dispatch('formSubmitted');
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'achat direct.', [
                 'error' => $e->getMessage(),
