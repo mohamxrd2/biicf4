@@ -2995,7 +2995,76 @@
 
 
         </div>
+    @elseif ($notification->type === 'App\Notifications\Retrait')
+      
 
+
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+
+            @if (session()->has('success'))
+            <div class="text-green-500 mt-4">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session()->has('error'))
+            <div class="text-red-500 mt-4">
+                {{ session('error') }}
+            </div>
+        @endif
+            <h2 class="text-xl font-medium mb-4">{{ $demandeur->name }}, vous a fait une demande de retrait</h2>
+
+            <h1 class="font-semibold text-4xl">{{ $amount }} CFA</h1>
+
+            <div class="w-full flex mt-5">
+                @if ($notification->reponse)
+                    <div class=" bg-gray-300 border p-2 rounded-md">
+                        <p class="text-md font-medium text-center">Réponse envoyée</p>
+                    </div>
+                @else
+                    <button wire:click='accepteRetrait'
+                        class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
+
+
+                        <span wire:loading.remove>
+                            Accepter
+                        </span>
+                        <span wire:loading>
+                            Chargement...
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+                    </button>
+
+                    <button wire:click='refusRetrait'
+                        class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
+                        </svg>
+                        <span wire:loading.remove>
+                            Refuser
+                        </span>
+                        <span wire:loading>
+                            Chargement...
+                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                            </svg>
+                        </span>
+
+                    </button>
+                @endif
+
+            </div>
+
+
+        </div>
 
     @endif
 
