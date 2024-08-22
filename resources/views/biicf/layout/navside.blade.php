@@ -438,7 +438,7 @@
         // Écouter l'événement personnalisé émis par Livewire
         Livewire.on('formSubmitted', function() {
             Toastify({
-                text: "Formulaire soumis avec succès",
+                text: "Achat effectué  avc succès",
                 duration: 3000,
                 gravity: "top",
                 position: "right",
