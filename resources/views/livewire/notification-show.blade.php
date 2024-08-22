@@ -2098,18 +2098,21 @@
                 @php
                     $idProd = App\Models\ProduitService::find($notification->data['idProd']);
                     $continent = $idProd ? $idProd->continent : null;
-                    $sous_region = $idProd ? $idProd->continsous_regionent : null;
-                    $continent = $idProd ? $idProd->continent : null;
-                    $continent = $idProd ? $idProd->continent : null;
+                    $sous_region = $idProd ? $idProd->sous_region : null;
+                    $pays = $idProd ? $idProd->pays : null;
+                    $departement = $idProd ? $idProd->departement : null;
+                    $ville = $idProd ? $idProd->ville : null;
+                    $commune = $idProd ? $idProd->commune : null;
                 @endphp
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Lieu de livraison</p>
                     <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
-                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
-                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
-                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
-                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
+                    <p class="text-md font-medium text-gray-600">sous_region :{{$sous_region}}</p>
+                    <p class="text-md font-medium text-gray-600">pays :{{$pays}}</p>
+                    <p class="text-md font-medium text-gray-600">departement :{{$departement}}</p>
+                    <p class="text-md font-medium text-gray-600">ville :{{$ville}}</p>
+                    <p class="text-md font-medium text-gray-600">commune :{{$commune}}</p>
                 </div>
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
