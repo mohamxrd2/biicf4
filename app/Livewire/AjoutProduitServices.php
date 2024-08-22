@@ -277,7 +277,7 @@ class AjoutProduitServices extends Component
                 'quantite' => $this->type === 'Service' ? $this->Quantite : null,
                 //localisation
                 'continent' => $this->selectedContinent,
-                'sous-region' => $this->selectedSous_region,
+                'sous_region' => $this->selectedSous_region,
                 'pays' => $this->pays,
                 'zonecoServ' => $this->depart,
                 'villeServ' => $this->ville,
