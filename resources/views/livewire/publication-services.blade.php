@@ -107,13 +107,13 @@
                         </td>
 
                         <td class="px-6 py-4">
-                            {{-- @if ($service->user)
+                            @if ($service->user)
                                 <a href="{{ route('client.show', ['username' => $service->user->username]) }}">
                                     <p class="mb-0">{{ $service->user->username }}</p>
                                 </a>
                             @else
                                 <p class="mb-0">Utilisateur inconnu</p>
-                            @endif --}}
+                            @endif
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex">

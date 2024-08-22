@@ -544,8 +544,8 @@
                                                 <p class="text-gray-800">
                                                     @if ($nombreLivr)
                                                         <div>
-                                                            <h3>Détails de la commande</h3>
-                                                            <p><strong>ID de client :</strong> {{ $Idsender }}</p>
+                                                            {{-- <h3>Détails de la commande</h3> --}}
+                                                            {{-- <p><strong>ID de client :</strong> {{ $Idsender }}</p>
                                                             <p><strong>Continent du client :</strong>
                                                                 {{ $clientContinent }}</p>
                                                             <p><strong>Sous-Region du client :</strong>
@@ -555,7 +555,7 @@
                                                             <p><strong>Departement du client :</strong>
                                                                 {{ $clientDepartement }}</p>
                                                             <p><strong>Commune du client :</strong>{{ $clientCommune }}
-                                                            </p>
+                                                            </p>--}}
                                                             <p><strong>le nombre total disponible
                                                                     :</strong>{{ $livreursCount }}</p>
 
@@ -564,7 +564,7 @@
                                                                 <p>Aucun livreur disponible pour ce pays et cette ville.
                                                                 </p>
                                                             @else
-                                                                <ul>
+                                                                {{-- <ul>
                                                                     @foreach ($livreurs as $livreur)
                                                                         <li>
                                                                             Livreur ID: {{ $livreur->id }} -
@@ -572,7 +572,7 @@
                                                                             - Livreur ID: {{ $livreur->user_id }}
                                                                         </li>
                                                                     @endforeach
-                                                                </ul>
+                                                                </ul> --}}
                                                             @endif
                                                         </div>
                                                     @else
@@ -1820,9 +1820,26 @@
                                     </svg>
                                 </span>
                             </button>
+                            <button wire:click.prevent='refuserPro'
+                                class="bg-red-800 text-white px-4 py-2 rounded-lg relative">
+                                <!-- Texte du bouton et icône -->
+                                <span wire:loading.remove>
+                                    Refusez la commande
+                                </span>
+                                <span wire:loading>
+                                    Chargement...
+                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                    </svg>
+                                </span>
+                            </button>
 
                         </div>
                     @endif
+
 
                 </div>
 

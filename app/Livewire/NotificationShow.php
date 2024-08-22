@@ -491,7 +491,7 @@ class NotificationShow extends Component
             $userWallet->decrement('balance', $this->amount);
             $psapWallet->increment('balance', $this->amount);
 
-            $this->createTransaction( $this->demandeur->id, Auth::id(), 'Reception', $this->amount);
+            $this->createTransaction($this->demandeur->id, Auth::id(), 'Reception', $this->amount);
             $this->createTransaction($this->demandeur->id,  Auth::id(), 'withdrawal', $this->amount);
 
             DB::commit();
@@ -1496,6 +1496,10 @@ class NotificationShow extends Component
         return $code;
     }
 
+    public function refuserPro()
+    {
+        $this->notification->update(['reponse' => 'refuser']);
+    }
     public function refuser()
     {
 
@@ -1510,7 +1514,7 @@ class NotificationShow extends Component
         $notification->save();
 
         // Récupérer les IDs d'expéditeur depuis la notification
-        $senderIds = $this->notification->data['userSender'];
+        $senderIds = $this->notification->data['userSender'] ?? null;
         $requiredAmount = $this->notification->data['montantTotal'];
 
         // Vérifier si l'ID d'expéditeur est un tableau ou un ID unique

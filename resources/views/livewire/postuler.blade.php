@@ -134,7 +134,7 @@
 
                     <option value="" selected>choisissez votre votre zone </option>
                     <option value="proximite" selected>Proximité</option>
-                    <option value="pocale">Locale</option>
+                    <option value="locale">Locale</option>
                     <option value="nationale">Nationale</option>
                     <option value="sous_regionale">Sous-Regionale</option>
                     <option value="continentale">Continentale</option>
