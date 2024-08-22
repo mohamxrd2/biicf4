@@ -1,7 +1,9 @@
 <?php
 
 namespace Database\Factories;
+use App\Models\CategorieProduits_Servives;
 use App\Models\ProduitService;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,22 +19,29 @@ class ProduitServiceFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name,
-            'type' => $this->faker->randomElement(['service', 'produit']),
-            'condProd' => $this->faker->words(5, true), // Limite de 5 mots
-            'formatProd' => $this->faker->words(5, true), // Limite de 5 mots
-            'qteProd_min' => $this->faker->randomNumber(),
-            'qteProd_max' => $this->faker->randomNumber(),
-            'prix' => $this->faker->randomFloat(2, 0, 1000),
-            'LivreCapProd' => $this->faker->boolean,
-            'desrip' => $this->faker->sentence(10),
-            'qalifServ' => $this->faker->randomNumber(),
-            'sepServ' => $this->faker->words(5, true), // Limite de 5 mots
-            'qteServ' => $this->faker->randomNumber(),
+            'type' => $this->faker->randomElement(['Produit', 'Service']),
+            'reference' => $this->faker->word,
+            'name' => $this->faker->word,
+            'condProd' => $this->faker->optional()->word,
+            'formatProd' => $this->faker->optional()->word,
+            'Particularite' => $this->faker->optional()->word,
+            'origine' => $this->faker->optional()->word,
+            'qteProd_min' => $this->faker->optional()->numberBetween(1, 100),
+            'qteProd_max' => $this->faker->optional()->numberBetween(101, 1000),
+            'specification' => $this->faker->optional()->text,
+            'prix' => $this->faker->randomFloat(2, 10, 1000),
+            'qalifServ' => $this->faker->optional()->word,
+            'sepServ' => $this->faker->optional()->word,
+            'description' => $this->faker->optional()->text,
+            'quantite' => $this->faker->optional()->numberBetween(1, 100),
+            'continent' => $this->faker->word,
+            'sous_region' => $this->faker->word,
+            'pays' => $this->faker->word,
             'zonecoServ' => $this->faker->word,
-            'villeServ' => $this->faker->city,
-            'comnServ' => $this->faker->words(5, true), // Limite de 5 mots
-            'typeProdServ' => $this->faker->word,
+            'villeServ' => $this->faker->word,
+            'comnServ' => $this->faker->word,
+            'user_id' => User::factory(),
+            'categorie_id' => CategorieProduits_Servives::factory(), // Assuming you have a Categorie model
         ];
 
     }

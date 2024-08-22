@@ -35,7 +35,7 @@ class ProduitService extends Model
         'sepServ',
         'description',
         'continent',
-        'Sous-Region',
+        'sous_region',
         'pays',
         'zonecoServ',
         'villeServ',
