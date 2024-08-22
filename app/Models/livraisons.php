@@ -12,12 +12,13 @@ class Livraisons extends Model
     protected $fillable = [
         'user_id',
         'experience',
-        'license',
         'vehicle',
-        'matricule',
-        'availability',
+        'vehicle2',
+        'vehicle3',
+        'zone',
         'continent',
-        'Sous-Region',
+        'sous_region', // Updated to snake_case
+        'pays',
         'departe',
         'commune',
         'ville',

@@ -316,8 +316,8 @@ class UserController extends Controller
             $user->country = $request->input('country');
             $user->departe = $request->input('departement');
             $user->ville = $request->input('ville');
-            $user->ville = $request->input('address');
-            $user->ville = $request->input('parrain');
+            $user->address = $request->input('address');
+            $user->parrain = $request->input('parrain');
             $user->commune = $request->input('commune');
 
             $user->save();
