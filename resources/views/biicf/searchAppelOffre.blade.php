@@ -82,7 +82,7 @@
                 <div class="grid grid-cols-2 gap-3 mt-2">
                     <div class="col-span-1">
                         <select name="zone_economique"
-                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none">
+                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none" required>
                             <option disabled selected>Zone economique</option>
                             <option value="Proximité">Proximité</option>
                             <option value="Locale">Locale</option>
@@ -292,7 +292,7 @@
                                     <div class="w-full text-center mt-4">
                                         <input type="hidden" name="distinctSpecifications"
                                             value="{{ $distinctSpecifications->join(', ') }}">
-                                        
+
                                         <input type="hidden" name="name" value="{{ $name }}">
                                         <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPrice }}">
                                         <input type="hidden" name="reference" value="{{ $reference }}">

@@ -29,39 +29,40 @@ class AppelOffreController extends Controller
         $keyword = $request->input('keyword');
         $type = $request->input('type');
 
-        // Faire la recherche dans la base de données en fonction des filtres
-        $produits = ProduitService::with('user')
+        // Initial query
+        $produitsQuery = ProduitService::with('user')
             ->where('statuts', 'Accepté')
+            ->where('user_id', '<>', $userId)
             ->orderBy('created_at', 'desc');
 
         Log::info('Initial query built', [
             'keyword' => $keyword,
-            // 'zoneEconomique' => $zoneEconomique,
             'type' => $type,
         ]);
 
+        // Apply keyword filter
         if ($keyword) {
-            $produits->where('name', 'like', '%' . $keyword . '%');
+            $produitsQuery->where('name', 'like', '%' . $keyword . '%');
             Log::info('Applied keyword filter', ['keyword' => $keyword]);
         }
 
-
-
-
+        // Apply type filter
         if ($type) {
-            $produits->where('type', $type);
+            $produitsQuery->where('type', $type);
             Log::info('Applied type filter', ['type' => $type]);
         }
-        //////////
-        $results = $produits->where('user_id', '<>', $userId)->get();
+
+        // Fetch the products with initial filters
+        $results = $produitsQuery->get();
         Log::info('Results fetched', ['results_count' => $results->count()]);
 
+        // Log references before grouping
         Log::info('References before grouping', ['references' => $results->pluck('reference')->unique()]);
 
-        // Grouper les résultats par code de référence
+        // Group results by reference
         $groupedByReference = $results->groupBy('reference');
 
-        // Parcourir les groupes pour afficher les informations demandées
+        // Log grouped results
         foreach ($groupedByReference as $reference => $group) {
             $groupData = $group->map(function ($item) {
                 return [
@@ -76,104 +77,61 @@ class AppelOffreController extends Controller
                 ];
             });
 
-            // Afficher les éléments récupérés dans les logs
             Log::info('Group for reference', [
                 'reference' => $reference,
-                'items' => $groupData->toArray() // Convertit la collection en tableau
+                'items' => $groupData->toArray()
             ]);
         }
 
-
-        //je veux que cette partie fonction si le zone_economique est selctionnner et je ne veux pas qu'il soit lier au code d'n haut
-
+        // Récupérer la zone économique sélectionnée
         $zoneEconomique = $request->input('zone_economique');
-        // Fetch the user's zone information from the `user` table
+
+        // Récupérer les informations de l'utilisateur courant
         $user = User::find($userId);
-        $userZone = $user ? $user->commune : null; // Assuming 'comnServ' is the column name for user's zone
+        $userZone = $user ? $user->commune : null;
 
-        // Apply the zone économique filter if selected
+        // If the economic zone filter is applied, filter results further
         if ($zoneEconomique) {
-            // Rebuild the query for zone économique filtering
-            $produits = ProduitService::with('user')
-                ->where('statuts', 'Accepté')
-                ->orderBy('created_at', 'desc')
-                ->where('user_id', '<>', $userId); // Ensure current user's products are excluded
-
             if ($zoneEconomique === 'Proximité') {
                 if ($userZone) {
-                    // Use the user's `comnServ` for filtering if zone économique is 'Proximité'
-                    $produits->where('comnServ', $userZone);
-                    Log::info('Applied Proximité filter on comnServ', ['zoneEconomique' => $zoneEconomique, 'userZone' => $userZone]);
+                    // Filter products where comnServ matches userZone
+                    $filtered = $results->filter(function ($produit) use ($userZone) {
+                        return $produit->comnServ === $userZone;
+                    });
+
+                    Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $zoneEconomique, 'userZone' => $userZone]);
+
+                    // Log filtered results
+                    $user_ids = $filtered->pluck('user_id')->unique();
+                    if ($user_ids->isNotEmpty()) {
+                        Log::info('Identifiants des utilisateurs partageant le même comnServ:', $user_ids->toArray());
+                    } else {
+                        Log::info('Aucun utilisateur ne partage le même comnServ.');
+                    }
                 } else {
-                    Log::warning('User zone not found for Proximité filter');
+                    Log::warning('Zone de l\'utilisateur non trouvée pour le filtre Proximité');
                 }
             } else {
-                // Apply zone économique filter if not 'Proximité'
-                $produits->where('zonecoServ', $zoneEconomique);
-                Log::info('Applied zoneEconomique filter', ['zoneEconomique' => $zoneEconomique]);
-            }
-
-            // Execute the query to get filtered results
-            $filteredResults = $produits->get();
-
-            // Filter elements having the same comnServ
-            $filtered = $filteredResults->groupBy('comnServ')->filter(function ($group) {
-                return $group->count() > 1; // Keep only groups with multiple items
-            });
-
-            // Extract user IDs from filtered results
-            $user_ids = $filtered->flatMap(function ($group) {
-                return $group->pluck('user_id');
-            });
-
-            // Log user IDs sharing the same comnServ
-            Log::info('User IDs sharing the same comnServ:', $user_ids->toArray());
-        }
-        if ($zoneEconomique === 'Proximité') {
-            if ($userZone) {
-                // Filtrer par la zone `comnServ` de l'utilisateur si zone économique est 'Proximité'
-                $produits->where('comnServ', $userZone);
-                Log::info('Filtre Proximité appliqué sur comnServ', ['zoneEconomique' => $zoneEconomique, 'userZone' => $userZone]);
-
-                // Exécuter la requête pour obtenir les résultats filtrés
-                $filteredResults = $produits->get();
-
-                // Filtrer les éléments ayant le même comnServ
-                $filtered = $filteredResults->groupBy('comnServ')->filter(function ($group) {
-                    return $group->count() > 1; // Conserver uniquement les groupes avec plusieurs éléments
+                // Filter products where zonecoServ matches zoneEconomique
+                $filtered = $results->filter(function ($produit) use ($zoneEconomique) {
+                    return $produit->zonecoServ === $zoneEconomique;
                 });
 
-                // Extraire les identifiants des utilisateurs des résultats filtrés
-                $user_ids = $filtered->flatMap(function ($group) {
-                    return $group->pluck('user_id');
-                });
+                Log::info('Filtre zone économique appliqué', ['zoneEconomique' => $zoneEconomique]);
 
-                // Enregistrer les identifiants des utilisateurs partageant le même comnServ dans les logs
-                if ($user_ids->isNotEmpty()) {
-                    Log::info('Identifiants des utilisateurs partageant le même comnServ:', $user_ids->toArray());
-                } else {
-                    Log::info('Aucun utilisateur ne partage le même comnServ.');
-                }
-            } else {
-                Log::warning('Zone de l\'utilisateur non trouvée pour le filtre Proximité');
+                // Log filtered results
+                Log::info('Filtered results', ['results_count' => $filtered->count()]);
             }
-        } else {
-            // Appliquer le filtre zone économique si ce n’est pas 'Proximité'
-            $produits->where('zonecoServ', $zoneEconomique);
-            Log::info('Filtre zoneEconomique appliqué', ['zoneEconomique' => $zoneEconomique]);
 
-            // Exécuter la requête pour obtenir les résultats filtrés
-            $filteredResults = $produits->get();
-
-            // Afficher les résultats
-            if ($filteredResults->isNotEmpty()) {
-                Log::info('Résultats filtrés par zone économique', ['results' => $filteredResults->toArray()]);
-            } else {
-                Log::info('Aucun produit trouvé pour la zone économique spécifiée.');
-            }
+            // Optionally, if you want to use `$filtered` as the final results
+            $produits = $filtered;
         }
 
-        ///////
+        // Proceed with using $produits for further operations
+
+
+        // Proceed with using $produits for further operations
+
         $resultCount = $results->count();
 
 

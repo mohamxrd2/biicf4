@@ -319,6 +319,8 @@ class UserController extends Controller
             $user->address = $request->input('address');
             $user->parrain = $request->input('parrain');
             $user->commune = $request->input('commune');
+            $user->email_verified_at = now();
+
 
             $user->save();
 
@@ -329,7 +331,7 @@ class UserController extends Controller
 
             //envoi du couriel au nouveau client
             // $user->sendEmailVerificationNotification();
-            $user->email_verified_at = now();
+            // $user->email_verified_at = now();
 
             // return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
             return redirect()->route('biicf.login')->with('success', 'Création du compte avec succès, Connectez-vous!');
