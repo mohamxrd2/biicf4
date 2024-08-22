@@ -2100,20 +2100,41 @@
                     $continent = $idProd ? $idProd->continent : null;
                     $sous_region = $idProd ? $idProd->sous_region : null;
                     $pays = $idProd ? $idProd->pays : null;
-                    $departement = $idProd ? $idProd->departement : null;
-                    $ville = $idProd ? $idProd->ville : null;
-                    $commune = $idProd ? $idProd->commune : null;
+                    $departement = $idProd ? $idProd->zonecoServ : null;
+                    $ville = $idProd ? $idProd->villeServ : null;
+                    $commune = $idProd ? $idProd->comnServ : null;
                 @endphp
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Lieu de livraison</p>
-                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
-                    <p class="text-md font-medium text-gray-600">sous_region :{{$sous_region}}</p>
-                    <p class="text-md font-medium text-gray-600">pays :{{$pays}}</p>
-                    <p class="text-md font-medium text-gray-600">departement :{{$departement}}</p>
-                    <p class="text-md font-medium text-gray-600">ville :{{$ville}}</p>
-                    <p class="text-md font-medium text-gray-600">commune :{{$commune}}</p>
-                </div>
+<div class="w-full py-4 border-b-2">
+    <p class="text-md font-semibold mb-2">Lieu de livraison</p>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+            <p class="text-md font-medium text-gray-600">Continent :</p>
+            <p class="text-md">{{ $continent }}</p>
+        </div>
+        <div>
+            <p class="text-md font-medium text-gray-600">Sous-région :</p>
+            <p class="text-md">{{ $sous_region }}</p>
+        </div>
+        <div>
+            <p class="text-md font-medium text-gray-600">Pays :</p>
+            <p class="text-md">{{ $pays }}</p>
+        </div>
+        <div>
+            <p class="text-md font-medium text-gray-600">Département :</p>
+            <p class="text-md">{{ $departement }}</p>
+        </div>
+        <div>
+            <p class="text-md font-medium text-gray-600">Ville :</p>
+            <p class="text-md">{{ $ville }}</p>
+        </div>
+        <div>
+            <p class="text-md font-medium text-gray-600">Commune :</p>
+            <p class="text-md">{{ $commune }}</p>
+        </div>
+    </div>
+</div>
+
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Contact fournisseur</p>
@@ -2232,7 +2253,8 @@
                                             value="{{ $notification->data['id_trader'] }}">
                                         <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd"
                                             value="{{ $notification->data['prixProd'] }}">
-                                        <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                        <input type="number" name="prixTrade" id="prixTrade"
+                                            wire:model="prixTrade"
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
 
