@@ -77,7 +77,6 @@ class UserController extends Controller
             'adress_geo.required' => 'Le champ adresse géographique est requis.',
             'proximity.required' => 'Le champ zone d\'activité est requis.',
         ]);
-
         try {
             $user = new User();
             $user->name = $validatedData['name'] . ' ' . $request->input('last-name');
@@ -317,6 +316,8 @@ class UserController extends Controller
             $user->country = $request->input('country');
             $user->departe = $request->input('departement');
             $user->ville = $request->input('ville');
+            $user->ville = $request->input('address');
+            $user->ville = $request->input('parrain');
             $user->commune = $request->input('commune');
 
             $user->save();
@@ -328,8 +329,10 @@ class UserController extends Controller
 
             //envoi du couriel au nouveau client
             // $user->sendEmailVerificationNotification();
+            $user->email_verified_at = now();
 
-            return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
+            // return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
+            return redirect()->route('biicf.login')->with('success', 'Création du compte avec succès, Connectez-vous!');
         } catch (\Exception $e) {
             // dd($e->getMessage());
             return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
