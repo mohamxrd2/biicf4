@@ -54,14 +54,23 @@
             @endif
 
 
-
-            <select wire:model="selectedOption" name="type"
-                class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                <option selected>Type de livraison</option>
-                @foreach ($options as $option)
-                    <option value="{{ $option }}">{{ $option }}</option>
-                @endforeach
-            </select>
+            @if ($type == 'Service')
+                <select wire:model="selectedOption" name="type"
+                    class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                    <option selected>Type de livraison</option>
+                    @foreach ($optionsC as $option)
+                        <option value="{{ $option }}">{{ $option }}</option>
+                    @endforeach
+                </select>
+            @else
+                <select wire:model="selectedOption" name="type"
+                    class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                    <option selected>Type de livraison</option>
+                    @foreach ($options as $option)
+                        <option value="{{ $option }}">{{ $option }}</option>
+                    @endforeach
+                </select>
+            @endif
         </div>
 
 

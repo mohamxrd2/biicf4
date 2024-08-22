@@ -34,6 +34,10 @@ class AchatDirectGroupe extends Component
         'Take Away',
         'Reservation',
     ];
+    public $optionsC = [
+        'Take Away',
+        'Reservation',
+    ];
     //
     public $quantité = "";
     public $localite = "";
@@ -46,6 +50,7 @@ class AchatDirectGroupe extends Component
     public $idProd;
     public $prix;
     public $code_unique;
+    public $type;
 
     public function mount($id)
     {
@@ -53,6 +58,7 @@ class AchatDirectGroupe extends Component
         $this->produit = ProduitService::findOrFail($id);
         $this->userId = Auth::guard('web')->id();
         $this->nameProd = $this->produit->name;
+        $this->type = $this->produit->type;
         $this->userSender = $this->userId;
         $this->userTrader = $this->produit->user->id;
         $this->photoProd = $this->produit->photoProd1;

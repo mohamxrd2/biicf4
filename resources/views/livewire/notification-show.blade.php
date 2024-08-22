@@ -480,7 +480,7 @@
                                         $prixArtiche = $notification->data['montantTotal'] ?? 0;
                                         $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
                                     @endphp
-                                     <div class="text-gray-800">
+                                    <div class="text-gray-800">
                                         {{ number_format($sommeRecu, 2, ',', '.') }} Fcfa
                                     </div>
                                 </div>
@@ -555,7 +555,7 @@
                                                             <p><strong>Departement du client :</strong>
                                                                 {{ $clientDepartement }}</p>
                                                             <p><strong>Commune du client :</strong>{{ $clientCommune }}
-                                                            </p>--}}
+                                                            </p> --}}
                                                             <p><strong>le nombre total disponible
                                                                     :</strong>{{ $livreursCount }}</p>
 
@@ -2095,10 +2095,21 @@
                     <p class="text-md font-semibold">Lieu de recuperation</p>
                     <p class="text-md font-medium text-gray-600">{{ $userFour->address }}</p>
                 </div>
+                @php
+                    $idProd = App\Models\ProduitService::find($notification->data['idProd']);
+                    $continent = $idProd ? $idProd->continent : null;
+                    $sous_region = $idProd ? $idProd->continsous_regionent : null;
+                    $continent = $idProd ? $idProd->continent : null;
+                    $continent = $idProd ? $idProd->continent : null;
+                @endphp
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Lieu de livraison</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['localite'] }}</p>
+                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
+                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
+                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
+                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
+                    <p class="text-md font-medium text-gray-600">continent :{{$continent}}</p>
                 </div>
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
@@ -2811,7 +2822,7 @@
                                 class=" font-semibold">{{ $client->address }}</span></p> --}}
                         <p class="mb-3 text-md">Contact du client: <span
                                 class=" font-semibold">{{ $client->phone }}</span></p>
-                        <p class="mb-3 text-md">Engin du client : <span class=" font-semibold">Moto</span></p>
+                        {{-- <p class="mb-3 text-md">Engin du client : <span class=" font-semibold">Moto</span></p> --}}
                         <p class="mb-3 text-md">Produit à recuperer: <span
                                 class= " font-semibold">{{ $produitfat->name }}</span></p>
                     </div>
