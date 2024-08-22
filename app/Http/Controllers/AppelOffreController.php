@@ -62,84 +62,53 @@ class AppelOffreController extends Controller
         // Group results by reference
         $groupedByReference = $results->groupBy('reference');
 
-        // Log grouped results
-        foreach ($groupedByReference as $reference => $group) {
-            $groupData = $group->map(function ($item) {
-                return [
-                    'reference' => $item->reference,
-                    'continent' => $item->continent,
-                    'sous_region' => $item->sous_region,
-                    'pays' => $item->pays,
-                    'zonecoServ' => $item->zonecoServ,
-                    'villeServ' => $item->villeServ,
-                    'comnServ' => $item->comnServ,
-                    'user_id' => $item->user_id,
-                ];
-            });
-
-            Log::info('Group for reference', [
-                'reference' => $reference,
-                'items' => $groupData->toArray()
-            ]);
-        }
-
-        // Récupérer la zone économique sélectionnée
+        // Filter based on zone économique
         $zoneEconomique = $request->input('zone_economique');
-
-        // Récupérer les informations de l'utilisateur courant
         $user = User::find($userId);
         $userZone = $user ? $user->commune : null;
 
-        // If the economic zone filter is applied, filter results further
+        $filtered = collect();
+
         if ($zoneEconomique) {
-            if ($zoneEconomique === 'Proximité') {
-                if ($userZone) {
-                    // Filter products where comnServ matches userZone
-                    $filtered = $results->filter(function ($produit) use ($userZone) {
+            if ($zoneEconomique === 'Proximité' && $userZone) {
+                $filtered = $groupedByReference->map(function ($group) use ($userZone) {
+                    return $group->filter(function ($produit) use ($userZone) {
                         return $produit->comnServ === $userZone;
                     });
-
-                    Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $zoneEconomique, 'userZone' => $userZone]);
-
-                    // Log filtered results
-                    $user_ids = $filtered->pluck('user_id')->unique();
-                    if ($user_ids->isNotEmpty()) {
-                        Log::info('Identifiants des utilisateurs partageant le même comnServ:', $user_ids->toArray());
-                    } else {
-                        Log::info('Aucun utilisateur ne partage le même comnServ.');
-                    }
-                } else {
-                    Log::warning('Zone de l\'utilisateur non trouvée pour le filtre Proximité');
-                }
-            } else {
-                // Filter products where zonecoServ matches zoneEconomique
-                $filtered = $results->filter(function ($produit) use ($zoneEconomique) {
-                    return $produit->zonecoServ === $zoneEconomique;
                 });
-
+                Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $zoneEconomique, 'userZone' => $userZone]);
+            } else {
+                $filtered = $groupedByReference->map(function ($group) use ($zoneEconomique) {
+                    return $group->filter(function ($produit) use ($zoneEconomique) {
+                        return $produit->zonecoServ === $zoneEconomique;
+                    });
+                });
                 Log::info('Filtre zone économique appliqué', ['zoneEconomique' => $zoneEconomique]);
-
-                // Log filtered results
-                Log::info('Filtered results', ['results_count' => $filtered->count()]);
             }
-
-            // Optionally, if you want to use `$filtered` as the final results
-            $produits = $filtered;
         }
 
-        // Proceed with using $produits for further operations
+        // Remove empty groups
+        $filtered = $filtered->filter(function ($group) {
+            return $group->isNotEmpty();
+        });
 
+        // Log grouped user_ids by reference
+        foreach ($filtered as $reference => $group) {
+            $user_ids = $group->pluck('user_id')->unique();
+            Log::info('User IDs grouped by reference', [
+                'reference' => $reference,
+                'user_ids' => $user_ids->toArray()
+            ]);
+        }
 
-        // Proceed with using $produits for further operations
+        // Proceed with using $filtered for further operations
+
 
         $resultCount = $results->count();
-
-
 
         $prodUsers = $results->pluck('user.id')->unique()->toArray();
         $lowestPricedProduct = $results->min('prix');
         $prodUsersCount = $results->pluck('user')->unique('id')->count();
-
 
         $produitDims = ProduitService::with('user')
             ->where('statuts', 'Accepté')
@@ -147,37 +116,7 @@ class AppelOffreController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-
-        // Récupérer les noms des produits des offres groupées
-        $appelOffreGroup = AppelOffreGrouper::where('productName', $keyword)->get();
-
-        $appelOffreGroupcount = $appelOffreGroup->count();
-
-        // Grouper les éléments par code_unique
-        $groupedByCodeUnique = $appelOffreGroup->groupBy('codeunique');
-
-
-        $participantsCount = null;
-
-        $productNames = null;
-
-        $idOffre = null;
-
-
-        // Parcourir chaque groupe et accéder aux données
-        foreach ($groupedByCodeUnique as $codeUnique => $group) {
-
-            $distinctUserIds = AppelOffreGrouper::where('codeunique', $codeUnique)->pluck('user_id')->unique();
-
-            $participantsCount = $distinctUserIds->count();
-
-            $productNames[$codeUnique] = $group->first()->productName;
-
-            $idOffre[$codeUnique] = $group->first()->id;
-        }
-
-
-        return view('biicf.searchAppelOffre', compact('groupedByReference', 'results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct',  'appelOffreGroup', 'appelOffreGroupcount', 'participantsCount', 'groupedByCodeUnique', 'productNames', 'idOffre'));
+        return view('biicf.searchAppelOffre', compact('filtered','groupedByReference', 'results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
     }
 
     public function formAppel(Request $request)

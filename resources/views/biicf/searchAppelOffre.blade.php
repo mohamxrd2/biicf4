@@ -82,7 +82,8 @@
                 <div class="grid grid-cols-2 gap-3 mt-2">
                     <div class="col-span-1">
                         <select name="zone_economique"
-                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none" required>
+                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none"
+                            required>
                             <option disabled selected>Zone economique</option>
                             <option value="Proximité">Proximité</option>
                             <option value="Locale">Locale</option>
@@ -213,7 +214,28 @@
 
                     </div>
                 @else
+                    @foreach ($filtered as $filtre => $group)
+                        <div class="filtre-group">
+                            <h3 class="text-red-500">Filtre : {{ $filtre }}</h3>
+                            <ul>
+                                @foreach ($group as $item)
+                                    <li>
+                                        <strong class="text-green-500">Référence :</strong> {{ $item->reference }}<br>
+                                        <strong>Continent :</strong> {{ $item->continent }}<br>
+                                        <strong>Sous-région :</strong> {{ $item->sous_region }}<br>
+                                        <strong>Pays :</strong> {{ $item->pays }}<br>
+                                        <strong>Zone économique :</strong> {{ $item->zonecoServ }}<br>
+                                        <strong>Ville :</strong> {{ $item->villeServ }}<br>
+                                        <strong>Commune :</strong> {{ $item->comnServ }}<br>
+                                        <strong>User ID :</strong> {{ $item->user_id }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endforeach
+
                     <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
+
                         @foreach ($groupedByReference as $reference => $group)
                             @php
                                 // Extraire les noms distincts et les user_id distincts
@@ -236,6 +258,7 @@
                                         <h4 class="text-lg font-semibold text-black dark:text-white">
                                             Référence : {{ $reference }}
                                         </h4>
+
                                         @foreach ($distinctNames as $name)
                                             <p class="text-sm text-gray-700 dark:text-gray-300">
                                                 Nom : {{ $name }}

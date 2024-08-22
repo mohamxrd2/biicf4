@@ -20,7 +20,7 @@ class ProduitServiceFactory extends Factory
     {
         return [
             'type' => $this->faker->randomElement(['Produit', 'Service']),
-            'reference' => $this->faker->word,
+            'reference' => $this->faker->word(7),
             'name' => $this->faker->word,
             'condProd' => $this->faker->optional()->word,
             'formatProd' => $this->faker->optional()->word,
@@ -41,7 +41,7 @@ class ProduitServiceFactory extends Factory
             'villeServ' => $this->faker->word,
             'comnServ' => $this->faker->word,
             'user_id' => User::factory(),
-            'categorie_id' => CategorieProduits_Servives::factory(), // Assuming you have a Categorie model
+            // 'categorie_id' => CategorieProduits_Servives::factory(), // Assuming you have a Categorie model
         ];
 
     }

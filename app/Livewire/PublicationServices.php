@@ -16,7 +16,7 @@ class PublicationServices extends Component
     public function render()
     {
 
-        $services = ProduitService::where('type', 'services')
+        $services = ProduitService::where('type', 'Service')
             ->where('name', 'like', "%{$this->search}%")
             ->orderBy('created_at', 'DESC')
             ->paginate(10);
@@ -35,14 +35,14 @@ class PublicationServices extends Component
             ->whereHas('user', function ($query) use ($adminId) {
                 $query->where('admin_id', $adminId);
             })
-            ->where('type', 'services')
+            ->where('type', 'Service')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         $serviceAgentsCount = ProduitService::with('user')
             ->whereHas('user', function ($query) use ($adminId) {
                 $query->where('admin_id', $adminId);
             })
-            ->where('type', 'services')
+            ->where('type', 'Service')
             ->count();
 
         return view('livewire.publication-services', [
