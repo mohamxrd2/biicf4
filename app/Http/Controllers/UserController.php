@@ -86,7 +86,6 @@ class UserController extends Controller
             $user->email = $validatedData['email'];
             $user->phone = $validatedData['phone'];
             $user->local_area = $validatedData['local'];
-            $user->address = $validatedData['address'];
             $user->active_zone = $validatedData['proximity'];
             $user->actor_type = $request->input('user_type');
             $user->gender = $request->input('user_sexe');

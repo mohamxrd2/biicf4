@@ -451,7 +451,6 @@
 
     </div>
 
-    {{-- <script src="{{ asset('js/country.js') }}"></script> --}}
     <script src="{{ asset('js/select.js') }}"></script>
 </body>
 
