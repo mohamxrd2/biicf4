@@ -424,7 +424,7 @@
                                         <th class="py-2 px-4">Lieu de livraison</th>
                                         <th class="py-2 px-4">Spécificité</th>
                                         <th class="py-2 px-4">Prix de la commande</th>
-                                        <th class="py-2 px-4">Somme reçue</th>
+                                        <th class="py-2 px-4">Somme finale</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
@@ -433,13 +433,14 @@
                                         <td class="py-2 px-4">{{ $notification->data['quantité'] }}</td>
                                         <td class="py-2 px-4">{{ $notification->data['localite'] }}</td>
                                         <td class="py-2 px-4">{{ $notification->data['specificite'] }}</td>
-                                        <td class="py-2 px-4">{{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
+                                        <td class="py-2 px-4">
+                                            {{ isset($notification->data['montantTotal']) ? number_format($notification->data['montantTotal'], 2, ',', '.') : 'N/A' }}
                                         </td>
                                         @php
                                             $prixArtiche = $notification->data['montantTotal'] ?? 0;
                                             $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
                                         @endphp
-                                        <td class="py-2 px-4">{{ number_format($sommeRecu, 2) }} Fcfa</td>
+                                        <td class="py-2 px-4">{{ number_format($sommeRecu, 2, ',', '.') }} Fcfa</td>
                                     </tr>
                                     <!-- Ajoutez d'autres lignes de produits si nécessaire -->
                                 </tbody>
@@ -467,16 +468,21 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <div class="font-semibold text-gray-700">Prix de la commande:</div>
-                                    <div class="text-gray-800">{{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
+                                    <div class="text-gray-800">
+                                        {{ isset($notification->data['montantTotal']) ? number_format($notification->data['montantTotal'], 2, ',', '.') : 'N/A' }}
+                                        Fcfa
                                     </div>
+
                                 </div>
                                 <div class="flex flex-col">
-                                    <div class="font-semibold text-gray-700">Somme reçue:</div>
+                                    <div class="font-semibold text-gray-700">Somme finale:</div>
                                     @php
-                                        $prixArtiche = $notification->data['quantité'];
+                                        $prixArtiche = $notification->data['montantTotal'] ?? 0;
                                         $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
                                     @endphp
-                                    <div class="text-gray-800">{{ number_format($sommeRecu, 2) }} Fcfa</div>
+                                     <div class="text-gray-800">
+                                        {{ number_format($sommeRecu, 2, ',', '.') }} Fcfa
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2996,22 +3002,19 @@
 
         </div>
     @elseif ($notification->type === 'App\Notifications\Retrait')
-
-
-
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
 
             @if (session()->has('success'))
-            <div class="text-green-500 mt-4">
-                {{ session('success') }}
-            </div>
-        @endif
+                <div class="text-green-500 mt-4">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-        @if (session()->has('error'))
-            <div class="text-red-500 mt-4">
-                {{ session('error') }}
-            </div>
-        @endif
+            @if (session()->has('error'))
+                <div class="text-red-500 mt-4">
+                    {{ session('error') }}
+                </div>
+            @endif
             <h2 class="text-xl font-medium mb-4">{{ $demandeur->name }}, vous a fait une demande de retrait</h2>
 
             <h1 class="font-semibold text-4xl">{{ $amount }} CFA</h1>
