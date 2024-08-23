@@ -78,7 +78,7 @@
                                 {{ implode(', ', $distinctSpecifications) }}</option>
                         @endif
 
-                        @if (!empty($distinctSpecification2s))
+                        {{-- @if (!empty($distinctSpecification2s))
                             <option value="{{ implode(', ', $distinctSpecification2s) }}">
                                 {{ implode(', ', $distinctSpecification2s) }}</option>
                         @endif
@@ -86,7 +86,7 @@
                         @if (!empty($distinctSpecification3s))
                             <option value="{{ implode(', ', $distinctSpecification3s) }}">
                                 {{ implode(', ', $distinctSpecification3s) }}</option>
-                        @endif
+                        @endif --}}
                     </select>
 
 
@@ -122,13 +122,35 @@
                         </div>
                     </div>
                 </div>
-                <div class="lg:w-2/3 w-full flex justify-center">
-                    <button type="reset" class="px-2 py-1 rounded-md bg-gray-200 mr-3">Annuler</button>
-                    <button type="submit" id="submitEnvoie" class="px-2 py-1 rounded-md bg-purple-700 text-white mr-3"
-                        x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Envoyer'"></button>
-                    <button type="submit" id="submitGroupe" class="px-2 py-1 rounded-md bg-green-500 text-white"
-                        x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'"></button>
+
+                <div class="lg:w-2/3 w-full flex flex-col items-center space-y-4">
+                    <!-- Cancel Button -->
+                    <button type="reset"
+                        class="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition duration-200 ease-in-out">
+                        Annuler
+                    </button>
+
+                    <!-- First Action Section -->
+                    <div class="w-full flex flex-col items-center space-y-2">
+                        <p class="text-center text-gray-600">Pour vous envoyer directement aux fournisseurs de votre zone,
+                            cliquez ici :</p>
+                        <button type="submit" id="submitEnvoie"
+                            class="w-full lg:w-auto px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-800 transition duration-200 ease-in-out flex items-center justify-center"
+                            x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Envoyer'">
+                        </button>
+                    </div>
+
+                    <!-- Second Action Section -->
+                    <div class="w-full flex flex-col items-center space-y-2">
+                        <p class="text-center text-gray-600">Pour vous grouper avec d'autres acheteurs de votre zone,
+                            cliquez ici :</p>
+                        <button type="submit" id="submitGroupe"
+                            class="w-full lg:w-auto px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-center"
+                            x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'">
+                        </button>
+                    </div>
                 </div>
+
             </div>
         </form>
     </div>

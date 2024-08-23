@@ -408,10 +408,6 @@ class NotificationShow extends Component
 
         $this->ciblageLivreurs();
     }
-
-
-
-
     public function ciblageLivreurs()
     {
         // Vérification de l'existence de la clé 'userSender' dans les données de la notification
@@ -466,9 +462,6 @@ class NotificationShow extends Component
         $this->livreursIds = $this->livreurs->pluck('user_id');
         $this->livreursCount = $this->livreurs->count();
     }
-
-
-
     public function accepteRetrait()
     {
         $userWallet = Wallet::where('user_id', $this->demandeur->id)->first();

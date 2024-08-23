@@ -85,12 +85,12 @@
                             class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none"
                             required>
                             <option disabled selected>Zone economique</option>
-                            <option value="Proximité">Proximité</option>
-                            <option value="Locale">Locale</option>
-                            <option value="Nationale">Nationale</option>
-                            <option value="Sous Régionale">Sous Régionale</option>
-                            <option value="Continentale">Continentale</option>
-                            <option value="Internationale">Internationale</option>
+                            <option value="proximite">Proximité</option>
+                            <option value="locale">Locale</option>
+                            <option value="departementale">Departementale</option>
+                            <option value="nationale">Nationale</option>
+                            <option value="sous_regionale">Sous Régionale</option>
+                            <option value="continentale">Continentale</option>
                         </select>
                     </div>
                     <div class="col-span-1">
@@ -214,27 +214,109 @@
 
                     </div>
                 @else
-                    @foreach ($filtered as $filtre => $group)
-                        <div class="filtre-group">
-                            <h3 class="text-red-500">Filtre : {{ $filtre }}</h3>
-                            <ul>
-                                @foreach ($group as $item)
-                                    <li>
-                                        <strong class="text-green-500">Référence :</strong> {{ $item->reference }}<br>
-                                        <strong>Continent :</strong> {{ $item->continent }}<br>
-                                        <strong>Sous-région :</strong> {{ $item->sous_region }}<br>
-                                        <strong>Pays :</strong> {{ $item->pays }}<br>
-                                        <strong>Zone économique :</strong> {{ $item->zonecoServ }}<br>
-                                        <strong>Ville :</strong> {{ $item->villeServ }}<br>
-                                        <strong>Commune :</strong> {{ $item->comnServ }}<br>
-                                        <strong>User ID :</strong> {{ $item->user_id }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endforeach
 
                     <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
+                        @if ($filtered->isEmpty())
+                            <div class="p-4 bg-yellow-100 text-yellow-700 rounded-lg">
+                                <p>Aucun produit trouvé dans cette zone économique. Veuillez essayer une autre zone
+                                    économique.</p>
+                            </div>
+                        @else
+                            @foreach ($filtered as $filtre => $group)
+                                @php
+                                    // Extraire les noms distincts et les user_id distincts
+                                    $distinctNames = $group->pluck('name')->unique();
+                                    $distinctTypes = $group->pluck('type')->unique();
+                                    $distinctCondProds = $group->pluck('condProd')->unique();
+                                    $distinctFormatProds = $group->pluck('formatProd')->unique();
+                                    $distinctSpecifications = $group->pluck('specification')->unique();
+                                    $distinctParticularites = $group->pluck('Particularite')->unique();
+                                    $distinctUserIds = $group->pluck('user_id')->unique();
+                                    $distinctUserCount = $distinctUserIds->count();
+                                    $lowestPrice = $group->pluck('prix')->min(); // Trouver le prix le plus bas
+
+                                @endphp
+                                <div
+                                    class="mb-4 p-4 border border-gray-200 rounded-lg shadow-sm bg-white dark:bg-gray-800 dark:border-gray-700">
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex-1">
+                                            <h4 class="text-lg font-semibold text-black dark:text-white">
+                                                Filtre : {{ $filtre }}
+                                            </h4>
+                                            @foreach ($distinctNames as $name)
+                                                <p class="text-sm text-gray-700 dark:text-gray-300">
+                                                    Nom : {{ $name }}
+                                                </p>
+                                            @endforeach
+                                            <div x-data="{ open: false }">
+                                                <!-- Bouton pour ouvrir le pop-up -->
+                                                <button @click="open = true"
+                                                    class="bg-blue-500 text-white px-4 py-2 rounded">
+                                                    Details
+                                                </button>
+
+                                                <!-- Pop-up -->
+                                                <div x-show="open"
+                                                    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                                                    style="display: none;">
+                                                    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                                                        <h2 class="text-xl font-bold mb-4">Details Du Produit Recherché
+                                                        </h2>
+                                                        <p>Référence : {{ $filtre }}</p>
+
+                                                        <!-- Afficher d'autres détails ici -->
+                                                        <p>Type : {{ $distinctTypes->join(', ') }}</p>
+                                                        <p>Condition : {{ $distinctCondProds->join(', ') }}</p>
+                                                        <p>Format : {{ $distinctFormatProds->join(', ') }}</p>
+                                                        <p>Spécification : {{ $distinctSpecifications->join(', ') }}</p>
+
+                                                        <p>Particularité : {{ $distinctParticularites->join(', ') }}</p>
+                                                        <button @click="open = false"
+                                                            class="bg-red-500 text-white px-4 py-2 rounded">
+                                                            Fermer
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div
+                                                class="flex p-2 items-center text-xs bg-yellow-100/60 text-yellow-600 rounded">
+                                                <p class="mr-1 font-semibold">{{ $distinctUserCount }}</p>
+                                                <span>Fournisseurs</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <form action="{{ route('biicf.form') }}" method="POST">
+                                        @csrf
+                                        <div class="w-full text-center mt-4">
+                                            <input type="hidden" name="distinctSpecifications"
+                                                value="{{ $distinctSpecifications->join(', ') }}">
+
+                                            <input type="hidden" name="name" value="{{ $name }}">
+                                            <input type="hidden" name="lowestPricedProduct"
+                                                value="{{ $lowestPrice }}">
+                                            <input type="hidden" name="reference" value="{{ $filtre }}">
+                                            @foreach ($distinctUserIds as $userId)
+                                                <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
+                                            @endforeach
+
+                                            <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit"
+                                                @if ($distinctUserCount <= 1) disabled @endif>
+                                                @if ($distinctUserCount <= 1)
+                                                    Fournisseur insuffisant
+                                                @else
+                                                    Faire un appel d'offre
+                                                @endif
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+
+                    {{-- <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
 
                         @foreach ($groupedByReference as $reference => $group)
                             @php
@@ -335,7 +417,7 @@
                                 </form>
                             </div>
                         @endforeach
-                    </div>
+                    </div> --}}
 
                 @endif
 

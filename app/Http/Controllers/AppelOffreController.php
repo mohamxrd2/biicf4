@@ -29,6 +29,10 @@ class AppelOffreController extends Controller
         $keyword = $request->input('keyword');
         $type = $request->input('type');
 
+        // Normalize keyword for case-insensitivity and apostrophe handling
+        $normalizedKeyword = strtolower(str_replace("'", "''", $keyword));
+        $normalizedType = strtolower($type);
+
         // Initial query
         $produitsQuery = ProduitService::with('user')
             ->where('statuts', 'Accepté')
@@ -42,14 +46,14 @@ class AppelOffreController extends Controller
 
         // Apply keyword filter
         if ($keyword) {
-            $produitsQuery->where('name', 'like', '%' . $keyword . '%');
-            Log::info('Applied keyword filter', ['keyword' => $keyword]);
+            $produitsQuery->whereRaw('LOWER(name) LIKE ?', ['%' . $normalizedKeyword . '%']);
+            Log::info('Applied keyword filter', ['keyword' => $normalizedKeyword]);
         }
 
         // Apply type filter
         if ($type) {
-            $produitsQuery->where('type', $type);
-            Log::info('Applied type filter', ['type' => $type]);
+            $produitsQuery->whereRaw('LOWER(type) = ?', [$normalizedType]);
+            Log::info('Applied type filter', ['type' => $normalizedType]);
         }
 
         // Fetch the products with initial filters
@@ -63,29 +67,93 @@ class AppelOffreController extends Controller
         $groupedByReference = $results->groupBy('reference');
 
         // Filter based on zone économique
-        $zoneEconomique = $request->input('zone_economique');
-        $user = User::find($userId);
-        $userZone = $user ? $user->commune : null;
 
         $filtered = collect();
 
+        $zoneEconomique = $request->input('zone_economique');
+        $normalizedZoneEconomique = strtolower($zoneEconomique);
+        $user = User::find($userId);
+        $userZone = $user ? strtolower($user->commune) : null;
+        $userVille = $user ? strtolower($user->ville) : null;
+        $userDepartement = $user ? strtolower($user->departe) : null;
+        $userPays = $user ? strtolower($user->country) : null;
+        $userSousRegion = $user ? strtolower($user->sous_region) : null;
+        $userContinent = $user ? strtolower($user->continent) : null;
+
         if ($zoneEconomique) {
-            if ($zoneEconomique === 'Proximité' && $userZone) {
-                $filtered = $groupedByReference->map(function ($group) use ($userZone) {
-                    return $group->filter(function ($produit) use ($userZone) {
-                        return $produit->comnServ === $userZone;
-                    });
-                });
-                Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $zoneEconomique, 'userZone' => $userZone]);
-            } else {
-                $filtered = $groupedByReference->map(function ($group) use ($zoneEconomique) {
-                    return $group->filter(function ($produit) use ($zoneEconomique) {
-                        return $produit->zonecoServ === $zoneEconomique;
-                    });
-                });
-                Log::info('Filtre zone économique appliqué', ['zoneEconomique' => $zoneEconomique]);
+            switch ($normalizedZoneEconomique) {
+                case 'proximite':
+                    if ($userZone) {
+                        $filtered = $groupedByReference->map(function ($group) use ($userZone) {
+                            return $group->filter(function ($produit) use ($userZone) {
+                                return strtolower($produit->comnServ) === $userZone;
+                            });
+                        });
+                        Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userZone' => $userZone]);
+                    }
+                    break;
+
+                case 'locale':
+                    if ($userVille) {
+                        $filtered = $groupedByReference->map(function ($group) use ($userVille) {
+                            return $group->filter(function ($produit) use ($userVille) {
+                                return strtolower($produit->villeServ) === $userVille;
+                            });
+                        });
+                        Log::info('Filtre Locale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userVille' => $userVille]);
+                    }
+                    break;
+
+                case 'departementale':
+                    if ($userDepartement) {
+                        $filtered = $groupedByReference->map(function ($group) use ($userDepartement) {
+                            return $group->filter(function ($produit) use ($userDepartement) {
+                                return strtolower($produit->zonecoServ) === $userDepartement;
+                            });
+                        });
+                        Log::info('Filtre Département appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userDepartement' => $userDepartement]);
+                    }
+                    break;
+
+                case 'nationale':
+                    if ($userPays) {
+                        $filtered = $groupedByReference->map(function ($group) use ($userPays) {
+                            return $group->filter(function ($produit) use ($userPays) {
+                                return strtolower($produit->pays) === $userPays;
+                            });
+                        });
+                        Log::info('Filtre Nationale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userPays' => $userPays]);
+                    }
+                    break;
+
+                case 'sous_regionale':
+                    if ($userSousRegion) {
+                        $filtered = $groupedByReference->map(function ($group) use ($userSousRegion) {
+                            return $group->filter(function ($produit) use ($userSousRegion) {
+                                return strtolower($produit->sous_region) === $userSousRegion;
+                            });
+                        });
+                        Log::info('Filtre Sous-régionale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userSousRegion' => $userSousRegion]);
+                    }
+                    break;
+
+                case 'continentale':
+                    if ($userContinent) {
+                        $filtered = $groupedByReference->map(function ($group) use ($userContinent) {
+                            return $group->filter(function ($produit) use ($userContinent) {
+                                return strtolower($produit->continent) === $userContinent;
+                            });
+                        });
+                        Log::info('Filtre Continentale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userContinent' => $userContinent]);
+                    }
+                    break;
+
+                default:
+                    Log::info('Zone économique non reconnue', ['zoneEconomique' => $normalizedZoneEconomique]);
+                    break;
             }
         }
+
 
         // Remove empty groups
         $filtered = $filtered->filter(function ($group) {
@@ -100,6 +168,7 @@ class AppelOffreController extends Controller
                 'user_ids' => $user_ids->toArray()
             ]);
         }
+
 
         // Proceed with using $filtered for further operations
 
@@ -116,7 +185,7 @@ class AppelOffreController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('biicf.searchAppelOffre', compact('filtered','groupedByReference', 'results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
+        return view('biicf.searchAppelOffre', compact('filtered', 'groupedByReference', 'results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
     }
 
     public function formAppel(Request $request)
