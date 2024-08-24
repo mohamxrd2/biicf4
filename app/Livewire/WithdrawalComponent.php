@@ -18,12 +18,8 @@ class WithdrawalComponent extends Component
     public $amount;
 
     public $psap;
-    public $formVisible = false;
 
-    public function showForm()
-    {
-        $this->formVisible = true;
-    }
+
     public function initiateWithdrawal()
     {
         Log::info('Initiating withdrawal', ['amount' => $this->amount, 'psap' => $this->psap]);
@@ -59,7 +55,7 @@ class WithdrawalComponent extends Component
                 'amount' => $this->amount,
                 'userId' => Auth::id(),
             ];
-            
+
 
             Log::info('Creating transaction', ['data' => $data]);
 
@@ -76,7 +72,6 @@ class WithdrawalComponent extends Component
             Log::info('Transaction committed successfully');
 
             // Réinitialisation de l'état du composant
-            $this->formVisible = false;
             $this->psap = null;
             $this->amount = null;
 

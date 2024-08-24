@@ -23,6 +23,7 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
+use App\Livewire\WithdrawalComponent;
 
 Route::get('/', function () {
     return view('index');
@@ -155,8 +156,12 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 
 
     Route::get('porte-feuille', [AdminWalletController::class, 'indexBiicf'])->name('biicf.wallet');
+    Route::get('retrait', [AdminWalletController::class, 'retrait'] )->name('biicf.retrait');
+
 
     Route::post('envoyer-client', [AdminWalletController::class, 'sendToClientAccount'])->name('biicf.send');
+
+
 
 
     Route::get('profile', [UserController::class, 'showProfile'])->name('biicf.showProfile');

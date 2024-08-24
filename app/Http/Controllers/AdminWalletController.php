@@ -19,6 +19,7 @@ class AdminWalletController extends Controller
     }
 
 
+
     public function sendToClientAccount(Request $request)
     {
         // Validate request data
@@ -32,7 +33,6 @@ class AdminWalletController extends Controller
                 'amount.required' => 'Veuillez entrer le montant.',
             ]
         );
-        dd($validatedData);
 
         // Calculate commission
         $pourcentSomme = $request->input('comAmount');
@@ -154,5 +154,10 @@ class AdminWalletController extends Controller
         Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $transacCount]);
 
         return view('biicf.wallet', compact('userWallet', 'users', 'userCount', 'transactions', 'transacCount', 'userId'));
+    }
+
+    public function retrait()
+    {
+        return view('biicf.retrait');
     }
 }

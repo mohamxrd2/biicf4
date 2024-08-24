@@ -90,10 +90,7 @@ class Wallet extends Component
 
         return view('livewire.wallet', compact('adminWallet', 'agents', 'users', 'agentCount', 'userCount', 'adminId'));
     }
-    public function navigateToContact()
-    {
-        $this->dispatch('navigate', 'rechargeAgent');
-    }
+    
     public function navigateToClient()
     {
         $this->dispatch('navigate', 'rechargeClient');
