@@ -115,10 +115,6 @@ class AdminWalletController extends Controller
         $transaction->save();
     }
 
-
-
-
-
     public function indexBiicf()
     {
         $userId = Auth::guard('web')->id();

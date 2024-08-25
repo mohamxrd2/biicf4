@@ -7,10 +7,13 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Walletclient extends Component
 {
+    public $userWallet;
+
     public $currentPage = 'transaction';
 
     protected $listeners = ['navigate' => 'setPage'];
@@ -19,6 +22,8 @@ class Walletclient extends Component
     {
         $this->currentPage = $page;
     }
+
+    #[On('refreshComponent')]
     public function transfert()
     {
         $this->dispatch('navigate', 'transfert');
@@ -27,14 +32,27 @@ class Walletclient extends Component
     {
         $this->dispatch('navigate', 'retrait');
     }
+    public function mount()
+    {
+
+        $this->wallet();
+    }
+    #[On('refreshComponent')]
+    public function wallet()
+    {
+        $userId = Auth::guard('web')->id();
+        Log::info('User ID:', ['user_id' => $userId]);
+        $this->userWallet = Wallet::where('user_id', $userId)->first();
+        Log::info('User Wallet:', ['wallet' => $this->userWallet]);
+    }
     
+    #[On('refreshComponent')]
     public function render()
     {
         $userId = Auth::guard('web')->id();
         Log::info('User ID:', ['user_id' => $userId]);
 
-        $userWallet = Wallet::where('user_id', $userId)->first();
-        Log::info('User Wallet:', ['wallet' => $userWallet]);
+
 
         // Récupérer les utilisateurs à exclure l'utilisateur authentifié
         $users = User::with('admin')
@@ -62,6 +80,6 @@ class Walletclient extends Component
         })->count();
         Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $transacCount]);
 
-        return view('livewire.walletclient', compact('userWallet', 'users', 'userCount', 'transactions', 'transacCount', 'userId'));
+        return view('livewire.walletclient', compact('users', 'userCount', 'transactions', 'transacCount', 'userId'));
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Notifications\AcceptRetrait;
+use App\Notifications\RefusRetrait;
 use Exception;
 use App\Models\User;
 use App\Models\Admin;
@@ -489,8 +491,13 @@ class NotificationShow extends Component
 
             DB::commit();
 
+            $demandeur = User::find($this->demandeur->id);
+
             session()->flash('success', 'Le retrait a été accepté.');
-        } catch (\Exception $e) {
+            Notification::send($demandeur, new AcceptRetrait($this->notification->id));
+
+
+        } catch (Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Une erreur est survenue lors du retrait.');
         }
@@ -498,9 +505,14 @@ class NotificationShow extends Component
 
     public function refusRetrait()
     {
+
         $this->notification->update(['reponse' => 'accepter']);
 
+        $demandeur = User::find($this->demandeur->id);
+
         session()->flash('error', 'Le retrait a été refusé.');
+        Notification::send($demandeur, new RefusRetrait($this->notification->id));
+
     }
     public function storeoffre()
     {

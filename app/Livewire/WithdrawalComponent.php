@@ -75,7 +75,7 @@ class WithdrawalComponent extends Component
             $this->psap = null;
             $this->amount = null;
 
-            session()->flash('message', 'Demande de retrait effectuée.');
+            session()->flash('message', 'Demande de retrait envoyée.');
         } catch (\Exception $e) {
             DB::rollBack(); // Annulation de la transaction en cas d'erreur
             Log::error('Error during withdrawal initiation', ['error' => $e->getMessage()]);

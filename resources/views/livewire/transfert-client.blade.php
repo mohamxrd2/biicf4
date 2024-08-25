@@ -1,20 +1,20 @@
 <div>
-    <div wire:loading.delay.longest>
+    {{-- <div wire:loading.delay.longest>
         <span class="text-green-500">Sending...</span>
-    </div>
+    </div> --}}
 
     <form wire:submit.prevent="recharge">
         <div
             class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-neutral-800 dark:border-neutral-700 dark:shadow-neutral-700/70">
             <div class="flex justify-between items-center py-3 px-4 border-b dark:border-neutral-700">
                 <h3 class="font-bold text-gray-800 dark:text-white">
-                    Recharger le compte
+                    Transferer De l'Argent
                 </h3>
             </div>
             <div class="p-4 overflow-y-auto">
                 <div class="w-full mb-3">
                     <div class="relative">
-                        <input wire:model.live="search"
+                        <input wire:model.debounce.30ms="search"
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                             type="text" placeholder="Entrez le nom de l'user">
 
@@ -56,6 +56,7 @@
                     <span wire:loading>Sending...</span>
 
                 </button>
+
             </div>
         </div>
     </form>
