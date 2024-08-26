@@ -191,9 +191,6 @@ class AppelOffreController extends Controller
     public function formAppel(Request $request)
     {
 
-
-
-
         $name = $request->input('name');
         $lowestPricedProduct = $request->input('lowestPricedProduct');
         $prodUsers = $request->input('prodUsers');
@@ -381,17 +378,16 @@ class AppelOffreController extends Controller
             // Calculate the total cost (replace 'price' with the actual price logic)
             $totalCost = $request->quantity * $lowestPricedProduct;
 
+            // Vérification du solde du portefeuille
+            if ($userWallet->balance < $totalCost) {
+                return redirect()->back()->with('error', 'Solde insuffisant dans le portefeuille pour effectuer cette transaction.');
+            }
+
             // Augmentation du solde du portefeuille du client
             $userWallet->decrement('balance', $totalCost);
 
             // Création de la transaction
             $this->createTransaction($userId, $userId, 'Gele', $totalCost);
-
-
-            // Vérification du solde du portefeuille
-            if ($userWallet->balance < $totalCost) {
-                return redirect()->back()->with('error', 'Solde insuffisant dans le portefeuille pour effectuer cette transaction.');
-            }
 
             // Boucle sur chaque utilisateur pour envoyer la notification
             foreach ($prodUsers as $prodUser) {

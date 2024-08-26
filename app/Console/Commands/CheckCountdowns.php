@@ -133,6 +133,7 @@ class CheckCountdowns extends Command
                             ->orWhere('type', 'App\Notifications\AppelOffre');
                     })
                         ->whereJsonContains('data->code_livr', $code_unique)
+                        ->orWhereJsonContains('data->code_unique', $code_unique)
                         ->exists();
 
 

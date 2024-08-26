@@ -771,180 +771,7 @@
                         </div>
                     </div>
                 </div>
-                {{-- test --}}
-                {{-- <div x-data="countdownTimer('{{ $notification->created_at }}', {{ json_encode($comments) }})" x-init="start()">
-                    <div x-show="!isExpired()" id="form-container">
-                        <div class="p-4">
 
-                            <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                                uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-                                <div
-                                    class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-                                    <div
-                                        class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-
-                                        @foreach ($comments as $comment)
-                                            <div class="flex items-center gap-3 relative">
-                                                <img src="{{ asset($comment['photoUser']) }}" alt=""
-                                                    class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-                                                <div class="flex-1">
-                                                    <p
-                                                        class=" text-base text-black font-medium inline-block dark:text-white">
-                                                        {{ $comment['nameUser'] }}</p>
-                                                    <p class="text-sm mt-0.5">
-                                                        {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
-
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    <form wire:submit.prevent="commentForm">
-                                        <div
-                                            class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                            <input type="hidden" wire:model="code_unique">
-                                            <input type="hidden" wire:model="quantiteC">
-                                            <input type="hidden" wire:model="difference">
-                                            <input type="hidden" wire:model="idsender">
-                                            <input type="hidden" wire:model="id_trader">
-                                            <input type="hidden" wire:model="nameprod">
-                                            <input type="hidden" wire:model="localite">
-                                            <input type="hidden" wire:model="specificite">
-
-                                            <input type="number" name="prixTrade" id="prixTrade"
-                                                wire:model="prixTrade"
-                                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                placeholder="Faire une offre..." required>
-                                            @error('prixTrade')
-                                                <span class="text-red-500">{{ $message }}</span>
-                                            @enderror
-
-                                            <button type="submit" id="submitBtnAppel"
-                                                class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
-                                                <span wire:loading.remove>
-                                                    <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                        fill="currentColor" viewBox="0 0 18 20">
-                                                        <path
-                                                            d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                                    </svg>
-                                                </span>
-                                                <span wire:loading>
-                                                    <svg class="w-5 h-5 animate-spin inline-block"
-                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                                    </svg>
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <div class="w-full flex justify-center">
-                                    <span id="prixTradeError"
-                                        class="text-red-500 text-sm hidden text-center py-3"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <h1 class="text-3xl">Temps restant: <span x-text="formattedTime"></span></h1>
-                    </div>
-                    <div x-show="isExpired()">
-                        <p>Le temps est écoulé. Le formulaire n'est plus disponible.</p>
-                        <div class="w-full flex justify-center">
-                            <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                    const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtnAppel');
-                    const prixTradeError = document.getElementById('prixTradeError');
-                    const produitPrix = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
-
-                    prixTradeInput.addEventListener('input', function() {
-                        const prixTradeValue = parseFloat(prixTradeInput.value);
-
-                        if (prixTradeValue > produitPrix) {
-                            submitBtn.disabled = true;
-                            prixTradeError.textContent = `Le prix doit être inférieur à ${produitPrix} FCFA`;
-                            prixTradeError.classList.remove('hidden');
-                            submitBtn.classList.add('hidden');
-                        } else {
-                            submitBtn.disabled = false;
-                            prixTradeError.textContent = '';
-                            prixTradeError.classList.add('hidden');
-                            submitBtn.classList.remove('hidden');
-                        }
-                    });
-
-                    function countdownTimer(notificationCreatedAt, comments) {
-                        return {
-                            timeLeft: 0,
-                            formattedTime: '',
-                            timer: null,
-                            start() {
-                                const start = new Date(notificationCreatedAt);
-                                start.setMinutes(start.getMinutes() + 1); // Adjust time as needed
-                                const currentDate = new Date();
-                                this.timeLeft = Math.floor((start.getTime() - currentDate.getTime()) / 1000);
-
-                                this.updateFormattedTime();
-
-                                this.timer = setInterval(() => {
-                                    if (this.timeLeft > 0) {
-                                        this.timeLeft--;
-                                        this.updateFormattedTime();
-                                    } else {
-                                        clearInterval(this.timer);
-                                        this.handleExpiration(comments);
-                                    }
-                                }, 1000);
-                            },
-                            updateFormattedTime() {
-                                const days = Math.floor(this.timeLeft / 86400);
-                                const hours = Math.floor((this.timeLeft % 86400) / 3600);
-                                const minutes = Math.floor((this.timeLeft % 3600) / 60);
-                                const seconds = this.timeLeft % 60;
-
-                                this.formattedTime = `${days}j ${hours}h ${minutes}m ${seconds}s`;
-
-                                if (this.timeLeft <= 0) {
-                                    clearInterval(this.timer);
-                                    this.handleExpiration(comments);
-                                }
-                            },
-                            handleExpiration(comments) {
-                                document.getElementById('prixTrade').disabled = true;
-                                document.getElementById('submitBtnAppel').classList.add('hidden');
-
-                                const highestPricedComment = comments.reduce((max, comment) =>
-                                    comment.prix > max.prix ? comment : max, {
-                                        prix: -Infinity
-                                    });
-
-                                if (highestPricedComment && highestPricedComment.nameUser) {
-                                    prixTradeError.textContent =
-                                        `L'utilisateur avec le prix le plus élevé est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
-                                } else {
-                                    prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                                }
-                                prixTradeError.classList.remove('hidden');
-                            },
-                            isExpired() {
-                                return this.timeLeft <= 0;
-                            }
-                        }
-                    }
-                </script> --}}
-
-
-
-
-                {{--  --}}
             </div>
             <!-- Footer Section -->
             <footer class="bg-gray-800 text-white py-4 mt-8 w-full">
@@ -988,7 +815,12 @@
                         const currentDate = new Date();
                         const difference = startDate.getTime() - currentDate.getTime();
 
-                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                        if (isNaN(difference) || difference <= 0) {
+                            clearInterval(countdownTimer);
+                            handleCountdownEnd();
+                            return;
+                        }
+
                         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
@@ -996,35 +828,38 @@
                         const countdownElement = document.getElementById('countdown');
                         if (countdownElement) {
                             countdownElement.innerHTML = `
-                          <div>${hours}h</div>:
-                          <div>${minutes}m</div>:
-                          <div>${seconds}s</div>
-                        `;
-                        }
-
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            if (countdownElement) {
-                                countdownElement.innerHTML = "Temps écoulé !";
-                            }
-                            prixTradeInput.disabled = true;
-                            submitBtn.classList.add('hidden');
-
-
-                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
-                                .prix > max.prix ? comment : max, {
-                                    prix: -Infinity
-                                });
-
-                            if (highestPricedComment && highestPricedComment.nameUser) {
-                                prixTradeError.textContent =
-                                    `L'utilisateur avec le prix le plus bas est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
-                            } else {
-                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                            }
-                            prixTradeError.classList.remove('hidden');
+                              <div>${hours}h</div>:
+                              <div>${minutes}m</div>:
+                              <div>${seconds}s</div>
+                          `;
                         }
                     }
+
+                    function handleCountdownEnd() {
+                        const countdownElement = document.getElementById('countdown');
+                        if (countdownElement) {
+                            countdownElement.innerHTML = "Temps écoulé !";
+                        }
+                        prixTradeInput.disabled = true;
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('hidden');
+
+                        const comments = @json($comments);
+                        const highestPricedComment = comments.reduce((max, comment) => comment.prix > max.prix ? comment :
+                            max, {
+                                prix: -Infinity
+                            });
+
+                        if (highestPricedComment && highestPricedComment.nameUser) {
+                            prixTradeError.textContent =
+                                `L'utilisateur avec le prix le plus élevé est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                        } else {
+                            prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                        }
+                        prixTradeError.classList.remove('hidden');
+                    }
+
+                    updateCountdown();
                 });
             </script>
 
