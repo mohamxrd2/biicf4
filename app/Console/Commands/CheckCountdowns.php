@@ -124,22 +124,23 @@ class CheckCountdowns extends Command
                         Notification::send($countdown->sender, new CountdownNotification($details));
                     }
 
-                    // // Supprimer les commentaires avec ce code unique
-                    // Comment::where('code_unique', $code_unique)->delete();
+                    // Supprimer les commentaires avec ce code unique
+                    Comment::where('code_unique', $code_unique)->delete();
 
-                    // $notificationExists = DatabaseNotification::where(function ($query) use ($code_unique) {
-                    //     $query->where('type', 'App\Notifications\livraisonVerif')
-                    //         ->orWhere('type', 'App\Notifications\AppelOffreGrouperNotification');
-                    // })
-                    //     ->whereJsonContains('data->code_livr', $code_unique)
-                    //     ->exists();
+                    $notificationExists = DatabaseNotification::where(function ($query) use ($code_unique) {
+                        $query->where('type', 'App\Notifications\livraisonVerif')
+                            ->orWhere('type', 'App\Notifications\AppelOffreGrouperNotification')
+                            ->orWhere('type', 'App\Notifications\AppelOffre');
+                    })
+                        ->whereJsonContains('data->code_livr', $code_unique)
+                        ->exists();
 
 
-                    // if ($notificationExists) {
-                    //     // Supprimez toutes les notifications qui contiennent ce code unique dans 'data'
-                    //     DatabaseNotification::whereJsonContains('data->code_livr', $code_unique)
-                    //         ->delete();
-                    // }
+                    if ($notificationExists) {
+                        // Supprimez toutes les notifications qui contiennent ce code unique dans 'data'
+                        DatabaseNotification::whereJsonContains('data->code_livr', $code_unique)
+                            ->delete();
+                    }
 
                     // Mettre à jour le statut notified à true
                     $countdown->update(['notified' => true]);

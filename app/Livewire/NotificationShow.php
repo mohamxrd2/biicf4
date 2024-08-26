@@ -413,7 +413,7 @@ class NotificationShow extends Component
     public function ciblageLivreurs()
     {
         // Vérification de l'existence de la clé 'userSender' dans les données de la notification
-        $this->Idsender = $this->notification->data['userSender'] ?? null;
+        $this->Idsender = $this->notification->data['userSender'] ?? $this->notification->data['id_sender'] ?? null;
 
         if ($this->Idsender === null) {
             // Gérer le cas où 'userSender' est null, par exemple, arrêter l'exécution ou continuer selon la logique souhaitée
@@ -495,8 +495,6 @@ class NotificationShow extends Component
 
             session()->flash('success', 'Le retrait a été accepté.');
             Notification::send($demandeur, new AcceptRetrait($this->notification->id));
-
-
         } catch (Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Une erreur est survenue lors du retrait.');
@@ -512,7 +510,6 @@ class NotificationShow extends Component
 
         session()->flash('error', 'Le retrait a été refusé.');
         Notification::send($demandeur, new RefusRetrait($this->notification->id));
-
     }
     public function storeoffre()
     {
@@ -1503,8 +1500,24 @@ class NotificationShow extends Component
 
     public function refuserPro()
     {
-        $this->notification->update(['reponse' => 'refuser']);
+        try {
+            // Mise à jour de la notification
+            $this->notification->update(['reponse' => 'refuser']);
+
+            // Récupération de l'utilisateur Trader
+            $userTrader = User::findOrFail($this->notification->data['id_trader']);
+
+            // Envoi de la notification
+            Notification::send($userTrader, new RefusAchat($this->messageR));
+        } catch (Exception $e) {
+            // Gérer l'exception, enregistrer l'erreur dans les logs et afficher un message d'erreur
+            Log::error('Erreur lors du refus de la proposition : ' . $e->getMessage());
+
+            // Vous pouvez ajouter un retour ou une redirection avec un message d'erreur
+            return back()->with('error', 'Une erreur s\'est produite lors du refus de la proposition.');
+        }
     }
+
     public function refuser()
     {
 

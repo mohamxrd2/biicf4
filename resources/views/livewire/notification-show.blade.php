@@ -760,15 +760,15 @@
 
                     <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
 
-                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
+                        <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
-                            <div id="countdown"
-                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
+                        <div id="countdown"
+                            class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
 
-                                <div>-</div>:
-                                <div>-</div>:
-                                <div>-</div>
-                            </div>
+                            <div>-</div>:
+                            <div>-</div>:
+                            <div>-</div>
+                        </div>
                     </div>
                 </div>
                 {{-- test --}}
@@ -1504,7 +1504,14 @@
         <div class="container mx-auto px-4 py-6">
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <div class="p-6 border-b border-gray-200">
-                    <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande @if ($notification->type_achat == 'Take Away')
+                            Take Away
+                        @elseif ($notification->type_achat == 'Reservation')
+                            Reservation
+                        @else
+                            Avec livraison
+                        @endif
+                    </h1>
                 </div>
                 <div class="p-6">
                     <!-- Détails de la Commande -->
@@ -1512,16 +1519,33 @@
                         <h2 class="text-lg font-semibold text-gray-700 mb-2">Informations de la Commande</h2>
                         <ul>
                             <li class="flex justify-between py-1"><span class="font-medium">Numéro de Commande:</span>
-                                <span>#12345</span>
+                                <span>{{ $notification->data['code_unique'] }}</span>
                             </li>
-                            <li class="flex justify-between py-1"><span class="font-medium">Date de Commande:</span>
-                                <span>2024-08-01</span>
+                            <li class="flex justify-between py-1"><span class="font-medium">Date de Commande/
+                                    Heure:</span>
+                                <span>{{ $notification->created_at }}</span>
                             </li>
                             <li class="flex justify-between py-1"><span class="font-medium">Fournisseur:</span>
-                                <span>XYZ Corp</span>
+                                <span>{{ Auth::user()->name }}</span>
                             </li>
-                            <li class="flex justify-between py-1"><span class="font-medium">Statut:</span> <span>En
-                                    attente de validation</span></li>
+                            <li class="flex justify-between py-1">
+                                <span class="font-medium">Statut:</span>
+                                <span
+                                    class="
+                                   @if ($notification->reponse == 'accepte') text-green-500
+                                   @elseif($notification->reponse == 'refuser') text-red-500
+                                   @else  text-yellow-500 @endif">
+                                    @if ($notification->reponse == 'accepte')
+                                        Validé
+                                    @elseif($notification->reponse == 'refuser')
+                                        Rejeté
+                                    @else
+                                        En attente de validation
+                                    @endif
+                                </span>
+
+                            </li>
+
                         </ul>
                     </div>
 
@@ -1541,7 +1565,7 @@
                                         <th class="py-2 px-4">Lieu de livraison</th>
                                         <th class="py-2 px-4">Spécificité</th>
                                         <th class="py-2 px-4">Prix de la commande</th>
-                                        <th class="py-2 px-4">Somme reçue</th>
+                                        <th class="py-2 px-4">Somme finale</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
@@ -1550,13 +1574,14 @@
                                         <td class="py-2 px-4">{{ $notification->data['quantiteC'] }}</td>
                                         <td class="py-2 px-4">{{ $notification->data['localite'] }}</td>
                                         <td class="py-2 px-4">{{ $notification->data['specificite'] }}</td>
-                                        <td class="py-2 px-4">{{ $notification->data['montantTotal'] ?? 'N/A' }} Fcfa
+                                        <td class="py-2 px-4">
+                                            {{ isset($notification->data['montantTotal']) ? number_format($notification->data['montantTotal'], 2, ',', '.') : 'N/A' }}
                                         </td>
                                         @php
                                             $prixArtiche = $notification->data['montantTotal'] ?? 0;
                                             $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
                                         @endphp
-                                        <td class="py-2 px-4">{{ number_format($sommeRecu, 2) }} Fcfa</td>
+                                        <td class="py-2 px-4">{{ number_format($sommeRecu, 2, ',', '.') }} Fcfa</td>
                                     </tr>
                                     <!-- Ajoutez d'autres lignes de produits si nécessaire -->
                                 </tbody>
@@ -1584,21 +1609,26 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <div class="font-semibold text-gray-700">Prix de la commande:</div>
-                                    <div class="text-gray-800">{{ $notification->data['montantTotal'] ?? 'N/A' }}
+                                    <div class="text-gray-800">
+                                        {{ isset($notification->data['montantTotal']) ? number_format($notification->data['montantTotal'], 2, ',', '.') : 'N/A' }}
                                         Fcfa
                                     </div>
+
                                 </div>
                                 <div class="flex flex-col">
-                                    <div class="font-semibold text-gray-700">Somme reçue:</div>
+                                    <div class="font-semibold text-gray-700">Somme finale:</div>
                                     @php
                                         $prixArtiche = $notification->data['montantTotal'] ?? 0;
                                         $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
                                     @endphp
-                                    <div class="text-gray-800">{{ number_format($sommeRecu, 2) }} Fcfa</div>
+                                    <div class="text-gray-800">
+                                        {{ number_format($sommeRecu, 2, ',', '.') }} Fcfa
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
 
                     {{-- <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
                         class="mb-3 text-blue-700 hover:underline flex items-center">
@@ -1615,6 +1645,16 @@
                             <div class="w-full bg-gray-300 border p-2 rounded-md">
                                 <p class="text-md font-medium text-center">Réponse envoyée</p>
                             </div>
+                        @elseif ($notification->type_achat == 'Take Away')
+                            <button wire:click="takeaway"
+                                class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
+                            <button wire:click="refuser" id="btn-refuser" type="submit"
+                                class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+                        @elseif ($notification->type_achat == 'Reservation')
+                            <button wire:click="takeaway"
+                                class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
+                            <button wire:click="refuser" id="btn-refuser" type="submit"
+                                class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
                         @else
                             <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...' }" x-cloak>
                                 <!-- Buttons to open modal and refuse -->
@@ -1644,10 +1684,42 @@
                                             <div class="p-4">
                                                 <p class="text-gray-800">
                                                     @if ($nombreLivr)
-                                                        Le nombre de livreurs disponibles dans cette zone est:
-                                                        {{ $nombreLivr }}
+                                                        <div>
+                                                            <h3>Détails de la commande</h3>
+                                                            <p><strong>ID de client :</strong> {{ $Idsender }}</p>
+                                                            <p><strong>Continent du client :</strong>
+                                                                {{ $clientContinent }}</p>
+                                                            <p><strong>Sous-Region du client :</strong>
+                                                                {{ $clientSous_Region }}</p>
+                                                            <p><strong>Pays du client :</strong> {{ $clientPays }}
+                                                            </p>
+                                                            <p><strong>Departement du client :</strong>
+                                                                {{ $clientDepartement }}</p>
+                                                            <p><strong>Commune du client
+                                                                    :</strong>{{ $clientCommune }}
+                                                            </p>
+                                                            <p><strong>le nombre total disponible
+                                                                    :</strong>{{ $livreursCount }}</p>
+
+                                                            <h3>Liste des livreurs disponibles</h3>
+                                                            @if (isset($livreurs) && $livreurs->isNotEmpty())
+                                                                {{-- <ul>
+                                                                 @foreach ($livreurs as $livreur)
+                                                                     <li>
+                                                                         Livreur ID: {{ $livreur->id }} -
+                                                                         Expérience: {{ $livreur->experience }} ans -
+                                                                         Livreur ID: {{ $livreur->user_id }}
+                                                                     </li>
+                                                                 @endforeach
+                                                                 </ul> --}}
+                                                            @else
+                                                                <p>Aucun livreur disponible pour ce pays et cette ville.
+                                                                </p>
+                                                            @endif
+
+                                                        </div>
                                                     @else
-                                                        Aucun livreur dans la zone
+                                                        Aucun livreur disponible dans la zone
                                                     @endif
                                                 </p>
                                             </div>
@@ -1662,7 +1734,7 @@
                                                     <!-- Textarea and action buttons -->
                                                     <div x-show="open" class="mt-4">
                                                         <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6" required>
-                                                        </textarea>
+                                                </textarea>
                                                         <div class="mt-2 flex justify-end space-x-2">
                                                             <button @click="open = false"
                                                                 class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded">
@@ -1682,7 +1754,6 @@
                                     </div>
                                 </div>
                             </div>
-
 
                         @endif
                     </div>
