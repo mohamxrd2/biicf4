@@ -361,45 +361,84 @@
                         </div>
                     </div>
 
-
                     <!-- Images -->
-                    <h1 class="text-center text-xl font-bold mb-8">Ajout D'Image</h1>
-                    <div class="grid grid-cols-2 gap-6 mb-6">
+                    <h1 class="text-center text-xl font-bold mb-8">Ajout D'Images</h1>
+                    <div class="grid grid-cols-4 gap-9 mb-6">
+                        <!-- Image 1 -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image1<span
-                                    class="text-red-500 10px">*</span><label>
-                                    <input type="file" wire:model="photoProd1"
-                                        class="w-full p-2 border border-gray-300 rounded-md">
-                                    @error('photoProd1')
-                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                    @enderror
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Image 1<span class="text-red-500 ml-1">*</span>
+                            </label>
+                            <input type="file" wire:model="photoProd1" :disabled="locked"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            @error('photoProd1')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                            @if ($photoProd1 && is_object($photoProd1))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ $photoProd1->temporaryUrl() }}">
+                            @elseif ($photoProd1 && is_string($photoProd1))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ asset('post/all/' . $photoProd1) }}">
+                                <input type="hidden" name="photo1" value="{{ $photoProd1 }}">
+                            @endif
                         </div>
+
+                        <!-- Image 2 -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image2</label>
-                            <input type="file" wire:model="photoProd2"
-                                class="w-full p-2 border border-gray-300 rounded-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image 2</label>
+                            <input type="file" wire:model="photoProd2" :disabled="locked"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('photoProd2')
                                 <span class="text-red-500 text-xs">{{ $message }}</span>
                             @enderror
+                            @if ($photoProd2 && is_object($photoProd2))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ $photoProd2->temporaryUrl() }}">
+                            @elseif ($photoProd2 && is_string($photoProd2))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ asset('post/all/' . $photoProd2) }}">
+                                <input type="hidden" name="photo2" value="{{ $photoProd2 }}">
+                            @endif
                         </div>
+
+                        <!-- Image 3 -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image3</label>
-                            <input type="file" wire:model="photoProd3"
-                                class="w-full p-2 border border-gray-300 rounded-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image 3</label>
+                            <input type="file" wire:model="photoProd3" :disabled="locked"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('photoProd3')
                                 <span class="text-red-500 text-xs">{{ $message }}</span>
                             @enderror
+                            @if ($photoProd3 && is_object($photoProd3))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ $photoProd3->temporaryUrl() }}">
+                            @elseif ($photoProd3 && is_string($photoProd3))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ asset('post/all/' . $photoProd3) }}">
+                                <input type="hidden" name="photo3" value="{{ $photoProd3 }}">
+                            @endif
                         </div>
+
+                        <!-- Image 4 -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Image4</label>
-                            <input type="file" wire:model="photoProd4"
-                                class="w-full p-2 border border-gray-300 rounded-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image 4</label>
+                            <input type="file" wire:model="photoProd4" :disabled="locked"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('photoProd4')
                                 <span class="text-red-500 text-xs">{{ $message }}</span>
                             @enderror
+                            @if ($photoProd4 && is_object($photoProd4))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ $photoProd4->temporaryUrl() }}">
+                            @elseif ($photoProd4 && is_string($photoProd4))
+                                <img class="rounded w-full h-48 mt-5 object-cover"
+                                    src="{{ asset('post/all/' . $photoProd4) }}">
+                                <input type="hidden" name="photo4" value="{{ $photoProd4 }}">
+                            @endif
                         </div>
-
                     </div>
+
                     <!-- Boutons d'action -->
                     <div class="text-right">
                         <button type="reset" class="bg-red-500 text-white p-2 rounded-md">Annuler</button>

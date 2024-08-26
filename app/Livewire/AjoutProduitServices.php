@@ -89,6 +89,7 @@ class AjoutProduitServices extends Component
     public $photoProd2;
     public $photoProd3;
     public $photoProd4;
+    public $photo1;
 
     public $locked = false; // Déverrouillé par défaut
     public $countries = [];
@@ -145,10 +146,10 @@ class AjoutProduitServices extends Component
             $this->origine = $selectedProduct->origine;
             $this->specification = $selectedProduct->specification;
 
-            // $this->photoProd1 = $selectedProduct->photoProd1;
-            // $this->photoProd2 = $selectedProduct->photoProd2;
-            // $this->photoProd3 = $selectedProduct->photoProd3;
-            // $this->photoProd4 = $selectedProduct->photoProd4;
+            $this->photoProd1 = $selectedProduct->photoProd1;
+            $this->photoProd2 = $selectedProduct->photoProd2;
+            $this->photoProd3 = $selectedProduct->photoProd3;
+            $this->photoProd4 = $selectedProduct->photoProd4;
 
             $this->qualification = $selectedProduct->qalifServ;
             $this->specialite = $selectedProduct->sepServ;
@@ -234,10 +235,10 @@ class AjoutProduitServices extends Component
             'ville' => 'required|string',
             'commune' => 'required|string',
             //photo
-            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif',
-            'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            // 'photoProd1' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            // 'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            // 'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            // 'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
 
         ], [
             'name.required' => 'Le nom est requis.',
@@ -287,7 +288,15 @@ class AjoutProduitServices extends Component
             ]);
 
             // Gestion des photos
-            $this->handlePhotoUpload($produitService, 'photoProd1');
+
+            // Gestion des photos
+
+            if ($this->photoProd1 && is_string($this->photoProd1)) {
+                // If photoProd1 is a string (from input field), use it directly
+                $produitService->update(['photoProd1' => $this->photoProd1]);
+            } else {
+                $this->handlePhotoUpload($produitService, 'photoProd1');
+            }
             $this->handlePhotoUpload($produitService, 'photoProd2');
             $this->handlePhotoUpload($produitService, 'photoProd3');
             $this->handlePhotoUpload($produitService, 'photoProd4');
@@ -334,12 +343,15 @@ class AjoutProduitServices extends Component
 
     protected function handlePhotoUpload($produitService, $photoField)
     {
-        if ($this->$photoField) {
-            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $this->$photoField->extension();
-            $this->$photoField->storeAs('all', $photoName); // Assurez-vous de spécifier un répertoire
+        // Check if the property is an instance of UploadedFile
+        if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {
+            $photo = $this->$photoField;
+            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $photo->extension();
+            $photo->storeAs('all', $photoName); // Ensure to specify a directory
             $produitService->update([$photoField => $photoName]);
         }
     }
+
     public function render()
     {
         return view('livewire.ajout-produit-services');
