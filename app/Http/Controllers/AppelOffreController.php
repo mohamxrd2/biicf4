@@ -80,6 +80,8 @@ class AppelOffreController extends Controller
         $userSousRegion = $user ? strtolower($user->sous_region) : null;
         $userContinent = $user ? strtolower($user->continent) : null;
 
+        $appliedZoneValue = null; // Variable pour stocker la valeur choisie
+
         if ($zoneEconomique) {
             switch ($normalizedZoneEconomique) {
                 case 'proximite':
@@ -89,6 +91,7 @@ class AppelOffreController extends Controller
                                 return strtolower($produit->comnServ) === $userZone;
                             });
                         });
+                        $appliedZoneValue = $userZone;
                         Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userZone' => $userZone]);
                     }
                     break;
@@ -100,6 +103,7 @@ class AppelOffreController extends Controller
                                 return strtolower($produit->villeServ) === $userVille;
                             });
                         });
+                        $appliedZoneValue = $userVille;
                         Log::info('Filtre Locale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userVille' => $userVille]);
                     }
                     break;
@@ -111,6 +115,7 @@ class AppelOffreController extends Controller
                                 return strtolower($produit->zonecoServ) === $userDepartement;
                             });
                         });
+                        $appliedZoneValue = $userDepartement;
                         Log::info('Filtre Département appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userDepartement' => $userDepartement]);
                     }
                     break;
@@ -122,6 +127,7 @@ class AppelOffreController extends Controller
                                 return strtolower($produit->pays) === $userPays;
                             });
                         });
+                        $appliedZoneValue = $userPays;
                         Log::info('Filtre Nationale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userPays' => $userPays]);
                     }
                     break;
@@ -133,6 +139,7 @@ class AppelOffreController extends Controller
                                 return strtolower($produit->sous_region) === $userSousRegion;
                             });
                         });
+                        $appliedZoneValue = $userSousRegion;
                         Log::info('Filtre Sous-régionale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userSousRegion' => $userSousRegion]);
                     }
                     break;
@@ -144,6 +151,7 @@ class AppelOffreController extends Controller
                                 return strtolower($produit->continent) === $userContinent;
                             });
                         });
+                        $appliedZoneValue = $userContinent;
                         Log::info('Filtre Continentale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userContinent' => $userContinent]);
                     }
                     break;
@@ -153,6 +161,9 @@ class AppelOffreController extends Controller
                     break;
             }
         }
+
+        // Vous pouvez maintenant utiliser la variable $appliedZoneValue pour connaître la valeur finale de la zone économique appliquée
+
 
 
         // Remove empty groups
@@ -185,7 +196,7 @@ class AppelOffreController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('biicf.searchAppelOffre', compact('filtered', 'groupedByReference', 'results', 'resultCount', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
+        return view('biicf.searchAppelOffre', compact('filtered', 'groupedByReference', 'results', 'appliedZoneValue', 'resultCount', 'zoneEconomique', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
     }
 
     public function formAppel(Request $request)
@@ -196,18 +207,15 @@ class AppelOffreController extends Controller
         $prodUsers = $request->input('prodUsers');
         $reference = $request->input('reference');
         $distinctSpecifications = $request->input('distinctSpecifications');
-        $distinctSpecification2s = $request->input('distinctSpecification2s');
-        $distinctSpecification3s = $request->input('distinctSpecification3s');
+        $appliedZoneValue = $request->input('appliedZoneValue');
 
         // Convert inputs to arrays if they are not already
         $prodUsers = is_array($prodUsers) ? $prodUsers : (is_object($prodUsers) ? $prodUsers->toArray() : []);
         $distinctSpecifications = is_array($distinctSpecifications) ? $distinctSpecifications : (is_string($distinctSpecifications) ? explode(',', $distinctSpecifications) : []);
-        $distinctSpecification2s = is_array($distinctSpecification2s) ? $distinctSpecification2s : (is_string($distinctSpecification2s) ? explode(',', $distinctSpecification2s) : []);
-        $distinctSpecification3s = is_array($distinctSpecification3s) ? $distinctSpecification3s : (is_string($distinctSpecification3s) ? explode(',', $distinctSpecification3s) : []);
 
 
 
-        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'name', 'reference', 'distinctSpecifications', 'distinctSpecification2s', 'distinctSpecification3s'));
+        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'name', 'reference', 'distinctSpecifications', 'appliedZoneValue'));
     }
 
 

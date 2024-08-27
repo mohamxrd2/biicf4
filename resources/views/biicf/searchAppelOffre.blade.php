@@ -209,12 +209,12 @@
                         <h1 class="text-2xl font-bold text-center">Faite un recherche</h1>
 
                         <p class="text-sm italic text-gray-500 mt-5 text-center">Tapez le nom du produit de la barre de
-                            recherche et lancer un appel d'offre et permettre au different fournisseur de discuter sur le
+                            recherche ou rechercher par votre zone economique pour trouver des fournisseurs plus proche et
+                            lancer un appel d'offre et permettre au different fournisseur de discuter sur le
                             prix afin que vous ayez le meilleur prix.</p>
 
                     </div>
-                @else
-
+                @elseif ($zoneEconomique)
                     <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
                         @if ($filtered->isEmpty())
                             <div class="p-4 bg-yellow-100 text-yellow-700 rounded-lg">
@@ -222,7 +222,8 @@
                                     économique.</p>
                             </div>
                         @else
-                            @foreach ($filtered as $filtre => $group)
+                        <span class="text-gray-700 font-medium">Les résultats ci-dessous sont des fournisseurs situé dans la zone : <span class="text-indigo-600">{{ $appliedZoneValue }}</span></span>
+                        @foreach ($filtered as $filtre => $group)
                                 @php
                                     // Extraire les noms distincts et les user_id distincts
                                     $distinctNames = $group->pluck('name')->unique();
@@ -241,7 +242,7 @@
                                     <div class="flex items-start gap-4">
                                         <div class="flex-1">
                                             <h4 class="text-lg font-semibold text-black dark:text-white">
-                                                Filtre : {{ $filtre }}
+                                                Reference du produit : {{ $filtre }}
                                             </h4>
                                             @foreach ($distinctNames as $name)
                                                 <p class="text-sm text-gray-700 dark:text-gray-300">
@@ -286,7 +287,15 @@
                                                 <span>Fournisseurs</span>
                                             </div>
                                         </div>
+
                                     </div>
+                                    @if ($distinctUserCount <= 1)
+                                        <p class="text-red-600 text-sm mt-2">
+                                            Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour
+                                            effectuer
+                                            l'appel d'offre.
+                                        </p>
+                                    @endif
                                     <form action="{{ route('biicf.form') }}" method="POST">
                                         @csrf
                                         <div class="w-full text-center mt-4">
@@ -294,6 +303,7 @@
                                                 value="{{ $distinctSpecifications->join(', ') }}">
 
                                             <input type="hidden" name="name" value="{{ $name }}">
+                                            <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
                                             <input type="hidden" name="lowestPricedProduct"
                                                 value="{{ $lowestPrice }}">
                                             <input type="hidden" name="reference" value="{{ $filtre }}">
@@ -315,8 +325,8 @@
                             @endforeach
                         @endif
                     </div>
-
-                    {{-- <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
+                @else
+                    <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
 
                         @foreach ($groupedByReference as $reference => $group)
                             @php
@@ -417,7 +427,7 @@
                                 </form>
                             </div>
                         @endforeach
-                    </div> --}}
+                    </div>
 
                 @endif
 

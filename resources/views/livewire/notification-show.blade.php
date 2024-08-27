@@ -2138,10 +2138,7 @@
                     <p class="text-md font-medium text-gray-600">{{ $notification->data['quantite'] }}</p>
                 </div>
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Lieu de recuperation</p>
-                    <p class="text-md font-medium text-gray-600">{{ $userFour->address }}</p>
-                </div>
+
                 @php
                     $idProd = App\Models\ProduitService::find($notification->data['idProd']);
                     $continent = $idProd ? $idProd->continent : null;
@@ -2153,7 +2150,46 @@
                 @endphp
 
                 <div class="w-full py-4 border-b-2">
-                    <p class="text-md font-semibold mb-2">Lieu de livraison</p>
+                    <p class="text-md font-semibold mb-2">Lieu de récuperation / position geographique du produit</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
+                            <p class="text-md">{{ $continent }}</p>
+                        </div>
+                        <div>
+                            <p class="text-md font-medium text-gray-600">Sous-région :</p>
+                            <p class="text-md">{{ $sous_region }}</p>
+                        </div>
+                        <div>
+                            <p class="text-md font-medium text-gray-600">Pays :</p>
+                            <p class="text-md">{{ $pays }}</p>
+                        </div>
+                        <div>
+                            <p class="text-md font-medium text-gray-600">Département :</p>
+                            <p class="text-md">{{ $departement }}</p>
+                        </div>
+                        <div>
+                            <p class="text-md font-medium text-gray-600">Ville :</p>
+                            <p class="text-md">{{ $ville }}</p>
+                        </div>
+                        <div>
+                            <p class="text-md font-medium text-gray-600">Commune :</p>
+                            <p class="text-md">{{ $commune }}</p>
+                        </div>
+                    </div>
+                </div>
+                @php
+                    $userSender = App\Models\User::find($notification->data['userSender']);
+                    $continent = $userSender ? $userSender->continent : null;
+                    $sous_region = $userSender ? $userSender->sous_region : null;
+                    $pays = $userSender ? $userSender->country : null;
+                    $departement = $userSender ? $userSender->departe : null;
+                    $ville = $userSender ? $userSender->ville : null;
+                    $commune = $userSender ? $userSender->commune : null;
+                @endphp
+
+                <div class="w-full py-4 border-b-2">
+                    <p class="text-md font-semibold mb-2">Position geographique du client</p>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
                             <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
@@ -2182,6 +2218,10 @@
                     </div>
                 </div>
 
+                <div class="w-full flex justify-between items-center py-4  border-b-2">
+                    <p class="text-md font-semibold">Lieu de livraison</p>
+                    <p class="text-md font-medium text-gray-600">{{ $notification->data['localite'] }}</p>
+                </div>
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Contact fournisseur</p>

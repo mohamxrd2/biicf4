@@ -20,6 +20,7 @@
             <div class="w-full flex flex-col justify-center items-center">
                 <h1 class="font-medium text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
                 <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
+                <input type="text" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
                 @foreach ($prodUsers as $userId)
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                 @endforeach
@@ -88,15 +89,6 @@
                                 {{ implode(', ', $distinctSpecifications) }}</option>
                         @endif
 
-                        {{-- @if (!empty($distinctSpecification2s))
-                            <option value="{{ implode(', ', $distinctSpecification2s) }}">
-                                {{ implode(', ', $distinctSpecification2s) }}</option>
-                        @endif
-
-                        @if (!empty($distinctSpecification3s))
-                            <option value="{{ implode(', ', $distinctSpecification3s) }}">
-                                {{ implode(', ', $distinctSpecification3s) }}</option>
-                        @endif --}}
                     </select>
 
 
@@ -154,7 +146,7 @@
                     <div class="w-full flex flex-col items-center space-y-2">
                         <p class="text-center text-gray-600">Pour vous grouper avec d'autres acheteurs de votre zone,
                             cliquez ici :</p>
-                        <button type="submit" id="submitGroupe"
+                        <button type="submit" id="f"
                             class="w-full lg:w-auto px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-center"
                             x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'">
                         </button>
