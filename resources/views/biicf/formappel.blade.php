@@ -14,7 +14,7 @@
                 {{ session('error') }}
             </div>
         @endif
-        <form action="{{ route('biicf.formstore') }}" method="POST" enctype="multipart/form-data" id="mainForm"
+        <form action="{{ route('biicf.formstoreGroupe') }}" method="POST" enctype="multipart/form-data" id="mainForm"
             x-data="{ isSubmitting: false }" x-on:submit="isSubmitting = true">
             @csrf
             <div class="w-full flex flex-col justify-center items-center">
@@ -146,7 +146,7 @@
                     <div class="w-full flex flex-col items-center space-y-2">
                         <p class="text-center text-gray-600">Pour vous grouper avec d'autres acheteurs de votre zone,
                             cliquez ici :</p>
-                        <button type="submit" id="f"
+                        <button type="submit" id="submitGroupe"
                             class="w-full lg:w-auto px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-center"
                             x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'">
                         </button>
@@ -209,11 +209,16 @@
         }
 
         document.getElementById('submitEnvoie').addEventListener('click', function() {
-            document.getElementById('mainForm').action = "{{ route('biicf.formstore') }}";
+            const form = document.getElementById('mainForm');
+            form.action = "{{ route('biicf.formstore') }}";
+            form.submit();
         });
 
         document.getElementById('submitGroupe').addEventListener('click', function() {
-            document.getElementById('mainForm').action = "{{ route('biicf.formstoreGroupe') }}";
+            const form = document.getElementById('mainForm');
+            form.action = "{{ route('biicf.formstoreGroupe') }}";
+            form.submit();
         });
     </script>
+
 @endsection

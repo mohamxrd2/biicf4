@@ -452,6 +452,8 @@ class AppelOffreController extends Controller
     public function formstoreGroupe(Request $request)
     {
         try {
+            Log::info('Début du traitement dans formstoreGroupe');
+
             // Récupérer l'ID de l'utilisateur connecté
             $userId = Auth::guard('web')->id();
             Log::info('Utilisateur connecté ID:', ['user_id' => $userId]);
@@ -461,7 +463,7 @@ class AppelOffreController extends Controller
             Log::info('Code unique généré:', ['codeunique' => $codeunique]);
 
             // Valider les données de la requête
-            $request->validate([
+            $validatedData = $request->validate([
                 'productName' => 'required|string',
                 'quantity' => 'required|integer',
                 'payment' => 'required|string',
@@ -470,7 +472,7 @@ class AppelOffreController extends Controller
                 'dateTard' => 'required|date',
                 'specification' => 'required|string',
                 'localite' => 'required|string',
-                'id_prod' => 'required|string',
+                'appliedZoneValue' => 'required|string',
                 'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'prodUsers' => 'required|array',
             ]);
@@ -485,17 +487,16 @@ class AppelOffreController extends Controller
 
             // Créer une nouvelle instance du modèle
             $offre = new AppelOffreGrouper();
-            $offre->productName = $request->input('productName');
-            $offre->lowestPricedProduct = $request->input('lowestPricedProduct');
-            $offre->quantity = $request->input('quantity');
-            $offre->payment = $request->input('payment');
-            $offre->Livraison = $request->input('Livraison');
-            $offre->dateTot = $request->input('dateTot');
-            $offre->dateTard = $request->input('dateTard');
-            $offre->specificity = $request->input('specification');
-            $offre->localite = $request->input('localite');
-            $offre->id_prod = $request->input('id_prod');
-            $offre->prodUsers = json_encode($request->input('prodUsers'));
+            $offre->productName = $validatedData['productName'];
+            $offre->lowestPricedProduct = $request->input('lowestPricedProduct', null); // Utiliser null comme valeur par défaut si non présent
+            $offre->quantity = $validatedData['quantity'];
+            $offre->payment = $validatedData['payment'];
+            $offre->Livraison = $validatedData['Livraison'];
+            $offre->dateTot = $validatedData['dateTot'];
+            $offre->dateTard = $validatedData['dateTard'];
+            $offre->specificity = $validatedData['specification'];
+            $offre->localite = $validatedData['localite'];
+            $offre->prodUsers = json_encode($validatedData['prodUsers']);
             $offre->codeunique = $codeunique;
             $offre->user_id = $userId;
 
@@ -506,19 +507,17 @@ class AppelOffreController extends Controller
 
             // Sauvegarder le modèle
             $offre->save();
-            Log::info('Offre enregistrée avec succès.', ['offre_id' => $offre->id]);
+            Log::info('Offre enregistrée avec succès.', ['offre' => $offre]);
 
             // Créer une nouvelle instance du modèle userquantites
             $quantite = new userquantites();
             $quantite->user_id = $userId;
-            $quantite->quantite = $request->input('quantity');
+            $quantite->quantite = $validatedData['quantity'];
             $quantite->code_unique = $codeunique;
             $quantite->save();
             Log::info('Quantité enregistrée avec succès.', ['quantite_id' => $quantite->id]);
 
-
-
-            // Requête pour récupérer les IDs des propriétaires des consommations similaires
+            // Récupérer les IDs des propriétaires des consommations similaires
             $idsProprietaires = Consommation::where('name', $offre->productName)
                 ->where('id_user', '!=', $userId)
                 ->where('statuts', 'Accepté')
@@ -527,15 +526,45 @@ class AppelOffreController extends Controller
                 ->toArray();
             Log::info('IDs des propriétaires récupérés:', ['ids_proprietaires' => $idsProprietaires]);
 
-            // Envoyer une notification à chaque propriétaire
-            foreach ($idsProprietaires as $id) {
+            // Vérifier que nous avons des propriétaires pour éviter des erreurs de requêtes
+            if (!empty($idsProprietaires)) {
+                // Récupérer les IDs des utilisateurs avec la même localité et qui possèdent le produit
+                $idsLocalite = User::whereIn('id', $idsProprietaires) // Sélectionner uniquement parmi les propriétaires
+                    ->where(function ($query) use ($validatedData) {
+                        $query->where('continent', $validatedData['appliedZoneValue'])
+                            ->orWhere('sous_region', $validatedData['appliedZoneValue'])
+                            ->orWhere('country', $validatedData['appliedZoneValue'])
+                            ->orWhere('departe', $validatedData['appliedZoneValue'])
+                            ->orWhere('ville', $validatedData['appliedZoneValue'])
+                            ->orWhere('commune', $validatedData['appliedZoneValue']);
+                    })
+                    ->pluck('id')
+                    ->toArray();
+                Log::info('IDs des utilisateurs avec la même localité récupérés:', ['ids_localite' => $idsLocalite]);
+
+                // Fusionner les deux tableaux d'IDs
+                $idsToNotify = array_unique(array_merge($idsProprietaires, $idsLocalite));
+            } else {
+                // Si aucun propriétaire n'est trouvé, seulement les utilisateurs avec la même localité sont considérés
+                return redirect()->back()->with('error', 'Aucun utilisateur ne consomme ce produit dans votre zone économique. Veuillez changer de zone ou de fonctionnalité.');
+            }
+
+            // Envoyer une notification à chaque utilisateur
+            foreach ($idsToNotify as $id) {
                 $user = User::find($id);
                 if ($user) {
-                    // Envoyer une notification avec le code unique
-                    Notification::send($user, new AOGrouper($codeunique, $offre->id));
-                    Log::info('Notification envoyée à l\'utilisateur:', ['user_id' => $id]);
+                    try {
+                        // Envoyer une notification avec le code unique
+                        Notification::send($user, new AOGrouper($codeunique, $offre->id));
+                        Log::info('Notification envoyée à l\'utilisateur:', ['user_id' => $id]);
+                    } catch (\Exception $e) {
+                        Log::error('Erreur lors de l\'envoi de la notification:', ['user_id' => $id, 'exception' => $e->getMessage()]);
+                    }
                 }
             }
+
+
+            Log::info('Traitement terminé avec succès');
 
             return redirect()->route('biicf.appeloffre')->with('success', 'Notification envoyée avec succès!');
         } catch (\Exception $e) {
@@ -543,6 +572,8 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
+
+
 
     private function genererCodeAleatoire($longueur)
     {
