@@ -815,12 +815,7 @@
                         const currentDate = new Date();
                         const difference = startDate.getTime() - currentDate.getTime();
 
-                        if (isNaN(difference) || difference <= 0) {
-                            clearInterval(countdownTimer);
-                            handleCountdownEnd();
-                            return;
-                        }
-
+                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
@@ -828,38 +823,35 @@
                         const countdownElement = document.getElementById('countdown');
                         if (countdownElement) {
                             countdownElement.innerHTML = `
-                              <div>${hours}h</div>:
-                              <div>${minutes}m</div>:
-                              <div>${seconds}s</div>
-                          `;
+                          <div>${hours}h</div>:
+                          <div>${minutes}m</div>:
+                          <div>${seconds}s</div>
+                        `;
+                        }
+
+                        if (difference <= 0) {
+                            clearInterval(countdownTimer);
+                            if (countdownElement) {
+                                countdownElement.innerHTML = "Temps écoulé !";
+                            }
+                            prixTradeInput.disabled = true;
+                            submitBtn.classList.add('hidden');
+
+
+                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
+                                .prix > max.prix ? comment : max, {
+                                    prix: -Infinity
+                                });
+
+                            if (highestPricedComment && highestPricedComment.nameUser) {
+                                prixTradeError.textContent =
+                                    `L'utilisateur avec le prix le plus bas est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                            } else {
+                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                            }
+                            prixTradeError.classList.remove('hidden');
                         }
                     }
-
-                    function handleCountdownEnd() {
-                        const countdownElement = document.getElementById('countdown');
-                        if (countdownElement) {
-                            countdownElement.innerHTML = "Temps écoulé !";
-                        }
-                        prixTradeInput.disabled = true;
-                        submitBtn.disabled = true;
-                        submitBtn.classList.add('hidden');
-
-                        const comments = @json($comments);
-                        const highestPricedComment = comments.reduce((max, comment) => comment.prix > max.prix ? comment :
-                            max, {
-                                prix: -Infinity
-                            });
-
-                        if (highestPricedComment && highestPricedComment.nameUser) {
-                            prixTradeError.textContent =
-                                `L'utilisateur avec le prix le plus élevé est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
-                        } else {
-                            prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                        }
-                        prixTradeError.classList.remove('hidden');
-                    }
-
-                    updateCountdown();
                 });
             </script>
 
