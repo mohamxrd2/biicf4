@@ -2211,10 +2211,10 @@
                             <p class="text-md font-medium text-gray-600">Ville :</p>
                             <p class="text-md">{{ $ville }}</p>
                         </div>
-                        <div>
+                        {{-- <div>
                             <p class="text-md font-medium text-gray-600">Commune :</p>
                             <p class="text-md">{{ $commune }}</p>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
 
