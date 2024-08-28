@@ -1339,17 +1339,6 @@ class NotificationShow extends Component
         $this->createTransaction(Auth::user()->id, $this->notification->data['id_livreur'], 'Reception', $montantLivreur);
         Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
-        // // Administrateur
-        // $admin = Admin::find(1);
-        // if ($admin) {
-        //     $adminWallet = Wallet::where('user_id', $admin->user_id)->first();
-        //     if ($adminWallet) {
-        //         $adminWallet->increment('balance', $montantAdmin);
-        //         Log::info('Solde du portefeuille de l\'administrateur mis à jour', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
-        //         $this->createTransaction(Auth::user()->id, $admin->user_id, 'Commission', $montantAdmin);
-        //         Log::info('Transaction administrateur créée', ['admin_id' => $admin->user_id, 'montantAdmin' => $montantAdmin]);
-        //     }
-        // }
 
         Notification::send($client, new colisaccept($data));
         Notification::send($fournisseur, new colisaccept($data));

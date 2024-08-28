@@ -101,7 +101,7 @@
 
                             <p class="text-md text-slate-400">Total envoyé</p>
 
-                            <p class="text-xl text-black font-bold"> 5,234,234 FCFA</p>
+                            <p class="text-xl text-black font-bold">{{ number_format($totalEnv, 2, ',', ' ') }} FCFA</p>
 
 
                         </div>
@@ -110,7 +110,7 @@
                         <div class="bg-black rounded-2xl p-6 flex flex-col justify-between  h-32 bg-orange-100">
                             <p class="text-md text-slate-400">Total reçu</p>
                             <div>
-                                <p class="text-xl text-black font-bold"> 5,234,234 FCFA</p>
+                                <p class="text-xl text-black font-bold"> {{ number_format($totalRecu, 2, ',', ' ') }} FCFA</p>
                             </div>
 
                         </div>
@@ -119,7 +119,7 @@
                         <div class="bg-black rounded-2xl p-6 flex flex-col justify-between  h-32 bg-violet-100">
                             <p class="text-md text-slate-400">Total sur le compte</p>
                             <div>
-                                <p class="text-xl text-black font-bold"> 5,234,234 FCFA</p>
+                                <p class="text-xl text-black font-bold"> {{ number_format($totalRecu, 2, ',', ' ') }} FCFA</p>
                             </div>
 
                         </div>
@@ -142,10 +142,10 @@
                         class="w-full p-5 bg-white border flex items-center rounded-2xl hover:bg-gray-50 mb-4 cursor-pointer"
                         data-hs-overlay="#monney-send1">
 
-                        <div class="flex flex-col">
+                        <div wire:click="navigateToContact" class="flex flex-col">
                             <p class="font-bold  mb-3">Envoyé a un agent</p>
                             <div class="flex items-center">
-                                <s wire:click="navigateToContact" class="rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center mr-5">
+                                <s  class="rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center mr-5">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -175,10 +175,10 @@
             <div class="w-full p-5 bg-white border flex items-center rounded-2xl hover:bg-gray-50 mb-4 cursor-pointer"
                 data-hs-overlay="#monney-send2">
 
-                <div class="flex flex-col">
+                <div  wire:click="navigateToClient"  class="flex flex-col">
                     <p class="font-bold  mb-3">Envoyé a un client</p>
                     <div class="flex items-center">
-                        <div wire:click="navigateToClient" class="rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center mr-5">
+                        <div class="rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center mr-5">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

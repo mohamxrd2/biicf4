@@ -2,12 +2,13 @@
 
 namespace App\Livewire;
 
+use Carbon\Carbon;
+use App\Models\Psap;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\Livraisons; // Correctly importing the Livraisons model
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use App\Models\Livraisons; // Correctly importing the Livraisons model
 
 class PostulerComponent extends Component
 {
@@ -142,6 +143,85 @@ class PostulerComponent extends Component
             'assurance'
         ]);
     }
+
+    public function submitPsap()
+{
+    // Validation avec messages d'erreur personnalisés
+    $this->validate([
+        'experience' => 'required|string',
+        'selectedContinent' => 'required|string',
+        'selectedSous_region' => 'required|string',
+        'pays' => 'required|string',
+        'depart' => 'required|string',
+        'ville' => 'required|string',
+        'localite' => 'required|string',
+        'identity' => 'required|file|mimes:jpeg,png,pdf',
+        'permis' => 'required|file|mimes:jpeg,png,pdf',
+        'assurance' => 'required|file|mimes:jpeg,png,pdf',
+    ], [
+        'experience.required' => 'Le champ expérience est obligatoire.',
+        'experience.string' => 'Le champ expérience doit être une chaîne de caractères.',
+        'selectedContinent.required' => 'Le champ continent est obligatoire.',
+        'selectedContinent.string' => 'Le champ continent doit être une chaîne de caractères.',
+        'selectedSous_region.required' => 'Le champ sous-région est obligatoire.',
+        'selectedSous_region.string' => 'Le champ sous-région doit être une chaîne de caractères.',
+        'pays.required' => 'Le champ pays est obligatoire.',
+        'pays.string' => 'Le champ pays doit être une chaîne de caractères.',
+        'depart.required' => 'Le champ département est obligatoire.',
+        'depart.string' => 'Le champ département doit être une chaîne de caractères.',
+        'ville.required' => 'Le champ ville est obligatoire.',
+        'ville.string' => 'Le champ ville doit être une chaîne de caractères.',
+        'localite.required' => 'Le champ localité est obligatoire.',
+        'localite.string' => 'Le champ localité doit être une chaîne de caractères.',
+        'identity.required' => 'Le fichier d\'identité est obligatoire.',
+        'identity.file' => 'Le champ identité doit être un fichier.',
+        'identity.mimes' => 'Le fichier d\'identité doit être au format jpeg, png ou pdf.',
+        'permis.required' => 'Le fichier de permis est obligatoire.',
+        'permis.file' => 'Le champ permis doit être un fichier.',
+        'permis.mimes' => 'Le fichier de permis doit être au format jpeg, png ou pdf.',
+        'assurance.required' => 'Le fichier d\'assurance est obligatoire.',
+        'assurance.file' => 'Le champ assurance doit être un fichier.',
+        'assurance.mimes' => 'Le fichier d\'assurance doit être au format jpeg, png ou pdf.',
+    ]);
+
+    // Création du modèle PSAP
+    $psap = new Psap();
+    $psap->user_id = Auth::id();
+    $psap->experience = $this->experience;
+    $psap->continent = $this->selectedContinent;
+    $psap->sous_region = $this->selectedSous_region;
+    $psap->depart = $this->depart;
+    $psap->ville = $this->ville;
+    $psap->localite = $this->localite;
+    $psap->pays = $this->pays;
+    $psap->etat = "En cours";
+  
+
+    $psap->save();
+
+    // Gestion des photos
+    $this->handlePhotoUpload($psap, 'identity');
+    $this->handlePhotoUpload($psap, 'permis');
+    $this->handlePhotoUpload($psap, 'assurance');
+
+    session()->flash('message', 'PSAP ajouté avec succès!');
+
+    // Réinitialiser les champs du formulaire
+    $this->reset([
+        'experience',
+        'selectedContinent',
+        'selectedSous_region',
+        'pays',
+        'depart',
+        'ville',
+        'localite',
+        'identity',
+        'permis',
+        'assurance'
+    ]);
+}
+
+
     protected function handlePhotoUpload($livreur, $photoField)
     {
         if ($this->$photoField) {
