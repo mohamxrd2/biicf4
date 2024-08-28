@@ -308,7 +308,6 @@
 
                                             <input type="hidden" name="name" value="{{ $name }}">
                                             <input type="hidden" name="type" value="{{ $type }}">
-
                                             <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
                                             <input type="hidden" name="lowestPricedProduct"
                                                 value="{{ $lowestPrice }}">

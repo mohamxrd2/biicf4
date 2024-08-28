@@ -39,6 +39,7 @@ class AppelOffre extends Notification implements ShouldQueue
             'payment' => $this->achat['payment'] ?? null,
             'Livraison' => $this->achat['Livraison'] ?? null,
             'specificity' => $this->achat['specificity'] ?? null,
+            'reference' => $this->achat['reference'] ?? null,
             'localite' => $this->achat['localite'] ?? null,
             'image' => $this->achat['image'] ?? null,
             'id_sender' => $this->achat['id_sender']?? null,

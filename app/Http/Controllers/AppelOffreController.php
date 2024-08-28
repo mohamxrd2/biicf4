@@ -362,6 +362,7 @@ class AppelOffreController extends Controller
                 'dateTot' => 'required|date',
                 'dateTard' => 'required|date',
                 'specification' => 'nullable|string',
+                'reference' => 'required|string',
                 'localite' => 'nullable|string',
                 'image' => 'nullable',
                 'prodUsers' => 'required|array',
@@ -407,6 +408,7 @@ class AppelOffreController extends Controller
                     'payment' => $request->payment,
                     'Livraison' => $request->Livraison, // Ensure consistent naming
                     'specificity' => $request->specification,
+                    'reference' => $request->reference,
                     'localite' => $request->localite,
                     'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
                     'id_sender' => $userId,
@@ -417,7 +419,7 @@ class AppelOffreController extends Controller
                 ];
 
                 // Vérification que toutes les clés nécessaires sont présentes
-                $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'lowestPricedProduct', 'difference'];
+                $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'reference', 'image', 'prodUsers', 'lowestPricedProduct', 'difference'];
                 foreach ($requiredKeys as $key) {
                     if (!array_key_exists($key, $data)) {
                         throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
@@ -431,6 +433,14 @@ class AppelOffreController extends Controller
                 if ($owner) {
                     // Envoi de la notification à l'utilisateur
                     Notification::send($owner, new AppelOffre($data));
+
+                    // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+                    $notification = $owner->notifications()->where('type', AppelOffre::class)->latest()->first();
+
+                    if ($notification) {
+                        // Mettez à jour le champ 'type_achat' dans la notification
+                        $notification->update(['type_achat' => $request->Livraison]);
+                    }
                 }
             }
 

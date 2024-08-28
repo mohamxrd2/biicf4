@@ -20,6 +20,7 @@
             <div class="w-full flex flex-col justify-center items-center">
                 <h1 class="font-medium text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
                 <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
+                <input type="text" name="reference" value="{{ $reference }}">
                 <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
                 <input type="hidden" name="type" value="{{ $type }}">
                 @foreach ($prodUsers as $userId)
@@ -56,16 +57,16 @@
                         <select name="Livraison" required
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" selected disabled>Type de livraison</option>
-                            <option value="voiture">Take Away</option>
-                            <option value="voiture">Reservation</option>
+                            <option value="Take Away">Take Away</option>
+                            {{-- <option value="Reservation">Reservation</option> --}}
                         </select>
                     @else
                         <select name="Livraison" required
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" selected disabled>Type de livraison</option>
-                            <option value="moto">Achat avec livreur</option>
-                            <option value="voiture">Take Away</option>
-                            <option value="voiture">Reservation</option>
+                            <option value="Achat avec livreur">Achat avec livreur</option>
+                            <option value="Take Away">Take Away</option>
+                            {{-- <option value="Reservation">Reservation</option> --}}
                         </select>
                     @endif
                 </div>

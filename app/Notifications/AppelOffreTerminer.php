@@ -13,9 +13,11 @@ class AppelOffreTerminer extends Notification implements ShouldQueue
     use Queueable;
 
     public $details;
-    public function __construct($details)
+    public $reference;
+    public function __construct($details, $reference)
     {
         $this->details = $details;
+        $this->reference = $reference;
     }
 
     public function via($notifiable)
@@ -37,6 +39,7 @@ class AppelOffreTerminer extends Notification implements ShouldQueue
             'nameprod' => $this->details['nameprod'] ?? null,
             'id_sender' => $this->details['id_sender'] ?? null,
             'montantTotal' => $this->details['montantTotal'] ?? null,
+            'reference' => $this->reference ?? null,
         ];
     }
 }

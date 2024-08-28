@@ -573,9 +573,30 @@ class NotificationShow extends Component
         // Extraire les données correctement
         $notificationData = $this->notification->data;
 
+        // Vérifier la présence des informations nécessaires pour récupérer le produit
+        if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
+            $produitService = ProduitService::where('reference', $notificationData['reference'])
+                ->where('user_id', $notificationData['id_trader'])
+                ->first();
+
+            if ($produitService) {
+                $idProd = $produitService->id;
+            } else {
+                Log::error('ProduitService non trouvé.', [
+                    'reference' => $notificationData['reference'],
+                    'id_trader' => $notificationData['id_trader']
+                ]);
+                session()->flash('error', 'ProduitService non trouvé.');
+                return;
+            }
+        } else {
+            Log::error('Référence ou ID du trader manquants dans les données de notification.', $notificationData);
+            session()->flash('error', 'Référence ou ID du trader manquants.');
+            return;
+        }
 
         // Récupérer le produit par son ID
-        $produit = ProduitService::find($notificationData['idProd']);
+        $produit = ProduitService::find($notificationData['idProd'] ?? $idProd);
 
         // Vérifier si le produit existe
         if ($produit) {
@@ -588,45 +609,51 @@ class NotificationShow extends Component
 
         $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
 
-
         $details = [
-            'code_unique' => $code_livr ?? null,
-            'id_trader' => $notificationData['userTrader'] ?? null, // Correction: Utiliser 'userTrader'
-            'idProd' => $notificationData['idProd'] ?? null,
-            'quantiteC' => $notificationData['quantité'] ?? null, // Correction: Utiliser 'quantité'
-            'prixProd' => $prixProd ?? null,
+            'code_unique' => $code_livr,
+            'id_trader' => $notificationData['id_trader'] ?? null, // Correction: Utiliser 'id_trader'
+            'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
+            'quantiteC' => $notificationData['quantite'] ?? $notificationData['quantiteC'] ?? null, // Correction: Utiliser 'quantite'
+            'prixProd' => $prixProd,
         ];
 
         // Log pour vérifier les détails avant l'envoi de la notification
         Log::info('Détails de la notification préparés.', ['details' => $details]);
 
-        // Assurez-vous que 'userSender' est un utilisateur valide et que CountdownNotification est bien défini
-        if (isset($notificationData['userSender'])) {
-            $userSender = User::find($notificationData['userSender']);
+        // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
+        $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
+
+        if ($userSenderId) {
+            $userSender = User::find($userSenderId);
             if ($userSender) {
                 Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
 
                 // Envoi de la notification
                 Notification::send($userSender, new CountdownNotification($details));
                 Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
+
+                // Récupérez la notification pour mise à jour
+                $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
+
+                if ($notification) {
+                    // Mettez à jour le champ 'type_achat' dans la notification
+                    $notification->update(['type_achat' => 'reserv/take']);
+                }
             } else {
-                Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $notificationData['userSender']]);
+                Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
                 session()->flash('error', 'Utilisateur expéditeur non trouvé.');
-            }
-
-            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-            $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
-
-            if ($notification) {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => 'reserv/take']);
+                return;
             }
         } else {
             Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
             session()->flash('error', 'Détails de notification non valides.');
+            return;
         }
+
+        // Mettre à jour la notification originale
         $this->notification->update(['reponse' => 'accepte']);
     }
+
 
     public function acceptoffre()
     {
@@ -1762,7 +1789,7 @@ class NotificationShow extends Component
 
         $comment = Comment::create([
             'localite' => $this->notification->data['localite'],
-            'specificite' => $this->specificite ?? null,
+            'specificite' => $this->specificite ?? 'Take Away',
             'prixTrade' => $this->prixTrade,
             'id_sender' => json_encode($this->idsender),
             'nameprod' => $this->nameprod,

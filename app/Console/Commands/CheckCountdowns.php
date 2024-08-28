@@ -108,17 +108,41 @@ class CheckCountdowns extends Command
                         'id_sender' => $decodedSenderIds,
                         'montantTotal' => $montotal,
                     ];
+                    //lier a apple offre
 
+                    $type_achat = $specificite;
+                    // Check if a notification with the specific conditions exists
+                    $notificationExists = DatabaseNotification::where('type', 'App\Notifications\AppelOffre')
+                        ->whereJsonContains('data->code_unique', $code_unique)
+                        ->exists();
+
+                    if ($notificationExists) {
+                        $notification = DatabaseNotification::where('type', 'App\Notifications\AppelOffre')
+                            ->whereJsonContains('data->code_unique', $code_unique)
+                            ->first();
+                        $notificationData = $notification->data;
+
+                        if (isset($notificationData['reference'])) {
+                            $reference = $notificationData['reference'];
+                            Log::info('Référence trouvée dans la notification existante.', ['reference' => $reference]);
+                        }
+                    }
                     // Vérifier le type de notification à envoyer
                     if ($countdown->difference === 'single') {
                         Log::info('Envoi de la notification pour type "single".', ['user_id' => $commentToUse->user->id]);
-                        Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
+                        Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails, $reference ?? null));
+
+                        $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
+                        if ($notification) {
+                            Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
+                            $notification->update(['type_achat' => $type_achat]);
+                        }
                     } else if ($countdown->difference === 'offredirect') {
                         Log::info('Envoi de la notification pour type "offredirect".', ['user_id' => $lowestPriceComment->user->id]);
                         Notification::send($lowestPriceComment->user, new NegosTerminer($details));
                     } else if ($countdown->difference === 'grouper') {
                         Log::info('Envoi de la notification pour type "grouper".', ['user_id' => $lowestPriceComment->user->id]);
-                        Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
+                        Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails, $reference ?? null));
 
                         $notification = $lowestPriceComment->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
                         if ($notification) {
