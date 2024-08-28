@@ -232,6 +232,7 @@
                                     $distinctFormatProds = $group->pluck('formatProd')->unique();
                                     $distinctSpecifications = $group->pluck('specification')->unique();
                                     $distinctParticularites = $group->pluck('Particularite')->unique();
+                                    $type = $group->pluck('type')->unique()->implode(', ');
                                     $distinctUserIds = $group->pluck('user_id')->unique();
                                     $distinctUserCount = $distinctUserIds->count();
                                     $lowestPrice = $group->pluck('prix')->min(); // Trouver le prix le plus bas
@@ -243,6 +244,9 @@
                                         <div class="flex-1">
                                             <h4 class="text-lg font-semibold text-black dark:text-white">
                                                 Reference du produit : {{ $filtre }}
+                                            </h4>
+                                            <h4 class="text-lg font-semibold text-black dark:text-white">
+                                                type : {{ $type }}
                                             </h4>
                                             @foreach ($distinctNames as $name)
                                                 <p class="text-sm text-gray-700 dark:text-gray-300">
@@ -303,6 +307,8 @@
                                                 value="{{ $distinctSpecifications->join(', ') }}">
 
                                             <input type="hidden" name="name" value="{{ $name }}">
+                                            <input type="hidden" name="type" value="{{ $type }}">
+
                                             <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
                                             <input type="hidden" name="lowestPricedProduct"
                                                 value="{{ $lowestPrice }}">
@@ -337,6 +343,7 @@
                                 $distinctFormatProds = $group->pluck('formatProd')->unique();
                                 $distinctSpecifications = $group->pluck('specification')->unique();
                                 $distinctParticularites = $group->pluck('Particularite')->unique();
+                                $type = $group->pluck('type')->unique()->implode(', ');
                                 $distinctUserIds = $group->pluck('user_id')->unique();
                                 $distinctUserCount = $distinctUserIds->count();
                                 $lowestPrice = $group->pluck('prix')->min(); // Trouver le prix le plus bas
@@ -350,7 +357,9 @@
                                         <h4 class="text-lg font-semibold text-black dark:text-white">
                                             Référence : {{ $reference }}
                                         </h4>
-
+                                        <h4 class="text-lg font-semibold text-black dark:text-white">
+                                            type : {{ $type }}
+                                        </h4>
                                         @foreach ($distinctNames as $name)
                                             <p class="text-sm text-gray-700 dark:text-gray-300">
                                                 Nom : {{ $name }}

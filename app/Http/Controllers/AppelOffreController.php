@@ -208,6 +208,7 @@ class AppelOffreController extends Controller
         $reference = $request->input('reference');
         $distinctSpecifications = $request->input('distinctSpecifications');
         $appliedZoneValue = $request->input('appliedZoneValue');
+        $type = $request->input('type');
 
         // Convert inputs to arrays if they are not already
         $prodUsers = is_array($prodUsers) ? $prodUsers : (is_object($prodUsers) ? $prodUsers->toArray() : []);
@@ -215,9 +216,8 @@ class AppelOffreController extends Controller
 
 
 
-        return view('biicf.formappel', compact('lowestPricedProduct', 'prodUsers', 'name', 'reference', 'distinctSpecifications', 'appliedZoneValue'));
+        return view('biicf.formappel', compact('lowestPricedProduct', 'type', 'prodUsers', 'name', 'reference', 'distinctSpecifications', 'appliedZoneValue'));
     }
-
 
     public function detailoffre(Request $request, $id)
     {
@@ -516,6 +516,23 @@ class AppelOffreController extends Controller
             $quantite->code_unique = $codeunique;
             $quantite->save();
             Log::info('Quantité enregistrée avec succès.', ['quantite_id' => $quantite->id]);
+
+            // Vérifiez si l'utilisateur a un portefeuille
+            $userId = Auth::id();
+            $userWallet = Wallet::where('user_id', $userId)->first();
+            // Calculate the total cost (replace 'price' with the actual price logic)
+            $totalCost = $validatedData['quantity'] * $request->input('lowestPricedProduct', null);
+
+            // Vérification du solde du portefeuille
+            if ($userWallet->balance < $totalCost) {
+                return redirect()->back()->with('error', 'Solde insuffisant dans le portefeuille pour effectuer cette transaction.');
+            }
+
+            // Augmentation du solde du portefeuille du client
+            $userWallet->decrement('balance', $totalCost);
+
+            // Création de la transaction
+            $this->createTransaction($userId, $userId, 'Gele', $totalCost);
 
             // Récupérer les IDs des propriétaires des consommations similaires
             $idsProprietaires = Consommation::where('name', $offre->productName)

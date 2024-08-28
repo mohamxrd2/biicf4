@@ -20,7 +20,8 @@
             <div class="w-full flex flex-col justify-center items-center">
                 <h1 class="font-medium text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
                 <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
-                <input type="text" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
+                <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
+                <input type="hidden" name="type" value="{{ $type }}">
                 @foreach ($prodUsers as $userId)
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                 @endforeach
@@ -51,13 +52,22 @@
                     </select>
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <select name="Livraison" required
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                        <option value="" selected disabled>Type de livraison</option>
-                        <option value="moto">Achat avec livreur</option>
-                        <option value="voiture">Take Away</option>
-                        <option value="voiture">Reservation</option>
-                    </select>
+                    @if ($type == 'Service')
+                        <select name="Livraison" required
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                            <option value="" selected disabled>Type de livraison</option>
+                            <option value="voiture">Take Away</option>
+                            <option value="voiture">Reservation</option>
+                        </select>
+                    @else
+                        <select name="Livraison" required
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                            <option value="" selected disabled>Type de livraison</option>
+                            <option value="moto">Achat avec livreur</option>
+                            <option value="voiture">Take Away</option>
+                            <option value="voiture">Reservation</option>
+                        </select>
+                    @endif
                 </div>
                 <div date-rangepicker class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
                     <div class="w-1/2 mr-2 relative">
@@ -80,16 +90,19 @@
                         placeholder="Lieu de livraison" name="localite">
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
-                    <select name="specification" required
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                        <option value="" selected disabled>choisir une specification</option>
+                    @if ($type == 'Service')
+                    @else
+                        <select name="specification" required
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                            <option value="" selected disabled>choisir une specification</option>
 
-                        @if (!empty($distinctSpecifications))
-                            <option value="{{ implode(', ', $distinctSpecifications) }}">
-                                {{ implode(', ', $distinctSpecifications) }}</option>
-                        @endif
+                            @if (!empty($distinctSpecifications))
+                                <option value="{{ implode(', ', $distinctSpecifications) }}">
+                                    {{ implode(', ', $distinctSpecifications) }}</option>
+                            @endif
 
-                    </select>
+                        </select>
+                    @endif
 
 
                 </div>
@@ -111,8 +124,8 @@
                                     </p>
                                 </div>
                             </label>
-                            <input id="file-upload1" class="hidden rounded-md" type="file" onchange="previewImage(this)"
-                                name="image">
+                            <input id="file-upload1" class="hidden rounded-md" type="file"
+                                onchange="previewImage(this)" name="image">
                             <img id="image-preview1" class="absolute inset-0 w-full h-full object-cover hidden">
                             <button type="button" onclick="removeImage()" id="remove-button1"
                                 class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">

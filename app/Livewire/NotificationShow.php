@@ -1747,13 +1747,13 @@ class NotificationShow extends Component
             'nameprod' => 'required|string',
             'difference' => 'required|string',
             'localite' => 'required|string',
-            'specificite' => 'required|string',
+            'specificite' => 'nullable|string',
 
         ]);
 
         $comment = Comment::create([
             'localite' => $this->notification->data['localite'],
-            'specificite' => $this->specificite,
+            'specificite' => $this->specificite ?? null,
             'prixTrade' => $this->prixTrade,
             'id_sender' => json_encode($this->idsender),
             'nameprod' => $this->nameprod,
