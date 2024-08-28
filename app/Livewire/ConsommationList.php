@@ -34,10 +34,9 @@ class ConsommationList extends Component
 
     public function render()
     {
-        $consommations = Consommation::where('type', 'produits')->orderBy('created_at', 'DESC')->paginate(5);
-
         $consommations = Consommation::latest()
-        ->where('name', 'like', "%{$this->search}%")
+        ->where('type', 'Produit') // Filtrer par type 'Produit'
+        ->where('name', 'like', "%{$this->search}%") // Filtrer par nom en fonction de la recherche
         ->paginate(5);
 
         return view('livewire.consommation-list', ['consommations' => $consommations]);

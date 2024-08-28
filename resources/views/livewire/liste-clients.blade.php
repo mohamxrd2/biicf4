@@ -42,7 +42,6 @@
             <tr>
                 <th scope="col" class="px-6 py-3">Nom</th>
                 <th scope="col" class="px-6 py-3">Téléphone</th>
-
                 <th scope="col" class="px-6 py-3">Agent</th>
                 <th scope="col" class="px-6 py-3">Statut</th>
                 <th scope="col" class="px-6 py-3">Action</th>
@@ -68,15 +67,14 @@
                     <tr
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                            <a href="{{ route('client.show', ['username' => $user->username]) }}"
-                                class="flex items-center">
-                                <img class="w-10 h-10 rounded-full object-cover" src="{{ asset($user->photo) }}"
-                                    alt="">
+                            <a href="{{ route('client.show', ['username' => $user->username]) }}" class="flex items-center">
+                                <img class="w-10 h-10 rounded-full object-cover" src="{{ asset($user->photo) }}" alt="">
                                 <div class="ml-3">
                                     <div class="text-base font-semibold">{{ $user->name }}</div>
                                     <div class="text-sm text-gray-500">{{ $user->username }}</div>
                                 </div>
                             </a>
+                            
                         </td>
                         <td class="px-6 py-4">{{ $user->phone }}</td>
 

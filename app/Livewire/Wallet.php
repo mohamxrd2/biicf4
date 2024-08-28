@@ -13,6 +13,25 @@ class Wallet extends Component
 {
     public $amount;
 
+    public $totalEnv;
+
+    public $totalRecu;
+
+  
+
+    public function mount()
+    {
+        $this->totalEnv = Transaction::where('sender_admin_id', Auth::guard('admin')->id())
+            ->where('type', 'Envoie')
+            ->sum('amount');
+        
+        $this->totalRecu = Transaction::where('receiver_admin_id', Auth::guard('admin')->id())
+             ->where('type', 'Reception')
+             ->sum('amount');
+       
+       
+    }
+
     protected $rules = [
         'amount' => 'required|numeric|min:0',
     ];

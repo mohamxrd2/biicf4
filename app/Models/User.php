@@ -123,4 +123,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(livraisons::class, 'user_id'); // Correction ici
     }
+
+    public function psaps()
+    {
+        return $this->hasMany(Psap::class, 'user_id');
+    }
 }

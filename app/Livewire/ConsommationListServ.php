@@ -32,10 +32,9 @@ class ConsommationListServ extends Component
     }
     public function render()
     {
-        $consommations = Consommation::where('type', 'services')->orderBy('created_at', 'DESC')->paginate(5);
-
-        $consommations = Consommation::latest()
+        $consommations = Consommation::where('type', 'Service')
         ->where('name', 'like', "%{$this->search}%")
+        ->orderBy('created_at', 'DESC')
         ->paginate(5);
 
         return view('livewire.consommation-list-serv', [
