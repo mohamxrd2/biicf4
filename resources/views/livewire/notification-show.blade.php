@@ -1512,8 +1512,8 @@
                                                 <p class="text-gray-800">
                                                     @if ($nombreLivr)
                                                         <div>
-                                                            <h3>Détails de la commande</h3>
-                                                            <p><strong>ID de client :</strong> {{ $Idsender }}</p>
+                                                            {{-- <h3>Détails de la commande</h3> --}}
+                                                            {{-- <p><strong>ID de client :</strong> {{ $Idsender }}</p>
                                                             <p><strong>Continent du client :</strong>
                                                                 {{ $clientContinent }}</p>
                                                             <p><strong>Sous-Region du client :</strong>
@@ -1522,28 +1522,26 @@
                                                             </p>
                                                             <p><strong>Departement du client :</strong>
                                                                 {{ $clientDepartement }}</p>
-                                                            <p><strong>Commune du client
-                                                                    :</strong>{{ $clientCommune }}
-                                                            </p>
+                                                            <p><strong>Commune du client :</strong>{{ $clientCommune }}
+                                                            </p> --}}
                                                             <p><strong>le nombre total disponible
                                                                     :</strong>{{ $livreursCount }}</p>
 
                                                             <h3>Liste des livreurs disponibles</h3>
-                                                            @if (isset($livreurs) && $livreurs->isNotEmpty())
-                                                                {{-- <ul>
-                                                                 @foreach ($livreurs as $livreur)
-                                                                     <li>
-                                                                         Livreur ID: {{ $livreur->id }} -
-                                                                         Expérience: {{ $livreur->experience }} ans -
-                                                                         Livreur ID: {{ $livreur->user_id }}
-                                                                     </li>
-                                                                 @endforeach
-                                                                 </ul> --}}
-                                                            @else
+                                                            @if ($livreurs->isEmpty())
                                                                 <p>Aucun livreur disponible pour ce pays et cette ville.
                                                                 </p>
+                                                            @else
+                                                                {{-- <ul>
+                                                                    @foreach ($livreurs as $livreur)
+                                                                        <li>
+                                                                            Livreur ID: {{ $livreur->id }} -
+                                                                            Expérience: {{ $livreur->experience }} ans
+                                                                            - Livreur ID: {{ $livreur->user_id }}
+                                                                        </li>
+                                                                    @endforeach
+                                                                </ul> --}}
                                                             @endif
-
                                                         </div>
                                                     @else
                                                         Aucun livreur disponible dans la zone

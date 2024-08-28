@@ -418,6 +418,7 @@
                                             value="{{ $distinctSpecifications->join(', ') }}">
 
                                         <input type="hidden" name="name" value="{{ $name }}">
+                                        <input type="hidden" name="type" value="{{ $type }}">
                                         <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPrice }}">
                                         <input type="hidden" name="reference" value="{{ $reference }}">
                                         @foreach ($distinctUserIds as $userId)
