@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Events\AjoutQuantiteOffre;
 use App\Notifications\AcceptRetrait;
 use App\Notifications\RefusRetrait;
 use Exception;
@@ -362,7 +363,7 @@ class NotificationShow extends Component
             }
         }
         //offre ajout de quantite
-        $this->offreinfo();
+        $this->offreinfo($this->appelOffreGroup);
 
         // Vérification avant de récupérer le produit
         if (isset($this->notification->data['idProd']) || isset($this->notification->data['produit_id'])) {
@@ -491,9 +492,10 @@ class NotificationShow extends Component
         Notification::send($demandeur, new RefusRetrait($this->notification->id));
     }
 
-    #[On('Ajoutquantite')]
-    public function offreinfo()
+    #[On('echo:quantite-channel,AjoutQuantiteOffre')]
+    public function offreinfo($event)
     {
+        // dd($event);
         $Idoffre = $this->notification->data['offre_id'] ?? null;
 
         // Attempt to retrieve the grouped offer by its ID
@@ -517,7 +519,13 @@ class NotificationShow extends Component
             $this->sumquantite = 0;
             $this->appelOffreGroupcount = 0;
         }
+
+        // Récupérer les données de l'événement
+        // $Idoffre = $event['Idoffre'] ?? null;
+        // if ($Idoffre) {
+        // }
     }
+    
     public function storeoffre()
     {
         try {
@@ -537,8 +545,11 @@ class NotificationShow extends Component
             $offregroupe->user_id = Auth::id();
             $offregroupe->quantity = $validatedData['quantite'];
             $offregroupe->save();
+
+            $this->offreinfo($offregroupe);
+
             Log::info('Enregistrement dans AppelOffreGrouper sauvegardé.', ['offregroupe_id' => $offregroupe->id]);
-            // broadcast(new AjoutQuantiteOffre($validatedData['quantite']))->toOthers();
+            broadcast(new AjoutQuantiteOffre($validatedData['quantite']))->toOthers();
 
 
             // Ajouter dans la table userquantites
@@ -553,7 +564,7 @@ class NotificationShow extends Component
 
             Log::info('Enregistrement dans userquantites sauvegardé.', ['quantite_id' => $quantite->id]);
             $this->reset('quantite', 'localite', 'selectedOption');
-            $this->dispatch('Ajoutquantite');
+            // $this->dispatch('Ajoutquantite');
             // Flash success message
             session()->flash('success', 'Quantité ajoutée avec succès');
             Log::info('Message de succès flashé.', ['message' => 'Quantité ajoutée avec succès']);
@@ -1964,7 +1975,7 @@ class NotificationShow extends Component
                 ]);
             }
             $this->reset(['prixTrade']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // dd($e)->getMessage();
             // En cas d'erreur, redirection avec un message d'erreur
             return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());

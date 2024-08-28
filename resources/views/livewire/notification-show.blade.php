@@ -722,7 +722,7 @@
                                     <input type="hidden" wire:model="nameprod">
                                     <input type="hidden" wire:model="localite">
                                     <input type="hidden" wire:model="specificite">
-                                    
+
 
                                     <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
@@ -758,19 +758,20 @@
                             <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
                         </div>
                     </div>
+                    @if ($oldestCommentDate)
+                        <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
 
-                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
 
-                        <span class=" mb-2">Temps restant pour cette negociatiation</span>
+                            <div id="countdown"
+                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
 
-                        <div id="countdown"
-                            class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                            <div>-</div>:
-                            <div>-</div>:
-                            <div>-</div>
+                                <div>-</div>:
+                                <div>-</div>:
+                                <div>-</div>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
 
             </div>
@@ -807,7 +808,7 @@
                         }
                     });
 
-                    const startDate = new Date("{{ $notification->created_at }}");
+                    const startDate = new Date("{{ $oldestCommentDate }}");
                     startDate.setMinutes(startDate.getMinutes() + 1);
 
                     const countdownTimer = setInterval(updateCountdown, 1000);
