@@ -840,17 +840,19 @@
                             submitBtn.classList.add('hidden');
 
 
-                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
-                                .prix > max.prix ? comment : max, {
-                                    prix: -Infinity
+                            // Trouver le commentaire avec le prix le plus bas
+                            const lowestPricedComment = @json($comments).reduce((min, comment) => comment.prix <
+                                min.prix ? comment : min, {
+                                    prix: Infinity
                                 });
 
-                            if (highestPricedComment && highestPricedComment.nameUser) {
+                            if (lowestPricedComment && lowestPricedComment.nameUser) {
                                 prixTradeError.textContent =
-                                    `L'utilisateur avec le prix le plus bas est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                                    `L'utilisateur avec le prix le plus bas est ${lowestPricedComment.nameUser} avec ${lowestPricedComment.prix} FCFA !`;
                             } else {
                                 prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
                             }
+
                             prixTradeError.classList.remove('hidden');
                         }
                     }
