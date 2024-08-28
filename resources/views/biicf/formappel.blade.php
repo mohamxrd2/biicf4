@@ -20,7 +20,7 @@
             <div class="w-full flex flex-col justify-center items-center">
                 <h1 class="font-medium text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
                 <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
-                <input type="text" name="reference" value="{{ $reference }}">
+                <input type="hidden" name="reference" value="{{ $reference }}">
                 <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
                 <input type="hidden" name="type" value="{{ $type }}">
                 @foreach ($prodUsers as $userId)
