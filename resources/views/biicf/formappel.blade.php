@@ -145,25 +145,39 @@
                         Annuler
                     </button>
 
-                    <!-- First Action Section -->
+                    <!-- First Direct Section -->
                     <div class="w-full flex flex-col items-center space-y-2">
                         <p class="text-center text-gray-600">Pour vous envoyer directement aux fournisseurs de votre zone,
                             cliquez ici :</p>
                         <button type="submit" id="submitEnvoie"
                             class="w-full lg:w-auto px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-800 transition duration-200 ease-in-out flex items-center justify-center"
-                            x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Envoyer'">
+                            x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Direct'">
                         </button>
                     </div>
 
-                    <!-- Second Action Section -->
-                    <div class="w-full flex flex-col items-center space-y-2">
-                        <p class="text-center text-gray-600">Pour vous grouper avec d'autres acheteurs de votre zone,
-                            cliquez ici :</p>
-                        <button type="submit" id="submitGroupe"
-                            class="w-full lg:w-auto px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-center"
-                            x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'">
-                        </button>
-                    </div>
+                    @if ($type == 'Service')
+                    <p class="text-center text-gray-600">
+                        Le type est un service il n'est pas possible de grouper les clients passez offre direct
+                    </p>
+                    @elseif ($appliedZoneValue)
+                        <!-- Second Grouper Section -->
+                        <div class="w-full flex flex-col items-center space-y-2">
+                            <p class="text-center text-gray-600">
+                                Pour vous grouper avec d'autres acheteurs de votre zone, cliquez ici :
+                            </p>
+                            <button type="submit" id="submitGroupe"
+                                class="w-full lg:w-auto px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-center"
+                                x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'">
+                            </button>
+                        </div>
+                    @else
+                        <!-- If $appliedZoneValue is not true, display this -->
+                        <p class="text-center text-red-600">
+                            Veuillez sélectionner une zone économique pour pouvoir vous grouper avec d'autres acheteurs.
+                        </p>
+                    @endif
+
+
                 </div>
 
             </div>

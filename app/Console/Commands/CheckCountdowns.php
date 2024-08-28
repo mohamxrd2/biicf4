@@ -133,13 +133,15 @@ class CheckCountdowns extends Command
                             ->orWhere('type', 'App\Notifications\AppelOffre');
                     })
                         ->whereJsonContains('data->code_livr', $code_unique)
-                        ->orWhereJsonContains('data->code_unique', $code_unique)
+                        // ->orWhereJsonContains('data->code_unique', $code_unique)
                         ->exists();
 
 
                     if ($notificationExists) {
                         // Supprimez toutes les notifications qui contiennent ce code unique dans 'data'
                         DatabaseNotification::whereJsonContains('data->code_livr', $code_unique)
+                            ->delete();
+                        DatabaseNotification::whereJsonContains('data->code_unique', $code_unique)
                             ->delete();
                     }
 

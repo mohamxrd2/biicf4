@@ -361,7 +361,8 @@ class NotificationShow extends Component
                 $this->idProd2 = $produitService->id;
             }
         }
-
+        //offre ajout de quantite
+        $this->offreinfo();
 
         // Vérification avant de récupérer le produit
         if (isset($this->notification->data['idProd']) || isset($this->notification->data['produit_id'])) {
@@ -381,29 +382,7 @@ class NotificationShow extends Component
             $this->nameProd = $this->userTrader = $this->idProd = $this->prix = null;
         }
 
-        $Idoffre = $this->notification->data['offre_id'] ?? null;
 
-        // Attempt to retrieve the grouped offer by its ID
-        $this->appelOffreGroup = AppelOffreGrouper::find($Idoffre);
-
-        // Check if $appelOffreGroup is null before proceeding
-        if ($this->appelOffreGroup) {
-            $codesUniques = $this->appelOffreGroup->codeunique;
-
-            // Retrieve the oldest date for the unique code
-            $this->datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
-
-            // Sum the quantities for the unique code
-            $this->sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
-
-            // Count the number of grouped offers
-            $this->appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)->count();
-        } else {
-            // Handle the case where no offer was found
-            $this->datePlusAncienne = null;
-            $this->sumquantite = 0;
-            $this->appelOffreGroupcount = 0;
-        }
 
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
@@ -511,6 +490,34 @@ class NotificationShow extends Component
         session()->flash('error', 'Le retrait a été refusé.');
         Notification::send($demandeur, new RefusRetrait($this->notification->id));
     }
+
+    #[On('Ajoutquantite')]
+    public function offreinfo()
+    {
+        $Idoffre = $this->notification->data['offre_id'] ?? null;
+
+        // Attempt to retrieve the grouped offer by its ID
+        $this->appelOffreGroup = AppelOffreGrouper::find($Idoffre);
+
+        // Check if $appelOffreGroup is null before proceeding
+        if ($this->appelOffreGroup) {
+            $codesUniques = $this->appelOffreGroup->codeunique;
+
+            // Retrieve the oldest date for the unique code
+            $this->datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
+
+            // Sum the quantities for the unique code
+            $this->sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
+
+            // Count the number of grouped offers
+            $this->appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)->count();
+        } else {
+            // Handle the case where no offer was found
+            $this->datePlusAncienne = null;
+            $this->sumquantite = 0;
+            $this->appelOffreGroupcount = 0;
+        }
+    }
     public function storeoffre()
     {
         try {
@@ -531,6 +538,8 @@ class NotificationShow extends Component
             $offregroupe->quantity = $validatedData['quantite'];
             $offregroupe->save();
             Log::info('Enregistrement dans AppelOffreGrouper sauvegardé.', ['offregroupe_id' => $offregroupe->id]);
+            // broadcast(new AjoutQuantiteOffre($validatedData['quantite']))->toOthers();
+
 
             // Ajouter dans la table userquantites
             Log::info('Ajout d\'une nouvelle quantité dans userquantites.');
@@ -544,7 +553,7 @@ class NotificationShow extends Component
 
             Log::info('Enregistrement dans userquantites sauvegardé.', ['quantite_id' => $quantite->id]);
             $this->reset('quantite', 'localite', 'selectedOption');
-
+            $this->dispatch('Ajoutquantite');
             // Flash success message
             session()->flash('success', 'Quantité ajoutée avec succès');
             Log::info('Message de succès flashé.', ['message' => 'Quantité ajoutée avec succès']);
