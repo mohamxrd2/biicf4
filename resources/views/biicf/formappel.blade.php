@@ -158,7 +158,7 @@
 
                     @if ($type == 'Service')
                     <p class="text-center text-gray-600">
-                        Le type est un service il n'est pas possible de grouper les clients passez offre direct
+                        Le type est un service il n'est pas possible de grouper avec les clients , Passez a offre direct
                     </p>
                     @elseif ($appliedZoneValue)
                         <!-- Second Grouper Section -->
