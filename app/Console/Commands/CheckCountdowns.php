@@ -30,7 +30,6 @@ class CheckCountdowns extends Command
             ->with('sender') // Charger la relation userSender
             ->get();
 
-        Log::info('Début du traitement des countdowns.', ['countdowns_count' => $countdowns->count()]);
 
         foreach ($countdowns as $countdown) {
             // Récupérer le code unique
@@ -177,9 +176,7 @@ class CheckCountdowns extends Command
                     $countdown->update(['notified' => true]);
 
                 }
-            } else {
-                Log::warning('Aucun commentaire trouvé pour le code_unique.', ['code_unique' => $code_unique]);
-            }
+            } 
         }
     }
 }

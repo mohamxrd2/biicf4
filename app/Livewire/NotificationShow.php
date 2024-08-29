@@ -1503,7 +1503,7 @@ class NotificationShow extends Component
             'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
             'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
             'totalSom' => $requiredAmount,
-            'quantite' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
+            'quantites' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
             'localite' => $this->notification->data['localite'],
             'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
             'code_livr' => $code_livr,
@@ -1519,27 +1519,22 @@ class NotificationShow extends Component
         Log::info('Recherche du code_unique', ['code_unique' => $code_livr, 'count' => $userQuantites->count()]);
 
         if ($userQuantites->isNotEmpty()) {
-            // Récupérez les IDs des utilisateurs et faites la somme des quantités
-            $userQuantities = $userQuantites->groupBy('user_id')->map(function ($items) {
-                return [
-                    'quantite' => $items->sum('quantite'),
-                    'type_achat' => $items->first()->type_achat
-                ];
-            });
+            foreach ($userQuantites as $userQuantite) {
+                $userId = $userQuantite->user_id;
+                $quantite = $userQuantite->quantite;
+                $typeAchat = $userQuantite->type_achat;
 
-            // Log le résultat de la somme des quantités et des types d'achat
-            Log::info('Quantités groupées par utilisateur et type d\'achat', ['user_quantities' => $userQuantities]);
-
-            // Traitez chaque utilisateur en fonction de leur type_achat
-            foreach ($userQuantities as $userId => $info) {
-                $typeAchat = $info['type_achat'];
-                $quantite = $info['quantite'];
+                $notificationData = array_merge($data, [
+                    'quantite' => $quantite,
+                    'type_achat' => $typeAchat,
+                    'user_id' => $userId,
+                ]);
 
                 if ($typeAchat === 'Take Away' || $typeAchat === 'Reservation') {
                     // Envoyez la notification au client directement
                     $userSender = User::find($userId);
                     if ($userSender) {
-                        Notification::send($userSender, new AllerChercher($data));
+                        Notification::send($userSender, new AllerChercher($notificationData));
                         // Log l'envoi de la notification
                         Log::info('Notification envoyée au client', ['user_id' => $userSender->id]);
                     } else {
@@ -1552,7 +1547,7 @@ class NotificationShow extends Component
                         foreach ($this->livreursIds as $livreurId) {
                             $livreur = User::find($livreurId);
                             if ($livreur) {
-                                Notification::send($livreur, new livraisonVerif($data));
+                                Notification::send($livreur, new livraisonVerif($notificationData));
                                 // Log l'envoi de la notification
                                 Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
                             } else {
@@ -1564,7 +1559,7 @@ class NotificationShow extends Component
                 }
             }
         } else {
-            // Si aucune quantite utilisateur trouvée, envoyez des notifications aux livreurs seulement
+            // Si aucune quantité utilisateur trouvée, envoyez des notifications aux livreurs seulement
             if (!empty($this->livreursIds)) {
                 foreach ($this->livreursIds as $livreurId) {
                     $livreur = User::find($livreurId);
@@ -1585,6 +1580,7 @@ class NotificationShow extends Component
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
     }
+
 
 
     private function genererCodeAleatoire($longueur)
