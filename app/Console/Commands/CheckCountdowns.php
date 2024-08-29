@@ -26,7 +26,7 @@ class CheckCountdowns extends Command
     {
 
         $countdowns = Countdown::where('notified', false)
-            ->where('start_time', '<=', now()->subMinutes(2))
+            ->where('start_time', '<=', now()->subMinutes(1))
             ->with('sender') // Charger la relation userSender
             ->get();
 

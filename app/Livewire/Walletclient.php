@@ -45,7 +45,6 @@ class Walletclient extends Component
         $this->userWallet = Wallet::where('user_id', $userId)->first();
         Log::info('User Wallet:', ['wallet' => $this->userWallet]);
     }
-    
     #[On('refreshComponent')]
     public function render()
     {

@@ -849,8 +849,8 @@
 
                             prixTradeError.classList.remove('hidden');
                             // Vous pouvez également désactiver le champ de prix et le bouton si nécessaire
-                            // prixTradeInput.disabled = true;
-                            // submitBtn.classList.add('hidden');
+                            prixTradeInput.disabled = true;
+                            submitBtn.classList.add('hidden');
 
                             // Émettre l'événement Livewire si nécessaire
                             // Livewire.dispatch('timeExpired');
@@ -876,7 +876,7 @@
 
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
-        <h1 class="text-center text-3xl font-semibold mb-2">Negociations des Fournisseurs</h1>
+        <h1 class="text-center text-3xl font-semibold mb-2 ">Negociations pour la quantitée groupée</h1>
         <div class="grid grid-cols-2 gap-4 p-4">
             <div class="lg:col-span-1 col-span-2">
 
@@ -1531,22 +1531,43 @@
                                                 <p class="text-gray-800">
                                                     @if ($nombreLivr)
                                                         <div>
-                                                            {{-- <h3>Détails de la commande</h3> --}}
-                                                            {{-- <p><strong>ID de client :</strong> {{ $Idsender }}</p>
-                                                            <p><strong>Continent du client :</strong>
-                                                                {{ $clientContinent }}</p>
-                                                            <p><strong>Sous-Region du client :</strong>
-                                                                {{ $clientSous_Region }}</p>
-                                                            <p><strong>Pays du client :</strong> {{ $clientPays }}
-                                                            </p>
-                                                            <p><strong>Departement du client :</strong>
-                                                                {{ $clientDepartement }}</p>
-                                                            <p><strong>Commune du client :</strong>{{ $clientCommune }}
-                                                            </p> --}}
+                                                            <h3>Détails de la commande</h3>
+
+                                                            @if (is_array($clients) && !empty($clients))
+                                                                @foreach ($clients as $client)
+                                                                    {{-- <p><strong>ID de client :</strong>
+                                                                        {{ $client['id'] }}</p> --}}
+                                                                    <p><strong>Continent du client :</strong>
+                                                                        {{ $client['continent'] }}</p>
+                                                                    <p><strong>Sous-Region du client :</strong>
+                                                                        {{ $client['sous_region'] }}</p>
+                                                                    <p><strong>Pays du client :</strong>
+                                                                        {{ $client['country'] }}</p>
+                                                                    <p><strong>Departement du client :</strong>
+                                                                        {{ $client['departement'] }}</p>
+                                                                    <p><strong>Commune du client :</strong>
+                                                                        {{ $client['commune'] }}</p>
+                                                                    <hr>
+                                                                @endforeach
+                                                            @else
+                                                                <p><strong>ID de client :</strong> {{ $Idsender }}
+                                                                </p>
+                                                                <p><strong>Continent du client :</strong>
+                                                                    {{ $clientContinent }}</p>
+                                                                <p><strong>Sous-Region du client :</strong>
+                                                                    {{ $clientSous_Region }}</p>
+                                                                <p><strong>Pays du client :</strong>
+                                                                    {{ $clientPays }}</p>
+                                                                <p><strong>Departement du client :</strong>
+                                                                    {{ $clientDepartement }}</p>
+                                                                <p><strong>Commune du client :</strong>
+                                                                    {{ $clientCommune }}</p>
+                                                            @endif
+
+                                                            <h3>Liste des livreurs disponibles</h3>
                                                             <p><strong>le nombre total disponible
                                                                     :</strong>{{ $livreursCount }}</p>
 
-                                                            <h3>Liste des livreurs disponibles</h3>
                                                             @if ($livreurs->isEmpty())
                                                                 <p>Aucun livreur disponible pour ce pays et cette ville.
                                                                 </p>
@@ -1560,6 +1581,8 @@
                                                                         </li>
                                                                     @endforeach
                                                                 </ul> --}}
+                                                                <p><strong>Le nombre total de livreurs disponibles
+                                                                        :</strong> {{ $livreursCount }}</p>
                                                             @endif
                                                         </div>
                                                     @else
@@ -1578,7 +1601,7 @@
                                                     <!-- Textarea and action buttons -->
                                                     <div x-show="open" class="mt-4">
                                                         <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6" required>
-                                                </textarea>
+                                                         </textarea>
                                                         <div class="mt-2 flex justify-end space-x-2">
                                                             <button @click="open = false"
                                                                 class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded">

@@ -383,75 +383,122 @@ class NotificationShow extends Component
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
 
         $this->ciblageLivreurs();
-        // $this->checkIfCodeUniqueExists();
     }
 
-    // public function checkIfCodeUniqueExists()
-    // {
-    //     // Exemple de code pour récupérer le code_unique depuis la notification
-    //     $notification = $this->notification; // Ajoutez une méthode pour récupérer la notification
 
-    //     $codeUnique = $notification->data['code_unique'] ?? null;
-
-    //     if ($codeUnique) {
-    //         $countdown = Countdown::where('code_unique', $codeUnique)->first();
-    //         $this->locked = $countdown ? true : false;
-    //     }
-    // }
+    public $clients;
     public function ciblageLivreurs()
     {
-        // Vérification de l'existence de la clé 'userSender' dans les données de la notification
+        // Vérification de l'existence de la clé 'userSender' ou 'id_sender' dans les données de la notification
         $this->Idsender = $this->notification->data['userSender'] ?? $this->notification->data['id_sender'] ?? null;
 
         if ($this->Idsender === null) {
-            // Gérer le cas où 'userSender' est null, par exemple, arrêter l'exécution ou continuer selon la logique souhaitée
             return; // Arrêter l'exécution si 'userSender' est null
         }
-        // Récupérer les informations du client
-        $client = User::findOrFail($this->Idsender);
-        $this->clientContinent = $client->continent;
-        $this->clientSous_Region = $client->sous_region;
-        $this->clientPays = $client->country;
-        $this->clientDepartement = $client->departe;
-        $this->clientCommune = $client->commune;
 
-        // Récupérer les livreurs éligibles en fonction de leurs préférences
-        $this->livreurs = Livraisons::where(function ($query) {
-            $query->where(function ($subQuery) {
-                $subQuery->where('zone', 'proximite')
-                    ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
-                    ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)])
-                    ->whereRaw('LOWER(pays) = ?', [strtolower($this->clientPays)])
-                    ->whereRaw('LOWER(departe) = ?', [strtolower($this->clientDepartement)])
-                    ->whereRaw('LOWER(commune) = ?', [strtolower($this->clientCommune)]);
-            })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'locale')
-                        ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
-                        ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)])
-                        ->whereRaw('LOWER(pays) = ?', [strtolower($this->clientPays)])
-                        ->whereRaw('LOWER(departe) = ?', [strtolower($this->clientDepartement)]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'nationale')
-                        ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)])
-                        ->whereRaw('LOWER(sous_region) = ?', [strtolower($this->clientSous_Region)]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'sous_regionale')
-                        ->whereRaw('LOWER(continent) = ?', [strtolower($this->clientContinent)]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'continentale');
+        $this->clients = []; // Initialiser le tableau de clients
+
+        // Préparer les critères de filtrage pour les livreurs
+        $query = Livraisons::query();
+
+        // Vérification si 'id_sender' est un tableau
+        if (is_array($this->Idsender)) {
+            // Récupérer les informations pour chaque utilisateur dans le tableau
+            foreach ($this->Idsender as $id) {
+                $client = User::findOrFail($id);
+
+                // Ajouter chaque client à un tableau avec leurs informations en minuscules
+                $clientData = [
+                    'continent' => strtolower($client->continent),
+                    'sous_region' => strtolower($client->sous_region),
+                    'country' => strtolower($client->country),
+                    'departement' => strtolower($client->departe),
+                    'commune' => strtolower($client->commune),
+                ];
+
+                $this->clients[] = $clientData;
+
+                // Ajouter des conditions pour chaque client dans la requête
+                $query->orWhere(function ($q) use ($clientData) {
+                    $q->where(function ($subQuery) use ($clientData) {
+                        $subQuery->where('zone', 'proximite')
+                            ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
+                            ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
+                            ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
+                            ->whereRaw('LOWER(departe) = ?', [$clientData['departement']])
+                            ->whereRaw('LOWER(commune) = ?', [$clientData['commune']]);
+                    })
+                        ->orWhere(function ($subQuery) use ($clientData) {
+                            $subQuery->where('zone', 'locale')
+                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
+                                ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
+                                ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
+                                ->whereRaw('LOWER(departe) = ?', [$clientData['departement']]);
+                        })
+                        ->orWhere(function ($subQuery) use ($clientData) {
+                            $subQuery->where('zone', 'nationale')
+                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
+                                ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']]);
+                        })
+                        ->orWhere(function ($subQuery) use ($clientData) {
+                            $subQuery->where('zone', 'sous_regionale')
+                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']]);
+                        })
+                        ->orWhere(function ($subQuery) {
+                            $subQuery->where('zone', 'continentale');
+                        });
                 });
-        })
-            ->where('etat', 'Accepté')  // Filtrer les livreurs éligibles
-            ->get();
+            }
+        } else {
+            // Récupérer les informations du client unique
+            $client = User::findOrFail($this->Idsender);
+            $this->clientContinent = strtolower($client->continent);
+            $this->clientSous_Region = strtolower($client->sous_region);
+            $this->clientPays = strtolower($client->country);
+            $this->clientDepartement = strtolower($client->departe);
+            $this->clientCommune = strtolower($client->commune);
+
+            // Ajouter les conditions de filtrage pour un client unique
+            $query->where(function ($q) {
+                $q->where(function ($subQuery) {
+                    $subQuery->where('zone', 'proximite')
+                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
+                        ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
+                        ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
+                        ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
+                })
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('zone', 'locale')
+                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+                            ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
+                            ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
+                            ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
+                    })
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('zone', 'nationale')
+                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+                            ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
+                    })
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('zone', 'sous_regionale')
+                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
+                    })
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('zone', 'continentale');
+                    });
+            });
+        }
+
+        // Récupérer les livreurs éligibles
+        $this->livreurs = $query->where('etat', 'Accepté')->get();
 
         // Extraire les IDs des livreurs éligibles
         $this->livreursIds = $this->livreurs->pluck('user_id');
         $this->livreursCount = $this->livreurs->count();
     }
+
+
     public function accepteRetrait()
     {
         $userWallet = Wallet::where('user_id', $this->demandeur->id)->first();
@@ -672,7 +719,6 @@ class NotificationShow extends Component
         // Mettre à jour la notification originale
         $this->notification->update(['reponse' => 'accepte']);
     }
-
 
     public function acceptoffre()
     {
