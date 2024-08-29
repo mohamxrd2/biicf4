@@ -375,31 +375,32 @@
 
                                         <div class="flex flex-col">
 
-                                            <input type="number" name="quantite" class="rounded-md" placeholder="Entrez la quantité">
+                                            <input type="number" name="quantite" class="rounded-md"
+                                                placeholder="Entrez la quantité">
 
-                                        <!-- Champ caché pour l'ID du produit -->
-                                        <input type="hidden" name="produit_id" value="{{ $produit->id }}">
+                                            <!-- Champ caché pour l'ID du produit -->
+                                            <input type="hidden" name="produit_id" value="{{ $produit->id }}">
 
-                                        <div class="flex my-3">
-                                            <button type="submit" @if ($nomFournisseurCount == 0) disabled @endif
-                                                class="py-2 px-3 mr-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                                soumettre
-                                            </button>
+                                            <div class="flex my-3">
+                                                <button type="submit" @if ($nomFournisseurCount == 0) disabled @endif
+                                                    class="py-2 px-3 mr-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
+                                                    soumettre
+                                                </button>
 
-                                            <button type="button"
-                                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                                                data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
-                                                Annuler
-                                            </button>
+                                                <button type="button"
+                                                    class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                                                    data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
+                                                    Annuler
+                                                </button>
+
+                                            </div>
+
 
                                         </div>
 
 
-                                        </div>
 
 
-
-                                        
 
 
 
@@ -436,28 +437,46 @@
                                     Offre Negocié
                                 </h3>
                                 <p class="text-gray-500 dark:text-neutral-500">
-                                    le nombre de client potentiels est ({{ $nombreProprietaires }})
+                                    le nombre de clients totals potentiels est ({{ $nombreProprietaires }})
+                                </p>
+                                <p class="text-gray-500 dark:text-neutral-500">
+                                    Selectionnez la zone que voulez ciblée
                                 </p>
 
                                 <div class="mt-6 flex justify-center gap-x-4">
-                                    <form action="{{ route('biicf.sendoffregrp', $produit->id) }}" method="POST">
+                                    <form action="{{ route('biicf.sendoffregrp', $produit->id) }}" method="POST"
+                                        class="flex flex-col gap-4">
                                         @csrf
                                         @method('POST')
+
+                                        <select name="zone_economique"
+                                            class="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            required>
+                                            <option disabled selected>Zone économique</option>
+                                            <option value="proximite">Proximité</option>
+                                            <option value="locale">Locale</option>
+                                            <option value="departementale">Départementale</option>
+                                            <option value="nationale">Nationale</option>
+                                            <option value="sous_regionale">Sous Régionale</option>
+                                            <option value="continentale">Continentale</option>
+                                        </select>
 
                                         <!-- Champ caché pour l'ID du produit -->
                                         <input type="hidden" name="produit_id" value="{{ $produit->id }}">
 
                                         <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
-                                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                            soumettre
+                                            class="py-2 px-3 flex items-center justify-center text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
+                                            Soumettre
                                         </button>
                                     </form>
+
                                     <button type="button"
-                                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                                        class="py-2 px-3 flex items-center justify-center text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         data-hs-overlay="#hs-offreNeg-{{ $produit->id }}">
                                         Annuler
                                     </button>
                                 </div>
+
 
                             </div>
                         </div>
