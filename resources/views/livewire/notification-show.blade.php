@@ -723,33 +723,37 @@
                                     <input type="hidden" wire:model="localite">
                                     <input type="hidden" wire:model="specificite">
 
+                                    @if ($locked)
+                                        discussion terminer
+                                    @else
+                                        <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                            placeholder="Faire une offre..." required>
+                                        @error('prixTrade')
+                                            <span class="text-red-500">{{ $message }}</span>
+                                        @enderror
+                                        <button type="submit" id="submitBtnAppel"
+                                            class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
+                                            <span wire:loading.remove>
+                                                <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
+                                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                    fill="currentColor" viewBox="0 0 18 20">
+                                                    <path
+                                                        d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                                </svg>
+                                            </span>
+                                            <span wire:loading>
+                                                <svg class="w-5 h-5 animate-spin inline-block"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                                </svg>
+                                            </span>
+                                        </button>
+                                    @endif
 
-                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Faire une offre..." required>
-                                    @error('prixTrade')
-                                        <span class="text-red-500">{{ $message }}</span>
-                                    @enderror
-
-                                    <button type="submit" id="submitBtnAppel"
-                                        class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
-                                        <span wire:loading.remove>
-                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor" viewBox="0 0 18 20">
-                                                <path
-                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                            </svg>
-                                        </span>
-                                        <span wire:loading>
-                                            <svg class="w-5 h-5 animate-spin inline-block"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                            </svg>
-                                        </span>
-                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -774,6 +778,7 @@
                     @endif
                 </div>
 
+
             </div>
             <!-- Footer Section -->
             <footer class="bg-gray-800 text-white py-4 mt-8 w-full">
@@ -792,6 +797,14 @@
                     const prixTradeError = document.getElementById('prixTradeError');
                     const produitPrix = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
 
+                    // Convertir les dates en temps UNIX pour faciliter les calculs
+                    const startDate = new Date("{{ $oldestCommentDate }}").getTime();
+                    const serverTime = new Date("{{ $serverTime }}").getTime();
+
+                    // Calculer la date de fin du compte à rebours
+                    const countdownDuration = 2 * 60 * 1000; // 2 minutes en millisecondes
+                    const endDate = startDate + countdownDuration;
+
                     prixTradeInput.addEventListener('input', function() {
                         const prixTradeValue = parseFloat(prixTradeInput.value);
 
@@ -808,37 +821,18 @@
                         }
                     });
 
-                    const startDate = new Date("{{ $oldestCommentDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 1);
-
                     const countdownTimer = setInterval(updateCountdown, 1000);
 
                     function updateCountdown() {
-                        const currentDate = new Date();
-                        const difference = startDate.getTime() - currentDate.getTime();
-
-                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                        const countdownElement = document.getElementById('countdown');
-                        if (countdownElement) {
-                            countdownElement.innerHTML = `
-                          <div>${hours}h</div>:
-                          <div>${minutes}m</div>:
-                          <div>${seconds}s</div>
-                        `;
-                        }
+                        const currentDate = new Date().getTime();
+                        const difference = endDate - currentDate;
 
                         if (difference <= 0) {
                             clearInterval(countdownTimer);
+                            const countdownElement = document.getElementById('countdown');
                             if (countdownElement) {
                                 countdownElement.innerHTML = "Temps écoulé !";
                             }
-                            prixTradeInput.disabled = true;
-                            submitBtn.classList.add('hidden');
-
 
                             // Trouver le commentaire avec le prix le plus bas
                             const lowestPricedComment = @json($comments).reduce((min, comment) => comment.prix <
@@ -854,10 +848,31 @@
                             }
 
                             prixTradeError.classList.remove('hidden');
+                            // Vous pouvez également désactiver le champ de prix et le bouton si nécessaire
+                            // prixTradeInput.disabled = true;
+                            // submitBtn.classList.add('hidden');
+
+                            // Émettre l'événement Livewire si nécessaire
+                            // Livewire.dispatch('timeExpired');
+                        } else {
+                            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                            const countdownElement = document.getElementById('countdown');
+                            if (countdownElement) {
+                                countdownElement.innerHTML = `
+                                  <div>${hours}h</div>:
+                                  <div>${minutes}m</div>:
+                                  <div>${seconds}s</div>
+                                `;
+                            }
                         }
                     }
                 });
             </script>
+
 
         </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')

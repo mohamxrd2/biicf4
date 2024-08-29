@@ -14,10 +14,9 @@ class AppelOffreTerminer extends Notification implements ShouldQueue
 
     public $details;
     public $reference;
-    public function __construct($details, $reference)
+    public function __construct($details)
     {
         $this->details = $details;
-        $this->reference = $reference;
     }
 
     public function via($notifiable)

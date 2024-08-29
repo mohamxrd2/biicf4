@@ -3,6 +3,7 @@
 @section('title', 'Appel d\'offre')
 
 @section('content')
+    
 
     <div class="grid grid-cols-3 gap-4">
         <div class="lg:col-span-2 col-span-3">
@@ -222,8 +223,9 @@
                                     économique.</p>
                             </div>
                         @else
-                        <span class="text-gray-700 font-medium">Les résultats ci-dessous sont des fournisseurs situé dans la zone : <span class="text-indigo-600">{{ $appliedZoneValue }}</span></span>
-                        @foreach ($filtered as $filtre => $group)
+                            <span class="text-gray-700 font-medium">Les résultats ci-dessous sont des fournisseurs situé
+                                dans la zone : <span class="text-indigo-600">{{ $appliedZoneValue }}</span></span>
+                            @foreach ($filtered as $filtre => $group)
                                 @php
                                     // Extraire les noms distincts et les user_id distincts
                                     $distinctNames = $group->pluck('name')->unique();
@@ -308,7 +310,8 @@
 
                                             <input type="hidden" name="name" value="{{ $name }}">
                                             <input type="hidden" name="type" value="{{ $type }}">
-                                            <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
+                                            <input type="hidden" name="appliedZoneValue"
+                                                value="{{ $appliedZoneValue }}">
                                             <input type="hidden" name="lowestPricedProduct"
                                                 value="{{ $lowestPrice }}">
                                             <input type="hidden" name="reference" value="{{ $filtre }}">

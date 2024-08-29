@@ -196,6 +196,10 @@ class AppelOffreController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        
+
+
+
         return view('biicf.searchAppelOffre', compact('filtered', 'groupedByReference', 'results', 'appliedZoneValue', 'resultCount', 'zoneEconomique', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
     }
 

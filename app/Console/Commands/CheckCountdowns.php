@@ -26,7 +26,7 @@ class CheckCountdowns extends Command
     {
 
         $countdowns = Countdown::where('notified', false)
-            ->where('start_time', '<=', now()->subMinutes(1))
+            ->where('start_time', '<=', now()->subMinutes(2))
             ->with('sender') // Charger la relation userSender
             ->get();
 
@@ -130,7 +130,7 @@ class CheckCountdowns extends Command
                     // Vérifier le type de notification à envoyer
                     if ($countdown->difference === 'single') {
                         Log::info('Envoi de la notification pour type "single".', ['user_id' => $commentToUse->user->id]);
-                        Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails, $reference ?? null));
+                        Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
 
                         $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
                         if ($notification) {
@@ -142,7 +142,7 @@ class CheckCountdowns extends Command
                         Notification::send($lowestPriceComment->user, new NegosTerminer($details));
                     } else if ($countdown->difference === 'grouper') {
                         Log::info('Envoi de la notification pour type "grouper".', ['user_id' => $lowestPriceComment->user->id]);
-                        Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails, $reference ?? null));
+                        Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
 
                         $notification = $lowestPriceComment->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
                         if ($notification) {
@@ -175,6 +175,7 @@ class CheckCountdowns extends Command
                     // // Mettre à jour le statut notified à true
                     // Log::info('Mise à jour du statut "notified" à true.', ['countdown_id' => $countdown->id]);
                     $countdown->update(['notified' => true]);
+
                 }
             } else {
                 Log::warning('Aucun commentaire trouvé pour le code_unique.', ['code_unique' => $code_unique]);

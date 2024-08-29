@@ -96,6 +96,7 @@ class NotificationShow extends Component
     public $userComment;
     public $commentCount;
     public $oldestCommentDate;
+    public $serverTime;
     public $isTempsEcoule;
     public $tempsEcoule;
     public $oldestComment;
@@ -170,6 +171,7 @@ class NotificationShow extends Component
     public $userId;
 
     public $demandeur;
+    public $locked = false; // Déverrouillé par défaut
 
 
     protected $rules = [
@@ -333,23 +335,15 @@ class NotificationShow extends Component
             ->first();
 
         // Initialiser la variable pour la date du plus ancien commentaire
-        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at : null;
+        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
+        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
+        $this->serverTime = Carbon::now()->toIso8601String();
 
         // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
         $this->tempsEcoule = $this->oldestCommentDate ? Carbon::parse($this->oldestCommentDate)->addMinutes(1) : null;
 
         // Vérifier si $tempsEcoule est écoulé
         $this->isTempsEcoule = $this->tempsEcoule && $this->tempsEcoule->isPast();
-
-
-
-        //gestion du temps et de la soumission dans countdown table
-        $countdown = Countdown::where('user_id', Auth::id())
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
-
-
 
 
         // Recherche dans la table produit_service pour récupérer l'ID du produit
@@ -389,7 +383,21 @@ class NotificationShow extends Component
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
 
         $this->ciblageLivreurs();
+        // $this->checkIfCodeUniqueExists();
     }
+
+    // public function checkIfCodeUniqueExists()
+    // {
+    //     // Exemple de code pour récupérer le code_unique depuis la notification
+    //     $notification = $this->notification; // Ajoutez une méthode pour récupérer la notification
+
+    //     $codeUnique = $notification->data['code_unique'] ?? null;
+
+    //     if ($codeUnique) {
+    //         $countdown = Countdown::where('code_unique', $codeUnique)->first();
+    //         $this->locked = $countdown ? true : false;
+    //     }
+    // }
     public function ciblageLivreurs()
     {
         // Vérification de l'existence de la clé 'userSender' dans les données de la notification
@@ -525,7 +533,7 @@ class NotificationShow extends Component
         // if ($Idoffre) {
         // }
     }
-    
+
     public function storeoffre()
     {
         try {
