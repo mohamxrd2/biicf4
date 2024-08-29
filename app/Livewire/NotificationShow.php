@@ -1510,8 +1510,7 @@ class NotificationShow extends Component
             'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
             'textareaContent' => $textareaContent
         ];
-
-
+        Log::info('data', ['data' => $data]);
 
         // Vérifiez si le code_unique existe dans userquantites
         $userQuantites = userquantites::where('code_unique', $code_livr)->get();
@@ -1550,22 +1549,33 @@ class NotificationShow extends Component
                 } else {
                     // Envoyez la notification aux livreurs
                     if (!empty($this->livreursIds)) {
-                        $livreurs = User::whereIn('id', $this->livreursIds)->get();
-                        foreach ($livreurs as $livreur) {
-                            Notification::send($livreur, new livraisonVerif($data));
-                            // Log l'envoi de la notification
-                            Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                        foreach ($this->livreursIds as $livreurId) {
+                            $livreur = User::find($livreurId);
+                            if ($livreur) {
+                                Notification::send($livreur, new livraisonVerif($data));
+                                // Log l'envoi de la notification
+                                Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                            } else {
+                                // Log un avertissement si aucun livreur trouvé
+                                Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
+                            }
                         }
                     }
                 }
             }
         } else {
+            // Si aucune quantite utilisateur trouvée, envoyez des notifications aux livreurs seulement
             if (!empty($this->livreursIds)) {
-                $livreurs = User::whereIn('id', $this->livreursIds)->get();
-                foreach ($livreurs as $livreur) {
-                    Notification::send($livreur, new livraisonVerif($data));
-                    // Log l'envoi de la notification
-                    Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                foreach ($this->livreursIds as $livreurId) {
+                    $livreur = User::find($livreurId);
+                    if ($livreur) {
+                        Notification::send($livreur, new livraisonVerif($data));
+                        // Log l'envoi de la notification
+                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                    } else {
+                        // Log un avertissement si aucun livreur trouvé
+                        Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
+                    }
                 }
             }
         }
@@ -1575,6 +1585,7 @@ class NotificationShow extends Component
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
     }
+
 
     private function genererCodeAleatoire($longueur)
     {
