@@ -25,8 +25,8 @@ class OffreGroupe extends Model
         'name',
         'quantite',
         'code_unique',
+        'zone',
         'produit_id',
-        'notified',
         'user_id',
     ];
 

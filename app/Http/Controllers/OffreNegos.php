@@ -153,6 +153,7 @@ class OffreNegos extends Controller
             'quantite' => $quantité,
             'code_unique' => $Uniquecode,
             'produit_id' => $produitId,
+            'zone' => $zone_economique,
             'user_id' => $user_id,
             'differance' => $differance ?? null,
         ]);
@@ -161,6 +162,7 @@ class OffreNegos extends Controller
             'name' => $produit->name,
             'quantite' => $quantité,
             'code_unique' => $Uniquecode,
+            'zone' => $zone_economique,
             'produit_id' => $produitId,
             'user_id' => $user_id,
         ]);
