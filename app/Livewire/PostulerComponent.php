@@ -68,9 +68,14 @@ class PostulerComponent extends Component
     public $localite;
     public $countries = [];
 
+    public $psap;
+
     public function mount()
     {
         $this->livraison = Livraisons::where('user_id', Auth::id())->first();
+
+        $this->psap = Psap::where('user_id', Auth::id())->first();
+        
         $this->fetchCountries();
     }
 

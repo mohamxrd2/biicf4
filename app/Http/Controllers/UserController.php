@@ -451,4 +451,8 @@ class UserController extends Controller
     {
         return view('admin.detail-livraison', compact('id'));
     }
+    public function detailpsap($id)
+    {
+        return view('admin.detaill-psap', compact('id'));
+    }
 }
