@@ -34,21 +34,21 @@ class CheckCountdowns extends Command
         foreach ($countdowns as $countdown) {
             // Récupérer le code unique
             $code_unique = $countdown->code_unique;
-            Log::info('Traitement du countdown.', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
+            // Log::info('Traitement du countdown.', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
 
             // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
             $lowestPriceComment = Comment::with('user')
                 ->where('code_unique', $code_unique)
                 ->orderBy('prixTrade', 'asc')
                 ->first();
-            Log::info('Commentaire avec le prix le plus bas récupéré.', ['lowestPriceComment_id' => $lowestPriceComment->id ?? null]);
+            // Log::info('Commentaire avec le prix le plus bas récupéré.', ['lowestPriceComment_id' => $lowestPriceComment->id ?? null]);
 
             // Retrouver l'enregistrement avec le prix le plus élevé parmi les enregistrements avec ce code unique
             $highestPriceComment = Comment::with('user')
                 ->where('code_unique', $code_unique)
                 ->orderBy('prixTrade', 'desc')
                 ->first();
-            Log::info('Commentaire avec le prix le plus élevé récupéré.', ['highestPriceComment_id' => $highestPriceComment->id ?? null]);
+            // Log::info('Commentaire avec le prix le plus élevé récupéré.', ['highestPriceComment_id' => $highestPriceComment->id ?? null]);
 
             // Vérifier si un enregistrement a été trouvé
             if ($lowestPriceComment) {

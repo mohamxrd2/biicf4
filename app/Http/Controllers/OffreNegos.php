@@ -46,13 +46,8 @@ class OffreNegos extends Controller
         ]);
 
         // Normalize economic zone input to lowercase
-        $zone_economique = strtolower($request->input('zone_economique'));
-        $user = User::find($user_id);
+        $zone_economique = addslashes(strtolower($request->input('zone_economique')));
 
-        if (!$user) {
-            Log::error('User not found', ['user_id' => $user_id]);
-            return redirect()->back()->with('error', 'Utilisateur non trouvé.');
-        }
 
         // Find the product or fail
         $produit = ProduitService::findOrFail($produitId);
@@ -67,20 +62,20 @@ class OffreNegos extends Controller
 
         // User's location details
         $userLocation = [
-            'commune' => strtolower($user->commune),
-            'ville' => strtolower($user->ville),
-            'departement' => strtolower($user->departe),
-            'country' => strtolower($user->country),
-            'sous_region' => strtolower($user->sous_region),
-            'continent' => strtolower($user->continent)
+            'comnServ' => strtolower($produit->comnServ),
+            'villeServ' => strtolower($produit->villeServ),
+            'zonecoServ' => strtolower($produit->zonecoServ),
+            'pays' => strtolower($produit->pays),
+            'sous_region' => strtolower($produit->sous_region),
+            'continent' => strtolower($produit->continent)
         ];
 
-        // Map zone to user location key
+        // Map zone to produit location key
         $zoneMapping = [
-            'proximite' => 'commune',
-            'locale' => 'ville',
-            'departementale' => 'departement',
-            'nationale' => 'country',
+            'proximite' => 'comnServ',
+            'locale' => 'villeServ',
+            'departementale' => 'zonecoServ',
+            'nationale' => 'pays',
             'sous_regionale' => 'sous_region',
             'continentale' => 'continent'
         ];

@@ -963,6 +963,12 @@ class NotificationShow extends Component
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
+
+    // #[On('form-submitted')]
+    // public function placeholder()
+    // {
+    //     return view('admin.components.placeholder');
+    // }
     public function add()
     {
         $this->validate([
