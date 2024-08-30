@@ -15,46 +15,127 @@ use App\Models\ProduitService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\OffreNegosNotif;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class OffreNegos extends Controller
 {
-    //
 
     public function store(Request $request)
     {
         $user_id = Auth::guard('web')->id();
 
-        // Récupérer l'ID du produit à partir du formulaire
+        Log::info('Attempting to store data', ['user_id' => $user_id]);
+
+        // Validate request inputs
+        $request->validate([
+            'produit_id' => 'required|integer',
+            'quantite' => 'required|numeric',
+            'zone_economique' => 'required|string'
+        ]);
+
+        // Retrieve product ID and other inputs from the form
         $produitId = $request->input('produit_id');
-
         $differance = $request->input('differance');
-
         $quantité = $request->input('quantite');
 
-        // Trouver le produit ou échouer
+        Log::info('Received request data', [
+            'produit_id' => $produitId,
+            'quantite' => $quantité,
+            'zone_economique' => $request->input('zone_economique')
+        ]);
+
+        // Normalize economic zone input to lowercase
+        $zone_economique = strtolower($request->input('zone_economique'));
+        $user = User::find($user_id);
+
+        if (!$user) {
+            Log::error('User not found', ['user_id' => $user_id]);
+            return redirect()->back()->with('error', 'Utilisateur non trouvé.');
+        }
+
+        // Find the product or fail
         $produit = ProduitService::findOrFail($produitId);
         $nomProduit = $produit->name;
+        $referenceProduit = $produit->reference;
 
+        Log::info('Product found', [
+            'produit_id' => $produitId,
+            'nomProduit' => $nomProduit,
+            'reference' => $referenceProduit
+        ]);
+
+        // User's location details
+        $userLocation = [
+            'commune' => strtolower($user->commune),
+            'ville' => strtolower($user->ville),
+            'departement' => strtolower($user->departe),
+            'country' => strtolower($user->country),
+            'sous_region' => strtolower($user->sous_region),
+            'continent' => strtolower($user->continent)
+        ];
+
+        // Map zone to user location key
+        $zoneMapping = [
+            'proximite' => 'commune',
+            'locale' => 'ville',
+            'departementale' => 'departement',
+            'nationale' => 'country',
+            'sous_regionale' => 'sous_region',
+            'continentale' => 'continent'
+        ];
+
+        $appliedZoneKey = $zoneMapping[$zone_economique] ?? null;
+        $appliedZoneValue = $userLocation[$appliedZoneKey] ?? null;
+
+        if (!$appliedZoneValue) {
+            Log::warning('Invalid economic zone selected', ['zone_economique' => $zone_economique]);
+            return redirect()->back()->with('error', 'Zone économique non valide.');
+        }
+
+        // Generate a unique code
         $Uniquecode = $this->genererCodeAleatoire(10);
 
-        $nomFournisseur = ProduitService::where('name', $nomProduit)
-            ->where('user_id', '!=', $user_id)
+        Log::info('Generated unique code', ['Uniquecode' => $Uniquecode]);
+
+        // Find suppliers with the same product reference within the selected economic zone
+        $nomFournisseur = ProduitService::where('reference', $referenceProduit)
+            ->where('user_id', '!=', $user_id) // Exclude the current user
             ->where('statuts', 'Accepté')
-            ->distinct()
+            ->whereHas('user', function ($query) use ($appliedZoneKey, $appliedZoneValue) {
+                $query->where($appliedZoneKey, $appliedZoneValue);
+            })
             ->pluck('user_id')
             ->toArray();
-        
-            userquantites::create([
-                'quantite' =>  $quantité,
-                'code_unique' =>  $Uniquecode,
-                'user_id' =>  $user_id,
+
+        if (empty($nomFournisseur)) {
+            Log::warning('No suppliers found in the selected economic zone', [
+                'reference' => $referenceProduit,
+                'zone' => $appliedZoneKey,
+                'value' => $appliedZoneValue
             ]);
+            return redirect()->back()->with('error', 'Aucun fournisseur trouvé dans la zone économique sélectionnée.');
+        }
 
-        foreach ($nomFournisseur as $userId) {
-            $user = User::find($userId);
-            if ($user) {
+        Log::info('Found suppliers', ['suppliers' => $nomFournisseur]);
 
+        // Store the quantity and unique code in userquantites table
+        userquantites::create([
+            'quantite' => $quantité,
+            'code_unique' => $Uniquecode,
+            'user_id' => $user_id,
+        ]);
+
+        Log::info('Stored user quantity', [
+            'quantite' => $quantité,
+            'code_unique' => $Uniquecode,
+            'user_id' => $user_id,
+        ]);
+
+        // Send notifications to relevant suppliers
+        foreach ($nomFournisseur as $supplierId) {
+            $supplier = User::find($supplierId);
+            if ($supplier) {
                 $data = [
                     'produit_id' => $produitId,
                     'produit_name' => $produit->name,
@@ -62,14 +143,16 @@ class OffreNegos extends Controller
                     'code_unique' => $Uniquecode
                 ];
 
-                $owner = User::find($userId);
-
-                //    Notification::send($user, new OffreNotifGroup($produit, $Uniquecode));
-
-                Notification::send($owner, new OffreNegosNotif($data));
+                // Sending the notification
+                Notification::send($supplier, new OffreNegosNotif($data));
+                Log::info('Notification sent', [
+                    'supplier_id' => $supplierId,
+                    'data' => $data
+                ]);
             }
         }
-        // Insérer dans la table OffreGroupe
+
+        // Insert into the OffreGroupe table
         OffreGroupe::create([
             'name' => $produit->name,
             'quantite' => $quantité,
@@ -78,24 +161,44 @@ class OffreNegos extends Controller
             'user_id' => $user_id,
             'differance' => $differance ?? null,
         ]);
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+
+        Log::info('Inserted into OffreGroupe', [
+            'name' => $produit->name,
+            'quantite' => $quantité,
+            'code_unique' => $Uniquecode,
+            'produit_id' => $produitId,
+            'user_id' => $user_id,
+        ]);
+
+        // Check if a countdown is already running for this unique code
         $existingCountdown = Countdown::where('code_unique', $Uniquecode)
             ->where('notified', false)
             ->orderBy('start_time', 'desc')
             ->first();
 
         if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            // Create a new countdown if none exists
             Countdown::create([
                 'user_id' => Auth::id(),
                 'start_time' => now(),
                 'code_unique' => $Uniquecode,
                 'difference' => 'offregroupe',
             ]);
+
+            Log::info('Countdown started', [
+                'user_id' => Auth::id(),
+                'start_time' => now(),
+                'code_unique' => $Uniquecode,
+            ]);
+        } else {
+            Log::info('Countdown already exists for the unique code', ['code_unique' => $Uniquecode]);
         }
 
         return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
     }
+
+
+
     private function genererCodeAleatoire($longueur)
     {
         $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -230,7 +333,5 @@ class OffreNegos extends Controller
         $transaction->save();
     }
 
-    public function offregroupneg()
-    {
-    }
+    public function offregroupneg() {}
 }

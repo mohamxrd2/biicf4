@@ -176,8 +176,7 @@ class CheckCountdowns extends Command
                     $countdown->update(['notified' => true]);
 
                 }
-            } 
+            }
         }
     }
 }
-Log::info('Fin du traitement des countdowns.');

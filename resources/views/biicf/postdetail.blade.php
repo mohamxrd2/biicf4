@@ -321,6 +321,18 @@
                                         @csrf
                                         @method('POST')
 
+                                        <select name="zone_economique"
+                                            class="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            required>
+                                            <option disabled selected>Zone économique</option>
+                                            <option value="proximite">Proximité</option>
+                                            <option value="locale">Locale</option>
+                                            <option value="departementale">Départementale</option>
+                                            <option value="nationale">Nationale</option>
+                                            <option value="sous_regionale">Sous Régionale</option>
+                                            <option value="continentale">Continentale</option>
+                                        </select>
+                                        
                                         <!-- Champ caché pour l'ID du produit -->
                                         <input type="hidden" name="produit_id" value="{{ $produit->id }}">
 
@@ -374,6 +386,18 @@
                                         @method('POST')
 
                                         <div class="flex flex-col">
+
+                                            <select name="zone_economique"
+                                                class="py-3 px-4 block w-full border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                required>
+                                                <option disabled selected>Zone économique</option>
+                                                <option value="proximite">Proximité</option>
+                                                <option value="locale">Locale</option>
+                                                <option value="departementale">Départementale</option>
+                                                <option value="nationale">Nationale</option>
+                                                <option value="sous_regionale">Sous Régionale</option>
+                                                <option value="continentale">Continentale</option>
+                                            </select>
 
                                             <input type="number" name="quantite" class="rounded-md"
                                                 placeholder="Entrez la quantité">
