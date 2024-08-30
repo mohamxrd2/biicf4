@@ -97,7 +97,7 @@
                             @foreach ($psaps as $psap)
                                 <tr class="hover:bg-gray-100">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                                       <a href="{{ route('livraison.show', $psap->id) }}" class="hover:underline">
+                                       <a href="{{ route('psap.show', $psap->id) }}" class="hover:underline">
                                         {{ $psap->user->name }}
                                        </a>
                                     </td>
@@ -111,16 +111,16 @@
 
                                         @if ($psap->etat == 'En cours')
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-yellow-800 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-200">{{ $livraison->etat }}</span>
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-yellow-800 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-200">{{ $psap->etat  }}</span>
                                         @elseif ($psap->etat == 'Accepté')
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100 dark:text-green-400 dark:bg-green-200">{{ $livraison->etat }}</span>
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100 dark:text-green-400 dark:bg-green-200">{{ $psap->etat  }}</span>
                                         @elseif ($psap->etat == 'Refusé')
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-red-800 bg-red-100 dark:text-red-400 dark:bg-red-200">{{ $livraison->etat }}</span>
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-red-800 bg-red-100 dark:text-red-400 dark:bg-red-200">{{ $psap->etat  }}</span>
                                         @else
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-gray-800 bg-gray-100 dark:text-gray-400 dark:bg-gray-200">{{ $livraison->etat }}</span>
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-gray-800 bg-gray-100 dark:text-gray-400 dark:bg-gray-200">{{ $psap->etat }}</span>
                                         @endif
                                     </td>
 

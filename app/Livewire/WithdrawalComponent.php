@@ -2,11 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Psap;
 use App\Models\User;
 use Livewire\Component;
 use App\Models\Transaction;
-use App\Notifications\Retrait;
 
+use App\Notifications\Retrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -29,14 +30,18 @@ class WithdrawalComponent extends Component
             'psap' => [
                 'required',
                 function ($attribute, $value, $fail) {
-                    if (!User::where('id', $value)->orWhere('username', $value)->exists()) {
-                        $fail('Le PSAP sélectionné est invalide.');
-                        Log::warning('Invalid PSAP provided', ['psap' => $value]);
+                    $psap = Psap::where('user_id', $value)
+                                ->where('etat', 'Accepté')
+                                ->where('user_id', '!=', Auth::id())
+                                ->first();
+        
+                    if (!$psap) {
+                        $fail('Le PSAP sélectionné est invalide, non accepté, ou correspond à votre propre compte.');
+                        Log::warning('Invalid, unaccepted, or self PSAP provided', ['psap' => $value, 'user_id' => Auth::id()]);
                     }
                 },
             ],
         ]);
-
         DB::beginTransaction();
 
         try {
