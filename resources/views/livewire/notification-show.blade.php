@@ -556,57 +556,46 @@
                                                                 {{ $clientDepartement }}</p>
                                                             <p><strong>Commune du client :</strong>{{ $clientCommune }}
                                                             </p> --}}
-                                                            <p><strong>le nombre total disponible
+                                                            <p><strong>Le nombre total de livreurs disponible
                                                                     :</strong>{{ $livreursCount }}</p>
 
-                                                            <h3>Liste des livreurs disponibles</h3>
-                                                            @if ($livreurs->isEmpty())
-                                                                <p>Aucun livreur disponible pour ce pays et cette ville.
-                                                                </p>
-                                                            @else
-                                                                {{-- <ul>
-                                                                    @foreach ($livreurs as $livreur)
-                                                                        <li>
-                                                                            Livreur ID: {{ $livreur->id }} -
-                                                                            Expérience: {{ $livreur->experience }} ans
-                                                                            - Livreur ID: {{ $livreur->user_id }}
-                                                                        </li>
-                                                                    @endforeach
-                                                                </ul> --}}
-                                                            @endif
+
                                                         </div>
                                                     @else
                                                         Aucun livreur disponible dans la zone
                                                     @endif
                                                 </p>
                                             </div>
-                                            <div class="flex justify-end items-center py-3 px-4 border-t">
-                                                <div x-data="{ open: false }">
-                                                    <!-- Button to toggle textarea visibility -->
-                                                    <button @click="open = !open"
-                                                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                                        Ajouter le nouveau Conditionnement
-                                                    </button>
+                                            @if ($nombreLivr == 0)
+                                            @else
+                                                <div class="flex justify-end items-center py-3 px-4 border-t">
+                                                    <div x-data="{ open: false }">
+                                                        <!-- Button to toggle textarea visibility -->
+                                                        <button @click="open = !open"
+                                                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                                            Ajouter le nouveau Conditionnement
+                                                        </button>
 
-                                                    <!-- Textarea and action buttons -->
-                                                    <div x-show="open" class="mt-4">
-                                                        <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6" required>
-                                                    </textarea>
-                                                        <div class="mt-2 flex justify-end space-x-2">
-                                                            <button @click="open = false"
-                                                                class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded">
-                                                                Annuler
-                                                            </button>
-                                                            <button @click.prevent="$wire.accepter(textareaValue)"
-                                                                @if ($nombreLivr == 0) disabled @endif
-                                                                class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
-                                                                <span wire:loading.remove>Envoyer</span>
-                                                                <span wire:loading>En cours...</span>
-                                                            </button>
+                                                        <!-- Textarea and action buttons -->
+                                                        <div x-show="open" class="mt-4">
+                                                            <textarea x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6" required>
+                                                        </textarea>
+                                                            <div class="mt-2 flex justify-end space-x-2">
+                                                                <button @click="open = false"
+                                                                    class="py-2 px-4 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded">
+                                                                    Annuler
+                                                                </button>
+                                                                <button @click.prevent="$wire.accepter(textareaValue)"
+                                                                    @if ($nombreLivr == 0) disabled @endif
+                                                                    class="py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 rounded">
+                                                                    <span wire:loading.remove>Envoyer</span>
+                                                                    <span wire:loading>En cours...</span>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
