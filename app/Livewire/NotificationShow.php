@@ -196,7 +196,7 @@ class NotificationShow extends Component
         $this->user = Auth::user()->id ?? null;
         $this->code_unique = $this->notification->data['code_unique'] ?? $this->notification->data['Uniquecode'] ?? null;
         $this->quantite = $this->notification->data['quantité'] ?? null;
-        $this->quantiteC = $this->notification->data['quantite'] ?? $this->notification->data['quantity'] ?? null;
+        $this->quantiteC = $this->notification->data['quantite'] ?? $this->notification->data['quantity'] ?? $this->notification->data['quantites'] ?? null;
         $this->localite = $this->notification->data['localite'] ?? null;
         $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->userFour = User::find($this->notification->data['id_trader'] ?? null);

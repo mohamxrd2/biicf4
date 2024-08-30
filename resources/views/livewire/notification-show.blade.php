@@ -2302,7 +2302,7 @@
                             </div>
 
                             {{-- deux form  --}}
-                            @if (is_array($nameSender))
+                            {{-- @if (is_array($nameSender))
                                 <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
 
                                 <form wire:submit.prevent="commentFormLivrGroup">
@@ -2322,7 +2322,7 @@
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
                                         {{--  --}}
-                                        @foreach ($nameSender as $userId)
+                                        {{-- @foreach ($nameSender as $userId)
                                             <input type="hidden" name="nameSender[]"
                                                 wire:model="nameSender.{{ $loop->index }}"
                                                 value="{{ $userId }}">
@@ -2352,7 +2352,7 @@
                                         </button>
                                     </div>
                                 </form>
-                            @else
+                            @else  --}}
                                 <form wire:submit.prevent="commentFormLivr">
 
                                     <div
@@ -2363,7 +2363,7 @@
                                             value="{{ $notification->data['quantites'] }}">
                                         <input type="hidden" name="idProd" wire:model="idProd"
                                             value="{{ $notification->data['idProd'] }}">
-                                        <input type="hidden" name="nameSender" wire:model="namesender"
+                                        <input type="text" name="nameSender" wire:model="namesender"
                                             value="{{ $notification->data['userSender'] }}">
                                         <input type="hidden" name="id_trader" wire:model="id_trader"
                                             value="{{ $notification->data['id_trader'] }}">
@@ -2400,7 +2400,7 @@
                                 </form>
 
 
-                            @endif
+                            {{-- @endif --}}
 
                         </div>
 
