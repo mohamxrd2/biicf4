@@ -28,7 +28,7 @@ class livraisonVerif extends Notification
     {
         return [
             'idProd' => $this->livraisonVerif['idProd'],
-            'quantites' => $this->livraisonVerif['quantite'],
+            'quantites' => $this->livraisonVerif['quantites'],
             'id_trader' => $this->livraisonVerif['id_trader'],
             'totalSom' => $this->livraisonVerif['totalSom'],
             'localite' => $this->livraisonVerif['localite'],

@@ -167,7 +167,7 @@ class AchatDirectGroupe extends Component
             $this->reset(['quantité', 'localite', 'selectedSpec']);
             session()->flash('success', 'Achat passé avec succès.');
             // Émettre un événement après la soumission
-            $this->dispatch('formSubmitted');
+            $this->dispatch('formSubmitted', 'achat effectué avec success');
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'achat direct.', [
                 'error' => $e->getMessage(),

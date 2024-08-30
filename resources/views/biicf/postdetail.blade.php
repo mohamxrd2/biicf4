@@ -7,7 +7,7 @@
 
     <div class="max-w-7xl mx-auto p-4 grid lg:grid-cols-5 gap-4 ">
         <!-- Left Side: Image -->
-        <div class="lg:h-500px fixed-image lg:col-span-3 col-span-5">
+        <div class="lg:h-screen fixed-image lg:col-span-3 col-span-5">
             <div data-hs-carousel='{
                 "loadingClasses": "opacity-0",
                 "isAutoPlay": true
@@ -46,7 +46,7 @@
                     </div>
                 @else
                     <div class="flex justify-center h-full bg-gray-100 dark:bg-neutral-900">
-                        <img class="max-w-full h-auto rounded-md" src="{{ asset('img/noimg.jpeg') }}" alt="Image">
+                        <img class="max-w-50 h-auto rounded-md" src="{{ asset('img/noimg.jpeg') }}" alt="Image">
                     </div>
                 @endif
                 @if ($photoCount > 1)
@@ -332,7 +332,7 @@
                                             <option value="sous_regionale">Sous Régionale</option>
                                             <option value="continentale">Continentale</option>
                                         </select>
-                                        
+
                                         <!-- Champ caché pour l'ID du produit -->
                                         <input type="hidden" name="produit_id" value="{{ $produit->id }}">
 
