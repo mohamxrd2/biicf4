@@ -85,7 +85,7 @@
                     <div class="flex flex-col w-full justify-between h-full">
                         <div class="flex items-center justify-between">
                             <div>
-                                <a href="{{ route('biicf.postdet', $produit->id) }}" class="flex items-center">
+                                <a wire:navigate href="{{ route('biicf.postdet', $produit->id) }}" class="flex items-center">
                                     <p class="text-xl font-semibold">{{ $produit->name }}</p>
                                 </a>
 

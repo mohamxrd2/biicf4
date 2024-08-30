@@ -2164,7 +2164,7 @@
 
                 <div class="w-full flex justify-between items-center py-4  border-b-2">
                     <p class="text-md font-semibold">Quantité</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['quantite'] }}</p>
+                    <p class="text-md font-medium text-gray-600">{{ $notification->data['quantites'] }}</p>
                 </div>
 
 
@@ -2312,7 +2312,7 @@
                                         <input type="hidden" name="code_livr" wire:model="code_livr"
                                             value="{{ $notification->data['code_livr'] }}">
                                         <input type="hidden" name="quantiteC" wire:model="quantiteC"
-                                            value="{{ $notification->data['quantite'] }}">
+                                            value="{{ $notification->data['quantites'] }}">
                                         <input type="hidden" name="idProd" wire:model="idProd"
                                             value="{{ $notification->data['idProd'] }}">
 
@@ -2360,7 +2360,7 @@
                                         <input type="hidden" name="code_livr" wire:model="code_livr"
                                             value="{{ $notification->data['code_livr'] }}">
                                         <input type="hidden" name="quantiteC" wire:model="quantiteC"
-                                            value="{{ $notification->data['quantite'] }}">
+                                            value="{{ $notification->data['quantites'] }}">
                                         <input type="hidden" name="idProd" wire:model="idProd"
                                             value="{{ $notification->data['idProd'] }}">
                                         <input type="hidden" name="nameSender" wire:model="namesender"
@@ -2471,7 +2471,7 @@
                                     prixTradeError.classList.remove('hidden');
                                 }
                             }
-                        });
+                        })
                     </script>
 
 
