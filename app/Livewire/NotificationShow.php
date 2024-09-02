@@ -641,12 +641,25 @@ class NotificationShow extends Component
 
         // Vérifier la présence des informations nécessaires pour récupérer le produit
         if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
+            // Utiliser la méthode de recherche par référence et ID du trader
             $produitService = ProduitService::where('reference', $notificationData['reference'])
                 ->where('user_id', $notificationData['id_trader'])
                 ->first();
 
             if ($produitService) {
                 $idProd = $produitService->id;
+
+                // Récupérer le produit par son ID
+                $produit = ProduitService::find($idProd);
+
+                // Vérifier si le produit existe
+                if ($produit) {
+                    $prixProd = $produit->prix;
+                } else {
+                    Log::error('Produit non trouvé.', ['idProd' => $idProd]);
+                    session()->flash('error', 'Produit non trouvé.');
+                    return;
+                }
             } else {
                 Log::error('ProduitService non trouvé.', [
                     'reference' => $notificationData['reference'],
@@ -656,22 +669,21 @@ class NotificationShow extends Component
                 return;
             }
         } else {
-            Log::error('Référence ou ID du trader manquants dans les données de notification.', $notificationData);
-            session()->flash('error', 'Référence ou ID du trader manquants.');
-            return;
+            // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
+            $produit = ProduitService::find($notificationData['idProd'] ?? null);
+
+            // Vérifier si le produit existe
+            if ($produit) {
+                $prixProd = $produit->prix;
+            } else {
+                Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
+                session()->flash('error', 'Produit non trouvé.');
+                return;
+            }
         }
 
-        // Récupérer le produit par son ID
-        $produit = ProduitService::find($notificationData['idProd'] ?? $idProd);
+        // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
 
-        // Vérifier si le produit existe
-        if ($produit) {
-            $prixProd = $produit->prix;
-        } else {
-            Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
-            session()->flash('error', 'Produit non trouvé.');
-            return;
-        }
 
         $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
 
