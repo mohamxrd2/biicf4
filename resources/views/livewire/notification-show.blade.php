@@ -2427,7 +2427,7 @@
 
 
                             const startDate = new Date("{{ $oldestCommentDate }}");
-                            startDate.setMinutes(startDate.getMinutes() + 1);
+                            startDate.setMinutes(startDate.getMinutes() + 2);
 
                             const countdownTimer = setInterval(updateCountdown, 1000);
 
