@@ -84,17 +84,7 @@ class CheckCountdowns extends Command
                         'prixProd' => $prixProd,
                     ];
 
-                    $Adetails = [
-                        'code_unique' => $countdown->code_unique,
-                        'prixTrade' => $price,
-                        'id_trader' => $traderId,
-                        'quantiteC' => $quantiteC,
-                        'localite' => $localite,
-                        'specificite' => $specificite,
-                        'nameprod' => $nameprod,
-                        'id_sender' => $decodedSenderIds,
-                        'montantTotal' => $montotal,
-                    ];
+                    
 
                     $Gdetails = [
                         'code_unique' => $countdown->code_unique,
@@ -128,6 +118,18 @@ class CheckCountdowns extends Command
                     }
                     // Vérifier le type de notification à envoyer
                     if ($countdown->difference === 'single') {
+                        $Adetails = [
+                            'code_unique' => $countdown->code_unique,
+                            'prixTrade' => $price,
+                            'id_trader' => $traderId,
+                            'quantiteC' => $quantiteC,
+                            'localite' => $localite,
+                            'specificite' => $specificite,
+                            'nameprod' => $nameprod,
+                            'id_sender' => $decodedSenderIds,
+                            'montantTotal' => $montotal,
+                            'reference' => $reference,
+                        ];
                         Log::info('Envoi de la notification pour type "single".', ['user_id' => $commentToUse->user->id]);
                         Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
 

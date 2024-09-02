@@ -1520,12 +1520,12 @@
                                                 <p class="text-gray-800">
                                                     @if ($nombreLivr)
                                                         <div>
-                                                            <h3>Détails de la commande</h3>
+                                                            {{-- <h3>Détails de la commande</h3> --}}
 
                                                             @if (is_array($clients) && !empty($clients))
-                                                                @foreach ($clients as $client)
-                                                                    {{-- <p><strong>ID de client :</strong>
-                                                                        {{ $client['id'] }}</p> --}}
+                                                                {{-- @foreach ($clients as $client)
+                                                                    <p><strong>ID de client :</strong>
+                                                                        {{ $client['id'] }}</p>
                                                                     <p><strong>Continent du client :</strong>
                                                                         {{ $client['continent'] }}</p>
                                                                     <p><strong>Sous-Region du client :</strong>
@@ -1537,9 +1537,9 @@
                                                                     <p><strong>Commune du client :</strong>
                                                                         {{ $client['commune'] }}</p>
                                                                     <hr>
-                                                                @endforeach
+                                                                @endforeach --}}
                                                             @else
-                                                                <p><strong>ID de client :</strong> {{ $Idsender }}
+                                                                {{-- <p><strong>ID de client :</strong> {{ $Idsender }}
                                                                 </p>
                                                                 <p><strong>Continent du client :</strong>
                                                                     {{ $clientContinent }}</p>
@@ -1550,7 +1550,7 @@
                                                                 <p><strong>Departement du client :</strong>
                                                                     {{ $clientDepartement }}</p>
                                                                 <p><strong>Commune du client :</strong>
-                                                                    {{ $clientCommune }}</p>
+                                                                    {{ $clientCommune }}</p> --}}
                                                             @endif
 
                                                             <h3>Liste des livreurs disponibles</h3>
