@@ -677,7 +677,7 @@ class NotificationShow extends Component
 
         $details = [
             'code_unique' => $code_livr,
-            'id_trader' => $notificationData['id_trader'] ?? null, // Correction: Utiliser 'id_trader'
+            'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
             'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
             'quantiteC' => $notificationData['quantite'] ?? $notificationData['quantiteC'] ?? null, // Correction: Utiliser 'quantite'
             'prixProd' => $prixProd,

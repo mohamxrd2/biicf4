@@ -40,7 +40,7 @@ class OffreClientControllerr extends Controller
         $nomProduit = $produit->name;
 
         // Générer un code unique une seule fois pour tous les utilisateurs
-        $Uniquecode = $this->genererCodeAleatoire(10);
+        // $Uniquecode = $this->genererCodeAleatoire(10);
 
         // Requête pour récupérer les IDs des propriétaires des consommations similaires
         $idsProprietaires = Consommation::where('name', $nomProduit)
