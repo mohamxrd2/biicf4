@@ -1432,8 +1432,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'colisaccept']);
         Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
     }
-
-
     public function refuseColis()
 
     {
