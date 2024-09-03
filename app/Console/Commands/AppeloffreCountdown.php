@@ -22,7 +22,7 @@ class AppeloffreCountdown extends Command
     public function handle()
     {
         $appelOffreGroups = AppelOffreGrouper::whereNotNull('productName')
-            ->where('created_at', '<=', now()->subMinutes(1))
+            ->where('created_at', '<=', now()->subMinutes(2))
             ->get();
 
         foreach ($appelOffreGroups as $appelOffreGroup) {

@@ -30,7 +30,7 @@ class AjoutQoffre extends Command
 
         $offrecountdowns = Countdown::where('notified', false)
             ->where('difference', 'offregroupe') // Ensure column name and value are correct
-            ->where('created_at', '<=', now()->subMinutes(1))
+            ->where('created_at', '<=', now()->subMinutes(2))
             ->get();
 
         Log::info('Found ' . $offrecountdowns->count() . ' countdowns to process.');

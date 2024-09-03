@@ -159,7 +159,7 @@
                         const startDate = new Date("{{ $datePlusAncienne }}");
 
                         // Ajout d'une minute à la date de départ
-                        startDate.setMinutes(startDate.getMinutes() + 1);
+                        startDate.setMinutes(startDate.getMinutes() + 2);
 
                         // Mettre à jour le compte à rebours à intervalles réguliers
                         const countdownTimer = setInterval(updateCountdown, 1000);
@@ -1061,7 +1061,7 @@
                     });
 
                     const startDate = new Date("{{ $oldestCommentDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 1);
+                    startDate.setMinutes(startDate.getMinutes() + 2);
 
                     const countdownTimer = setInterval(updateCountdown, 1000);
 
@@ -1280,7 +1280,7 @@
 
                     // Convertir la date de départ en objet Date JavaScript
                     const startDate = new Date("{{ $oldestCommentDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 1); // Ajouter 1 minute pour la date de départ
+                    startDate.setMinutes(startDate.getMinutes() + 2); // Ajouter 1 minute pour la date de départ
 
                     // Mettre à jour le compte à rebours à intervalles réguliers
                     const countdownTimer = setInterval(updateCountdown, 1000);
@@ -1687,7 +1687,7 @@
 
                     // Convertir la date de départ en objet Date JavaScript
                     const startDate = new Date("{{ $oldestNotificationDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 1);
+                    startDate.setMinutes(startDate.getMinutes() + 2);
 
 
                     // Mettre à jour le compte à rebours à intervalles réguliers
