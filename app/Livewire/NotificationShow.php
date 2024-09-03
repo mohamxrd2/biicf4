@@ -976,11 +976,7 @@ class NotificationShow extends Component
         }
     }
 
-    // #[On('form-submitted')]
-    // public function placeholder()
-    // {
-    //     return view('admin.components.placeholder');
-    // }
+    
     public function add()
     {
         $this->validate([

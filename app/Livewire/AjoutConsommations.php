@@ -153,7 +153,7 @@ class AjoutConsommations extends Component
         $this->validate([
             'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
-            'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
+            'reference' => 'required|string|unique:consommations,reference,NULL,id,user_id,' . auth()->id(),
             'name' => 'required|string|max:255',
             // produits
             'conditionnement' => $this->type == 'Produit' ? 'required|string|max:255' : 'nullable|string',
