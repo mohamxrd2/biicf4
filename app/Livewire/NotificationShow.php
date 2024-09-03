@@ -1105,7 +1105,7 @@ class NotificationShow extends Component
 
             Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
 
-            if ($this->notification->type_achat == 'reserv/take') {
+            if ($this->notification->type_achat == 'reserv/take' || $this->notification->type == 'App\Notifications\AllerChercher') {
                 Notification::send($userSender, new commandVerif($data));
 
                 $notification = $userSender->notifications()->where('type', commandVerif::class)->latest()->first();
@@ -1187,7 +1187,7 @@ class NotificationShow extends Component
         $userQuantitiesExist = userquantites::where('code_unique', $this->code_unique)->exists();
         Log::info('Vérification de l\'existence du code unique', ['code_unique' => $this->code_unique, 'exists' => $userQuantitiesExist]);
 
-        if ($userQuantitiesExist) {
+        if ($userQuantitiesExist && $this->notification->type_achat !== 'reserv/take') {
             // Si le code unique existe, envoyer des notifications aux utilisateurs associés
             $userQuantities = userquantites::where('code_unique', $this->code_unique)->get();
             Log::info('Quantités utilisateur récupérées', ['userQuantities' => $userQuantities]);

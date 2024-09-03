@@ -526,6 +526,8 @@ class AppelOffreController extends Controller
             // Créer une nouvelle instance du modèle userquantites
             $quantite = new userquantites();
             $quantite->user_id = $userId;
+            $quantite->localite = $validatedData['localite'];
+            $quantite->type_achat = $validatedData['Livraison'];
             $quantite->quantite = $validatedData['quantity'];
             $quantite->code_unique = $codeunique;
             $quantite->save();

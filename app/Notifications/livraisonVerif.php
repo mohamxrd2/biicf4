@@ -36,6 +36,9 @@ class livraisonVerif extends Notification
             'code_livr' => $this->livraisonVerif['code_livr'],
             'prixProd' => $this->livraisonVerif['prixProd'],
             'textareaContent' => $this->livraisonVerif['textareaContent'],
+            'type_achat' => $this->livraisonVerif['type_achat'] ?? null, // Ajout de type d'achat
+            'user_id' => $this->livraisonVerif['user_id'] ?? null, // Ajout de l'ID utilisateur
+            'quantite' => $this->livraisonVerif['quantite'] ?? null, // Ajout de l'quantite        
         ];
     }
 }

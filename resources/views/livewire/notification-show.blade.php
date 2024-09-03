@@ -2208,7 +2208,15 @@
                     </div>
                 </div>
                 @php
-                    $userSender = App\Models\User::find($notification->data['userSender']);
+                    $userSenderId = $notification->data['userSender'] ?? ($notification->data['id_user'] ?? null);
+
+                    if ($userSenderId) {
+                        $userSender = App\Models\User::find($userSenderId);
+                    } else {
+                        // Gestion de l'erreur si aucun ID utilisateur n'est trouvé
+                        Log::error('ID de l\'utilisateur manquant dans la notification.', $notification->data);
+                        $userSender = null;
+                    }
                     $continent = $userSender ? $userSender->continent : null;
                     $sous_region = $userSender ? $userSender->sous_region : null;
                     $pays = $userSender ? $userSender->country : null;
@@ -2322,7 +2330,7 @@
                                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                             placeholder="Faire une offre..." required>
                                         {{--  --}}
-                                        {{-- @foreach ($nameSender as $userId)
+                            {{-- @foreach ($nameSender as $userId)
                                             <input type="hidden" name="nameSender[]"
                                                 wire:model="nameSender.{{ $loop->index }}"
                                                 value="{{ $userId }}">
@@ -2353,51 +2361,50 @@
                                     </div>
                                 </form>
                             @else  --}}
-                                <form wire:submit.prevent="commentFormLivr">
+                            <form wire:submit.prevent="commentFormLivr">
 
-                                    <div
-                                        class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                        <input type="hidden" name="code_livr" wire:model="code_livr"
-                                            value="{{ $notification->data['code_livr'] }}">
-                                        <input type="hidden" name="quantiteC" wire:model="quantiteC"
-                                            value="{{ $notification->data['quantites'] }}">
-                                        <input type="hidden" name="idProd" wire:model="idProd"
-                                            value="{{ $notification->data['idProd'] }}">
-                                        <input type="hidden" name="nameSender" wire:model="namesender"
-                                            value="{{ $notification->data['userSender'] }}">
-                                        <input type="hidden" name="id_trader" wire:model="id_trader"
-                                            value="{{ $notification->data['id_trader'] }}">
-                                        <input type="hidden" name="prixProd" id="prixProd"
-                                            wire:model="prixProd" value="{{ $notification->data['prixProd'] }}">
-                                        <input type="number" name="prixTrade" id="prixTrade"
-                                            wire:model="prixTrade"
-                                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                            placeholder="Faire une offre..." required>
+                                <div
+                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                    <input type="hidden" name="code_livr" wire:model="code_livr"
+                                        value="{{ $notification->data['code_livr'] }}">
+                                    <input type="hidden" name="quantiteC" wire:model="quantiteC"
+                                        value="{{ $notification->data['quantites'] }}">
+                                    <input type="hidden" name="idProd" wire:model="idProd"
+                                        value="{{ $notification->data['idProd'] }}">
+                                    <input type="hidden" name="nameSender" wire:model="namesender"
+                                        value="{{ $notification->data['userSender'] }}">
+                                    <input type="hidden" name="id_trader" wire:model="id_trader"
+                                        value="{{ $notification->data['id_trader'] }}">
+                                    <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd"
+                                        value="{{ $notification->data['prixProd'] }}">
+                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                        placeholder="Faire une offre..." required>
 
-                                        <button type="submit" id="submitBtnAppel"
-                                            class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                            <!-- Button Text and Icon -->
-                                            <span wire:loading.remove>
-                                                <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                    fill="currentColor" viewBox="0 0 18 20">
-                                                    <path
-                                                        d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                                </svg>
-                                            </span>
-                                            <!-- Loading Spinner -->
-                                            <span wire:loading>
-                                                <svg class="w-5 h-5 animate-spin inline-block"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                                </svg>
-                                                </svg>
-                                        </button>
-                                    </div>
-                                </form>
+                                    <button type="submit" id="submitBtnAppel"
+                                        class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                        <!-- Button Text and Icon -->
+                                        <span wire:loading.remove>
+                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
+                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                fill="currentColor" viewBox="0 0 18 20">
+                                                <path
+                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                            </svg>
+                                        </span>
+                                        <!-- Loading Spinner -->
+                                        <span wire:loading>
+                                            <svg class="w-5 h-5 animate-spin inline-block"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                            </svg>
+                                            </svg>
+                                    </button>
+                                </div>
+                            </form>
 
 
                             {{-- @endif --}}
