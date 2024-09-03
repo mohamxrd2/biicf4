@@ -380,123 +380,123 @@ class NotificationShow extends Component
 
 
         //ciblage de livreur
-        $this->nombreLivr = User::where('actor_type', 'livreur')->count();
+        // $this->nombreLivr = User::where('actor_type', 'livreur')->count();
 
-        $this->ciblageLivreurs();
+        // $this->ciblageLivreurs();
     }
 
 
-    public $clients;
-    public function ciblageLivreurs()
-    {
-        // Vérification de l'existence de la clé 'userSender' ou 'id_sender' dans les données de la notification
-        $this->Idsender = $this->notification->data['userSender'] ?? $this->notification->data['id_sender'] ?? null;
+    // public $clients;
+    // public function ciblageLivreurs()
+    // {
+    //     // Vérification de l'existence de la clé 'userSender' ou 'id_sender' dans les données de la notification
+    //     $this->Idsender = $this->notification->data['userSender'] ?? $this->notification->data['id_sender'] ?? null;
 
-        if ($this->Idsender === null) {
-            return; // Arrêter l'exécution si 'userSender' est null
-        }
+    //     if ($this->Idsender === null) {
+    //         return; // Arrêter l'exécution si 'userSender' est null
+    //     }
 
-        $this->clients = []; // Initialiser le tableau de clients
+    //     $this->clients = []; // Initialiser le tableau de clients
 
-        // Préparer les critères de filtrage pour les livreurs
-        $query = Livraisons::query();
+    //     // Préparer les critères de filtrage pour les livreurs
+    //     $query = Livraisons::query();
 
-        // Vérification si 'id_sender' est un tableau
-        if (is_array($this->Idsender)) {
-            // Récupérer les informations pour chaque utilisateur dans le tableau
-            foreach ($this->Idsender as $id) {
-                $client = User::findOrFail($id);
+    //     // Vérification si 'id_sender' est un tableau
+    //     if (is_array($this->Idsender)) {
+    //         // Récupérer les informations pour chaque utilisateur dans le tableau
+    //         foreach ($this->Idsender as $id) {
+    //             $client = User::findOrFail($id);
 
-                // Ajouter chaque client à un tableau avec leurs informations en minuscules
-                $clientData = [
-                    'continent' => strtolower($client->continent),
-                    'sous_region' => strtolower($client->sous_region),
-                    'country' => strtolower($client->country),
-                    'departement' => strtolower($client->departe),
-                    'commune' => strtolower($client->commune),
-                ];
+    //             // Ajouter chaque client à un tableau avec leurs informations en minuscules
+    //             $clientData = [
+    //                 'continent' => strtolower($client->continent),
+    //                 'sous_region' => strtolower($client->sous_region),
+    //                 'country' => strtolower($client->country),
+    //                 'departement' => strtolower($client->departe),
+    //                 'commune' => strtolower($client->commune),
+    //             ];
 
-                $this->clients[] = $clientData;
+    //             $this->clients[] = $clientData;
 
-                // Ajouter des conditions pour chaque client dans la requête
-                $query->orWhere(function ($q) use ($clientData) {
-                    $q->where(function ($subQuery) use ($clientData) {
-                        $subQuery->where('zone', 'proximite')
-                            ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
-                            ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
-                            ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
-                            ->whereRaw('LOWER(departe) = ?', [$clientData['departement']])
-                            ->whereRaw('LOWER(commune) = ?', [$clientData['commune']]);
-                    })
-                        ->orWhere(function ($subQuery) use ($clientData) {
-                            $subQuery->where('zone', 'locale')
-                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
-                                ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
-                                ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
-                                ->whereRaw('LOWER(departe) = ?', [$clientData['departement']]);
-                        })
-                        ->orWhere(function ($subQuery) use ($clientData) {
-                            $subQuery->where('zone', 'nationale')
-                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
-                                ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']]);
-                        })
-                        ->orWhere(function ($subQuery) use ($clientData) {
-                            $subQuery->where('zone', 'sous_regionale')
-                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']]);
-                        })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->where('zone', 'continentale');
-                        });
-                });
-            }
-        } else {
-            // Récupérer les informations du client unique
-            $client = User::findOrFail($this->Idsender);
-            $this->clientContinent = strtolower($client->continent);
-            $this->clientSous_Region = strtolower($client->sous_region);
-            $this->clientPays = strtolower($client->country);
-            $this->clientDepartement = strtolower($client->departe);
-            $this->clientCommune = strtolower($client->commune);
+    //             // Ajouter des conditions pour chaque client dans la requête
+    //             $query->orWhere(function ($q) use ($clientData) {
+    //                 $q->where(function ($subQuery) use ($clientData) {
+    //                     $subQuery->where('zone', 'proximite')
+    //                         ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
+    //                         ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
+    //                         ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
+    //                         ->whereRaw('LOWER(departe) = ?', [$clientData['departement']])
+    //                         ->whereRaw('LOWER(commune) = ?', [$clientData['commune']]);
+    //                 })
+    //                     ->orWhere(function ($subQuery) use ($clientData) {
+    //                         $subQuery->where('zone', 'locale')
+    //                             ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
+    //                             ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
+    //                             ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
+    //                             ->whereRaw('LOWER(departe) = ?', [$clientData['departement']]);
+    //                     })
+    //                     ->orWhere(function ($subQuery) use ($clientData) {
+    //                         $subQuery->where('zone', 'nationale')
+    //                             ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
+    //                             ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']]);
+    //                     })
+    //                     ->orWhere(function ($subQuery) use ($clientData) {
+    //                         $subQuery->where('zone', 'sous_regionale')
+    //                             ->whereRaw('LOWER(continent) = ?', [$clientData['continent']]);
+    //                     })
+    //                     ->orWhere(function ($subQuery) {
+    //                         $subQuery->where('zone', 'continentale');
+    //                     });
+    //             });
+    //         }
+    //     } else {
+    //         // Récupérer les informations du client unique
+    //         $client = User::findOrFail($this->Idsender);
+    //         $this->clientContinent = strtolower($client->continent);
+    //         $this->clientSous_Region = strtolower($client->sous_region);
+    //         $this->clientPays = strtolower($client->country);
+    //         $this->clientDepartement = strtolower($client->departe);
+    //         $this->clientCommune = strtolower($client->commune);
 
-            // Ajouter les conditions de filtrage pour un client unique
-            $query->where(function ($q) {
-                $q->where(function ($subQuery) {
-                    $subQuery->where('zone', 'proximite')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                        ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                        ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
-                        ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
-                })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'locale')
-                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                            ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                            ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                            ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
-                    })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'nationale')
-                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                            ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
-                    })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'sous_regionale')
-                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
-                    })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'continentale');
-                    });
-            });
-        }
+    //         // Ajouter les conditions de filtrage pour un client unique
+    //         $query->where(function ($q) {
+    //             $q->where(function ($subQuery) {
+    //                 $subQuery->where('zone', 'proximite')
+    //                     ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+    //                     ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
+    //                     ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
+    //                     ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
+    //                     ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
+    //             })
+    //                 ->orWhere(function ($subQuery) {
+    //                     $subQuery->where('zone', 'locale')
+    //                         ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+    //                         ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
+    //                         ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
+    //                         ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
+    //                 })
+    //                 ->orWhere(function ($subQuery) {
+    //                     $subQuery->where('zone', 'nationale')
+    //                         ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+    //                         ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
+    //                 })
+    //                 ->orWhere(function ($subQuery) {
+    //                     $subQuery->where('zone', 'sous_regionale')
+    //                         ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
+    //                 })
+    //                 ->orWhere(function ($subQuery) {
+    //                     $subQuery->where('zone', 'continentale');
+    //                 });
+    //         });
+    //     }
 
-        // Récupérer les livreurs éligibles
-        $this->livreurs = $query->where('etat', 'Accepté')->get();
+    //     // Récupérer les livreurs éligibles
+    //     $this->livreurs = $query->where('etat', 'Accepté')->get();
 
-        // Extraire les IDs des livreurs éligibles
-        $this->livreursIds = $this->livreurs->pluck('user_id');
-        $this->livreursCount = $this->livreurs->count();
-    }
+    //     // Extraire les IDs des livreurs éligibles
+    //     $this->livreursIds = $this->livreurs->pluck('user_id');
+    //     $this->livreursCount = $this->livreurs->count();
+    // }
 
 
     public function accepteRetrait()
@@ -1480,132 +1480,132 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'refuseVereif']);
         $this->validate();
     }
-    public function accepter($textareaContent = null)
-    {
-        // Récupérez le contenu du textarea depuis la requête
-        $textareaContent = $textareaContent ?? '';
+    // public function accepter($textareaContent = null)
+    // {
+    //     // Récupérez le contenu du textarea depuis la requête
+    //     $textareaContent = $textareaContent ?? '';
 
-        // Vérifiez si l'utilisateur a un portefeuille
-        $userId = Auth::id();
-        $userWallet = Wallet::where('user_id', $userId)->first();
-        if (!$userWallet) {
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
-        }
+    //     // Vérifiez si l'utilisateur a un portefeuille
+    //     $userId = Auth::id();
+    //     $userWallet = Wallet::where('user_id', $userId)->first();
+    //     if (!$userWallet) {
+    //         session()->flash('error', 'Portefeuille introuvable.');
+    //         return;
+    //     }
 
-        // Mettez à jour la notification
-        $notification = NotificationEd::find($this->notification->id);
-        if (!$notification) {
-            session()->flash('error', 'Notification introuvable.');
-            return;
-        }
-        $notification->reponse = 'accepte';
-        $notification->save();
+    //     // Mettez à jour la notification
+    //     $notification = NotificationEd::find($this->notification->id);
+    //     if (!$notification) {
+    //         session()->flash('error', 'Notification introuvable.');
+    //         return;
+    //     }
+    //     $notification->reponse = 'accepte';
+    //     $notification->save();
 
-        // Calculez le montant total et le code unique
-        $requiredAmount = $this->notification->data['montantTotal'];
-        $pourcentSomme = $requiredAmount * 0.1;
-        $totalSom = $requiredAmount - $pourcentSomme;
+    //     // Calculez le montant total et le code unique
+    //     $requiredAmount = $this->notification->data['montantTotal'];
+    //     $pourcentSomme = $requiredAmount * 0.1;
+    //     $totalSom = $requiredAmount - $pourcentSomme;
 
-        $code_livr = $this->code_unique ?? $this->genererCodeAleatoire(10);
-        $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
+    //     $code_livr = $this->code_unique ?? $this->genererCodeAleatoire(10);
+    //     $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
 
-        // Préparez les données pour la notification
-        $data = [
-            'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
-            'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
-            'totalSom' => $requiredAmount,
-            'quantites' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
-            'localite' => $this->notification->data['localite'],
-            'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
-            'code_livr' => $code_livr,
-            'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
-            'textareaContent' => $textareaContent
-        ];
-        Log::info('data', ['data' => $data]);
+    //     // Préparez les données pour la notification
+    //     $data = [
+    //         'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
+    //         'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
+    //         'totalSom' => $requiredAmount,
+    //         'quantites' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
+    //         'localite' => $this->notification->data['localite'],
+    //         'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
+    //         'code_livr' => $code_livr,
+    //         'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
+    //         'textareaContent' => $textareaContent
+    //     ];
+    //     Log::info('data', ['data' => $data]);
 
-        // Vérifiez si le code_unique existe dans userquantites
-        $userQuantites = userquantites::where('code_unique', $code_livr)->get();
+    //     // Vérifiez si le code_unique existe dans userquantites
+    //     $userQuantites = userquantites::where('code_unique', $code_livr)->get();
 
-        // Log l'état initial de la récupération des données
-        Log::info('Recherche du code_unique', ['code_unique' => $code_livr, 'count' => $userQuantites->count()]);
+    //     // Log l'état initial de la récupération des données
+    //     Log::info('Recherche du code_unique', ['code_unique' => $code_livr, 'count' => $userQuantites->count()]);
 
-        if ($userQuantites->isNotEmpty()) {
-            foreach ($userQuantites as $userQuantite) {
-                $userId = $userQuantite->user_id;
-                $quantite = $userQuantite->quantite;
-                $typeAchat = $userQuantite->type_achat;
+    //     if ($userQuantites->isNotEmpty()) {
+    //         foreach ($userQuantites as $userQuantite) {
+    //             $userId = $userQuantite->user_id;
+    //             $quantite = $userQuantite->quantite;
+    //             $typeAchat = $userQuantite->type_achat;
 
-                $notificationData = array_merge($data, [
-                    'quantite' => $quantite,
-                    'type_achat' => $typeAchat,
-                    'user_id' => $userId,
-                ]);
+    //             $notificationData = array_merge($data, [
+    //                 'quantite' => $quantite,
+    //                 'type_achat' => $typeAchat,
+    //                 'user_id' => $userId,
+    //             ]);
 
-                if ($typeAchat === 'Take Away' || $typeAchat === 'Reservation') {
-                    // Envoyez la notification au client directement
-                    $userSender = User::find($userId);
-                    if ($userSender) {
-                        Notification::send($userSender, new AllerChercher($notificationData));
-                        // Log l'envoi de la notification
-                        Log::info('Notification envoyée au client', ['user_id' => $userSender->id]);
-                    } else {
-                        // Log un avertissement si aucun utilisateur trouvé
-                        Log::warning('Utilisateur non trouvé pour l\'ID', ['user_id' => $userId]);
-                    }
-                } else {
-                    // Envoyez la notification aux livreurs
-                    if (!empty($this->livreursIds)) {
-                        foreach ($this->livreursIds as $livreurId) {
-                            $livreur = User::find($livreurId);
-                            if ($livreur) {
-                                Notification::send($livreur, new livraisonVerif($notificationData));
-                                // Log l'envoi de la notification
-                                Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
-                            } else {
-                                // Log un avertissement si aucun livreur trouvé
-                                Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            // Si aucune quantité utilisateur trouvée, envoyez des notifications aux livreurs seulement
-            if (!empty($this->livreursIds)) {
-                foreach ($this->livreursIds as $livreurId) {
-                    $livreur = User::find($livreurId);
-                    if ($livreur) {
-                        Notification::send($livreur, new livraisonVerif($data));
-                        // Log l'envoi de la notification
-                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
-                    } else {
-                        // Log un avertissement si aucun livreur trouvé
-                        Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
-                    }
-                }
-            }
-        }
+    //             if ($typeAchat === 'Take Away' || $typeAchat === 'Reservation') {
+    //                 // Envoyez la notification au client directement
+    //                 $userSender = User::find($userId);
+    //                 if ($userSender) {
+    //                     Notification::send($userSender, new AllerChercher($notificationData));
+    //                     // Log l'envoi de la notification
+    //                     Log::info('Notification envoyée au client', ['user_id' => $userSender->id]);
+    //                 } else {
+    //                     // Log un avertissement si aucun utilisateur trouvé
+    //                     Log::warning('Utilisateur non trouvé pour l\'ID', ['user_id' => $userId]);
+    //                 }
+    //             } else {
+    //                 // Envoyez la notification aux livreurs
+    //                 if (!empty($this->livreursIds)) {
+    //                     foreach ($this->livreursIds as $livreurId) {
+    //                         $livreur = User::find($livreurId);
+    //                         if ($livreur) {
+    //                             Notification::send($livreur, new livraisonVerif($notificationData));
+    //                             // Log l'envoi de la notification
+    //                             Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+    //                         } else {
+    //                             // Log un avertissement si aucun livreur trouvé
+    //                             Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     } else {
+    //         // Si aucune quantité utilisateur trouvée, envoyez des notifications aux livreurs seulement
+    //         if (!empty($this->livreursIds)) {
+    //             foreach ($this->livreursIds as $livreurId) {
+    //                 $livreur = User::find($livreurId);
+    //                 if ($livreur) {
+    //                     Notification::send($livreur, new livraisonVerif($data));
+    //                     // Log l'envoi de la notification
+    //                     Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+    //                 } else {
+    //                     // Log un avertissement si aucun livreur trouvé
+    //                     Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        session()->flash('success', 'Achat accepté.');
+    //     session()->flash('success', 'Achat accepté.');
 
-        $this->modalOpen = false;
-        $this->notification->update(['reponse' => 'accepte']);
-    }
+    //     $this->modalOpen = false;
+    //     $this->notification->update(['reponse' => 'accepte']);
+    // }
 
 
 
-    private function genererCodeAleatoire($longueur)
-    {
-        $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        $code = '';
+    // private function genererCodeAleatoire($longueur)
+    // {
+    //     $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    //     $code = '';
 
-        for ($i = 0; $i < $longueur; $i++) {
-            $code .= $caracteres[rand(0, strlen($caracteres) - 1)];
-        }
+    //     for ($i = 0; $i < $longueur; $i++) {
+    //         $code .= $caracteres[rand(0, strlen($caracteres) - 1)];
+    //     }
 
-        return $code;
-    }
+    //     return $code;
+    // }
 
     public function refuserPro()
     {
@@ -1897,62 +1897,66 @@ class NotificationShow extends Component
 
         $this->reset(['prixTrade']);
     }
-    public function commentFormLivr()
-    {
+    // public function commentFormLivr()
+    // {
 
-        // Valider les données
-        $validatedData = $this->validate([
-            'id_trader' => 'required|numeric',
-            'code_livr' => 'required|string',
-            'userSender' => 'required|numeric',
-            'prixTrade' => 'required|numeric',
-            'quantiteC' => 'required|numeric',
-            'idProd' => 'required|numeric',
-            'prixProd' => 'required|numeric'
-        ]);
+    //     // Valider les données
+    //     $validatedData = $this->validate([
+    //         'id_trader' => 'required|numeric',
+    //         'code_livr' => 'required|string',
+    //         // 'userSender' => 'required|numeric',
+    //         'prixTrade' => 'required|numeric',
+    //         'quantiteC' => 'required|numeric',
+    //         'idProd' => 'required|numeric',
+    //         'prixProd' => 'required|numeric'
+    //     ]);
 
-
-        // Créer un commentaire
-        $comment = Comment::create([
-            'prixTrade' => $validatedData['prixTrade'],
-            'code_unique' => $validatedData['code_livr'],
-            'id_trader' => $validatedData['id_trader'],
-            'quantiteC' => $validatedData['quantiteC'],
-            'id_prod' => $validatedData['idProd'],
-            'prixProd' => $validatedData['prixProd'],
-        ]);
-        $this->commentsend($comment);
-
-        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+    //     $this->userSender = is_array($notification->data['userSender'] ?? null)
+    //     ? $notification->data['id_user'] ?? null // Si userSender est un tableau, utiliser id_user
+    //     : $notification->data['userSender'] ?? ($notification->data['id_user'] ?? null); // Sinon, utiliser userSender ou id_user
 
 
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
+    //     // Créer un commentaire
+    //     $comment = Comment::create([
+    //         'prixTrade' => $validatedData['prixTrade'],
+    //         'code_unique' => $validatedData['code_livr'],
+    //         'id_trader' => $validatedData['id_trader'],
+    //         'quantiteC' => $validatedData['quantiteC'],
+    //         'id_prod' => $validatedData['idProd'],
+    //         'prixProd' => $validatedData['prixProd'],
+    //     ]);
+    //     $this->commentsend($comment);
 
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $this->userSender,
-                'start_time' => now(),
-                'code_unique' => $validatedData['code_livr'],
-            ]);
-        }
+    //     broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
 
 
-        // Afficher un message de succès
-        session()->flash('success', 'Commentaire créé avec succès!');
+    //     // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //     $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
+    //         ->where('notified', false)
+    //         ->orderBy('start_time', 'desc')
+    //         ->first();
 
-        // Réinitialiser le champ du formulaire
-        $this->reset(['prixTrade']);
+    //     if (!$existingCountdown) {
+    //         // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //         Countdown::create([
+    //             'user_id' => Auth::id(),
+    //             'userSender' => $this->userSender,
+    //             'start_time' => now(),
+    //             'code_unique' => $validatedData['code_livr'],
+    //         ]);
+    //     }
 
-        // Émettre un événement pour notifier les autres utilisateurs
-        // $this->dispatch('priceSubmitted', $validatedData);
-        // $this->dispatch('form-submitted');
-    }
+
+    //     // Afficher un message de succès
+    //     session()->flash('success', 'Commentaire créé avec succès!');
+
+    //     // Réinitialiser le champ du formulaire
+    //     $this->reset(['prixTrade']);
+
+    //     // Émettre un événement pour notifier les autres utilisateurs
+    //     // $this->dispatch('priceSubmitted', $validatedData);
+    //     // $this->dispatch('form-submitted');
+    // }
     public function commentFormLivrGroup()
     {
         // Valider les données
