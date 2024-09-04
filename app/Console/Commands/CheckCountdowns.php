@@ -68,6 +68,7 @@ class CheckCountdowns extends Command
                     $nameprod = $commentToUse->nameprod;
                     $id_sender = $commentToUse->id_sender;
                     $prixProd = $commentToUse->prixProd;
+                    $type = $commentToUse->type;
 
                     // Décoder le JSON id_sender
                     $decodedSenderIds = json_decode($id_sender, true);
@@ -84,8 +85,7 @@ class CheckCountdowns extends Command
                         'prixProd' => $prixProd,
                     ];
 
-                    
-
+                
                     $Gdetails = [
                         'code_unique' => $countdown->code_unique,
                         'prixTrade' => $price,
@@ -99,7 +99,7 @@ class CheckCountdowns extends Command
                     ];
                     //lier a apple offre
 
-                    $type_achat = $specificite;
+                    $type_achat = $type ?? null;
                     // Check if a notification with the specific conditions exists
                     $notificationExists = DatabaseNotification::where('type', 'App\Notifications\AppelOffre')
                         ->whereJsonContains('data->code_unique', $code_unique)

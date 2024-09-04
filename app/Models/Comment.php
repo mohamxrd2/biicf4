@@ -17,6 +17,7 @@ class Comment extends Model
         'prixTrade',
         'id_trader',
         'code_unique',
+        'type',
         'id_prod',
         'quantiteC',
         'localite',

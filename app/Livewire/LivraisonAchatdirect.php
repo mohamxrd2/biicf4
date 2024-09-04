@@ -121,6 +121,7 @@ class LivraisonAchatdirect extends Component
         // Émettre un événement pour notifier les autres utilisateurs
         $this->dispatch('form-submitted', 'prix soumis avec succes');
     }
+    
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage($event)
     {

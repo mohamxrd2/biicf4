@@ -14,7 +14,7 @@
 
         <div class="w-full flex justify-between items-center py-4  border-b-2">
             <p class="text-md font-semibold">Quantité</p>
-            <p class="text-md font-medium text-gray-600">{{ $notification->data['quantites'] }}</p>
+            <p class="text-md font-medium text-gray-600">{{ $notification->data['quantite'] }}</p>
         </div>
 
 

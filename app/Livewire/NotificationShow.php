@@ -347,15 +347,15 @@ class NotificationShow extends Component
 
 
         // Recherche dans la table produit_service pour récupérer l'ID du produit
-        if (isset($this->notification->data['nameprod']) && isset($this->notification->data['id_trader'])) {
-            $produitService = ProduitService::where('name', $this->notification->data['nameprod'])
-                ->where('user_id', $this->notification->data['id_trader'])
-                ->first();
+        // if (isset($this->notification->data['nameprod']) && isset($this->notification->data['id_trader'])) {
+        //     $produitService = ProduitService::where('name', $this->notification->data['nameprod'])
+        //         ->where('user_id', $this->notification->data['id_trader'])
+        //         ->first();
 
-            if ($produitService) {
-                $this->idProd2 = $produitService->id;
-            }
-        }
+        //     if ($produitService) {
+        //         $this->idProd2 = $produitService->id;
+        //     }
+        // }
         //offre ajout de quantite
         $this->offreinfo($this->appelOffreGroup);
 
@@ -631,106 +631,106 @@ class NotificationShow extends Component
         }
     }
 
-    public function takeaway()
-    {
-        // Log pour vérifier que la méthode est appelée
-        Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
+    // public function takeaway()
+    // {
+    //     // Log pour vérifier que la méthode est appelée
+    //     Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
 
-        // Extraire les données correctement
-        $notificationData = $this->notification->data;
+    //     // Extraire les données correctement
+    //     $notificationData = $this->notification->data;
 
-        // Vérifier la présence des informations nécessaires pour récupérer le produit
-        if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
-            // Utiliser la méthode de recherche par référence et ID du trader
-            $produitService = ProduitService::where('reference', $notificationData['reference'])
-                ->where('user_id', $notificationData['id_trader'])
-                ->first();
+    //     // Vérifier la présence des informations nécessaires pour récupérer le produit
+    //     if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
+    //         // Utiliser la méthode de recherche par référence et ID du trader
+    //         $produitService = ProduitService::where('reference', $notificationData['reference'])
+    //             ->where('user_id', $notificationData['id_trader'])
+    //             ->first();
 
-            if ($produitService) {
-                $idProd = $produitService->id;
+    //         if ($produitService) {
+    //             $idProd = $produitService->id;
 
-                // Récupérer le produit par son ID
-                $produit = ProduitService::find($idProd);
+    //             // Récupérer le produit par son ID
+    //             $produit = ProduitService::find($idProd);
 
-                // Vérifier si le produit existe
-                if ($produit) {
-                    $prixProd = $produit->prix;
-                } else {
-                    Log::error('Produit non trouvé.', ['idProd' => $idProd]);
-                    session()->flash('error', 'Produit non trouvé.');
-                    return;
-                }
-            } else {
-                Log::error('ProduitService non trouvé.', [
-                    'reference' => $notificationData['reference'],
-                    'id_trader' => $notificationData['id_trader']
-                ]);
-                session()->flash('error', 'ProduitService non trouvé.');
-                return;
-            }
-        } else {
-            // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
-            $produit = ProduitService::find($notificationData['idProd'] ?? null);
+    //             // Vérifier si le produit existe
+    //             if ($produit) {
+    //                 $prixProd = $produit->prix;
+    //             } else {
+    //                 Log::error('Produit non trouvé.', ['idProd' => $idProd]);
+    //                 session()->flash('error', 'Produit non trouvé.');
+    //                 return;
+    //             }
+    //         } else {
+    //             Log::error('ProduitService non trouvé.', [
+    //                 'reference' => $notificationData['reference'],
+    //                 'id_trader' => $notificationData['id_trader']
+    //             ]);
+    //             session()->flash('error', 'ProduitService non trouvé.');
+    //             return;
+    //         }
+    //     } else {
+    //         // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
+    //         $produit = ProduitService::find($notificationData['idProd'] ?? null);
 
-            // Vérifier si le produit existe
-            if ($produit) {
-                $prixProd = $produit->prix;
-            } else {
-                Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
-                session()->flash('error', 'Produit non trouvé.');
-                return;
-            }
-        }
+    //         // Vérifier si le produit existe
+    //         if ($produit) {
+    //             $prixProd = $produit->prix;
+    //         } else {
+    //             Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
+    //             session()->flash('error', 'Produit non trouvé.');
+    //             return;
+    //         }
+    //     }
 
-        // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
+    //     // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
 
 
-        $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
+    //     $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
 
-        $details = [
-            'code_unique' => $code_livr,
-            'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
-            'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
-            'quantiteC' => $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'] ?? $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
-            'prixProd' => $prixProd ?? null,
-        ];
+    //     $details = [
+    //         'code_unique' => $code_livr,
+    //         'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
+    //         'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
+    //         'quantiteC' => $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'] ?? $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
+    //         'prixProd' => $prixProd ?? null,
+    //     ];
 
-        // Log pour vérifier les détails avant l'envoi de la notification
-        Log::info('Détails de la notification préparés.', ['details' => $details]);
+    //     // Log pour vérifier les détails avant l'envoi de la notification
+    //     Log::info('Détails de la notification préparés.', ['details' => $details]);
 
-        // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
-        $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
+    //     // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
+    //     $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
 
-        if ($userSenderId) {
-            $userSender = User::find($userSenderId);
-            if ($userSender) {
-                Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
+    //     if ($userSenderId) {
+    //         $userSender = User::find($userSenderId);
+    //         if ($userSender) {
+    //             Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
 
-                // Envoi de la notification
-                Notification::send($userSender, new CountdownNotification($details));
-                Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
+    //             // Envoi de la notification
+    //             Notification::send($userSender, new CountdownNotification($details));
+    //             Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
 
-                // Récupérez la notification pour mise à jour
-                $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
+    //             // Récupérez la notification pour mise à jour
+    //             $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
 
-                if ($notification) {
-                    // Mettez à jour le champ 'type_achat' dans la notification
-                    $notification->update(['type_achat' => 'reserv/take']);
-                }
-            } else {
-                Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
-                session()->flash('error', 'Utilisateur expéditeur non trouvé.');
-                return;
-            }
-        } else {
-            Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
-            session()->flash('error', 'Détails de notification non valides.');
-            return;
-        }
+    //             if ($notification) {
+    //                 // Mettez à jour le champ 'type_achat' dans la notification
+    //                 $notification->update(['type_achat' => 'reserv/take']);
+    //             }
+    //         } else {
+    //             Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
+    //             session()->flash('error', 'Utilisateur expéditeur non trouvé.');
+    //             return;
+    //         }
+    //     } else {
+    //         Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
+    //         session()->flash('error', 'Détails de notification non valides.');
+    //         return;
+    //     }
 
-        // Mettre à jour la notification originale
-        $this->notification->update(['reponse' => 'accepte']);
-    }
+    //     // Mettre à jour la notification originale
+    //     $this->notification->update(['reponse' => 'accepte']);
+    // }
 
     public function acceptoffre()
     {
@@ -1844,59 +1844,59 @@ class NotificationShow extends Component
 
         $this->reset(['prixTrade']);
     }
-    public function commentForm()
-    {
-        // Récupérer l'utilisateur authentifié
-        $this->validate([
-            'code_unique' => 'required|string',
-            'quantiteC' => 'required|numeric',
-            'prixTrade' => 'required|numeric',
-            'idsender' => 'required|numeric',
-            'id_trader' => 'required|numeric',
-            'nameprod' => 'required|string',
-            'difference' => 'required|string',
-            'localite' => 'required|string',
-            'specificite' => 'nullable|string',
+    // public function commentForm()
+    // {
+    //     // Récupérer l'utilisateur authentifié
+    //     $this->validate([
+    //         'code_unique' => 'required|string',
+    //         'quantiteC' => 'required|numeric',
+    //         'prixTrade' => 'required|numeric',
+    //         'idsender' => 'required|numeric',
+    //         'id_trader' => 'required|numeric',
+    //         'nameprod' => 'required|string',
+    //         'difference' => 'required|string',
+    //         'localite' => 'required|string',
+    //         'specificite' => 'nullable|string',
 
-        ]);
+    //     ]);
 
-        $comment = Comment::create([
-            'localite' => $this->notification->data['localite'],
-            'specificite' => $this->specificite ?? 'Take Away',
-            'prixTrade' => $this->prixTrade,
-            'id_sender' => json_encode($this->idsender),
-            'nameprod' => $this->nameprod,
-            'code_unique' => $this->code_unique,
-            'id_trader' => $this->id_trader,
-            'quantiteC' => $this->quantiteC,
-        ]);
+    //     $comment = Comment::create([
+    //         'localite' => $this->notification->data['localite'],
+    //         'specificite' => $this->specificite ?? 'Take Away',
+    //         'prixTrade' => $this->prixTrade,
+    //         'id_sender' => json_encode($this->idsender),
+    //         'nameprod' => $this->nameprod,
+    //         'code_unique' => $this->code_unique,
+    //         'id_trader' => $this->id_trader,
+    //         'quantiteC' => $this->quantiteC,
+    //     ]);
 
-        $this->commentsend($comment);
+    //     $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+    //     broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
 
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique', $this->code_unique)
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
+    //     // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //     $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+    //         ->where('notified', false)
+    //         ->orderBy('start_time', 'desc')
+    //         ->first();
 
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => $this->id_trader,
-                'userSender' => $this->namefourlivr,
-                'start_time' => now(),
-                'code_unique' => $this->code_unique,
-                'difference' => $this->difference,
-            ]);
-        }
+    //     if (!$existingCountdown) {
+    //         // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //         Countdown::create([
+    //             'user_id' => $this->id_trader,
+    //             'userSender' => $this->namefourlivr,
+    //             'start_time' => now(),
+    //             'code_unique' => $this->code_unique,
+    //             'difference' => $this->difference,
+    //         ]);
+    //     }
 
-        session()->flash('success', 'Commentaire créé avec succès!');
+    //     session()->flash('success', 'Commentaire créé avec succès!');
 
-        $this->reset(['prixTrade']);
-    }
+    //     $this->reset(['prixTrade']);
+    // }
     // public function commentFormLivr()
     // {
 
@@ -1957,134 +1957,134 @@ class NotificationShow extends Component
     //     // $this->dispatch('priceSubmitted', $validatedData);
     //     // $this->dispatch('form-submitted');
     // }
-    public function commentFormLivrGroup()
-    {
-        // Valider les données
-        $validatedData = $this->validate([
-            'id_trader' => 'required|numeric',
-            'code_livr' => 'required|string',
-            'nameSender' => 'required|array',
-            'nameSender.*' => 'numeric',
-            'prixTrade' => 'required|numeric',
-            'quantiteC' => 'required|numeric',
-            'idProd' => 'required|numeric',
-        ]);
+    // public function commentFormLivrGroup()
+    // {
+    //     // Valider les données
+    //     $validatedData = $this->validate([
+    //         'id_trader' => 'required|numeric',
+    //         'code_livr' => 'required|string',
+    //         'nameSender' => 'required|array',
+    //         'nameSender.*' => 'numeric',
+    //         'prixTrade' => 'required|numeric',
+    //         'quantiteC' => 'required|numeric',
+    //         'idProd' => 'required|numeric',
+    //     ]);
 
 
-        // Créer un commentaire
-        $comment = Comment::create([
-            'prixTrade' => $validatedData['prixTrade'],
-            'code_unique' => $validatedData['code_livr'],
-            'id_trader' => $validatedData['id_trader'],
-            'quantiteC' => $validatedData['quantiteC'],
-            'id_prod' => $validatedData['idProd'],
-        ]);
+    //     // Créer un commentaire
+    //     $comment = Comment::create([
+    //         'prixTrade' => $validatedData['prixTrade'],
+    //         'code_unique' => $validatedData['code_livr'],
+    //         'id_trader' => $validatedData['id_trader'],
+    //         'quantiteC' => $validatedData['quantiteC'],
+    //         'id_prod' => $validatedData['idProd'],
+    //     ]);
 
-        $this->commentsend($comment);
+    //     $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+    //     broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
 
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
+    //     // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //     $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
+    //         ->where('notified', false)
+    //         ->orderBy('start_time', 'desc')
+    //         ->first();
 
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            groupagefact::create([
-                'usersenders' => json_encode($this->userSender),
-                'start_time' => now(),
-                'code_unique' => $validatedData['code_livr'],
-            ]);
-        }
-
-
-        // Afficher un message de succès
-        session()->flash('success', 'Commentaire créé avec succès!');
-
-        // Réinitialiser le champ du formulaire
-        $this->reset(['prixTrade']);
-    }
-    public function commentoffgroup()
-    {
-        try {
-            // Récupérer l'utilisateur authentifié
-            $this->validate([
-                'prixTrade' => 'required|numeric',
-                'id_trader' => 'required|numeric',
-                'code_unique' => 'required|string',
-                'idProd' => 'required|numeric',
-            ]);
+    //     if (!$existingCountdown) {
+    //         // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //         groupagefact::create([
+    //             'usersenders' => json_encode($this->userSender),
+    //             'start_time' => now(),
+    //             'code_unique' => $validatedData['code_livr'],
+    //         ]);
+    //     }
 
 
-            // Création du commentaire
-            $comment = Comment::create([
-                'prixProd' => $this->prixTrade,
-                'prixTrade' => $this->prixTrade,
-                'id_trader' => $this->id_trader,
-                'code_unique' => $this->code_unique,
-                'id_prod' => $this->idProd,
-            ]);
-            $this->commentsend($comment);
+    //     // Afficher un message de succès
+    //     session()->flash('success', 'Commentaire créé avec succès!');
 
-            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
-
-            $produit = ProduitService::with('user')->find($this->idProd);
-
-            if ($produit) {
-                $userId = $produit->user_id; // Directement depuis l'objet ProduitService
-            }
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->code_unique)
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
-
-            if (!$existingCountdown) {
-                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-                Countdown::create([
-                    'user_id' => $this->id_trader,
-                    'userSender' => $userId,
-                    'start_time' => now(),
-                    'code_unique' => $this->code_unique,
-                    'difference' => 'offredirect',
-                ]);
-            }
-            $this->reset(['prixTrade']);
-        } catch (Exception $e) {
-            // dd($e)->getMessage();
-            // En cas d'erreur, redirection avec un message d'erreur
-            return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
-        }
-    }
+    //     // Réinitialiser le champ du formulaire
+    //     $this->reset(['prixTrade']);
+    // }
+    // public function commentoffgroup()
+    // {
+    //     try {
+    //         // Récupérer l'utilisateur authentifié
+    //         $this->validate([
+    //             'prixTrade' => 'required|numeric',
+    //             'id_trader' => 'required|numeric',
+    //             'code_unique' => 'required|string',
+    //             'idProd' => 'required|numeric',
+    //         ]);
 
 
-    #[On('echo:comments,CommentSubmitted')]
-    public function listenForMessage($event)
-    {
-        // Déboguer pour vérifier la structure de l'événement
-        // dd($event);
+    //         // Création du commentaire
+    //         $comment = Comment::create([
+    //             'prixProd' => $this->prixTrade,
+    //             'prixTrade' => $this->prixTrade,
+    //             'id_trader' => $this->id_trader,
+    //             'code_unique' => $this->code_unique,
+    //             'id_prod' => $this->idProd,
+    //         ]);
+    //         $this->commentsend($comment);
 
-        // Récupérer les données de l'événement
-        $commentId = $event['commentId'] ?? null;
+    //         broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
-        if ($commentId) {
-            // Récupérer le commentaire par ID
-            $comment = Comment::with('user')->find($commentId);
+    //         $produit = ProduitService::with('user')->find($this->idProd);
 
-            if ($comment) {
-                // Ajouter le nouveau commentaire à la liste
-                $this->commentsend($comment);
-            } else {
-                // Gérer le cas où le commentaire n'existe pas
-                Log::error('Commentaire non trouvé', ['commentId' => $commentId]);
-            }
-        } else {
-            // Gestion des erreurs si l'ID du commentaire n'est pas fourni
-            Log::error('ID du commentaire manquant dans l\'événement', ['event' => $event]);
-        }
-    }
+    //         if ($produit) {
+    //             $userId = $produit->user_id; // Directement depuis l'objet ProduitService
+    //         }
+    //         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //         $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+    //             ->where('notified', false)
+    //             ->orderBy('start_time', 'desc')
+    //             ->first();
+
+    //         if (!$existingCountdown) {
+    //             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //             Countdown::create([
+    //                 'user_id' => $this->id_trader,
+    //                 'userSender' => $userId,
+    //                 'start_time' => now(),
+    //                 'code_unique' => $this->code_unique,
+    //                 'difference' => 'offredirect',
+    //             ]);
+    //         }
+    //         $this->reset(['prixTrade']);
+    //     } catch (Exception $e) {
+    //         // dd($e)->getMessage();
+    //         // En cas d'erreur, redirection avec un message d'erreur
+    //         return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
+    //     }
+    // }
+
+
+    // #[On('echo:comments,CommentSubmitted')]
+    // public function listenForMessage($event)
+    // {
+    //     // Déboguer pour vérifier la structure de l'événement
+    //     // dd($event);
+
+    //     // Récupérer les données de l'événement
+    //     $commentId = $event['commentId'] ?? null;
+
+    //     if ($commentId) {
+    //         // Récupérer le commentaire par ID
+    //         $comment = Comment::with('user')->find($commentId);
+
+    //         if ($comment) {
+    //             // Ajouter le nouveau commentaire à la liste
+    //             $this->commentsend($comment);
+    //         } else {
+    //             // Gérer le cas où le commentaire n'existe pas
+    //             Log::error('Commentaire non trouvé', ['commentId' => $commentId]);
+    //         }
+    //     } else {
+    //         // Gestion des erreurs si l'ID du commentaire n'est pas fourni
+    //         Log::error('ID du commentaire manquant dans l\'événement', ['event' => $event]);
+    //     }
+    // }
 
     public function commentsend($comment)
     {
