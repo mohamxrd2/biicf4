@@ -114,4 +114,9 @@ class Wallet extends Component
     {
         $this->dispatch('navigate', 'rechargeClient');
     }
+
+    public function navigateToContact()
+    {
+        $this->dispatch('navigate', 'rechargeAgent');
+    }
 }
