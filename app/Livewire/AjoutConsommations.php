@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Illuminate\Support\Str;
-
+use Illuminate\Validation\Rule;
 
 class AjoutConsommations extends Component
 {
@@ -153,7 +153,13 @@ class AjoutConsommations extends Component
         $this->validate([
             'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
-            'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
+            'reference' => [
+                'required',
+                'string',
+                Rule::unique('consommations', 'reference')->where(function ($query) {
+                    return $query->where('id_user', auth()->id());
+                }),
+            ],
             'name' => 'required|string|max:255',
             // produits
             'conditionnement' => $this->type == 'Produit' ? 'required|string|max:255' : 'nullable|string',

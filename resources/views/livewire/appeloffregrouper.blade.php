@@ -45,12 +45,10 @@
                         <p class="text-md font-medium text-gray-600">{{ $appelOffreGroup->Livraison }}</p>
                     </div>
 
-
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
                         <p class="text-md font-semibold">Specificité</p>
                         <p class="text-md font-medium text-gray-600">{{ $appelOffreGroup->specificity }}</p>
                     </div>
-
 
 
                     <div class="w-full flex justify-between items-center py-4  border-b-2">
