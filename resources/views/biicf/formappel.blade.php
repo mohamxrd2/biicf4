@@ -86,38 +86,7 @@
                     </div>
                 </div>
 
-                <div class="flex flex-wrap -mx-2 mb-3">
-                    <!-- Date de début -->
-                    <div class="w-full sm:w-1/2 px-2 mb-3">
-                        <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Au plus tôt</label>
-                        <input type="date" id="datePickerStart" name="dateTot" required
-                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-
-                    <!-- Date de fin -->
-                    <div class="w-full sm:w-1/2 px-2 mb-3">
-                        <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus tard</label>
-                        <input type="date" id="datePickerEnd" name="dateTard" required
-                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap -mx-2 mb-3">
-                    <!-- Heure de début -->
-                    <div class="w-full sm:w-1/2 px-2 mb-3">
-                        <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure de
-                            début</label>
-                        <input type="time" id="timePickerStart" name="timeStart" required
-                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-
-                    <!-- Heure de fin -->
-                    <div class="w-full sm:w-1/2 px-2 mb-3">
-                        <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de fin</label>
-                        <input type="time" id="timePickerEnd" name="timeEnd" required
-                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-                </div>
+                
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"

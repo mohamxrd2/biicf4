@@ -28,7 +28,7 @@ class AchatDirectGroupe extends Component
     public $produitId;
     public $produit;
     public $userId;
-    public $selectedOption;
+    public $selectedOption = "";
     public $options = [
         'Achat avec livraison',
         'Take Away',
@@ -55,7 +55,7 @@ class AchatDirectGroupe extends Component
     public $dateTot;
     public $timeStart;
     public $timeEnd;
-    public $dayPeriod;
+    public $dayPeriod = "";
 
     public function mount($id)
     {
@@ -70,6 +70,8 @@ class AchatDirectGroupe extends Component
         $this->idProd = $this->produit->id;
         $this->prix = $this->produit->prix;
         $this->code_unique = $this->generateUniqueReference();
+        $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
+
     }
     protected function generateUniqueReference()
     {
@@ -83,17 +85,19 @@ class AchatDirectGroupe extends Component
             'quantité' => 'required|integer',
             'prix' => 'required|numeric',
             'selectedOption' => 'required|string',
-            'dateTot' => 'required|date',
-            'dateTard' => 'required|date',
-            'timeStart' => 'nullable|date_format:H:i',
-            'timeEnd' => 'nullable|date_format:H:i',
-            'dayPeriod' => 'nullable|string',
+            'dateTot' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
+            'dateTard' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
+            'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
+            'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
+            'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
             'localite' => 'required|string|max:255',
             'userTrader' => 'required|exists:users,id',
             'userSender' => 'required|exists:users,id',
             'photoProd' => 'required|string',
             'idProd' => 'required|exists:produit_services,id',
         ]);
+        
+
 
         Log::info('Validation réussie.', $validated);
 

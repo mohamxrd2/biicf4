@@ -110,13 +110,74 @@
                     </select>
                 </div>
             @else
-                <select wire:model="selectedOption" name="type"
-                    class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                    <option selected>Type de livraison</option>
-                    @foreach ($options as $option)
-                        <option value="{{ $option }}">{{ $option }}</option>
-                    @endforeach
-                </select>
+                <div x-data="{ selectedOption: @entangle('selectedOption') }">
+                    <select wire:model="selectedOption" name="type" x-model="selectedOption"
+                        class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                        <option value="">Type de livraison</option>
+                        <option value="Achat avec livraison">Achat avec livraison</option>
+                        <option value="Take Away">Take Away</option>
+                        {{-- <option value="Reservation">Reservation</option> --}}
+                    </select>
+                    <div x-show="selectedOption === 'Take Away'">
+
+                        <div class="flex items-center mb-3">
+                            <!-- Date de début -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Au plus
+                                    tôt</label>
+                                <input type="date" id="datePickerStart" name="dateTot" 
+                                    wire:model="dateTot"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+
+                            <!-- Date de fin -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus
+                                    tard</label>
+                                <input type="date" id="datePickerEnd" name="dateTard" 
+                                    wire:model="dateTard"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center mb-3">
+                            <!-- Heure de début -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure de
+                                    début</label>
+                                <input type="time" id="timePickerStart" name="timeStart" wire:model="timeStart"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+
+                            <!-- Heure de fin -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de
+                                    fin</label>
+                                <input type="time" id="timePickerEnd" name="timeEnd" wire:model="timeEnd"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                        </div>
+
+                        <p class="text-center">OU</p>
+
+                        <!-- Sélecteur de période de la journée -->
+                        <div class="mb-3 w-full">
+                            <label for="dayPeriod" class="block text-sm text-gray-700 dark:text-gray-300">Période de
+                                la
+                                journée</label>
+                            <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
+                                class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                                <option value="" selected>Choisir la période</option>
+                                <option value="Matin">Matin</option>
+                                <option value="Après-midi">Après-midi</option>
+                                <option value="Soir">Soir</option>
+                                <option value="Nuit">Nuit</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
             @endif
         </div>
 
