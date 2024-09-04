@@ -24,9 +24,7 @@ class Appeloffregrouper extends Component
     public $localite;
     public $selectedOption;
     public $options = [
-        'Achat avec livraison',
-        'Take Away',
-        'Reservation',
+        'Achat avec livraison'
     ];
 
     public function mount($id)

@@ -25,6 +25,15 @@
                     <li class="flex justify-between py-1"><span class="font-medium">Fournisseur:</span>
                         <span>{{ Auth::user()->name }}</span>
                     </li>
+                    <li class="flex justify-between py-1"><span class="font-medium">date prevue de recuperation:</span>
+                        <span>{{ $notification->data['date_tot'] }} - {{ $notification->data['date_tard'] }}</span>
+                    </li>
+                    <li class="flex justify-between py-1"><span class="font-medium">periode:</span>
+                        <span>{{ $notification->data['dayPeriod'] }}</span>
+                    </li>
+                    <li class="flex justify-between py-1"><span class="font-medium">heure prevue de recuperation:</span>
+                        <span>{{ $notification->data['timeStart'] }} - {{ $notification->data['timeEnd'] }}</span>
+                    </li>
                     <li class="flex justify-between py-1">
                         <span class="font-medium">Statut:</span>
                         <span

@@ -175,250 +175,7 @@
         @livewire('appeloffre', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
         <h1 class="text-center text-3xl font-semibold mb-2 ">Negociations pour la quantitée groupée</h1>
-        <div class="grid grid-cols-2 gap-4 p-4">
-            <div class="lg:col-span-1 col-span-2">
-
-                <h2 class="text-3xl font-semibold mb-2">{{ $notification->data['productName'] }}</h2>
-
-                <div class="w-full gap-y-2  mt-4">
-
-                    <div class="w-full flex justify-between items-center py-4  border-b-2">
-                        <p class="text-md font-semibold">Prix unitaire maximal</p>
-                        <p class="text-md font-medium text-gray-600">
-                            {{ isset($notification->data['lowestPricedProduct']) ? number_format($notification->data['lowestPricedProduct'], 2, ',', ' ') : (isset($notification->data['sumquantite']) ? number_format($notification->data['sumquantite'], 2, ',', ' ') : '') }}
-                        </p>
-                    </div>
-
-                    <div class="w-full flex justify-between items-center py-4  border-b-2">
-                        <p class="text-md font-semibold">Quantité</p>
-                        <p class="text-md font-medium text-gray-600">{{ $notification->data['quantity'] }}</p>
-                    </div>
-
-                    <div class="w-full flex justify-between items-center py-4  border-b-2">
-                        <p class="text-md font-semibold">Payement</p>
-                        <p class="text-md font-medium text-gray-600">{{ $notification->data['payment'] }}</p>
-                    </div>
-                    @if ($notification->data['Livraison'])
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Livraison</p>
-                            <p class="text-md font-medium text-gray-600">{{ $notification->data['Livraison'] }}</p>
-                        </div>
-                    @endif
-                    @if ($notification->data['specificity'])
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Specificité</p>
-                            <p class="text-md font-medium text-gray-600">{{ $notification->data['specificity'] }}</p>
-                        </div>
-                    @endif
-
-                    @if ($notification->data['dateTot'])
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Date au plus tôt</p>
-                            <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTot'] }}</p>
-                        </div>
-                    @endif
-
-
-                    @if ($notification->data['dateTard'])
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Date au plus tard</p>
-                            <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTard'] }}</p>
-                        </div>
-                    @endif
-
-                </div>
-            </div>
-            <div class="lg:col-span-1 col-span-2">
-
-                <div class="p-4">
-
-                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                        uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-                        <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-
-                            <!-- comments -->
-                            <div
-                                class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-
-                                @foreach ($comments as $comment)
-                                    <div class="flex items-center gap-3 relative">
-                                        <img src="{{ asset($comment['photoUser']) }}" alt=""
-                                            class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-                                        <div class="flex-1">
-                                            <p class=" text-base text-black font-medium inline-block dark:text-white">
-                                                {{ $comment['nameUser'] }}</p>
-                                            <p class="text-sm mt-0.5">
-                                                {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
-
-                                        </div>
-                                    </div>
-                                @endforeach
-
-                            </div>
-                            <!-- add comment -->
-                            <form wire:submit.prevent="commentFormGroupe">
-                                <div
-                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    <input type="hidden" name="code_unique" wire:model="code_unique"
-                                        value="{{ $notification->data['code_unique'] }}">
-                                    <input type="hidden" name="quantiteC" wire:model="quantiteC"
-                                        value="{{ $notification->data['quantity'] }}">
-                                    <input type="hidden" name="difference" wire:model="difference"
-                                        value="{{ $notification->data['difference'] }}">
-
-                                    <input type="hidden" name="id_trader" wire:model="id_trader">
-                                    <input type="hidden" name="nameprod" wire:model="nameprod"
-                                        value="{{ $notification->data['productName'] }}">
-                                    {{--  --}}
-                                    @if (is_array($id_sender))
-                                        @foreach ($id_sender as $userId)
-                                            <input type="hidden" name="id_sender[]"
-                                                wire:model="id_sender.{{ $loop->index }}"
-                                                value="{{ $userId }}">
-                                        @endforeach
-                                    @endif
-                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Faire une offre..." required>
-                                    @error('prixTrade')
-                                        <span class="text-red-500">{{ $message }}</span>
-                                    @enderror
-
-                                    <input type="hidden" name="localite" id="localite" wire:model="localite"
-                                        value="{{ $notification->data['localite'] }}">
-                                    @error('localite')
-                                        <span class="text-red-500">{{ $message }}</span>
-                                    @enderror
-
-                                    {{-- <input type="text" name="specificite" id="specificite"
-                                        wire:model="specificite" value="{{ $notification->data['specificity'] }}"> --}}
-
-
-                                    <button type="submit" id="submitBtnAppel"
-                                        class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
-                                        <span wire:loading.remove>
-                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor" viewBox="0 0 18 20">
-                                                <path
-                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                            </svg>
-                                        </span>
-                                        <span wire:loading>
-                                            <svg class="w-5 h-5 animate-spin inline-block"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                            </svg>
-                                        </span>
-                                    </button>
-                                </div>
-                            </form>
-
-
-                        </div>
-
-                        <div class="w-full flex justify-center">
-                            <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
-                        </div>
-                    </div>
-
-                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-                        @if ($oldestCommentDate)
-                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
-
-                            <div id="countdown"
-                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                                <div>-</div>:
-                                <div>-</div>:
-                                <div>-</div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-            </div>
-
-
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtnAppel');
-                    const prixTradeError = document.getElementById('prixTradeError');
-                    const produitPrix = parseFloat('{{ $notification->data['lowestPricedProduct'] }}');
-
-
-
-                    prixTradeInput.addEventListener('input', function() {
-                        const prixTradeValue = parseFloat(prixTradeInput.value);
-
-                        if (prixTradeValue > produitPrix) {
-                            submitBtn.disabled = true;
-                            prixTradeError.textContent = `Le prix doit être inférieur à ${produitPrix} FCFA`;
-                            prixTradeError.classList.remove('hidden');
-                            submitBtn.classList.add('hidden');
-                        } else {
-                            submitBtn.disabled = false;
-                            prixTradeError.textContent = '';
-                            prixTradeError.classList.add('hidden');
-                            submitBtn.classList.remove('hidden');
-                        }
-                    });
-
-                    const startDate = new Date("{{ $oldestCommentDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 2);
-
-                    const countdownTimer = setInterval(updateCountdown, 1000);
-
-                    function updateCountdown() {
-                        const currentDate = new Date();
-                        const difference = startDate.getTime() - currentDate.getTime();
-
-                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                        const countdownElement = document.getElementById('countdown');
-                        if (countdownElement) {
-                            countdownElement.innerHTML = `
-                          <div>${hours}h</div>:
-                          <div>${minutes}m</div>:
-                          <div>${seconds}s</div>
-                        `;
-                        }
-
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            if (countdownElement) {
-                                countdownElement.innerHTML = "Temps écoulé !";
-                            }
-                            prixTradeInput.disabled = true;
-                            submitBtn.classList.add('hidden');
-
-
-
-                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
-                                .prix > max.prix ? comment : max, {
-                                    prix: -Infinity
-                                });
-
-                            if (highestPricedComment && highestPricedComment.nameUser) {
-                                prixTradeError.textContent =
-                                    `L'utilisateur avec le prix le plus bas est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
-                            } else {
-                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                            }
-                            prixTradeError.classList.remove('hidden');
-                        }
-                    }
-                });
-            </script>
-        </div>
+        @livewire('appeloffregroupernegociation', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
         <h1 class="text-center text-3xl font-semibold mb-2">L'Enchere Des Clients </h1>
         <div class="grid grid-cols-2 gap-4 p-4">
@@ -1205,335 +962,7 @@
         </div>
     @elseif ($notification->type === 'App\Notifications\livraisonVerif')
         <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs</h1>
-        <div class="grid grid-cols-2 gap-4 p-4">
-            <div class="lg:col-span-1 col-span-2">
-
-                <h2 class="text-3xl font-semibold mb-2">{{ $produitfat->name }}</h2>
-
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Quantité</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['quantites'] }}</p>
-                </div>
-
-
-                @php
-                    $idProd = App\Models\ProduitService::find($notification->data['idProd']);
-                    $continent = $idProd ? $idProd->continent : null;
-                    $sous_region = $idProd ? $idProd->sous_region : null;
-                    $pays = $idProd ? $idProd->pays : null;
-                    $departement = $idProd ? $idProd->zonecoServ : null;
-                    $ville = $idProd ? $idProd->villeServ : null;
-                    $commune = $idProd ? $idProd->comnServ : null;
-                @endphp
-
-                <div class="w-full py-4 border-b-2">
-                    <p class="text-md font-semibold mb-2">Lieu de récuperation / position geographique du produit</p>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
-                            <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
-                            <p class="text-md">{{ $continent }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Sous-région :</p>
-                            <p class="text-md">{{ $sous_region }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Pays :</p>
-                            <p class="text-md">{{ $pays }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Département :</p>
-                            <p class="text-md">{{ $departement }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Ville :</p>
-                            <p class="text-md">{{ $ville }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Commune :</p>
-                            <p class="text-md">{{ $commune }}</p>
-                        </div>
-                    </div>
-                </div>
-                @php
-                    $userSenderId = $notification->data['userSender'] ?? ($notification->data['id_user'] ?? null);
-
-                    if ($userSenderId) {
-                        $userSender = App\Models\User::find($userSenderId);
-                    } else {
-                        // Gestion de l'erreur si aucun ID utilisateur n'est trouvé
-                        Log::error('ID de l\'utilisateur manquant dans la notification.', $notification->data);
-                        $userSender = null;
-                    }
-                    $continent = $userSender ? $userSender->continent : null;
-                    $sous_region = $userSender ? $userSender->sous_region : null;
-                    $pays = $userSender ? $userSender->country : null;
-                    $departement = $userSender ? $userSender->departe : null;
-                    $ville = $userSender ? $userSender->ville : null;
-                    $commune = $userSender ? $userSender->commune : null;
-                @endphp
-
-                <div class="w-full py-4 border-b-2">
-                    <p class="text-md font-semibold mb-2">Position geographique du client</p>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
-                            <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
-                            <p class="text-md">{{ $continent }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Sous-région :</p>
-                            <p class="text-md">{{ $sous_region }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Pays :</p>
-                            <p class="text-md">{{ $pays }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Département :</p>
-                            <p class="text-md">{{ $departement }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Ville :</p>
-                            <p class="text-md">{{ $ville }}</p>
-                        </div>
-                        {{-- <div>
-                            <p class="text-md font-medium text-gray-600">Commune :</p>
-                            <p class="text-md">{{ $commune }}</p>
-                        </div> --}}
-                    </div>
-                </div>
-
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Lieu de livraison</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['localite'] }}</p>
-                </div>
-
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Contact fournisseur</p>
-                    <p class="text-md font-medium text-gray-600">{{ $userFour->phone }}</p>
-                </div>
-
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Conditionnement du colis</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['textareaContent'] }}</p>
-                </div>
-
-                <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
-                    class="mb-3 text-blue-700 hover:underline flex items-center">
-                    Voir le produit
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="ml-2 w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                    </svg>
-                </a>
-            </div>
-            <div class="lg:col-span-1 col-span-2">
-                <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
-
-                <div class="p-4">
-
-                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                        uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-                        <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-
-                            <!-- comments -->
-                            <div
-                                class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-
-                                @foreach ($comments as $comment)
-                                    <div class="flex items-center gap-3 relative">
-                                        <img src="{{ asset($comment['photoUser']) }}" alt=""
-                                            class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-                                        <div class="flex-1">
-                                            <p class=" text-base text-black font-medium inline-block dark:text-white">
-                                                {{ $comment['nameUser'] }}</p>
-                                            <p class="text-sm mt-0.5">
-                                                {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
-
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            {{-- deux form  --}}
-                            {{-- @if (is_array($nameSender))
-                                <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
-
-                                <form wire:submit.prevent="commentFormLivrGroup">
-
-                                    <div
-                                        class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                        <input type="hidden" name="code_livr" wire:model="code_livr"
-                                            value="{{ $notification->data['code_livr'] }}">
-                                        <input type="hidden" name="quantiteC" wire:model="quantiteC"
-                                            value="{{ $notification->data['quantites'] }}">
-                                        <input type="hidden" name="idProd" wire:model="idProd"
-                                            value="{{ $notification->data['idProd'] }}">
-
-                                        <input type="hidden" name="id_trader" wire:model="id_trader"
-                                            value="{{ $notification->data['id_trader'] }}">
-                                        <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                            placeholder="Faire une offre..." required>
-                                        {{--  --}}
-                            {{-- @foreach ($nameSender as $userId)
-                                            <input type="hidden" name="nameSender[]"
-                                                wire:model="nameSender.{{ $loop->index }}"
-                                                value="{{ $userId }}">
-                                        @endforeach
-
-                                        <button type="submit" id="submitBtnAppel"
-                                            class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                            <!-- Button Text and Icon -->
-                                            <span wire:loading.remove>
-                                                <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                    fill="currentColor" viewBox="0 0 18 20">
-                                                    <path
-                                                        d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                                </svg>
-                                            </span>
-                                            <!-- Loading Spinner -->
-                                            <span wire:loading>
-                                                <svg class="w-5 h-5 animate-spin inline-block"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                                </svg>
-                                                </svg>
-                                        </button>
-                                    </div>
-                                </form>
-                            @else  --}}
-                            <form wire:submit.prevent="commentFormLivr">
-
-                                <div
-                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                    <input type="hidden" name="code_livr" wire:model="code_livr"
-                                        value="{{ $notification->data['code_livr'] }}">
-                                    <input type="hidden" name="quantiteC" wire:model="quantiteC"
-                                        value="{{ $notification->data['quantites'] }}">
-                                    <input type="hidden" name="idProd" wire:model="idProd"
-                                        value="{{ $notification->data['idProd'] }}">
-                                    <input type="hidden" name="nameSender" wire:model="namesender"
-                                        value="{{ $notification->data['userSender'] }}">
-                                    <input type="hidden" name="id_trader" wire:model="id_trader"
-                                        value="{{ $notification->data['id_trader'] }}">
-                                    <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd"
-                                        value="{{ $notification->data['prixProd'] }}">
-                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Faire une offre..." required>
-
-                                    <button type="submit" id="submitBtnAppel"
-                                        class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                        <!-- Button Text and Icon -->
-                                        <span wire:loading.remove>
-                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor" viewBox="0 0 18 20">
-                                                <path
-                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                            </svg>
-                                        </span>
-                                        <!-- Loading Spinner -->
-                                        <span wire:loading>
-                                            <svg class="w-5 h-5 animate-spin inline-block"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                            </svg>
-                                            </svg>
-                                    </button>
-                                </div>
-                            </form>
-
-
-                            {{-- @endif --}}
-
-                        </div>
-
-                    </div>
-
-                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-                        @if ($oldestCommentDate)
-                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
-
-                            <div id="countdown"
-                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                                <div>-</div>:
-                                <div>-</div>:
-                                <div>-</div>
-                            </div>
-                        @endif
-                    </div>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            const prixTradeInput = document.getElementById('prixTrade');
-                            const submitBtn = document.getElementById('submitBtnAppel');
-                            const prixTradeError = document.getElementById('prixTradeError');
-
-
-                            const startDate = new Date("{{ $oldestCommentDate }}");
-                            startDate.setMinutes(startDate.getMinutes() + 2);
-
-                            const countdownTimer = setInterval(updateCountdown, 1000);
-
-                            function updateCountdown() {
-                                const currentDate = new Date();
-                                const difference = startDate.getTime() - currentDate.getTime();
-
-                                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                                const countdownElement = document.getElementById('countdown');
-                                if (countdownElement) {
-                                    countdownElement.innerHTML = `
-                                        <div>${hours}h</div>:
-                                        <div>${minutes}m</div>:
-                                        <div>${seconds}s</div>
-                                    `;
-                                }
-
-                                if (difference <= 0) {
-                                    clearInterval(countdownTimer);
-                                    if (countdownElement) {
-                                        countdownElement.innerHTML = "Temps écoulé !";
-                                    }
-                                    prixTradeInput.disabled = true;
-                                    submitBtn.classList.add('hidden');
-
-
-                                    const highestPricedComment = @json($comments).reduce((max, comment) => comment
-                                        .prix > max.prix ? comment : max, {
-                                            prix: -Infinity
-                                        });
-
-                                    if (highestPricedComment && highestPricedComment.nameUser) {
-                                        prixTradeError.textContent =
-                                            `Le livreur avec le meilleur prix  est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
-                                    } else {
-                                        prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                                    }
-                                    prixTradeError.classList.remove('hidden');
-                                }
-                            }
-                        })
-                    </script>
-
-
-
-                </div>
-
-            </div>
-        </div>
+        @livewire('livraisonagrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
         <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
 
@@ -1649,6 +1078,119 @@
                 </button>
             @endif
         </div>
+    @elseif ($notification->type === 'App\Notifications\commandVerif')
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-2">Informations Sur Le Fournisseur</h2>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <p class="mb-2">Nom du fournisseur: <span
+                        class="font-semibold">{{ $namefourlivr->user->name }}</span>
+                </p>
+                <p class="mb-2">Adresse du fournisseur: <span
+                        class="font-semibold">{{ $namefourlivr->user->address }}</span>
+                </p>
+                <p class="mb-2">Email du founisseur: <span
+                        class="font-semibold">{{ $namefourlivr->user->email }}</span>
+                </p>
+                <p class="mb-2">Téléphone founisseur: <span
+                        class="font-semibold">{{ $namefourlivr->user->phone }}</span>
+                </p>
+                <p class="mb-2">Code de Vérification : <span
+                        class="font-semibold">{{ $notification->data['code_unique'] }}</span>
+                </p>
+            </div>
+        </div>
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mt-3">
+            <h2 class="text-xl font-semibold my-2">Avis de conformité</h2>
+
+            <div class="space-y-3">
+                <!-- Quantité -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Quantité :</label>
+                    <input type="radio" id="quantite-oui" name="quantite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="quantite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="quantite-non" name="quantite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="quantite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
+
+                <!-- Qualité Apparente -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Qualité Apparente :</label>
+                    <input type="radio" id="qualite-oui" name="qualite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="qualite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="qualite-non" name="qualite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="qualite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
+
+                <!-- Diversité -->
+                <div class="flex items-center mb-3">
+                    <label class="mr-2 text-gray-600 dark:text-neutral-400">Diversité :</label>
+                    <input type="radio" id="diversite-oui" name="diversite" value="oui"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="diversite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
+                    <input type="radio" id="diversite-non" name="diversite" value="non"
+                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    <label for="diversite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
+                </div>
+            </div>
+
+
+
+
+        </div>
+
+        <div class="max-w-4xl mt-6 flex">
+            @if ($notification->reponse)
+                <div class=" bg-gray-300 border p-2 rounded-md">
+                    <p class="text-md font-medium text-center">Réponse envoyée</p>
+                </div>
+            @else
+                <button wire:click='mainleve'
+                    class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
+                    </svg>
+
+                    <span wire:loading.remove>
+                        Léver la main
+                    </span>
+                    <span wire:loading>
+                        Chargement...
+                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                        </svg>
+                    </span>
+                </button>
+                <button wire:click='refuseVerif' class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
+                    </svg>
+                    <span wire:loading.remove>
+                        Refuser
+                    </span>
+                    <span wire:loading>
+                        Chargement...
+                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                        </svg>
+                    </span>
+
+                </button>
+            @endif
+        </div>
+    @elseif ($notification->type === 'App\Notifications\commandVerifag')
+        @livewire('mainleveag' , ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleve')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-3">
 
@@ -2180,8 +1722,8 @@
 
                     <button wire:click='refuseColis'
                         class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6 mr-2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>

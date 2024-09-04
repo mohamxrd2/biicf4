@@ -51,6 +51,11 @@ class AchatDirectGroupe extends Component
     public $prix;
     public $code_unique;
     public $type;
+    public $dateTard;
+    public $dateTot;
+    public $timeStart;
+    public $timeEnd;
+    public $dayPeriod;
 
     public function mount($id)
     {
@@ -78,6 +83,11 @@ class AchatDirectGroupe extends Component
             'quantité' => 'required|integer',
             'prix' => 'required|numeric',
             'selectedOption' => 'required|string',
+            'dateTot' => 'required|date',
+            'dateTard' => 'required|date',
+            'timeStart' => 'nullable|date_format:H:i',
+            'timeEnd' => 'nullable|date_format:H:i',
+            'dayPeriod' => 'nullable|string',
             'localite' => 'required|string|max:255',
             'userTrader' => 'required|exists:users,id',
             'userSender' => 'required|exists:users,id',
@@ -126,6 +136,11 @@ class AchatDirectGroupe extends Component
                 'quantité' => $validated['quantité'],
                 'montantTotal' => $montantTotal,
                 'localite' => $validated['localite'],
+                'date_tot' => $validated['dateTot'],
+                'date_tard' => $validated['dateTard'],
+                'timeStart' => $validated['timeStart'],
+                'timeEnd' => $validated['timeEnd'],
+                'dayPeriod' => $validated['dayPeriod'],
                 'userTrader' => $validated['userTrader'],
                 'userSender' => $validated['userSender'],
                 'specificite' => $specificites,

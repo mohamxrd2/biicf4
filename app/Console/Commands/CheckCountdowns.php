@@ -70,6 +70,8 @@ class CheckCountdowns extends Command
                     $id_sender = $commentToUse->id_sender;
                     $prixProd = $commentToUse->prixProd;
                     $type = $commentToUse->type;
+                    $date_tot = $commentToUse->date_tot;
+                    $date_tard = $commentToUse->date_tard;
 
                     // Décoder le JSON id_sender
                     $decodedSenderIds = json_decode($id_sender, true);
@@ -97,6 +99,8 @@ class CheckCountdowns extends Command
                         'nameprod' => $nameprod,
                         'id_sender' => $decodedSenderIds,
                         'montantTotal' => $montotal,
+                        'date_tot' => $date_tot,
+                        'date_tard' => $date_tard,
                     ];
                     //lier a apple offre
 

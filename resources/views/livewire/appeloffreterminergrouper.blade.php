@@ -1,14 +1,9 @@
 <div>
-    
+
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <div class="p-6 border-b border-gray-200">
-            <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande @if ($notification->type_achat == 'Take Away')
-                    Take Away
-                @elseif ($notification->type_achat == 'Reservation')
-                    Reservation
-                @else
-                    Avec livraison
-                @endif
+            <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande de l'offre (Groupage Des Clients)
+
             </h1>
         </div>
         <div class="p-6">
@@ -84,6 +79,11 @@
                             <!-- Ajoutez d'autres lignes de produits si nécessaire -->
                         </tbody>
                     </table>
+                    <p>
+                        Délai d'attente : <br>
+                        Date au plus tôt : <strong>{{ $notification->data['date_tot'] }}</strong> 
+                        Date au plus tard : <strong>{{ $notification->data['date_tard'] }}</strong>
+                    </p>
                 </div>
 
                 <!-- Liste pour petits écrans -->
@@ -165,17 +165,15 @@
                         <div x-show="isOpen" id="hs-basic-modal"
                             class="hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500 fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 overflow-y-auto">
                             <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-                                <div
-                                    class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
+                                <div class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
                                     <div class="flex justify-between items-center py-3 px-4 border-b">
                                         <h3 class="font-bold text-gray-800">Envoi au livreur</h3>
-                                        <button @click="isOpen = false"
-                                            class="text-gray-800 hover:text-gray-600">
+                                        <button @click="isOpen = false" class="text-gray-800 hover:text-gray-600">
                                             <span class="sr-only">Close</span>
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
                                         </button>
                                     </div>
@@ -278,4 +276,5 @@
             </div>
         </div>
     </div>
-</div></div>
+</div>
+</div>
