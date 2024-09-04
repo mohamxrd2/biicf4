@@ -975,7 +975,6 @@
             </footer>
         </div>
     @elseif ($notification->type === 'App\Notifications\AllerChercher')
-        {{-- Afficher les messages de succès --}}
         @if (session('success'))
             <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
                 {{ session('success') }}
