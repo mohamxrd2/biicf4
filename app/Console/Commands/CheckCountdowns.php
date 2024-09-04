@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Notifications\AppelOffreTerminer;
+use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotification;
 use App\Notifications\NegosTerminer;
 use Illuminate\Console\Command;
@@ -143,7 +144,7 @@ class CheckCountdowns extends Command
                         Notification::send($lowestPriceComment->user, new NegosTerminer($details));
                     } else if ($countdown->difference === 'grouper') {
                         Log::info('Envoi de la notification pour type "grouper".', ['user_id' => $lowestPriceComment->user->id]);
-                        Notification::send($lowestPriceComment->user, new AppelOffreTerminer($Gdetails));
+                        Notification::send($lowestPriceComment->user, new AppelOffreTerminerGrouper($Gdetails));
 
                         $notification = $lowestPriceComment->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
                         if ($notification) {

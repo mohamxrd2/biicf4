@@ -260,6 +260,7 @@ class NotificationShow extends Component
         //pour la facture
         $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification'
             || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
+            || $this->notification->type === 'App\Notifications\AppelOffreTerminerGrouper'
             || $this->notification->type === 'App\Notifications\AppelOffre'
             || $this->notification->type === 'App\Notifications\OffreNotifGroup'
             || $this->notification->type === 'App\Notifications\NegosTerminer'
@@ -357,7 +358,7 @@ class NotificationShow extends Component
         //     }
         // }
         //offre ajout de quantite
-        $this->offreinfo($this->appelOffreGroup);
+        // $this->offreinfo($this->appelOffreGroup);
 
         // Vérification avant de récupérer le produit
         if (isset($this->notification->data['idProd']) || isset($this->notification->data['produit_id'])) {
@@ -547,39 +548,39 @@ class NotificationShow extends Component
         Notification::send($demandeur, new RefusRetrait($this->notification->id));
     }
 
-    #[On('echo:quantite-channel,AjoutQuantiteOffre')]
-    public function offreinfo($event)
-    {
-        // dd($event);
-        $Idoffre = $this->notification->data['offre_id'] ?? null;
+    // #[On('echo:quantite-channel,AjoutQuantiteOffre')]
+    // public function offreinfo($event)
+    // {
+    //     // dd($event);
+    //     $Idoffre = $this->notification->data['offre_id'] ?? null;
 
-        // Attempt to retrieve the grouped offer by its ID
-        $this->appelOffreGroup = AppelOffreGrouper::find($Idoffre);
+    //     // Attempt to retrieve the grouped offer by its ID
+    //     $this->appelOffreGroup = AppelOffreGrouper::find($Idoffre);
 
-        // Check if $appelOffreGroup is null before proceeding
-        if ($this->appelOffreGroup) {
-            $codesUniques = $this->appelOffreGroup->codeunique;
+    //     // Check if $appelOffreGroup is null before proceeding
+    //     if ($this->appelOffreGroup) {
+    //         $codesUniques = $this->appelOffreGroup->codeunique;
 
-            // Retrieve the oldest date for the unique code
-            $this->datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
+    //         // Retrieve the oldest date for the unique code
+    //         $this->datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
 
-            // Sum the quantities for the unique code
-            $this->sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
+    //         // Sum the quantities for the unique code
+    //         $this->sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
 
-            // Count the number of grouped offers
-            $this->appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)->count();
-        } else {
-            // Handle the case where no offer was found
-            $this->datePlusAncienne = null;
-            $this->sumquantite = 0;
-            $this->appelOffreGroupcount = 0;
-        }
+    //         // Count the number of grouped offers
+    //         $this->appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)->count();
+    //     } else {
+    //         // Handle the case where no offer was found
+    //         $this->datePlusAncienne = null;
+    //         $this->sumquantite = 0;
+    //         $this->appelOffreGroupcount = 0;
+    //     }
 
-        // Récupérer les données de l'événement
-        // $Idoffre = $event['Idoffre'] ?? null;
-        // if ($Idoffre) {
-        // }
-    }
+    //     // Récupérer les données de l'événement
+    //     // $Idoffre = $event['Idoffre'] ?? null;
+    //     // if ($Idoffre) {
+    //     // }
+    // }
 
     public function storeoffre()
     {
@@ -631,106 +632,106 @@ class NotificationShow extends Component
         }
     }
 
-    // public function takeaway()
-    // {
-    //     // Log pour vérifier que la méthode est appelée
-    //     Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
+    public function takeaway()
+    {
+        // Log pour vérifier que la méthode est appelée
+        Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
 
-    //     // Extraire les données correctement
-    //     $notificationData = $this->notification->data;
+        // Extraire les données correctement
+        $notificationData = $this->notification->data;
 
-    //     // Vérifier la présence des informations nécessaires pour récupérer le produit
-    //     if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
-    //         // Utiliser la méthode de recherche par référence et ID du trader
-    //         $produitService = ProduitService::where('reference', $notificationData['reference'])
-    //             ->where('user_id', $notificationData['id_trader'])
-    //             ->first();
+        // Vérifier la présence des informations nécessaires pour récupérer le produit
+        if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
+            // Utiliser la méthode de recherche par référence et ID du trader
+            $produitService = ProduitService::where('reference', $notificationData['reference'])
+                ->where('user_id', $notificationData['id_trader'])
+                ->first();
 
-    //         if ($produitService) {
-    //             $idProd = $produitService->id;
+            if ($produitService) {
+                $idProd = $produitService->id;
 
-    //             // Récupérer le produit par son ID
-    //             $produit = ProduitService::find($idProd);
+                // Récupérer le produit par son ID
+                $produit = ProduitService::find($idProd);
 
-    //             // Vérifier si le produit existe
-    //             if ($produit) {
-    //                 $prixProd = $produit->prix;
-    //             } else {
-    //                 Log::error('Produit non trouvé.', ['idProd' => $idProd]);
-    //                 session()->flash('error', 'Produit non trouvé.');
-    //                 return;
-    //             }
-    //         } else {
-    //             Log::error('ProduitService non trouvé.', [
-    //                 'reference' => $notificationData['reference'],
-    //                 'id_trader' => $notificationData['id_trader']
-    //             ]);
-    //             session()->flash('error', 'ProduitService non trouvé.');
-    //             return;
-    //         }
-    //     } else {
-    //         // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
-    //         $produit = ProduitService::find($notificationData['idProd'] ?? null);
+                // Vérifier si le produit existe
+                if ($produit) {
+                    $prixProd = $produit->prix;
+                } else {
+                    Log::error('Produit non trouvé.', ['idProd' => $idProd]);
+                    session()->flash('error', 'Produit non trouvé.');
+                    return;
+                }
+            } else {
+                Log::error('ProduitService non trouvé.', [
+                    'reference' => $notificationData['reference'],
+                    'id_trader' => $notificationData['id_trader']
+                ]);
+                session()->flash('error', 'ProduitService non trouvé.');
+                return;
+            }
+        } else {
+            // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
+            $produit = ProduitService::find($notificationData['idProd'] ?? null);
 
-    //         // Vérifier si le produit existe
-    //         if ($produit) {
-    //             $prixProd = $produit->prix;
-    //         } else {
-    //             Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
-    //             session()->flash('error', 'Produit non trouvé.');
-    //             return;
-    //         }
-    //     }
+            // Vérifier si le produit existe
+            if ($produit) {
+                $prixProd = $produit->prix;
+            } else {
+                Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
+                session()->flash('error', 'Produit non trouvé.');
+                return;
+            }
+        }
 
-    //     // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
+        // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
 
 
-    //     $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
+        $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
 
-    //     $details = [
-    //         'code_unique' => $code_livr,
-    //         'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
-    //         'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
-    //         'quantiteC' => $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'] ?? $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
-    //         'prixProd' => $prixProd ?? null,
-    //     ];
+        $details = [
+            'code_unique' => $code_livr,
+            'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
+            'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
+            'quantiteC' => $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'] ?? $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
+            'prixProd' => $prixProd ?? null,
+        ];
 
-    //     // Log pour vérifier les détails avant l'envoi de la notification
-    //     Log::info('Détails de la notification préparés.', ['details' => $details]);
+        // Log pour vérifier les détails avant l'envoi de la notification
+        Log::info('Détails de la notification préparés.', ['details' => $details]);
 
-    //     // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
-    //     $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
+        // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
+        $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
 
-    //     if ($userSenderId) {
-    //         $userSender = User::find($userSenderId);
-    //         if ($userSender) {
-    //             Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
+        if ($userSenderId) {
+            $userSender = User::find($userSenderId);
+            if ($userSender) {
+                Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
 
-    //             // Envoi de la notification
-    //             Notification::send($userSender, new CountdownNotification($details));
-    //             Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
+                // Envoi de la notification
+                Notification::send($userSender, new CountdownNotification($details));
+                Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
 
-    //             // Récupérez la notification pour mise à jour
-    //             $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
+                // Récupérez la notification pour mise à jour
+                $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
 
-    //             if ($notification) {
-    //                 // Mettez à jour le champ 'type_achat' dans la notification
-    //                 $notification->update(['type_achat' => 'reserv/take']);
-    //             }
-    //         } else {
-    //             Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
-    //             session()->flash('error', 'Utilisateur expéditeur non trouvé.');
-    //             return;
-    //         }
-    //     } else {
-    //         Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
-    //         session()->flash('error', 'Détails de notification non valides.');
-    //         return;
-    //     }
+                if ($notification) {
+                    // Mettez à jour le champ 'type_achat' dans la notification
+                    $notification->update(['type_achat' => 'reserv/take']);
+                }
+            } else {
+                Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
+                session()->flash('error', 'Utilisateur expéditeur non trouvé.');
+                return;
+            }
+        } else {
+            Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
+            session()->flash('error', 'Détails de notification non valides.');
+            return;
+        }
 
-    //     // Mettre à jour la notification originale
-    //     $this->notification->update(['reponse' => 'accepte']);
-    // }
+        // Mettre à jour la notification originale
+        $this->notification->update(['reponse' => 'accepte']);
+    }
 
     public function acceptoffre()
     {

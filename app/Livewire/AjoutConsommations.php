@@ -173,7 +173,7 @@ class AjoutConsommations extends Component
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
             'name.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
-            'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
+            'reference.unique' => 'Vous etes deja fournisseur de ce produit',
         ]);
 
         try {
