@@ -110,6 +110,7 @@ class LivraisonAchatdirect extends Component
                 'user_id' => Auth::id(),
                 'userSender' => $this->userSender,
                 'start_time' => now(),
+                'difference' => 'ad',
                 'code_unique' => $validatedData['code_livr'],
             ]);
         }

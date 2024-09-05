@@ -7,6 +7,7 @@ use App\Models\Countdown;
 use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotification;
+use App\Notifications\CountdownNotificationAd;
 use App\Notifications\NegosTerminer;
 use Illuminate\Console\Command;
 use Illuminate\Notifications\DatabaseNotification;
@@ -95,7 +96,7 @@ class CheckCountdowns extends Command
                         'date_tard' => $date_tard,
                     ];
 
-                
+
                     $Gdetails = [
                         'code_unique' => $countdown->code_unique,
                         'prixTrade' => $price,
@@ -167,6 +168,10 @@ class CheckCountdowns extends Command
                             Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
                             $notification->update(['type_achat' => 'OFG']);
                         }
+                    } else  if ($countdown->difference === 'ad') {
+                        Log::info('Envoi d\'une autre notification ou action par défaut.');
+                        Notification::send($countdown->sender, new CountdownNotificationAd($details));
+                        
                     } else {
                         Log::info('Envoi d\'une autre notification ou action par défaut.');
                         Notification::send($countdown->sender, new CountdownNotification($details));
@@ -193,7 +198,6 @@ class CheckCountdowns extends Command
                     // // Mettre à jour le statut notified à true
                     // Log::info('Mise à jour du statut "notified" à true.', ['countdown_id' => $countdown->id]);
                     $countdown->update(['notified' => true]);
-
                 }
             }
         }

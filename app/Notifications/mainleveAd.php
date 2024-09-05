@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class mainlevefour extends Notification
+class mainleveAd extends Notification
 {
     use Queueable;
     private $main;
@@ -36,8 +36,7 @@ class mainlevefour extends Notification
             'prixTrade' => $this->main['prixTrade'],
             'prixProd' => $this->main['prixProd'],
             'livreur' => $this->main['livreur'],
-            'date_tot' => $this->main['date_tot'] ?? null,
-            'date_tard' => $this->main['date_tard'] ?? null,
+
         ];
     }
 }

@@ -280,7 +280,7 @@ class NotificationShow extends Component
 
         $this->id_livreur = $this->notification->data['id_livreur'] ?? null;
 
-        $this->livreur = User::find($this->notification->data['livreur'] ?? null);
+        $this->livreur = User::find($this->notification->data['id_livreur'] ?? null);
 
         $this->client = User::find($this->notification->data['id_client'] ?? null);
         //achat direct dans notif show
@@ -633,106 +633,106 @@ class NotificationShow extends Component
         }
     }
 
-    public function takeaway()
-    {
-        // Log pour vérifier que la méthode est appelée
-        Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
+    // public function takeaway()
+    // {
+    //     // Log pour vérifier que la méthode est appelée
+    //     Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
 
-        // Extraire les données correctement
-        $notificationData = $this->notification->data;
+    //     // Extraire les données correctement
+    //     $notificationData = $this->notification->data;
 
-        // Vérifier la présence des informations nécessaires pour récupérer le produit
-        if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
-            // Utiliser la méthode de recherche par référence et ID du trader
-            $produitService = ProduitService::where('reference', $notificationData['reference'])
-                ->where('user_id', $notificationData['id_trader'])
-                ->first();
+    //     // Vérifier la présence des informations nécessaires pour récupérer le produit
+    //     if (isset($notificationData['reference']) && isset($notificationData['id_trader'])) {
+    //         // Utiliser la méthode de recherche par référence et ID du trader
+    //         $produitService = ProduitService::where('reference', $notificationData['reference'])
+    //             ->where('user_id', $notificationData['id_trader'])
+    //             ->first();
 
-            if ($produitService) {
-                $idProd = $produitService->id;
+    //         if ($produitService) {
+    //             $idProd = $produitService->id;
 
-                // Récupérer le produit par son ID
-                $produit = ProduitService::find($idProd);
+    //             // Récupérer le produit par son ID
+    //             $produit = ProduitService::find($idProd);
 
-                // Vérifier si le produit existe
-                if ($produit) {
-                    $prixProd = $produit->prix;
-                } else {
-                    Log::error('Produit non trouvé.', ['idProd' => $idProd]);
-                    session()->flash('error', 'Produit non trouvé.');
-                    return;
-                }
-            } else {
-                Log::error('ProduitService non trouvé.', [
-                    'reference' => $notificationData['reference'],
-                    'id_trader' => $notificationData['id_trader']
-                ]);
-                session()->flash('error', 'ProduitService non trouvé.');
-                return;
-            }
-        } else {
-            // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
-            $produit = ProduitService::find($notificationData['idProd'] ?? null);
+    //             // Vérifier si le produit existe
+    //             if ($produit) {
+    //                 $prixProd = $produit->prix;
+    //             } else {
+    //                 Log::error('Produit non trouvé.', ['idProd' => $idProd]);
+    //                 session()->flash('error', 'Produit non trouvé.');
+    //                 return;
+    //             }
+    //         } else {
+    //             Log::error('ProduitService non trouvé.', [
+    //                 'reference' => $notificationData['reference'],
+    //                 'id_trader' => $notificationData['id_trader']
+    //             ]);
+    //             session()->flash('error', 'ProduitService non trouvé.');
+    //             return;
+    //         }
+    //     } else {
+    //         // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
+    //         $produit = ProduitService::find($notificationData['idProd'] ?? null);
 
-            // Vérifier si le produit existe
-            if ($produit) {
-                $prixProd = $produit->prix;
-            } else {
-                Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
-                session()->flash('error', 'Produit non trouvé.');
-                return;
-            }
-        }
+    //         // Vérifier si le produit existe
+    //         if ($produit) {
+    //             $prixProd = $produit->prix;
+    //         } else {
+    //             Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
+    //             session()->flash('error', 'Produit non trouvé.');
+    //             return;
+    //         }
+    //     }
 
-        // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
+    //     // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
 
 
-        $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
+    //     $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
 
-        $details = [
-            'code_unique' => $code_livr,
-            'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
-            'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
-            'quantiteC' => $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'] ?? $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
-            'prixProd' => $prixProd ?? null,
-        ];
+    //     $details = [
+    //         'code_unique' => $code_livr,
+    //         'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
+    //         'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
+    //         'quantiteC' => $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'] ?? $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
+    //         'prixProd' => $prixProd ?? null,
+    //     ];
 
-        // Log pour vérifier les détails avant l'envoi de la notification
-        Log::info('Détails de la notification préparés.', ['details' => $details]);
+    //     // Log pour vérifier les détails avant l'envoi de la notification
+    //     Log::info('Détails de la notification préparés.', ['details' => $details]);
 
-        // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
-        $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
+    //     // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
+    //     $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
 
-        if ($userSenderId) {
-            $userSender = User::find($userSenderId);
-            if ($userSender) {
-                Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
+    //     if ($userSenderId) {
+    //         $userSender = User::find($userSenderId);
+    //         if ($userSender) {
+    //             Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
 
-                // Envoi de la notification
-                Notification::send($userSender, new CountdownNotification($details));
-                Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
+    //             // Envoi de la notification
+    //             Notification::send($userSender, new CountdownNotification($details));
+    //             Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
 
-                // Récupérez la notification pour mise à jour
-                $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
+    //             // Récupérez la notification pour mise à jour
+    //             $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
 
-                if ($notification) {
-                    // Mettez à jour le champ 'type_achat' dans la notification
-                    $notification->update(['type_achat' => 'reserv/take']);
-                }
-            } else {
-                Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
-                session()->flash('error', 'Utilisateur expéditeur non trouvé.');
-                return;
-            }
-        } else {
-            Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
-            session()->flash('error', 'Détails de notification non valides.');
-            return;
-        }
+    //             if ($notification) {
+    //                 // Mettez à jour le champ 'type_achat' dans la notification
+    //                 $notification->update(['type_achat' => 'reserv/take']);
+    //             }
+    //         } else {
+    //             Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
+    //             session()->flash('error', 'Utilisateur expéditeur non trouvé.');
+    //             return;
+    //         }
+    //     } else {
+    //         Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
+    //         session()->flash('error', 'Détails de notification non valides.');
+    //         return;
+    //     }
 
-        // Mettre à jour la notification originale
-        $this->notification->update(['reponse' => 'accepte']);
-    }
+    //     // Mettre à jour la notification originale
+    //     $this->notification->update(['reponse' => 'accepte']);
+    // }
 
     public function acceptoffre()
     {
@@ -1136,7 +1136,7 @@ class NotificationShow extends Component
 
                 $this->createTransaction($userSender->id, $traderUser->id, 'Reception', $requiredAmount);
             } else {
-                Notification::send($userSender, new commandVerifag($data));
+                Notification::send($userSender, new commandVerif($data));
 
                 // Utilisez && pour vérifier que les deux conditions sont vraies
                 Notification::send($traderUser, new VerifUser($user));
