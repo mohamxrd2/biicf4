@@ -1335,8 +1335,8 @@ class NotificationShow extends Component
     {
         Log::info('Début de la fonction acceptColis', ['notification_id' => $this->notification->id]);
 
-        $livreur = User::find($this->notification->data['id_livreur']);
-        $fournisseur = User::find($this->notification->data['id_trader']);
+        $livreur = User::find($this->notification->data['livreur']);
+        $fournisseur = User::find($this->notification->data['fournisseur']);
         $client = User::find(Auth::user()->id);
         $produit = ProduitService::find($this->notification->data['idProd']);
 
@@ -1350,11 +1350,11 @@ class NotificationShow extends Component
         $data = [
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->code_unique,
-            'id_trader' => $this->notification->data['id_trader'],
+            'fournisseur' => $this->notification->data['fournisseur'],
             'localité' =>  $this->notification->data['localité'],
             'quantite' => $this->notification->data['quantite'],
             'id_client' => $this->notification->data['id_client'],
-            'id_livreur' => $this->notification->data['id_livreur'],
+            'livreur' => $this->notification->data['livreur'],
             'prixTrade' => $this->notification->data['prixTrade'],
             'prixProd' => $this->notification->data['prixProd'],
         ];
@@ -1369,16 +1369,16 @@ class NotificationShow extends Component
             return;
         }
 
-        $fournisseurWallet = Wallet::where('user_id', $this->notification->data['id_trader'])->first();
+        $fournisseurWallet = Wallet::where('user_id', $this->notification->data['fournisseur'])->first();
         if (!$fournisseurWallet) {
-            Log::error('Portefeuille du fournisseur introuvable', ['user_id' => $this->notification->data['id_trader']]);
+            Log::error('Portefeuille du fournisseur introuvable', ['user_id' => $this->notification->data['fournisseur']]);
             session()->flash('error', 'Portefeuille du fournisseur introuvable.');
             return;
         }
 
-        $livreurWallet = Wallet::where('user_id', $this->notification->data['id_livreur'])->first();
+        $livreurWallet = Wallet::where('user_id', $this->notification->data['livreur'])->first();
         if (!$livreurWallet) {
-            Log::error('Portefeuille du livreur introuvable', ['user_id' => $this->notification->data['id_livreur']]);
+            Log::error('Portefeuille du livreur introuvable', ['user_id' => $this->notification->data['livreur']]);
             session()->flash('error', 'Portefeuille du livreur introuvable.');
             return;
         }
@@ -1410,7 +1410,7 @@ class NotificationShow extends Component
         Log::info('Solde du portefeuille du fournisseur mis à jour', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
 
         // Transactions
-        $this->createTransaction(Auth::user()->id, $this->notification->data['id_trader'], 'Reception', $totalSom);
+        $this->createTransaction(Auth::user()->id, $this->notification->data['fournisseur'], 'Reception', $totalSom);
         Log::info('Transaction fournisseur créée', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
 
         // Montant total de la transaction
@@ -1421,7 +1421,7 @@ class NotificationShow extends Component
         $livreurWallet->increment('balance', $montantLivreur);
         Log::info('Solde du portefeuille du livreur mis à jour', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
-        $this->createTransaction(Auth::user()->id, $this->notification->data['id_livreur'], 'Reception', $montantLivreur);
+        $this->createTransaction(Auth::user()->id, $this->notification->data['livreur'], 'Reception', $montantLivreur);
         Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
 
