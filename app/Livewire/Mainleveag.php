@@ -31,10 +31,10 @@ class Mainleveag extends Component
         $id_client = Auth::user()->id;
         Log::info('le id du client', ['id_client' => $id_client]);
 
-        $livreur = User::find($this->notification->data['id_livreur']);
+        $livreur = User::find($this->notification->data['livreur']);
         Log::info('le id du livreur', ['livreur' => $livreur]);
 
-        $fournisseur = User::find($this->notification->data['id_trader']);
+        $fournisseur = User::find($this->notification->data['fournisseur']);
         Log::info('le id du fournisseur', ['fournisseur' => $fournisseur]);
 
         // Déterminer le prix unitaire
@@ -58,21 +58,21 @@ class Mainleveag extends Component
         $data = [
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->notification->data['code_unique'],
-            'id_trader' => $this->notification->data['id_trader'],
+            'fournisseur' => $this->notification->data['fournisseur'],
             'localité' => $this->notification->data['localité'],
             'quantite' => $this->notification->data['quantite'],
             'id_client' => $id_client,
-            'id_livreur' => $livreur,
+            'livreur' => $livreur,
             'prixTrade' => $this->notification->data['prixTrade'],
-            'prixProd' => $this->notification->data['prixProd']
+            'prixProd' => $this->notification->data['prixProd'],
+            'date_tot' => $this->notification->data['date_tot'],
+            'date_tard' => $this->notification->data['date_tard'],
 
         ];
 
         Notification::send($livreur, new mainleve($data));
 
         Notification::send($fournisseur, new mainlevefour($data));
-
-
 
 
         $this->notification->update(['reponse' => 'mainleve']);

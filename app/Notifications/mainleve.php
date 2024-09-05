@@ -28,15 +28,17 @@ class mainleve extends Notification
     {
         return [
             'idProd' => $this->main['idProd'],
-            'code_unique' =>$this->main['code_unique'],
-            'id_trader' => $this->main['id_trader'],
+            'code_unique' => $this->main['code_unique'],
+            'fournisseur' => $this->main['fournisseur'],
             'quantite' => $this->main['quantite'],
             'localité' => $this->main['localité'],
             'id_client' => $this->main['id_client'],
             'prixTrade' => $this->main['prixTrade'],
             'prixProd' => $this->main['prixProd'],
-            'id_livreur' => $this->main['id_livreur'],
-            
+            'livreur' => $this->main['livreur'],
+            'date_tot' => $this->main['date_tot'],
+            'date_tard' => $this->main['date_tard'],
+
         ];
     }
 }

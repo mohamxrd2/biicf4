@@ -36,6 +36,8 @@ class livraisonAchatdirect extends Notification
             'code_livr' => $this->livraison['code_livr'],
             'prixProd' => $this->livraison['prixProd'],
             'textareaContent' => $this->livraison['textareaContent'],       
+            'dateTot' => $this->livraison['dateTot'],       
+            'dateTard' => $this->livraison['dateTard'],       
         ];
     }
 }

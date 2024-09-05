@@ -29,12 +29,14 @@ class commandVerifag extends Notification
         return [
             'idProd' => $this->accept['idProd'],
             'code_unique' =>$this->accept['code_unique'],
-            'id_trader' => $this->accept['id_trader'],
+            'fournisseur' => $this->accept['fournisseur'],
             'quantite' => $this->accept['quantite'],
             'localité' => $this->accept['localité'],
-            'id_livreur' => $this->accept['id_livreur'],
+            'livreur' => $this->accept['livreur'],
             'prixTrade' => $this->accept['prixTrade'],
-            'prixProd' => $this->accept['prixProd']
+            'prixProd' => $this->accept['prixProd'],       
+            'date_tot' => $this->accept['date_tot'],       
+            'date_tard' => $this->accept['date_tard'],  
         ];
     }
 }

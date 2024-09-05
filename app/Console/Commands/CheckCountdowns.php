@@ -62,6 +62,7 @@ class CheckCountdowns extends Command
 
                     $price = $commentToUse->prixTrade;
                     $traderId = $commentToUse->id_trader;
+                    $senderId = $commentToUse->id_sender;
                     $id_prod = $commentToUse->id_prod;
                     $quantiteC = $commentToUse->quantiteC;
                     $localite = $commentToUse->localite;
@@ -72,6 +73,9 @@ class CheckCountdowns extends Command
                     $type = $commentToUse->type;
                     $date_tot = $commentToUse->date_tot;
                     $date_tard = $commentToUse->date_tard;
+                    $timeStart = $commentToUse->timeStart;
+                    $timeEnd = $commentToUse->timeEnd;
+                    $dayPeriod = $commentToUse->dayPeriod;
 
                     // Décoder le JSON id_sender
                     $decodedSenderIds = json_decode($id_sender, true);
@@ -82,10 +86,13 @@ class CheckCountdowns extends Command
                         'sender_name' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
                         'code_unique' => $countdown->code_unique,
                         'prixTrade' => $price,
-                        'id_trader' => $traderId,
+                        'fournisseur' => $traderId,
+                        'livreur' => $senderId,
                         'idProd' => $id_prod,
                         'quantiteC' => $quantiteC,
                         'prixProd' => $prixProd,
+                        'date_tot' => $date_tot,
+                        'date_tard' => $date_tard,
                     ];
 
                 
@@ -134,6 +141,11 @@ class CheckCountdowns extends Command
                             'id_sender' => $decodedSenderIds,
                             'montantTotal' => $montotal,
                             'reference' => $reference,
+                            'date_tot' => $date_tot,
+                            'date_tard' => $date_tard,
+                            'timeStart' => $timeStart ?? null,
+                            'timeEnd' => $timeEnd ?? null,
+                            'dayPeriod' => $dayPeriod ?? null,
                         ];
                         Log::info('Envoi de la notification pour type "single".', ['user_id' => $commentToUse->user->id]);
                         Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));

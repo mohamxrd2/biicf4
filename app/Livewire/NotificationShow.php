@@ -200,7 +200,7 @@ class NotificationShow extends Component
         $this->quantiteC = $this->notification->data['quantite'] ?? $this->notification->data['quantity'] ?? $this->notification->data['quantites'] ?? null;
         $this->localite = $this->notification->data['localite'] ?? null;
         $this->specificite = $this->notification->data['specificity'] ?? null;
-        $this->userFour = User::find($this->notification->data['id_trader'] ?? null);
+        $this->userFour = User::find($this->notification->data['fournisseur'] ?? null);
         $this->code_livr = $this->notification->data['code_livr'] ?? null;
 
         $this->psap = $this->notification->data['psap'] ?? null;
@@ -1080,12 +1080,14 @@ class NotificationShow extends Component
             $data = [
                 'idProd' => $this->notification->data['idProd'],
                 'code_unique' => $this->code_unique ?? $this->notification->data['code_livr'],
-                'id_trader' => $this->namefourlivr->user->id,
+                'fournisseur' => $this->notification->data['fournisseur'],
                 'localité' => $this->localite,
                 'quantite' => $quantite,
-                'id_livreur' => $this->userFour->id, // Assurez-vous que $this->userFour est défini
+                'livreur' => $this->notification->data['livreur'], // Assurez-vous que $this->userFour est défini
                 'prixTrade' => $this->notification->data['prixTrade'] ?? null,
-                'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade']
+                'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'],
+                'date_tot' => $this->notification->data['date_tot'],
+                'date_tard' => $this->notification->data['date_tard'],
             ];
 
             $user = [
@@ -1095,7 +1097,9 @@ class NotificationShow extends Component
                 'localité' => $this->localite,
                 'quantite' => $quantite,
                 'id_client' => Auth::id(),
-                'prixProd' => $this->notification->data['prixProd']
+                'prixProd' => $this->notification->data['prixProd'],
+                'date_tot' => $this->notification->data['date_tot'],
+                'date_tard' => $this->notification->data['date_tard'],
             ];
 
             $id_trader = $this->namefourlivr->user->id;

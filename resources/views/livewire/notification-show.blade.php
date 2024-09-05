@@ -1190,7 +1190,7 @@
             @endif
         </div>
     @elseif ($notification->type === 'App\Notifications\commandVerifag')
-        @livewire('mainleveag' , ['id' => $id])
+        @livewire('mainleveag', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleve')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-3">
 
@@ -1263,20 +1263,26 @@
             <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
                 <h2 class="text-xl font-semibold mb-2">Estimation de date de livraison <span
                         class="text-red-700">*</span>
+
+                    <span class="font-medium">Date prévue de récupération du client:</span>
+                    <span>
+                        @if (isset($notification->data['date_tot']) && isset($notification->data['date_tard']))
+                            {{ $notification->data['date_tot'] }} - {{ $notification->data['date_tard'] }}
+                        @else
+                            Non spécifiée
+                        @endif
+                    </span>
                 </h2>
 
                 <div class="lg:w-1/2 w-full mr-2 relative">
                     <input type="date" id="datePickerStart" name="dateLivr" wire:model.defer="dateLivr" required
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Ajouter une date de livraison">
-
-
-
-
                     @error('dateLivr')
                         <span class="text-red-500 mt-4">{{ $message }}</span>
                     @enderror
                 </div>
+
 
                 <!-- Select -->
                 <div class="lg:w-1/2 w-full mr-2 relative mt-4">
@@ -1346,6 +1352,22 @@
                 @endif
             </div>
         </form>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const dateLivrInput = document.querySelector('input[name="dateLivr"]');
+                const startDate = new Date("{{ $notification->data['date_tot'] }}");
+                const endDate = new Date("{{ $notification->data['date_tard'] }}");
+
+                dateLivrInput.addEventListener('change', function() {
+                    const selectedDate = new Date(this.value);
+
+                    if (selectedDate < startDate || selectedDate > endDate) {
+                        alert('La date de livraison doit être dans l\'intervalle spécifié.');
+                        this.value = ''; // Réinitialiser le champ si la date est invalide
+                    }
+                });
+            });
+        </script>
     @elseif ($notification->type === 'App\Notifications\attenteclient')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
             <h2 class="text-xl font-semibold mb-4">Verification du livreur</h2>

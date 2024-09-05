@@ -33,7 +33,9 @@ class VerifUser extends Notification
             'quantite' => $this->main['quantite'],
             'localité' => $this->main['localité'],
             'id_client' => $this->main['id_client'],
-            'prixTrade' => $this->main['prixProd']
+            'prixTrade' => $this->main['prixProd'],       
+            'date_tot' => $this->main['date_tot'],       
+            'date_tard' => $this->main['date_tard'],  
         ];
     }
 }

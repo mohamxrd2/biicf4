@@ -263,7 +263,7 @@
                         </div>
                     </a>
                 @elseif($notification->type === 'App\Notifications\AppelOffre')
-                    <a href="{{ route('notification.show', $notification->id) }}" class="">
+                    <a wire:navigate href="{{ route('notification.show', $notification->id) }}" class="">
                         <div class="flex w-full">
                             <div class="w-16 h-16 overflow-hidden mr-3">
                                 <svg class="w-full text-blue-500" xmlns="http://www.w3.org/2000/svg"

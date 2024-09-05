@@ -11,6 +11,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="preload" href="{{ asset('build/assets/app-BqjtQzdG.css') }}" as="style">
+
 
     @livewireStyles
 

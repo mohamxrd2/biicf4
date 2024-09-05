@@ -30,10 +30,13 @@ class CountdownNotification extends Notification implements ShouldQueue
             'sender_name' => $this->details['sender_name'] ?? null,
             'code_unique' => $this->details['code_unique'] ?? null,
             'prixTrade' => $this->details['prixTrade'] ?? null,
-            'id_trader' => $this->details['id_trader'] ?? null,
+            'fournisseur' => $this->details['fournisseur'] ?? null,
+            'livreur' => $this->details['livreur'] ?? null,
             'idProd' => $this->details['idProd'] ?? null,
             'quantiteC' => $this->details['quantiteC'] ?? null,
             'prixProd' => $this->details['prixProd'] ?? null,
+            'date_tot' => $this->details['date_tot'] ?? null,
+            'date_tard' => $this->details['date_tard'] ?? null,
         ];
     }
 }

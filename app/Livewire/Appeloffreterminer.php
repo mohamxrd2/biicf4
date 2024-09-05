@@ -224,7 +224,9 @@ class Appeloffreterminer extends Component
             'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
             'code_livr' => $code_livr,
             'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
-            'textareaContent' => $textareaContent
+            'textareaContent' => $textareaContent,
+            'dateTot' => $this->notification->data['date_tot'],
+            'dateTard' => $this->notification->data['date_tard'],
         ];
         Log::info('data', ['data' => $data]);
 

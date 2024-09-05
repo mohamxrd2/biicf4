@@ -26,6 +26,39 @@
                         <span>{{ Auth::user()->name }}</span>
                     </li>
                     <li class="flex justify-between py-1">
+                        <span class="font-medium">date prévue de récupération:</span>
+                        <span>
+                            @if(isset($notification->data['date_tot']) && isset($notification->data['date_tard']))
+                                {{ $notification->data['date_tot'] }} - {{ $notification->data['date_tard'] }}
+                            @else
+                                Non spécifiée
+                            @endif
+                        </span>
+                    </li>
+                    
+                    <li class="flex justify-between py-1">
+                        <span class="font-medium">période:</span>
+                        <span>
+                            @if(isset($notification->data['dayPeriod']))
+                                {{ $notification->data['dayPeriod'] }}
+                            @else
+                                Non spécifiée
+                            @endif
+                        </span>
+                    </li>
+                    
+                    <li class="flex justify-between py-1">
+                        <span class="font-medium">heure prévue de récupération:</span>
+                        <span>
+                            @if(isset($notification->data['timeStart']) && isset($notification->data['timeEnd']))
+                                {{ $notification->data['timeStart'] }}H - {{ $notification->data['timeEnd'] }}H
+                            @else
+                                Non spécifiée
+                            @endif
+                        </span>
+                    </li>
+                    
+                    <li class="flex justify-between py-1">
                         <span class="font-medium">Statut:</span>
                         <span
                             class="

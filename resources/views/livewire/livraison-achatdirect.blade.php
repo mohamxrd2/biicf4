@@ -110,6 +110,17 @@
             <p class="text-md font-semibold">Conditionnement du colis</p>
             <p class="text-md font-medium text-gray-600">{{ $notification->data['textareaContent'] }}</p>
         </div>
+        <div class="w-full flex justify-between items-center py-4  border-b-2">
+            <span class="text-md font-semibold">Date prévue de récupération:</span>
+            <span>
+                @if (isset($notification->data['dateTot']) && isset($notification->data['dateTard']))
+                    {{ $notification->data['dateTot'] }} - {{ $notification->data['dateTard'] }}
+                @else
+                    Non spécifiée
+                @endif
+            </span>
+        </div>
+
 
         <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
             class="mb-3 text-blue-700 hover:underline flex items-center">
