@@ -1297,11 +1297,11 @@ class NotificationShow extends Component
         $data = [
             'idProd' => $this->notification->data['idProd'],
             'code_unique' => $this->code_unique,
-            'id_trader' => $this->notification->data['id_trader'],
+            'fournisseur' => $this->notification->data['fournisseur'],
             'localité' => $this->localite,
             'quantite' => $this->quantiteC,
             'id_client' => $this->notification->data['id_client'],
-            'id_livreur' => $id_livreur,
+            'livreur' => $id_livreur,
             'date_livr' => $this->dateLivr,
             'matine' => $this->matine,
             'prixTrade' => $this->notification->data['prixTrade'],

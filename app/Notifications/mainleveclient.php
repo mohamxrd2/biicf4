@@ -29,11 +29,11 @@ class mainleveclient extends Notification
         return [
            'idProd' => $this->main['idProd'],
             'code_unique' =>$this->main['code_unique'],
-            'id_trader' => $this->main['id_trader'],
+            'fournisseur' => $this->main['fournisseur'],
             'quantite' => $this->main['quantite'],
             'localité' => $this->main['localité'],
             'id_client' => $this->main['id_client'],
-            'id_livreur' => $this->main['id_livreur'],
+            'livreur' => $this->main['livreur'],
             'date_livr' => $this->main['date_livr'],
             'matine' => $this->main['matine'],
             'prixTrade' => $this->main['prixTrade'],
