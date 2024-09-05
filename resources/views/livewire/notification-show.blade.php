@@ -1208,11 +1208,17 @@
                 <p class="mb-2">Email founisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->email }}</span>
                 </p>
+                @php
+                    $produits = \App\Models\ProduitService::find($idProd);
+                    $address = $produits->comnServ;
+                    $clients = \App\Models\User::find($notification->data['id_client']);
+                    $clientsadress = $clients->address;
+                @endphp
                 <p class="mb-2">Lieu d'enlevement: <span
-                        class="font-semibold">{{ $namefourlivr->user->address }}</span>
+                        class="font-semibold">{{ $address }}</span>
                 </p>
                 <p class="mb-2">Lieu de livraison: <span
-                        class="font-semibold">{{ $notification->data['localité'] }}</span></p>
+                        class="font-semibold">{{ $clientsadress }}</span></p>
             </div>
         </div>
 
