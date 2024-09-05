@@ -278,7 +278,7 @@ class NotificationShow extends Component
 
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
-        $this->id_livreur = $this->notification->data['id_livreur'] ?? null;
+        $this->id_livreur = $this->notification->data['livreur'] ?? null;
 
         $this->livreur = User::find($this->notification->data['id_livreur'] ?? null);
 
