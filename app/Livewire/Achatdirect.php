@@ -64,7 +64,7 @@ class Achatdirect extends Component
     public function ciblageLivreurs()
     {
         // Vérification de l'existence de la clé 'userSender' ou 'id_sender' dans les données de la notification
-        $this->Idsender = $this->notification->data['id_sender'] ?? null;
+        $this->Idsender = $this->notification->data['userSender'] ?? null;
 
         if ($this->Idsender === null) {
             return; // Arrêter l'exécution si 'userSender' est null
@@ -165,7 +165,9 @@ class Achatdirect extends Component
             'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'] ?? null,
             'code_livr' => $code_livr,
             'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix ?? null,
-            'textareaContent' => $textareaContent
+            'textareaContent' => $textareaContent,
+            'dateTot' => null,
+            'dateTard' => null,
         ];
         Log::info('data', ['data' => $data]);
 
