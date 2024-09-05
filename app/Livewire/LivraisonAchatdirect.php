@@ -85,7 +85,7 @@ class LivraisonAchatdirect extends Component
         $comment = Comment::create([
             'prixTrade' => $validatedData['prixTrade'],
             'code_unique' => $validatedData['code_livr'],
-            'id_trader' => $validatedData['id_trader'],
+            'id_trader' => $this->notification->data['id_trader'],
             'quantiteC' => $validatedData['quantite'],
             'id_prod' => $validatedData['idProd'],
             'prixProd' => $validatedData['prixProd'],
