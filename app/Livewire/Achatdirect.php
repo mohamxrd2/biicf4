@@ -218,7 +218,7 @@ class Achatdirect extends Component
 
         $details = [
             'code_unique' => $code_livr,
-            'id_trader' => $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
+            'fournisseur' => $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
             'idProd' => $notificationData['idProd'] ?? null,
             'quantiteC' => $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
             'prixProd' => $prixProd ?? null,
@@ -228,7 +228,7 @@ class Achatdirect extends Component
         Log::info('Détails de la notification préparés.', ['details' => $details]);
 
         // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
-        $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
+        $userSenderId = $notificationData['userSender'] ?? null;
 
         if ($userSenderId) {
             $userSender = User::find($userSenderId);

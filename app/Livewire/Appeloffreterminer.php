@@ -309,7 +309,7 @@ class Appeloffreterminer extends Component
 
         $details = [
             'code_unique' => $code_livr,
-            'id_trader' => $notificationData['id_trader'] ?? $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
+            'fournisseur' => $notificationData['id_trader'] ?? null, // Correction: Utiliser 'id_trader'
             'idProd' => $notificationData['idProd'] ?? $idProd ?? null,
             'quantiteC' => $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'] ?? $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
             'prixProd' => $prixProd ?? null,
@@ -319,7 +319,7 @@ class Appeloffreterminer extends Component
         Log::info('Détails de la notification préparés.', ['details' => $details]);
 
         // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
-        $userSenderId = $notificationData['userSender'] ?? $notificationData['id_sender'] ?? null;
+        $userSenderId = $notificationData['id_sender'] ?? null;
 
         if ($userSenderId) {
             $userSender = User::find($userSenderId);

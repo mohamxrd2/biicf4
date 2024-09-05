@@ -1083,7 +1083,7 @@ class NotificationShow extends Component
                 'fournisseur' => $this->notification->data['fournisseur'],
                 'localité' => $this->localite,
                 'quantite' => $quantite,
-                'livreur' => $this->notification->data['livreur'], // Assurez-vous que $this->userFour est défini
+                'livreur' => $this->notification->data['livreur'] ?? null, // Assurez-vous que $this->userFour est défini
                 'prixTrade' => $this->notification->data['prixTrade'] ?? null,
                 'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'],
                 'date_tot' => $this->notification->data['date_tot'],
@@ -1093,7 +1093,7 @@ class NotificationShow extends Component
             $user = [
                 'idProd' => $this->notification->data['idProd'],
                 'code_unique' => $this->code_unique ?? $this->notification->data['code_livr'],
-                'id_trader' => $this->userFour->id,
+                'fournisseur' => $this->userFour->id ?? $this->notification->data['fournisseur'],
                 'localité' => $this->localite,
                 'quantite' => $quantite,
                 'id_client' => Auth::id(),
@@ -1102,7 +1102,7 @@ class NotificationShow extends Component
                 'date_tard' => $this->notification->data['date_tard'],
             ];
 
-            $id_trader = $this->namefourlivr->user->id;
+            $id_trader =  $this->notification->data['fournisseur'];
             $traderUser = User::find($id_trader);
 
             Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);

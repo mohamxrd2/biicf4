@@ -27,9 +27,9 @@ class VerifUser extends Notification
     public function toDatabase($notifiable)
     {
         return [
-           'idProd' => $this->main['idProd'],
+          'idProd' => $this->main['idProd'],
             'code_unique' =>$this->main['code_unique'],
-            'id_trader' => $this->main['id_trader'],
+            'fournisseur' => $this->main['fournisseur'],
             'quantite' => $this->main['quantite'],
             'localité' => $this->main['localité'],
             'id_client' => $this->main['id_client'],
