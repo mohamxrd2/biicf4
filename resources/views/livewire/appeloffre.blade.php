@@ -51,6 +51,24 @@
                         <p class="text-md font-medium text-gray-600">{{ $notification->data['dateTard'] }}</p>
                     </div>
                 @endif
+                @if ($notification->data['timeStart'])
+                    <div class="w-full flex justify-between items-center py-4  border-b-2">
+                        <p class="text-md font-semibold">heure au plus tôt</p>
+                        <p class="text-md font-medium text-gray-600">{{ $notification->data['timeStart'] }}</p>
+                    </div>
+                @endif
+                @if ($notification->data['timeEnd'])
+                    <div class="w-full flex justify-between items-center py-4  border-b-2">
+                        <p class="text-md font-semibold">heure au plus tard</p>
+                        <p class="text-md font-medium text-gray-600">{{ $notification->data['timeEnd'] }}</p>
+                    </div>
+                @endif
+                @if ($notification->data['dayPeriod'])
+                    <div class="w-full flex justify-between items-center py-4  border-b-2">
+                        <p class="text-md font-semibold">periode</p>
+                        <p class="text-md font-medium text-gray-600">{{ $notification->data['dayPeriod'] }}</p>
+                    </div>
+                @endif
 
             </div>
             <a href="#" class="mb-3 text-blue-700 hover:underline flex">

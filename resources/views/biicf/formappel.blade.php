@@ -54,7 +54,7 @@
                 </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     @if ($type == 'Service')
-                        <select name="Livraison" required
+                        <select id="livraisonSelect" name="Livraison" required
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" selected disabled>Type de livraison</option>
                             <option value="Take Away">Take Away</option>
@@ -102,7 +102,7 @@
                     </div> <br>
                     <p class="text-center">OU</p>
                 </div>
-                
+
                 <!-- Sélecteur de période de la journée -->
                 <div class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
 

@@ -449,14 +449,14 @@ class AppelOffreController extends Controller
                     }
                 }
 
-                // Vérification des clés nullables uniquement si elles sont présentes
-                $nullableKeys = ['timeStart', 'timeEnd', 'dayPeriod'];
-                foreach ($nullableKeys as $key) {
-                    if (array_key_exists($key, $data) && $data[$key] === null) {
-                        throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
+                // // Vérification des clés nullables uniquement si elles sont présentes
+                // $nullableKeys = ['timeStart', 'timeEnd', 'dayPeriod'];
+                // foreach ($nullableKeys as $key) {
+                //     if (array_key_exists($key, $data) && $data[$key] === null) {
+                //         throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
 
-                    }
-                }
+                //     }
+                // }
 
                 // Récupération de l'utilisateur destinataire
                 $owner = User::find($prodUser);
