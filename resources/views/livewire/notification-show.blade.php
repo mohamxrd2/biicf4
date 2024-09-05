@@ -1502,7 +1502,7 @@
                 <div class=" w-full flex-col">
                     <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
 
-                        <img src="{{ asset($livreur->photo) }}" alt="photot" class="">
+                        {{-- <img src="{{ asset($livreur->photo) }}" alt="photot" class=""> --}}
 
                     </div>
 
