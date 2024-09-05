@@ -34,6 +34,9 @@ class AppelOffre extends Notification implements ShouldQueue
         return [
             'dateTot' => $this->achat['dateTot'] ?? null,
             'dateTard' => $this->achat['dateTard'] ?? null,
+            'timeStart' => $this->achat['timeStart'] ?? null,
+            'timeEnd' => $this->achat['timeEnd'] ?? null,
+            'dayPeriod' => $this->achat['dayPeriod'] ?? null,
             'productName' => $this->achat['productName'] ?? null,
             'quantity' => $this->achat['quantity'] ?? null,
             'payment' => $this->achat['payment'] ?? null,

@@ -61,7 +61,7 @@
                             {{-- <option value="Reservation">Reservation</option> --}}
                         </select>
                     @else
-                        <select name="Livraison" required
+                        <select id="livraisonSelect" name="Livraison" required
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" selected disabled>Type de livraison</option>
                             <option value="Achat avec livreur">Achat avec livreur</option>
@@ -86,7 +86,35 @@
                     </div>
                 </div>
 
+                <div id="timeFields" class="overflow-auto flex items-center lg:w-2/3 w-full mb-3" style="display: none;">
+                    <!-- Heure de début -->
+                    <div class="w-1/2 mr-2 relative">
+                        <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure de début</label>
+                        <input type="time" id="timePickerStart" name="timeStart"
+                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+
+                    <!-- Heure de fin -->
+                    <div class="w-1/2 mr-2 relative">
+                        <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de fin</label>
+                        <input type="time" id="timePickerEnd" name="timeEnd"
+                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div> <br>
+                    <p class="text-center">OU</p>
+                </div>
                 
+                <!-- Sélecteur de période de la journée -->
+                <div class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
+
+                    <select id="dayPeriod" name="dayPeriod"
+                        class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                        <option value="" selected>Choisir la période de la journée</option>
+                        <option value="Matin">Matin</option>
+                        <option value="Après-midi">Après-midi</option>
+                        <option value="Soir">Soir</option>
+                        <option value="Nuit">Nuit</option>
+                    </select>
+                </div>
                 <div class="lg:w-2/3 w-full space-y-3 mb-3">
                     <input type="text" required
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
@@ -159,9 +187,9 @@
                     </div>
 
                     @if ($type == 'Service')
-                    <p class="text-center text-gray-600">
-                        Le type est un service il n'est pas possible de grouper avec les clients , Passez a offre direct
-                    </p>
+                        <p class="text-center text-gray-600">
+                            Le type est un service il n'est pas possible de grouper avec les clients , Passez a offre direct
+                        </p>
                     @elseif ($appliedZoneValue)
                         <!-- Second Grouper Section -->
                         <div class="w-full flex flex-col items-center space-y-2">
@@ -188,6 +216,31 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const livraisonSelect = document.getElementById('livraisonSelect');
+            const dayPeriodSelect = document.getElementById('dayPeriod');
+            const timeFields = document.getElementById('timeFields');
+
+
+            function toggleDayPeriod() {
+                if (livraisonSelect.value === 'Take Away') {
+                    dayPeriodSelect.parentElement.style.display = 'flex';
+                    timeFields.style.display = 'flex'; // Affiche les champs de temps
+
+                } else {
+                    dayPeriodSelect.parentElement.style.display = 'none';
+                    timeFields.style.display = 'none'; // Cache les champs de temps
+
+                }
+            }
+
+            // Initial check
+            toggleDayPeriod();
+
+            // Add event listener to handle changes
+            livraisonSelect.addEventListener('change', toggleDayPeriod);
+        });
+
         document.addEventListener("DOMContentLoaded", function() {
             const datePickerStart = document.getElementById("datePickerStart");
             const datePickerEnd = document.getElementById("datePickerEnd");
@@ -250,6 +303,6 @@
             form.submit();
         });
     </script>
-    
+
 
 @endsection

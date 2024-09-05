@@ -365,6 +365,9 @@ class AppelOffreController extends Controller
                 'Livraison' => 'required|string', // Ensure consistent naming
                 'dateTot' => 'required|date',
                 'dateTard' => 'required|date',
+                'timeStart' => 'nullable|date_format:H:i',
+                'timeEnd' => 'nullable|date_format:H:i',
+                'dayPeriod' => 'nullable|string',
                 'specification' => 'nullable|string',
                 'reference' => 'required|string',
                 'localite' => 'nullable|string',
@@ -407,6 +410,9 @@ class AppelOffreController extends Controller
                 $data = [
                     'dateTot' => $request->dateTot,
                     'dateTard' => $request->dateTard,
+                    'timeStart' => $request->timeStart,
+                    'timeEnd' => $request->timeEnd,
+                    'dayPeriod' => $request->dayPeriod,
                     'productName' => $request->productName,
                     'quantity' => $request->quantity,
                     'payment' => $request->payment,
@@ -423,10 +429,32 @@ class AppelOffreController extends Controller
                 ];
 
                 // Vérification que toutes les clés nécessaires sont présentes
-                $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'reference', 'image', 'prodUsers', 'lowestPricedProduct', 'difference'];
+                $requiredKeys = [
+                    'dateTot',
+                    'dateTard',
+                    'productName',
+                    'quantity',
+                    'payment',
+                    'Livraison',
+                    'specificity',
+                    'reference',
+                    'image',
+                    'prodUsers',
+                    'lowestPricedProduct',
+                    'difference'
+                ];
                 foreach ($requiredKeys as $key) {
                     if (!array_key_exists($key, $data)) {
                         throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
+                    }
+                }
+
+                // Vérification des clés nullables uniquement si elles sont présentes
+                $nullableKeys = ['timeStart', 'timeEnd', 'dayPeriod'];
+                foreach ($nullableKeys as $key) {
+                    if (array_key_exists($key, $data) && $data[$key] === null) {
+                        throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
+
                     }
                 }
 
