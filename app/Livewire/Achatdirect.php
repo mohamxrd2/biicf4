@@ -7,7 +7,7 @@ use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Notifications\CountdownNotification;
+use App\Notifications\CountdownNotificationAd;
 use App\Notifications\livraisonAchatdirect;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -238,11 +238,11 @@ class Achatdirect extends Component
                 Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
 
                 // Envoi de la notification
-                Notification::send($userSender, new CountdownNotification($details));
+                Notification::send($userSender, new CountdownNotificationAd($details));
                 Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
 
                 // Récupérez la notification pour mise à jour
-                $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
+                $notification = $userSender->notifications()->where('type', CountdownNotificationAd::class)->latest()->first();
 
                 if ($notification) {
                     // Mettez à jour le champ 'type_achat' dans la notification

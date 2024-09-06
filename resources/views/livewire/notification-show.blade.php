@@ -166,6 +166,16 @@
         </script>
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         @livewire('Achatdirect', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
+        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
+
+        @livewire('livraisonAchatdirect', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\CountdownNotificationAd')
+        @livewire('CountdownNotificationAd', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\commandVerifAd')
+        @livewire('command-verif-ad', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\mainleveAd')
+        @livewire('mainleve-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h1 class="text-center text-xl font-semibold mb-2">Negociation de l'offre sur
@@ -591,8 +601,6 @@
 
 
         </div>
-    @elseif ($notification->type === 'App\Notifications\CountdownNotificationAd')
-        @livewire('CountdownNotificationAd', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\CountdownNotification')
         {{-- Afficher les messages de succès --}}
         @if (session('success'))
@@ -965,12 +973,6 @@
     @elseif ($notification->type === 'App\Notifications\livraisonVerif')
         <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs</h1>
         @livewire('livraisonagrouper', ['id' => $id])
-    @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
-        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
-
-        @livewire('livraisonAchatdirect', ['id' => $id])
-    @elseif ($notification->type === 'App\Notifications\commandVerifAd')
-        @livewire('command-verif-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\commandVerif')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-xl font-semibold mb-2">Informations Sur Le Fournisseur</h2>
@@ -1084,8 +1086,6 @@
         </div>
     @elseif ($notification->type === 'App\Notifications\commandVerifag')
         @livewire('mainleveag', ['id' => $id])
-    @elseif ($notification->type === 'App\Notifications\mainleveAd')
-        @livewire('mainleve-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleve')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-3">
 
@@ -1555,8 +1555,6 @@
         @php
             // Assurez-vous que la variable $notification est définie et accessible
             $livreur = \App\Models\User::find($notification->data['livreur']);
-
-            
 
         @endphp
 

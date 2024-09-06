@@ -36,134 +36,133 @@ class CountdownNotificationAd extends Component
 
 
         $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification'
-        || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
-        || $this->notification->type === 'App\Notifications\AppelOffreTerminerGrouper'
-        || $this->notification->type === 'App\Notifications\AppelOffre'
-        || $this->notification->type === 'App\Notifications\OffreNotifGroup'
-        || $this->notification->type === 'App\Notifications\NegosTerminer'
-        || $this->notification->type === 'App\Notifications\OffreNegosNotif'
-        || $this->notification->type === 'App\Notifications\OffreNegosDone'
-        || $this->notification->type === 'App\Notifications\AOGrouper'
-        ||  $this->notification->type === 'App\Notifications\OffreNotif'
-        || $this->notification->type === 'App\Notifications\Retrait')
-        ? null
-        : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
+            || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
+            || $this->notification->type === 'App\Notifications\AppelOffreTerminerGrouper'
+            || $this->notification->type === 'App\Notifications\AppelOffre'
+            || $this->notification->type === 'App\Notifications\OffreNotifGroup'
+            || $this->notification->type === 'App\Notifications\NegosTerminer'
+            || $this->notification->type === 'App\Notifications\OffreNegosNotif'
+            || $this->notification->type === 'App\Notifications\OffreNegosDone'
+            || $this->notification->type === 'App\Notifications\AOGrouper'
+            ||  $this->notification->type === 'App\Notifications\OffreNotif'
+            || $this->notification->type === 'App\Notifications\Retrait')
+            ? null
+            : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
     }
 
     public function valider()
     {
-            // Déterminer le prix unitaire
-            $prixUnitaire = $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'];
-            Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
+        // Déterminer le prix unitaire
+        $prixUnitaire = $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'];
+        Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
 
-            $quantite = $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'];
+        $quantite = $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'];
 
-            // Calculer le prix total
-            $this->totalPrice = (int) ($quantite * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
-            Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
+        // Calculer le prix total
+        $this->totalPrice = (int) ($quantite * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
+        Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
 
-            // Vérifier si l'utilisateur est authentifié
-            if (!$this->user) {
-                Log::error('Utilisateur non authentifié.');
-                session()->flash('error', 'Utilisateur non authentifié.');
-                return;
+        // Vérifier si l'utilisateur est authentifié
+        if (!$this->user) {
+            Log::error('Utilisateur non authentifié.');
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
+
+        $userSender = User::find($this->user);
+
+        if (!$userSender) {
+            Log::error('Utilisateur non trouvé avec ID', ['userId' => $this->user]);
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
+        Log::info('Utilisateur trouvé', ['userSender' => $userSender]);
+
+        $userWallet = Wallet::where('user_id', $userSender->id)->first();
+
+        if (!$userWallet) {
+            Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $userSender->id]);
+            session()->flash('error', 'Portefeuille introuvable.');
+            return;
+        }
+        Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
+
+        $requiredAmount = $this->totalPrice;
+
+        if ($userWallet->balance < $requiredAmount) {
+            Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
+            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
+            return;
+        }
+
+        // Déduire le montant requis du portefeuille de l'utilisateur
+        $userWallet->decrement('balance', $requiredAmount);
+        Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
+
+        $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
+
+        // Vérifiez si $this->userFour est défini
+        if (!isset($this->userFour) || !$this->userFour) {
+            Log::error('Livreur introuvable.');
+            session()->flash('error', 'Livreur introuvable.');
+            return;
+        }
+        Log::info('Vérification de userFour', ['userFour' => $this->userFour]);
+
+        // Préparer les données de notification
+        $data = [
+            'idProd' => $this->notification->data['idProd'],
+            'code_unique' =>  $this->notification->data['code_unique'],
+            'fournisseur' => $this->notification->data['fournisseur'],
+            'localité' => $this->localite ?? null,
+            'quantite' => $quantite,
+            'livreur' => $this->notification->data['livreur'] ?? null, // Assurez-vous que $this->userFour est défini
+            'prixTrade' => $this->notification->data['prixTrade'] ?? null,
+            'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'],
+            'date_tot' => $this->notification->data['date_tot'],
+            'date_tard' => $this->notification->data['date_tard'],
+        ];
+
+        $user = [
+            'idProd' => $this->notification->data['idProd'],
+            'code_unique' => $this->notification->data['code_unique'],
+            'fournisseur' => $this->userFour->id ?? $this->notification->data['fournisseur'],
+            'localité' => $this->localite ?? null,
+            'quantite' => $quantite,
+            'id_client' => Auth::id(),
+            'prixProd' => $this->notification->data['prixProd'],
+            'date_tot' => $this->notification->data['date_tot'],
+            'date_tard' => $this->notification->data['date_tard'],
+        ];
+
+        $id_trader =  $this->notification->data['fournisseur'];
+        $traderUser = User::find($id_trader);
+
+        Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
+
+        if ($this->notification->type_achat == 'reserv/take' || $this->notification->type == 'App\Notifications\AllerChercher') {
+            Notification::send($userSender, new commandVerifAd($data));
+
+            $notification = $userSender->notifications()->where('type', commandVerifAd::class)->latest()->first();
+
+            if ($notification) {
+                $notification->update(['type_achat' => 'reserv/take']);
             }
 
-            $userSender = User::find($this->user);
+            // Utilisez && pour vérifier que les deux conditions sont vraies
+            Notification::send($traderUser, new VerifUser($user));
+        } else {
+            Notification::send($userSender, new commandVerifAd($data));
 
-            if (!$userSender) {
-                Log::error('Utilisateur non trouvé avec ID', ['userId' => $this->user]);
-                session()->flash('error', 'Utilisateur non authentifié.');
-                return;
-            }
-            Log::info('Utilisateur trouvé', ['userSender' => $userSender]);
+            // Utilisez && pour vérifier que les deux conditions sont vraies
+            Notification::send($traderUser, new VerifUser($user));
+        }
 
-            $userWallet = Wallet::where('user_id', $userSender->id)->first();
+        // Mettre à jour la notification et valider
+        $this->notification->update(['reponse' => 'valide']);
+        Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
 
-            if (!$userWallet) {
-                Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $userSender->id]);
-                session()->flash('error', 'Portefeuille introuvable.');
-                return;
-            }
-            Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
-
-            $requiredAmount = $this->totalPrice;
-
-            if ($userWallet->balance < $requiredAmount) {
-                Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
-                session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-                return;
-            }
-
-            // Déduire le montant requis du portefeuille de l'utilisateur
-            $userWallet->decrement('balance', $requiredAmount);
-            Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
-
-            $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
-
-            // Vérifiez si $this->userFour est défini
-            if (!isset($this->userFour) || !$this->userFour) {
-                Log::error('Livreur introuvable.');
-                session()->flash('error', 'Livreur introuvable.');
-                return;
-            }
-            Log::info('Vérification de userFour', ['userFour' => $this->userFour]);
-
-            // Préparer les données de notification
-            $data = [
-                'idProd' => $this->notification->data['idProd'],
-                'code_unique' =>  $this->notification->data['code_unique'],
-                'fournisseur' => $this->notification->data['fournisseur'],
-                'localité' => $this->localite ?? null,
-                'quantite' => $quantite,
-                'livreur' => $this->notification->data['livreur'] ?? null, // Assurez-vous que $this->userFour est défini
-                'prixTrade' => $this->notification->data['prixTrade'] ?? null,
-                'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'],
-                'date_tot' => $this->notification->data['date_tot'],
-                'date_tard' => $this->notification->data['date_tard'],
-            ];
-
-            $user = [
-                'idProd' => $this->notification->data['idProd'],
-                'code_unique' => $this->notification->data['code_unique'],
-                'fournisseur' => $this->userFour->id ?? $this->notification->data['fournisseur'],
-                'localité' => $this->localite ?? null,
-                'quantite' => $quantite,
-                'id_client' => Auth::id(),
-                'prixProd' => $this->notification->data['prixProd'],
-                'date_tot' => $this->notification->data['date_tot'],
-                'date_tard' => $this->notification->data['date_tard'],
-            ];
-
-            $id_trader =  $this->notification->data['fournisseur'];
-            $traderUser = User::find($id_trader);
-
-            Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
-
-            if ($this->notification->type_achat == 'reserv/take' || $this->notification->type == 'App\Notifications\AllerChercher') {
-                Notification::send($userSender, new commandVerif($data));
-
-                $notification = $userSender->notifications()->where('type', commandVerifAd::class)->latest()->first();
-
-                if ($notification) {
-                    $notification->update(['type_achat' => 'reserv/take']);
-                }
-
-                // Utilisez && pour vérifier que les deux conditions sont vraies
-                Notification::send($traderUser, new VerifUser($user));
-            }  else {
-                Notification::send($userSender, new commandVerifAd($data));
-
-                // Utilisez && pour vérifier que les deux conditions sont vraies
-                Notification::send($traderUser, new VerifUser($user));
-            }
-
-            // Mettre à jour la notification et valider
-            $this->notification->update(['reponse' => 'valide']);
-            Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
-
-            session()->flash('success', 'Validation effectuée avec succès.');
-        
+        session()->flash('success', 'Validation effectuée avec succès.');
     }
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
     {
@@ -174,6 +173,7 @@ class CountdownNotificationAd extends Component
         $transaction->amount = $amount;
         $transaction->save();
     }
+
     public function render()
     {
         return view('livewire.countdown-notification-ad');

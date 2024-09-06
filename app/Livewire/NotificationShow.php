@@ -978,7 +978,7 @@ class NotificationShow extends Component
         }
     }
 
-    
+
     public function add()
     {
         $this->validate([

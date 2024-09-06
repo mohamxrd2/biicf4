@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\ProduitService;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\colisaccept;
@@ -29,7 +30,7 @@ class CommandVerifAd extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
-        
+
     }
 
     public function mainleve()
@@ -74,7 +75,7 @@ class CommandVerifAd extends Component
             'localité' => $this->localite ?? null,
             'quantite' => $this->notification->data['quantite'],
             'id_client' => $id_client,
-            'livreur' => $livreur->id,
+            'livreur' => $livreur->id  ?? null,
             'prixTrade' => $this->notification->data['prixTrade'],
             'prixProd' => $this->notification->data['prixProd']
 
@@ -110,6 +111,16 @@ class CommandVerifAd extends Component
         $this->notification->update(['reponse' => 'mainleve']);
     }
 
+
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->save();
+    }
 
     public function render()
     {
