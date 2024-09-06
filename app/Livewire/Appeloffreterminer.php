@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\userquantites;
 use App\Notifications\AllerChercher;
+use App\Notifications\livraisonAppelOffre;
 use App\Notifications\livraisonVerif;
 use Livewire\Component;
 use App\Models\Livraisons;
@@ -235,7 +236,7 @@ class Appeloffreterminer extends Component
             foreach ($this->livreursIds as $livreurId) {
                 $livreur = User::find($livreurId);
                 if ($livreur) {
-                    Notification::send($livreur, new livraisonAchatdirect($data));
+                    Notification::send($livreur, new livraisonAppelOffre($data));
                     // Log l'envoi de la notification
                     Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
                 } else {

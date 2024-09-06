@@ -164,18 +164,20 @@
                 }
             }
         </script>
+    {{-- Achat Direct --}}
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         @livewire('Achatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
         <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
-
         @livewire('livraisonAchatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\CountdownNotificationAd')
         @livewire('CountdownNotificationAd', ['id' => $id])
+
     @elseif ($notification->type === 'App\Notifications\commandVerifAd')
         @livewire('command-verif-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAd')
         @livewire('mainleve-ad', ['id' => $id])
+    {{-- Appel Offre Direct --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h1 class="text-center text-xl font-semibold mb-2">Negociation de l'offre sur
@@ -183,6 +185,18 @@
             </h1>
         </div>
         @livewire('appeloffre', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
+        @livewire('appeloffreterminer', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\livraisonAppelOffre')
+        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
+        @livewire('livraisonappeloffre', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\CountdownNotificationAp')
+        @livewire('countdown-notification-ap', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\commandVerifAp')
+        @livewire('command-verif-ap', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\mainleveAp')
+        @livewire('mainleve-ap', ['id' => $id])
+    {{-- Appel offre grouper --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
         <h1 class="text-center text-3xl font-semibold mb-2 ">Negociations pour la quantitée groupée</h1>
         @livewire('appeloffregroupernegociation', ['id' => $id])
@@ -411,8 +425,6 @@
 
 
         </div>
-    @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
-        @livewire('appeloffreterminer', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
         @livewire('appeloffreterminergrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')

@@ -29,33 +29,10 @@
         @foreach (auth()->user()->notifications as $notification)
             <div
                 class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
-                @if ($notification->type === 'App\Notifications\commandVerif')
-                    <a href="{{ route('notification.show', $notification->id) }}" class="">
-                        <div class="flex w-full">
-                            <div class="w-16 h-16 overflow-hidden mr-3">
-
-                                <svg class="w-full text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
-                                </svg>
-
-                            </div>
-
-                            <div class="flex flex-col justify-between w-full">
-                                <div class="flex justify-between items-center w-full">
-                                    <p class="text-md font-semibold">Verification de conformité</p>
-                                    <p class="text-[12px] text-gray-400 text-right">
-                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
-                                    </p>
-                                </div>
-                                <p class="text-sm text-slate-500 l max-w-1/2  font-normal">
-                                    Veillez passez a la verification de la conformité de votre produit !
-                                </p>
-                            </div>
-                        </div>
-                    </a>
-                @elseif ($notification->type === 'App\Notifications\commandVerifAd')
+                @if (
+                    $notification->type === 'App\Notifications\commandVerif' ||
+                        'App\Notifications\commandVerifAd' ||
+                        'App\Notifications\commandVerifAp')
                     <a href="{{ route('notification.show', $notification->id) }}" class="">
                         <div class="flex w-full">
                             <div class="w-16 h-16 overflow-hidden mr-3">
@@ -560,7 +537,10 @@
                         </div>
 
                     </a>
-                @elseif ($notification->type === 'App\Notifications\CountdownNotification' || $notification->type === 'App\Notifications\CountdownNotificationAd')
+                @elseif (
+                    $notification->type === 'App\Notifications\CountdownNotification' ||
+                        $notification->type === 'App\Notifications\CountdownNotificationAd' ||
+                        $notification->type === 'App\Notifications\CountdownNotificationAp')
                     <a href="{{ route('notification.show', $notification->id) }}">
 
 
@@ -667,7 +647,9 @@
                         </div>
 
                     </a>
-                @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
+                @elseif (
+                    $notification->type === 'App\Notifications\livraisonAchatdirect' ||
+                        $notification->type === 'App\Notifications\livraisonAppelOffre')
                     <a href="{{ route('notification.show', $notification->id) }}">
                         @php
                             $produit = ProduitService::find($notification->data['idProd']);

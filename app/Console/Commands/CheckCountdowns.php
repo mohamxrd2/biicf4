@@ -8,6 +8,7 @@ use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotification;
 use App\Notifications\CountdownNotificationAd;
+use App\Notifications\CountdownNotificationAp;
 use App\Notifications\NegosTerminer;
 use Illuminate\Console\Command;
 use Illuminate\Notifications\DatabaseNotification;
@@ -171,7 +172,11 @@ class CheckCountdowns extends Command
                     } else  if ($countdown->difference === 'ad') {
                         Log::info('Envoi d\'une autre notification ou action par défaut.');
                         Notification::send($countdown->sender, new CountdownNotificationAd($details));
-                        
+
+                    } else  if ($countdown->difference === 'ap') {
+                        Log::info('Envoi d\'une autre notification ou action par défaut.');
+                        Notification::send($countdown->sender, new CountdownNotificationAp($details));
+
                     } else {
                         Log::info('Envoi d\'une autre notification ou action par défaut.');
                         Notification::send($countdown->sender, new CountdownNotification($details));
