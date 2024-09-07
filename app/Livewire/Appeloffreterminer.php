@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\userquantites;
 use App\Notifications\AllerChercher;
+use App\Notifications\CountdownNotificationAp;
 use App\Notifications\livraisonAppelOffre;
 use App\Notifications\livraisonVerif;
 use Livewire\Component;
@@ -328,11 +329,11 @@ class Appeloffreterminer extends Component
                 Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
 
                 // Envoi de la notification
-                Notification::send($userSender, new CountdownNotification($details));
+                Notification::send($userSender, new CountdownNotificationAp($details));
                 Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
 
                 // Récupérez la notification pour mise à jour
-                $notification = $userSender->notifications()->where('type', CountdownNotification::class)->latest()->first();
+                $notification = $userSender->notifications()->where('type', CountdownNotificationAp::class)->latest()->first();
 
                 if ($notification) {
                     // Mettez à jour le champ 'type_achat' dans la notification

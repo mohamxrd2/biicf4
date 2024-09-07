@@ -2,32 +2,33 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
+use App\Events\NotificationSent;
+use App\Models\AchatDirect;
 use App\Models\ProduitService;
-use Illuminate\Support\Facades\Auth;
-
-use Illuminate\Support\Facades\Notification;
-use App\Models\AchatDirect as AchatDirectModel;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Models\Transaction;
-use App\Events\MyEvent;
-use App\Events\NotificationSent;
-use App\Models\AchatGrouper;
-use App\Models\Consommation;
-use App\Models\NotificationLog;
 use App\Notifications\AchatBiicf;
-use App\Notifications\AchatGroupBiicf;
-use Carbon\Carbon;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Notification;
+use Livewire\Component;
 use Illuminate\Support\Str;
 
-class AchatDirectGroupe extends Component
+class Offrenegosterminer extends Component
 {
+    public $notification;
+    public $id;
     public $produitId;
     public $produit;
     public $userId;
+    public $prixProd;
+    public $quantité;
+    public $quantite;
+    public $type;
+    public $idProd;
+    public $photo;
     public $selectedOption = "";
     public $options = [
         'Achat avec livraison',
@@ -39,18 +40,12 @@ class AchatDirectGroupe extends Component
         'Reservation',
     ];
     //
-    public $quantité = "";
-    public $localite = "";
-    public $selectedSpec = false;
-    public $userTrader;
     public $nameProd;
-    public $userSender;
+    public $localite;
+    public $userTrader;
+    public $selectedSpec = false;
     public $message = "Un utilisateur veut acheter ce produit";
-    public $photoProd;
-    public $idProd;
-    public $prix;
     public $code_unique;
-    public $type;
     public $dateTard;
     public $dateTot;
     public $timeStart;
@@ -59,18 +54,22 @@ class AchatDirectGroupe extends Component
 
     public function mount($id)
     {
-        $this->produitId = $id;
-        $this->produit = ProduitService::findOrFail($id);
-        $this->userId = Auth::guard('web')->id();
-        $this->nameProd = $this->produit->name;
+
+        $this->notification = DatabaseNotification::findOrFail($id);
+
+        $this->produit = ProduitService::findOrFail($this->notification->data['idProd']);
         $this->type = $this->produit->type;
-        $this->userSender = $this->userId;
-        $this->userTrader = $this->produit->user->id;
-        $this->photoProd = $this->produit->photoProd1;
-        $this->idProd = $this->produit->id;
-        $this->prix = $this->produit->prix;
+        $this->type = $this->produit->type;
+        $this->photo = $this->produit->photoProd1;
+
+        $this->nameProd = $this->produit->name;
+        $this->idProd = $this->notification->data['idProd'];
+        $this->userId = Auth::guard('web')->id();
+        $this->prixProd = $this->notification->data['prixProd'];
         $this->code_unique = $this->generateUniqueReference();
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
+        $this->userTrader = $this->produit->user->id;
+
 
     }
     protected function generateUniqueReference()
@@ -81,28 +80,26 @@ class AchatDirectGroupe extends Component
     public function AchatDirectForm()
     {
         $validated = $this->validate([
-            'nameProd' => 'required|string',
             'quantité' => 'required|integer',
-            'prix' => 'required|numeric',
+            'localite' => 'required|string|max:255',
             'selectedOption' => 'required|string',
             'dateTot' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
             'dateTard' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
             'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
-            'localite' => 'required|string|max:255',
+            'nameProd' => 'required|string',
             'userTrader' => 'required|exists:users,id',
-            'userSender' => 'required|exists:users,id',
-            'photoProd' => 'required|string',
+            'prixProd' => 'required|numeric',
             'idProd' => 'required|exists:produit_services,id',
         ]);
 
-
+        // dd($validated);
 
         Log::info('Validation réussie.', $validated);
 
         $userId = Auth::id();
-        $montantTotal = $validated['quantité'] * $validated['prix'];
+        $montantTotal = $validated['quantité'] * $validated['prixProd'];
 
         if (!$userId) {
             Log::error('Utilisateur non authentifié.');
@@ -135,7 +132,7 @@ class AchatDirectGroupe extends Component
             // Assurez-vous que `selectedSpec` est bien défini
             $specificites = !empty($selectedSpec) ? $selectedSpec : null;
 
-            $achat = AchatDirectModel::create([
+            $achat = AchatDirect::create([
                 'nameProd' => $validated['nameProd'],
                 'quantité' => $validated['quantité'],
                 'montantTotal' => $montantTotal,
@@ -146,9 +143,9 @@ class AchatDirectGroupe extends Component
                 'timeEnd' => $validated['timeEnd'],
                 'dayPeriod' => $validated['dayPeriod'],
                 'userTrader' => $validated['userTrader'],
-                'userSender' => $validated['userSender'],
+                'userSender' => $userId,
                 'specificite' => $specificites,
-                'photoProd' => $validated['photoProd'],
+                'photoProd' => $this->photo,
                 'idProd' => $validated['idProd'],
                 'code_unique' => $this->code_unique,
 
@@ -202,7 +199,7 @@ class AchatDirectGroupe extends Component
     public function render()
     {
         // Récupérer le produit ou échouer
-        $produit = ProduitService::findOrFail($this->produitId);
+        $produit = ProduitService::findOrFail($this->notification->data['idProd']);
 
         // Récupérer l'identifiant de l'utilisateur connecté
         $userId = Auth::guard('web')->id();
@@ -210,49 +207,14 @@ class AchatDirectGroupe extends Component
         // Récupérer le portefeuille de l'utilisateur
         $userWallet = Wallet::where('user_id', $userId)->first();
 
-        // Récupérer les IDs des propriétaires des consommations similaires
-        $idsProprietaires = Consommation::where('name', $produit->name)
-            ->where('id_user', '!=', $userId)
-            ->where('statuts', 'Accepté')
-            ->distinct()
-            ->pluck('id_user')
-            ->toArray();
 
-        // Compter le nombre d'IDs distincts
-        $nombreProprietaires = count($idsProprietaires);
-
-        // Récupérer les fournisseurs pour ce produit
-        $nomFournisseur = ProduitService::where('name', $produit->name)
-            ->where('user_id', '!=', $userId)
-            ->where('statuts', 'Accepté')
-            ->distinct()
-            ->pluck('user_id')
-            ->toArray();
-
-        $nomFournisseurCount = count($nomFournisseur);
-
-        // Récupérer le nombre d'achats groupés distincts pour ce produit
-        $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
-            ->distinct('userSender')
-            ->count('userSender');
-
-        // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
-        $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
-        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
-
-
-        // $this->verifierEtEnvoyerNotification();
-
-        return view('livewire.achat-direct-groupe', compact(
-            'produit',
-            'userWallet',
-            'userId',
-            'nbreAchatGroup',
-            'datePlusAncienne',
-            'idsProprietaires',
-            'nombreProprietaires',
-            'nomFournisseur',
-            'nomFournisseurCount',
-        ));
+        return view(
+            'livewire.offrenegosterminer',
+            compact(
+                'produit',
+                'userWallet',
+                'userId'
+            )
+        );
     }
 }

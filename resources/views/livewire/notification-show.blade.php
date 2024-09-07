@@ -2,169 +2,8 @@
     @if ($notification->type === 'App\Notifications\AOGrouper')
 
         @livewire('appeloffregrouper', ['id' => $id])
-    @elseif ($notification->type === 'App\Notifications\NegosTerminer')
-        @if (session('success'))
-            <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
-                {{ session('success') }}
-            </div>
-        @endif
 
-        <!-- Afficher les messages d'erreur -->
-        @if (session('error'))
-            <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mt-3">
-                {{ session('error') }}
-            </div>
-        @endif
-        <div class="flex items-center justify-center h-screen bg-gray-100">
-            <div class="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
-                <h2 class="text-2xl font-bold mb-4 text-gray-800">PASSEZ A L'ACHAT DIRECT</h2>
-                <h1>Le prix au quel vous negocier est {{ $prixProd }} FCFA</h1>
-
-
-                <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
-                    class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
-                    <h1 class="text-xl text-center mb-3">Achat direct</h1>
-
-                    <div class="space-y-3 mb-3 w-full">
-                        <input type="number" id="quantityInput" name="quantite" wire:model.defer="quantite"
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Quantité" data-min="{{ $produit->qteProd_min }}"
-                            data-max="{{ $produit->qteProd_max }}" oninput="updateMontantTotalDirect()" required>
-                    </div>
-                    <div class="space-y-3 mb-3 w-full">
-                        <input type="text" id="locationInput" name="localite" wire:model.defer="localite"
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Lieu de livraison" required>
-                    </div>
-
-                    <div class="space-y-3 mb-3 w-full">
-                        @if (!empty($produit->specification))
-                            <div class="block">
-                                <input type="radio" id="specificite_1" name="specificite"
-                                    value="{{ $produit->specification }}" wire:model.defer="selectedSpec"
-                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500"
-                                    required>
-                                <label for="specificite_1" class="text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $produit->specification }}
-                                </label>
-                            </div>
-                        @endif
-
-                        @if (!empty($produit->specification2))
-                            <div class="block">
-                                <input type="radio" id="specificite_2" name="specificite"
-                                    value="{{ $produit->specification2 }}" wire:model.defer="selectedSpec"
-                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
-                                <label for="specificite_2" class="text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $produit->specification2 }}
-                                </label>
-                            </div>
-                        @endif
-
-                        @if (!empty($produit->specification3))
-                            <div class="block">
-                                <input type="radio" id="specificite_3" name="specificite"
-                                    value="{{ $produit->specification3 }}" wire:model.defer="selectedSpec"
-                                    class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-2 focus:ring-blue-500">
-                                <label for="specificite_3" class="text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $produit->specification3 }}
-                                </label>
-                            </div>
-                        @endif
-
-                        <select wire:model="selectedOption" name="type"
-                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                            <option value="" selected>Type de livraison</option>
-                            @foreach ($options as $option)
-                                <option value="{{ $option }}">{{ $option }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <input type="hidden" name="nameProd" wire:model.defer="nameProd">
-                    <input type="hidden" name="userSender" wire:model.defer="userTrader">
-                    <input type="hidden" name="idProd" wire:model.defer="idProd">
-                    <input type="hidden" name="prix" wire:model.defer="prixProd">
-
-                    <div class="flex justify-between px-4 mb-3 w-full">
-                        <p class="font-semibold text-sm text-gray-500">Prix total:</p>
-                        <p class="text-sm text-purple-600" id="montantTotal">0 FCFA</p>
-                        <input type="hidden" name="montantTotal" id="montant_total_input">
-                    </div>
-
-                    <p id="errorMessage" class="text-sm text-center text-red-500 hidden">Erreur</p>
-
-                    <div class="w-full text-center mt-3">
-                        <button type="reset"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-gray-200 text-black hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none">Annuler</button>
-                        <button type="submit" id="submitButton"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                            wire:loading.attr="disabled" disabled>
-                            <span wire:loading.remove>Envoyer</span>
-                            <span wire:loading>Envoi en cours...</span>
-                        </button>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-        <script>
-            // Fonction pour mettre à jour le montant total pour l'achat direct
-            function updateMontantTotalDirect() {
-                const quantityInput = document.getElementById('quantityInput');
-                const price = document.querySelector('[data-price]');
-                const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
-                const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
-                const quantity = parseInt(quantityInput.value);
-                const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
-                const montantTotalElement = document.getElementById('montantTotal');
-                const errorMessageElement = document.getElementById('errorMessage');
-                const submitButton = document.getElementById('submitButton');
-                const montantTotalInput = document.getElementById('montant_total_input');
-
-                // Exemple de solde utilisateur à adapter
-                const userBalance = {{ $userWallet->balance }};
-
-                // Validation et mise à jour du montant total
-                if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
-                    errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-                    errorMessageElement.classList.remove('hidden');
-                    montantTotalElement.innerText = '0 FCFA';
-                    submitButton.disabled = true;
-                } else if (montantTotal > userBalance) {
-                    errorMessageElement.innerText =
-                        `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-                    errorMessageElement.classList.remove('hidden');
-                    montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                    submitButton.disabled = true;
-                } else {
-                    errorMessageElement.classList.add('hidden');
-                    montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                    montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-                    submitButton.disabled = false;
-                }
-            }
-
-            // Fonction pour gérer la visibilité du contenu
-            function toggleVisibility() {
-                const contentDiv = document.getElementById('toggleContent');
-
-                if (contentDiv.classList.contains('hidden')) {
-                    contentDiv.classList.remove('hidden');
-                    // Forcing reflow to enable transition
-                    contentDiv.offsetHeight;
-                    contentDiv.classList.add('show');
-                } else {
-                    contentDiv.classList.remove('show');
-                    contentDiv.addEventListener('transitionend', () => {
-                        contentDiv.classList.add('hidden');
-                    }, {
-                        once: true
-                    });
-                }
-            }
-        </script>
-    {{-- Achat Direct --}}
+        {{-- Achat Direct --}}
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         @livewire('Achatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
@@ -172,12 +11,11 @@
         @livewire('livraisonAchatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\CountdownNotificationAd')
         @livewire('CountdownNotificationAd', ['id' => $id])
-
     @elseif ($notification->type === 'App\Notifications\commandVerifAd')
         @livewire('command-verif-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAd')
         @livewire('mainleve-ad', ['id' => $id])
-    {{-- Appel Offre Direct --}}
+        {{-- Appel Offre Direct --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h1 class="text-center text-xl font-semibold mb-2">Negociation de l'offre sur
@@ -196,237 +34,20 @@
         @livewire('command-verif-ap', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAp')
         @livewire('mainleve-ap', ['id' => $id])
-    {{-- Appel offre grouper --}}
+        {{-- Appel offre grouper --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
         <h1 class="text-center text-3xl font-semibold mb-2 ">Negociations pour la quantitée groupée</h1>
         @livewire('appeloffregroupernegociation', ['id' => $id])
-    @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
-        <h1 class="text-center text-3xl font-semibold mb-2">L'Enchere Des Clients </h1>
-        <div class="grid grid-cols-2 gap-4 p-4">
-            <div class="lg:col-span-1 col-span-2">
-
-                <h2 class="text-3xl font-semibold mb-2">{{ $notification->data['produit_name'] }}</h2>
-
-                <div class="w-full gap-y-2  my-4">
-
-                    <div class="w-full flex justify-between items-center py-4  border-b-2">
-                        <p class="text-md font-semibold">Prix unitaire minimum</p>
-                        <p class="text-md font-medium text-gray-600">
-                            {{ number_format($notification->data['produit_prix'], 2, ',', ' ') }}
-                        </p>
-                    </div>
-
-                    @if ($notification->data['produit_livraison'])
-                        <div class="w-full flex justify-between items-center py-4  border-b-2">
-                            <p class="text-md font-semibold">Livraison</p>
-                            <p class="text-md font-medium text-gray-600">
-                                {{ $notification->data['produit_livraison'] }}</p>
-                        </div>
-                    @endif
-
-
-                </div>
-
-                <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
-                    class=" bg-blue-500 text-white p-2 rounded font-medium hover:bg-blue-600  mt-10">
-                    Voir le produit
-                </a>
-
-
-
-
-            </div>
-
-            <div class="lg:col-span-1 col-span-2">
-
-                <div class="p-4">
-                    <div class="tempsecoule"></div>
-                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                        uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-
-
-                        <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-
-
-
-                            <!-- comments -->
-                            <div
-                                class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-
-
-
-                                @foreach ($comments as $comment)
-                                    <div class="flex items-center gap-3 relative">
-                                        <img src="{{ asset($comment['photoUser']) }}" alt=""
-                                            class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-                                        <div class="flex-1">
-                                            <p class=" text-base text-black font-medium inline-block dark:text-white">
-                                                {{ $comment['nameUser'] }}</p>
-                                            <p class="text-sm mt-0.5">
-                                                {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
-
-                                        </div>
-                                    </div>
-                                @endforeach
-
-                            </div>
-
-
-
-                            <!-- add comment -->
-                            <form wire:submit.prevent="commentoffgroup">
-                                @csrf
-                                <div
-                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-
-                                    <input type="hidden" wire:model="idProd">
-                                    <input type="hidden" wire:model="code_unique">
-                                    <input type="hidden" wire:model="id_trader">
-                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                        placeholder="Faire une offre..." required>
-
-
-                                    <button type="submit" id="submitBtnAppel"
-                                        class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
-                                        <span wire:loading.remove>
-                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor" viewBox="0 0 18 20">
-                                                <path
-                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                            </svg>
-                                        </span>
-                                        <span wire:loading>
-                                            <svg class="w-5 h-5 animate-spin inline-block"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                            </svg>
-                                        </span>
-                                    </button>
-                                </div>
-
-
-
-                            </form>
-
-
-                        </div>
-                        <div class="w-full flex justify-center ">
-
-                            <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
-
-                        </div>
-
-                    </div>
-
-                    <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-
-
-                        @if ($oldestCommentDate)
-                            <span class=" mb-2">Temps restant pour cette negociatiation</span>
-
-                            <div id="countdown"
-                                class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                                <div>-</div>:
-                                <div>-</div>:
-                                <div>-</div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-            </div>
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById(
-                        'submitBtnAppel'); // Assurez-vous que cet identifiant est correct
-                    const prixTradeError = document.getElementById('prixTradeError');
-                    const produitPrix = parseFloat('{{ $notification->data['produit_prix'] }}');
-
-                    prixTradeInput.addEventListener('input', function() {
-                        const prixTradeValue = parseFloat(prixTradeInput.value);
-
-                        if (prixTradeValue < produitPrix) {
-                            // Si le prix est invalide
-                            submitBtn.disabled = true; // Désactiver le bouton
-                            prixTradeError.textContent = `Le prix doit être supérieur à ${produitPrix} FCFA`;
-                            prixTradeError.classList.remove('hidden');
-                            submitBtn.classList.add('hidden'); // Masquer le bouton
-                        } else {
-                            // Si le prix est valide
-                            submitBtn.disabled = false; // Activer le bouton
-                            prixTradeError.textContent = '';
-                            prixTradeError.classList.add('hidden');
-                            submitBtn.classList.remove('hidden'); // Afficher le bouton
-                        }
-                    });
-
-                    // Convertir la date de départ en objet Date JavaScript
-                    const startDate = new Date("{{ $oldestCommentDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 2); // Ajouter 1 minute pour la date de départ
-
-                    // Mettre à jour le compte à rebours à intervalles réguliers
-                    const countdownTimer = setInterval(updateCountdown, 1000);
-
-                    function updateCountdown() {
-                        // Obtenir la date et l'heure actuelles
-                        const currentDate = new Date();
-
-                        // Calculer la différence entre la date cible et la date de départ en millisecondes
-                        const difference = startDate.getTime() - currentDate.getTime();
-
-                        // Convertir la différence en jours, heures, minutes et secondes
-                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                        // Afficher le compte à rebours dans l'élément HTML avec l'id "countdown"
-                        const countdownElement = document.getElementById('countdown');
-                        countdownElement.innerHTML = `
-                            <div>${hours}h</div>:
-                            <div>${minutes}m</div>:
-                            <div>${seconds}s</div>
-                        `;
-
-                        // Arrêter le compte à rebours lorsque la date cible est atteinte
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            countdownElement.innerHTML = "Temps écoulé !";
-                            prixTradeInput.disabled = true;
-                            submitBtn.classList.add('hidden'); // Masquer le bouton lorsque le temps est écoulé
-
-                            // Obtenir le commentaire avec le prix le plus élevé
-                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
-                                .prix > max.prix ? comment : max, {
-                                    prix: -Infinity
-                                });
-
-                            if (highestPricedComment && highestPricedComment.nameUser) {
-                                prixTradeError.textContent =
-                                    `L'utilisateur avec le prix le plus élevé est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
-                            } else {
-                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                            }
-                            prixTradeError.classList.remove('hidden');
-                        }
-                    }
-                });
-            </script>
-
-
-
-
-        </div>
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
         @livewire('appeloffreterminergrouper', ['id' => $id])
+        {{-- fournisseur offre negocier --}}
+    @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
+        <h1 class="text-center text-3xl font-semibold mb-2">Enchere Sur {{ $notification->data['produit_name'] }}</h1>
+
+        @livewire('enchere', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\NegosTerminer')
+        @livewire('offrenegosterminer', ['id' => $id])
+        
     @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h1 class="text-xl font-medium mb-4">Ajout de quantite</h1>
@@ -444,8 +65,7 @@
                 Voir le produit
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
                 </svg>
             </a>
 
@@ -560,8 +180,7 @@
                 Voir le produit de base
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
                 </svg>
             </a>
 
