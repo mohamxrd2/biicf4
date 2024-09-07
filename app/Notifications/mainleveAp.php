@@ -36,6 +36,8 @@ class mainleveAp extends Notification
             'prixTrade' => $this->main['prixTrade'],
             'prixProd' => $this->main['prixProd'],
             'livreur' => $this->main['livreur'],
+            'date_tot' => $this->main['date_tot'],
+            'date_tard' => $this->main['date_tard'],
 
         ];
     }

@@ -76,7 +76,9 @@ class CommandVerifAp extends Component
             'id_client' => $id_client,
             'livreur' => $livreur->id  ?? null,
             'prixTrade' => $this->notification->data['prixTrade'],
-            'prixProd' => $this->notification->data['prixProd']
+            'prixProd' => $this->notification->data['prixProd'],
+            'date_tot' => $this->notification->data['date_tot'],
+            'date_tard' => $this->notification->data['date_tard'],
 
         ];
         Log::info('data', ['data' => $data]);
