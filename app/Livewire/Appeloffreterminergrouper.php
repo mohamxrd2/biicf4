@@ -11,11 +11,14 @@ use App\Models\Wallet;
 use App\Notifications\AllerChercher;
 use App\Notifications\CountdownNotification;
 use App\Notifications\livraisonAchatdirect;
+use App\Notifications\livraisonAppelOffregrouper;
 use App\Notifications\livraisonVerif;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\DB; // Pour utiliser les transactions
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class Appeloffreterminergrouper extends Component
@@ -184,6 +187,10 @@ class Appeloffreterminergrouper extends Component
         $this->livreursIds = $this->livreurs->pluck('user_id');
         $this->livreursCount = $this->livreurs->count();
     }
+    protected function generateUniqueReference()
+    {
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
+    }
 
     public function accepter($textareaContent = null)
     {
@@ -212,86 +219,111 @@ class Appeloffreterminergrouper extends Component
         $pourcentSomme = $requiredAmount * 0.1;
         $totalSom = $requiredAmount - $pourcentSomme;
 
-        $code_livr = $this->notification->data['code_unique'];
         $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
 
-        // Préparez les données pour la notification
-        $data = [
+        // Préparez les données de base pour la notification
+        $baseData = [
             'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
             'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
             'totalSom' => $requiredAmount,
             'quantite' => $this->notification->data['quantiteC'] ?? null,
             'localite' => $this->notification->data['localite'],
             'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
-            'code_livr' => $code_livr,
             'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
             'textareaContent' => $textareaContent,
             'dateTot' => $this->notification->data['date_tot'],
             'dateTard' => $this->notification->data['date_tard']
         ];
-        Log::info('data', ['data' => $data]);
+
+        Log::info('data', ['data' => $baseData]);
 
         // Vérifiez si le code_unique existe dans userquantites
-        $userQuantites = userquantites::where('code_unique', $code_livr)->get();
-        Log::info('Recherche du code_unique', ['code_unique' => $code_livr, 'count' => $userQuantites->count()]);
+        $userQuantites = UserQuantites::where('code_unique', $this->notification->data['code_unique'])->get();
+        Log::info('Recherche du code_unique', ['code_unique' => $this->notification->data['code_unique'], 'count' => $userQuantites->count()]);
 
         if ($userQuantites->isNotEmpty()) {
-            // Récupérer le premier enregistrement correspondant au code_unique
-            $first = $userQuantites->first(); // Pas besoin de refaire une requête SQL pour cela
+            $firstUserId = $userQuantites->first()->user_id;
 
-            foreach ($userQuantites as $userQuantite) {
-                $userId = $userQuantite->user_id;
-                $quantite = $userQuantite->quantite;
-                $typeAchat = $userQuantite->type_achat;
+            DB::beginTransaction(); // Commencer une transaction pour assurer l'atomicité
 
-                $notificationData = array_merge($data, [
-                    'quantite' => $quantite,
-                    'type_achat' => $typeAchat,
-                    'user_id' => $userId,
-                ]);
+            try {
+                foreach ($userQuantites as $userQuantite) {
+                    $userId = $userQuantite->user_id;
+                    $quantite = $userQuantite->quantite;
+                    $typeAchat = $userQuantite->type_achat;
 
-                // Envoyez la notification aux livreurs
-                if (!empty($this->livreursIds)) {
-                    foreach ($this->livreursIds as $livreurId) {
-                        $livreur = User::find($livreurId);
+                    // Générez un code unique pour chaque notification
+                    $code_livr = $this->generateUniqueReference();
 
-                        if ($livreur) {
-                            Notification::send($livreur, new livraisonVerif($notificationData));
+                    $notificationData = array_merge($baseData, [
+                        'quantite' => $quantite,
+                        'type_achat' => $typeAchat,
+                        'user_id' => $userId,
+                        'code_livr' => $code_livr, // Utilisation du code unique généré
+                        'code_unique' => $this->notification->data['code_unique']
+                    ]);
 
-                            // Si l'utilisateur courant correspond au premier utilisateur trouvé
-                            if ($userId == $first->user_id) {
-                                // Récupérez la notification pour mise à jour
-                                $notification = $livreur->notifications()->where('type', livraisonVerif::class)->latest()->first();
+                    // Envoyez la notification aux livreurs
+                    if (!empty($this->livreursIds)) {
+                        foreach ($this->livreursIds as $livreurId) {
+                            $livreur = User::find($livreurId);
+
+                            if ($livreur) {
+                                // Envoyer la notification
+                                Notification::send($livreur, new LivraisonAppelOffregrouper($notificationData));
+
+                                // Identifie la notification à mettre à jour pour cet utilisateur précis
+                                $notification = $livreur->notifications()
+                                    ->where('type', LivraisonAppelOffregrouper::class)
+                                    ->whereJsonContains('data->user_id', $userId)
+                                    ->latest()
+                                    ->first();
 
                                 if ($notification) {
-                                    // Mettez à jour le champ 'type_achat' dans la notification
-                                    $notification->update(['type_achat' => 'PRO']);
-                                }
+                                    // Mettez à jour 'type_achat' : 'PRO' pour le premier utilisateur, 'NOPRO' pour les autres
+                                    $typeAchat = $userId === $firstUserId ? 'PRO' : 'NOPRO';
+                                    $updated = $notification->update(['type_achat' => $typeAchat]);
 
-                                // Log l'envoi de la notification
-                                Log::info('Notification mise à jour pour le livreur', ['livreur_id' => $livreur->id]);
+                                    if ($updated) {
+                                        Log::info('Notification mise à jour', [
+                                            'livreur_id' => $livreur->id,
+                                            'type_achat' => $typeAchat,
+                                            'notification_id' => $notification->id,
+                                        ]);
+                                    } else {
+                                        Log::error('Échec de la mise à jour de la notification', [
+                                            'livreur_id' => $livreur->id,
+                                            'notification_id' => $notification->id,
+                                        ]);
+                                    }
+                                } else {
+                                    Log::warning('Aucune notification trouvée pour mise à jour', ['livreur_id' => $livreur->id, 'user_id' => $userId]);
+                                }
                             } else {
-                                
-                                Log::info('Notification envoyée au livreur sans mise à jour', ['livreur_id' => $livreur->id]);
+                                Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
                             }
-                        } else {
-                            // Log un avertissement si aucun livreur trouvé
-                            Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
                         }
                     }
                 }
+
+                DB::commit(); // Si tout va bien, valide la transaction
+            } catch (\Exception $e) {
+                DB::rollBack(); // En cas d'erreur, annule la transaction
+                Log::error('Erreur lors de l\'envoi ou de la mise à jour des notifications', [
+                    'message' => $e->getMessage(),
+                    'code_unique' => $this->notification->data['code_unique'],
+                ]);
             }
         } else {
-            // Log si aucun enregistrement trouvé pour le code_unique
-            Log::info('Aucun enregistrement trouvé pour le code_unique', ['code_unique' => $code_livr]);
+            Log::info('Aucun enregistrement trouvé pour le code_unique', ['code_unique' => $this->notification->data['code_unique']]);
         }
-
 
         session()->flash('success', 'Achat accepté.');
 
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
     }
+
 
     public function render()
     {

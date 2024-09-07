@@ -8,6 +8,7 @@ use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotification;
 use App\Notifications\CountdownNotificationAd;
+use App\Notifications\CountdownNotificationAg;
 use App\Notifications\CountdownNotificationAp;
 use App\Notifications\NegosTerminer;
 use Illuminate\Console\Command;
@@ -177,9 +178,22 @@ class CheckCountdowns extends Command
                         Log::info('Envoi d\'une autre notification ou action par défaut.');
                         Notification::send($countdown->sender, new CountdownNotificationAp($details));
 
-                    } else {
+                    } else if ($countdown->difference === 'ag') {
+                        $data = [
+                            'sender_name' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
+                            'code_unique' => $countdown->code_unique,
+                            'prixTrade' => $price,
+                            'fournisseur' => $traderId,
+                            'livreur' => $senderId,
+                            'idProd' => $id_prod,
+                            'quantiteC' => $quantiteC,
+                            'prixProd' => $prixProd,
+                            'date_tot' => $date_tot,
+                            'date_tard' => $date_tard,
+                            'nameprod' => $nameprod,
+                        ];
                         Log::info('Envoi d\'une autre notification ou action par défaut.');
-                        Notification::send($countdown->sender, new CountdownNotification($details));
+                        Notification::send($countdown->sender, new CountdownNotificationAg($data));
                     }
 
                     // Supprimer les commentaires avec ce code unique

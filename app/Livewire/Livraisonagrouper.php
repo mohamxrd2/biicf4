@@ -41,9 +41,8 @@ class Livraisonagrouper extends Component
 
 
         // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['code_unique']
-            ?? $this->notification->data['code_livr']
-            ?? $this->notification->data['Uniquecode'] ?? null;
+        $codeUnique = $this->notification->data['code_livr'];
+
         $comments = Comment::with('user')
             ->where('code_unique', $codeUnique)
             ->whereNotNull('prixTrade')
@@ -52,6 +51,8 @@ class Livraisonagrouper extends Component
         foreach ($comments as $comment) {
             $this->commentsend($comment);
         }
+        // Log pour vérifier les données de la notification
+        Log::info('Notification Loaded', ['notification' => $this->notification]);
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Comment::where('code_unique', $codeUnique)
@@ -90,11 +91,16 @@ class Livraisonagrouper extends Component
             'quantiteC' => $validatedData['quantite'],
             'id_prod' => $validatedData['idProd'],
             'prixProd' => $validatedData['prixProd'],
+            'id_sender' => json_encode(Auth::id()), // Si la colonne est de type JSON (ce qui est rare pour une ID)
+            'date_tot' => $this->notification->data['dateTot'],
+            'date_tard' => $this->notification->data['dateTard'],
+            'specificite' => $this->notification->type_achat,
+            'nameprod' => $this->notification->data['code_unique'],
         ]);
+
         $this->commentsend($comment);
 
         broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
-
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
         $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
@@ -109,6 +115,7 @@ class Livraisonagrouper extends Component
                 'userSender' => $this->user_id,
                 'start_time' => now(),
                 'code_unique' => $validatedData['code_livr'],
+                'difference' => 'ag',
             ]);
         }
 
@@ -122,7 +129,7 @@ class Livraisonagrouper extends Component
         // Émettre un événement pour notifier les autres utilisateurs
         $this->dispatch('form-submitted', 'prix soumis avec succes');
     }
-    
+
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage($event)
     {

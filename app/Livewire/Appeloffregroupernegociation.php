@@ -52,7 +52,6 @@ class Appeloffregroupernegociation extends Component
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
 
-
         // Vérifier si 'code_unique' existe dans les données de notification
         $codeUnique = $this->notification->data['code_unique']
             ?? $this->notification->data['code_livr']

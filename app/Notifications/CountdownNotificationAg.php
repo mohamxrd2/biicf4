@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class CountdownNotification extends Notification implements ShouldQueue
+class CountdownNotificationAg extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -37,6 +37,7 @@ class CountdownNotification extends Notification implements ShouldQueue
             'prixProd' => $this->details['prixProd'] ?? null,
             'date_tot' => $this->details['date_tot'] ?? null,
             'date_tard' => $this->details['date_tard'] ?? null,
+            'nameprod' => $this->details['nameprod'] ?? null,
         ];
     }
 }

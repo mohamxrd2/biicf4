@@ -1,11 +1,7 @@
 <div>
-    @if ($notification->type === 'App\Notifications\AOGrouper')
 
-        @livewire('appeloffregrouper', ['id' => $id])
-
-
-        {{-- Achat Direct --}}
-    @elseif ($notification->type === 'App\Notifications\AchatBiicf')
+    {{-- Achat Direct --}}
+    @if ($notification->type === 'App\Notifications\AchatBiicf')
         @livewire('Achatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
         <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
@@ -40,11 +36,18 @@
 
 
         {{-- Appel offre grouper --}}
+    @elseif ($notification->type === 'App\Notifications\AOGrouper')
+        @livewire('appeloffregrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
         <h1 class="text-center text-3xl font-semibold mb-2 ">Negociations pour la quantitée groupée</h1>
         @livewire('appeloffregroupernegociation', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
         @livewire('appeloffreterminergrouper', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\livraisonAppelOffregrouper')
+        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs</h1>
+        @livewire('livraisonagrouper', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\CountdownNotificationAg')
+        @livewire('countdown-notification-ag', ['id' => $id])
 
 
         {{-- fournisseur offre negocier --}}
@@ -609,9 +612,6 @@
                 <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
             </footer>
         </div>
-    @elseif ($notification->type === 'App\Notifications\livraisonVerif')
-        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs</h1>
-        @livewire('livraisonagrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\commandVerif')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-xl font-semibold mb-2">Informations Sur Le Fournisseur</h2>

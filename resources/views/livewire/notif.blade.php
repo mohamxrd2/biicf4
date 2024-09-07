@@ -512,7 +512,7 @@
 
                     </a>
                 @elseif (
-                    $notification->type === 'App\Notifications\CountdownNotification' ||
+                    $notification->type === 'App\Notifications\CountdownNotificationAg' ||
                         $notification->type === 'App\Notifications\CountdownNotificationAd' ||
                         $notification->type === 'App\Notifications\CountdownNotificationAp')
                     <a href="{{ route('notification.show', $notification->id) }}">
@@ -590,7 +590,8 @@
                 @elseif (
                     $notification->type === 'App\Notifications\livraisonVerif' ||
                         $notification->type === 'App\Notifications\livraisonAchatdirect' ||
-                        $notification->type === 'App\Notifications\livraisonAppelOffre')
+                        $notification->type === 'App\Notifications\livraisonAppelOffre' ||
+                        $notification->type === 'App\Notifications\livraisonAppelOffregrouper')
                     <a href="{{ route('notification.show', $notification->id) }}">
                         @php
                             $produit = ProduitService::find($notification->data['idProd']);
