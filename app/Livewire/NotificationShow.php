@@ -870,113 +870,7 @@ class NotificationShow extends Component
     {
         $this->notification->update(['reponse' => 'refus']);
     }
-    public function AchatDirectForm()
-    {
 
-        $validated = $this->validate([
-            'quantite' => 'required|integer',
-            'selectedOption' => 'required|string',
-            'localite' => 'required|string|max:255',
-            'nameProd' => 'required|string',
-            'userTrader' => 'required|exists:users,id',
-            'idProd' => 'required|exists:produit_services,id',
-            'prixProd' => 'required|numeric',
-        ]);
-
-        // dd($validated);
-
-        Log::info('Validation réussie.', $validated);
-
-        $userId = Auth::id();
-        $montantTotal = $validated['quantite'] * $validated['prixProd'];
-
-        if (!$userId) {
-            Log::error('Utilisateur non authentifié.');
-            session()->flash('error', 'Utilisateur non authentifié.');
-            return;
-        }
-
-        $userWallet = Wallet::where('user_id', $userId)->first();
-
-        if (!$userWallet) {
-            Log::error('Portefeuille introuvable.', ['userId' => $userId]);
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
-        }
-
-        if ($userWallet->balance < $montantTotal) {
-            Log::warning('Fonds insuffisants pour effectuer cet achat.', [
-                'userId' => $userId,
-                'requiredAmount' => $montantTotal,
-                'walletBalance' => $userWallet->balance,
-            ]);
-            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-            return;
-        }
-
-        try {
-            $selectedSpec = $this->selectedSpec; // Assurez-vous que `selectedSpec` est bien défini et récupère la spécification sélectionnée
-            $specificites = !empty($selectedSpec) ? $selectedSpec : null;
-
-
-            // Vérifiez que le tableau $selectedSpecificites n'est pas vide avant de l'utiliser
-            // $specificites = !empty($selectedSpecificites) ? implode(', ', $selectedSpecificites) : null;
-            Log::info('Selected Specification:', ['selectedSpec' => $this->selectedSpec]);
-
-
-            $idProd = ProduitService::find($validated['idProd']);
-            $photo = $idProd->photoProd1;
-
-            $achat = AchatDirect::create([
-                'nameProd' => $validated['nameProd'],
-                'quantité' => $validated['quantite'],
-                'montantTotal' => $montantTotal,
-                'localite' => $validated['localite'],
-                'userTrader' => $validated['userTrader'],
-                'userSender' => $userId,
-                'specificite' => $specificites,
-                'photoProd' => $photo,
-                'idProd' => $validated['idProd'],
-            ]);
-
-            $userWallet->decrement('balance', $montantTotal);
-
-            $transaction = new Transaction();
-            $transaction->sender_user_id = $userId;
-            $transaction->receiver_user_id = $validated['userTrader'];
-            $transaction->type = 'Gele';
-            $transaction->amount = $montantTotal;
-            $transaction->save();
-
-            Log::info('Transaction enregistrée.', [
-                'transactionId' => $transaction->id,
-                'amount' => $montantTotal,
-            ]);
-
-            $owner = User::find($validated['userTrader']);
-            $selectedOption = $this->selectedOption;
-            Notification::send($owner, new AchatBiicf($achat));
-            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-            $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
-
-            if ($notification) {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => $selectedOption]);
-            }
-
-            // $user = User::find($userId);
-            $this->reset(['quantite', 'localite', 'selectedSpec', 'selectedOption']);
-            session()->flash('success', 'Achat passé avec succès.');
-            // $this->dispatch('sendNotification', $user);
-        } catch (Exception $e) {
-            Log::error('Erreur lors de l\'achat direct.', [
-                'error' => $e->getMessage(),
-                'userId' => $userId,
-                'data' => $validated,
-            ]);
-            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
-        }
-    }
 
 
     public function add()
@@ -1798,311 +1692,311 @@ class NotificationShow extends Component
         $transaction->save();
     }
 
-    public function commentFormGroupe()
-    {
-        // Récupérer l'utilisateur authentifié
-        $this->validate([
-            'code_unique' => 'required|string',
-            'quantiteC' => 'required|numeric',
-            'prixTrade' => 'required|numeric',
-            'id_sender' => 'required|array',
-            'id_sender.*' => 'numeric',
-            'id_trader' => 'required|numeric',
-            'nameprod' => 'required|string',
-            'difference' => 'required|string',
-            'localite' => 'required|string',
-            'specificite' => 'nullable|string',
+    // public function commentFormGroupe()
+    // {
+    //     // Récupérer l'utilisateur authentifié
+    //     $this->validate([
+    //         'code_unique' => 'required|string',
+    //         'quantiteC' => 'required|numeric',
+    //         'prixTrade' => 'required|numeric',
+    //         'id_sender' => 'required|array',
+    //         'id_sender.*' => 'numeric',
+    //         'id_trader' => 'required|numeric',
+    //         'nameprod' => 'required|string',
+    //         'difference' => 'required|string',
+    //         'localite' => 'required|string',
+    //         'specificite' => 'nullable|string',
 
-        ]);
+    //     ]);
 
-        $comment = Comment::create([
-            'localite' => $this->notification->data['localite'],
-            'specificite' => $this->specificite,
-            'prixTrade' => $this->prixTrade,
-            'id_sender' => json_encode($this->id_sender),
-            'nameprod' => $this->nameprod,
-            'code_unique' => $this->code_unique,
-            'id_trader' => $this->id_trader,
-            'quantiteC' => $this->quantiteC,
-        ]);
-        $this->commentsend($comment);
+    //     $comment = Comment::create([
+    //         'localite' => $this->notification->data['localite'],
+    //         'specificite' => $this->specificite,
+    //         'prixTrade' => $this->prixTrade,
+    //         'id_sender' => json_encode($this->id_sender),
+    //         'nameprod' => $this->nameprod,
+    //         'code_unique' => $this->code_unique,
+    //         'id_trader' => $this->id_trader,
+    //         'quantiteC' => $this->quantiteC,
+    //     ]);
+    //     $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+    //     broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique', $this->code_unique)
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
+    //     // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //     $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+    //         ->where('notified', false)
+    //         ->orderBy('start_time', 'desc')
+    //         ->first();
 
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => $this->id_trader,
-                // 'userSender' => json_encode($this->id_sender),
-                'start_time' => now(),
-                'code_unique' => $this->code_unique,
-                'difference' => $this->difference,
-            ]);
-        }
+    //     if (!$existingCountdown) {
+    //         // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //         Countdown::create([
+    //             'user_id' => $this->id_trader,
+    //             // 'userSender' => json_encode($this->id_sender),
+    //             'start_time' => now(),
+    //             'code_unique' => $this->code_unique,
+    //             'difference' => $this->difference,
+    //         ]);
+    //     }
 
-        session()->flash('success', 'Commentaire créé avec succès!');
+    //     session()->flash('success', 'Commentaire créé avec succès!');
 
-        $this->reset(['prixTrade']);
-    }
-    public function commentForm()
-    {
-        // Récupérer l'utilisateur authentifié
-        $this->validate([
-            'code_unique' => 'required|string',
-            'quantiteC' => 'required|numeric',
-            'prixTrade' => 'required|numeric',
-            'idsender' => 'required|numeric',
-            'id_trader' => 'required|numeric',
-            'nameprod' => 'required|string',
-            'difference' => 'required|string',
-            'localite' => 'required|string',
-            'specificite' => 'nullable|string',
+    //     $this->reset(['prixTrade']);
+    // }
+    // public function commentForm()
+    // {
+    //     // Récupérer l'utilisateur authentifié
+    //     $this->validate([
+    //         'code_unique' => 'required|string',
+    //         'quantiteC' => 'required|numeric',
+    //         'prixTrade' => 'required|numeric',
+    //         'idsender' => 'required|numeric',
+    //         'id_trader' => 'required|numeric',
+    //         'nameprod' => 'required|string',
+    //         'difference' => 'required|string',
+    //         'localite' => 'required|string',
+    //         'specificite' => 'nullable|string',
 
-        ]);
+    //     ]);
 
-        $comment = Comment::create([
-            'localite' => $this->notification->data['localite'],
-            'specificite' => $this->specificite ?? 'Take Away',
-            'prixTrade' => $this->prixTrade,
-            'id_sender' => json_encode($this->idsender),
-            'nameprod' => $this->nameprod,
-            'code_unique' => $this->code_unique,
-            'id_trader' => $this->id_trader,
-            'quantiteC' => $this->quantiteC,
-        ]);
+    //     $comment = Comment::create([
+    //         'localite' => $this->notification->data['localite'],
+    //         'specificite' => $this->specificite ?? 'Take Away',
+    //         'prixTrade' => $this->prixTrade,
+    //         'id_sender' => json_encode($this->idsender),
+    //         'nameprod' => $this->nameprod,
+    //         'code_unique' => $this->code_unique,
+    //         'id_trader' => $this->id_trader,
+    //         'quantiteC' => $this->quantiteC,
+    //     ]);
 
-        $this->commentsend($comment);
+    //     $this->commentsend($comment);
 
-        broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
-
-
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique', $this->code_unique)
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
-
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => $this->id_trader,
-                'userSender' => $this->namefourlivr,
-                'start_time' => now(),
-                'code_unique' => $this->code_unique,
-                'difference' => $this->difference,
-            ]);
-        }
-
-        session()->flash('success', 'Commentaire créé avec succès!');
-
-        $this->reset(['prixTrade']);
-    }
-    public function commentFormLivr()
-    {
-
-        // Valider les données
-        $validatedData = $this->validate([
-            'id_trader' => 'required|numeric',
-            'code_livr' => 'required|string',
-            // 'userSender' => 'required|numeric',
-            'prixTrade' => 'required|numeric',
-            'quantiteC' => 'required|numeric',
-            'idProd' => 'required|numeric',
-            'prixProd' => 'required|numeric'
-        ]);
-
-        $this->userSender = is_array($notification->data['userSender'] ?? null)
-        ? $notification->data['id_user'] ?? null // Si userSender est un tableau, utiliser id_user
-        : $notification->data['userSender'] ?? ($notification->data['id_user'] ?? null); // Sinon, utiliser userSender ou id_user
+    //     broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
 
-        // Créer un commentaire
-        $comment = Comment::create([
-            'prixTrade' => $validatedData['prixTrade'],
-            'code_unique' => $validatedData['code_livr'],
-            'id_trader' => $validatedData['id_trader'],
-            'quantiteC' => $validatedData['quantiteC'],
-            'id_prod' => $validatedData['idProd'],
-            'prixProd' => $validatedData['prixProd'],
-        ]);
-        $this->commentsend($comment);
+    //     // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //     $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+    //         ->where('notified', false)
+    //         ->orderBy('start_time', 'desc')
+    //         ->first();
 
-        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+    //     if (!$existingCountdown) {
+    //         // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //         Countdown::create([
+    //             'user_id' => $this->id_trader,
+    //             'userSender' => $this->namefourlivr,
+    //             'start_time' => now(),
+    //             'code_unique' => $this->code_unique,
+    //             'difference' => $this->difference,
+    //         ]);
+    //     }
 
+    //     session()->flash('success', 'Commentaire créé avec succès!');
 
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
+    //     $this->reset(['prixTrade']);
+    // }
+    // public function commentFormLivr()
+    // {
 
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $this->userSender,
-                'start_time' => now(),
-                'code_unique' => $validatedData['code_livr'],
-            ]);
-        }
+    //     // Valider les données
+    //     $validatedData = $this->validate([
+    //         'id_trader' => 'required|numeric',
+    //         'code_livr' => 'required|string',
+    //         // 'userSender' => 'required|numeric',
+    //         'prixTrade' => 'required|numeric',
+    //         'quantiteC' => 'required|numeric',
+    //         'idProd' => 'required|numeric',
+    //         'prixProd' => 'required|numeric'
+    //     ]);
 
-
-        // Afficher un message de succès
-        session()->flash('success', 'Commentaire créé avec succès!');
-
-        // Réinitialiser le champ du formulaire
-        $this->reset(['prixTrade']);
-
-        // Émettre un événement pour notifier les autres utilisateurs
-        // $this->dispatch('priceSubmitted', $validatedData);
-        // $this->dispatch('form-submitted');
-    }
-    public function commentFormLivrGroup()
-    {
-        // Valider les données
-        $validatedData = $this->validate([
-            'id_trader' => 'required|numeric',
-            'code_livr' => 'required|string',
-            'nameSender' => 'required|array',
-            'nameSender.*' => 'numeric',
-            'prixTrade' => 'required|numeric',
-            'quantiteC' => 'required|numeric',
-            'idProd' => 'required|numeric',
-        ]);
+    //     $this->userSender = is_array($notification->data['userSender'] ?? null)
+    //     ? $notification->data['id_user'] ?? null // Si userSender est un tableau, utiliser id_user
+    //     : $notification->data['userSender'] ?? ($notification->data['id_user'] ?? null); // Sinon, utiliser userSender ou id_user
 
 
-        // Créer un commentaire
-        $comment = Comment::create([
-            'prixTrade' => $validatedData['prixTrade'],
-            'code_unique' => $validatedData['code_livr'],
-            'id_trader' => $validatedData['id_trader'],
-            'quantiteC' => $validatedData['quantiteC'],
-            'id_prod' => $validatedData['idProd'],
-        ]);
+    //     // Créer un commentaire
+    //     $comment = Comment::create([
+    //         'prixTrade' => $validatedData['prixTrade'],
+    //         'code_unique' => $validatedData['code_livr'],
+    //         'id_trader' => $validatedData['id_trader'],
+    //         'quantiteC' => $validatedData['quantiteC'],
+    //         'id_prod' => $validatedData['idProd'],
+    //         'prixProd' => $validatedData['prixProd'],
+    //     ]);
+    //     $this->commentsend($comment);
 
-        $this->commentsend($comment);
-
-        broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
-
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
-
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            groupagefact::create([
-                'usersenders' => json_encode($this->userSender),
-                'start_time' => now(),
-                'code_unique' => $validatedData['code_livr'],
-            ]);
-        }
+    //     broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
 
 
-        // Afficher un message de succès
-        session()->flash('success', 'Commentaire créé avec succès!');
+    //     // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //     $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
+    //         ->where('notified', false)
+    //         ->orderBy('start_time', 'desc')
+    //         ->first();
 
-        // Réinitialiser le champ du formulaire
-        $this->reset(['prixTrade']);
-    }
-    public function commentoffgroup()
-    {
-        try {
-            // Récupérer l'utilisateur authentifié
-            $this->validate([
-                'prixTrade' => 'required|numeric',
-                'id_trader' => 'required|numeric',
-                'code_unique' => 'required|string',
-                'idProd' => 'required|numeric',
-            ]);
-
-
-            // Création du commentaire
-            $comment = Comment::create([
-                'prixProd' => $this->prixTrade,
-                'prixTrade' => $this->prixTrade,
-                'id_trader' => $this->id_trader,
-                'code_unique' => $this->code_unique,
-                'id_prod' => $this->idProd,
-            ]);
-            $this->commentsend($comment);
-
-            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
-
-            $produit = ProduitService::with('user')->find($this->idProd);
-
-            if ($produit) {
-                $userId = $produit->user_id; // Directement depuis l'objet ProduitService
-            }
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->code_unique)
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
-
-            if (!$existingCountdown) {
-                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-                Countdown::create([
-                    'user_id' => $this->id_trader,
-                    'userSender' => $userId,
-                    'start_time' => now(),
-                    'code_unique' => $this->code_unique,
-                    'difference' => 'offredirect',
-                ]);
-            }
-            $this->reset(['prixTrade']);
-        } catch (Exception $e) {
-            // dd($e)->getMessage();
-            // En cas d'erreur, redirection avec un message d'erreur
-            return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
-        }
-    }
+    //     if (!$existingCountdown) {
+    //         // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //         Countdown::create([
+    //             'user_id' => Auth::id(),
+    //             'userSender' => $this->userSender,
+    //             'start_time' => now(),
+    //             'code_unique' => $validatedData['code_livr'],
+    //         ]);
+    //     }
 
 
-    #[On('echo:comments,CommentSubmitted')]
-    public function listenForMessage($event)
-    {
-        // Déboguer pour vérifier la structure de l'événement
-        // dd($event);
+    //     // Afficher un message de succès
+    //     session()->flash('success', 'Commentaire créé avec succès!');
 
-        // Récupérer les données de l'événement
-        $commentId = $event['commentId'] ?? null;
+    //     // Réinitialiser le champ du formulaire
+    //     $this->reset(['prixTrade']);
 
-        if ($commentId) {
-            // Récupérer le commentaire par ID
-            $comment = Comment::with('user')->find($commentId);
+    //     // Émettre un événement pour notifier les autres utilisateurs
+    //     // $this->dispatch('priceSubmitted', $validatedData);
+    //     // $this->dispatch('form-submitted');
+    // }
+    // public function commentFormLivrGroup()
+    // {
+    //     // Valider les données
+    //     $validatedData = $this->validate([
+    //         'id_trader' => 'required|numeric',
+    //         'code_livr' => 'required|string',
+    //         'nameSender' => 'required|array',
+    //         'nameSender.*' => 'numeric',
+    //         'prixTrade' => 'required|numeric',
+    //         'quantiteC' => 'required|numeric',
+    //         'idProd' => 'required|numeric',
+    //     ]);
 
-            if ($comment) {
-                // Ajouter le nouveau commentaire à la liste
-                $this->commentsend($comment);
-            } else {
-                // Gérer le cas où le commentaire n'existe pas
-                Log::error('Commentaire non trouvé', ['commentId' => $commentId]);
-            }
-        } else {
-            // Gestion des erreurs si l'ID du commentaire n'est pas fourni
-            Log::error('ID du commentaire manquant dans l\'événement', ['event' => $event]);
-        }
-    }
 
-    public function commentsend($comment)
-    {
-        if ($comment) {
-            $this->comments[] = [
-                'prix' => $comment->prixTrade,
-                'commentId' => $comment->id,
-                'nameUser' => $comment->user->name,
-                'photoUser' => $comment->user->photo,
-            ];
-        }
-    }
+    //     // Créer un commentaire
+    //     $comment = Comment::create([
+    //         'prixTrade' => $validatedData['prixTrade'],
+    //         'code_unique' => $validatedData['code_livr'],
+    //         'id_trader' => $validatedData['id_trader'],
+    //         'quantiteC' => $validatedData['quantiteC'],
+    //         'id_prod' => $validatedData['idProd'],
+    //     ]);
+
+    //     $this->commentsend($comment);
+
+    //     broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+
+    //     // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //     $existingCountdown = Countdown::where('code_unique', $validatedData['code_livr'])
+    //         ->where('notified', false)
+    //         ->orderBy('start_time', 'desc')
+    //         ->first();
+
+    //     if (!$existingCountdown) {
+    //         // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //         groupagefact::create([
+    //             'usersenders' => json_encode($this->userSender),
+    //             'start_time' => now(),
+    //             'code_unique' => $validatedData['code_livr'],
+    //         ]);
+    //     }
+
+
+    //     // Afficher un message de succès
+    //     session()->flash('success', 'Commentaire créé avec succès!');
+
+    //     // Réinitialiser le champ du formulaire
+    //     $this->reset(['prixTrade']);
+    // }
+    // public function commentoffgroup()
+    // {
+    //     try {
+    //         // Récupérer l'utilisateur authentifié
+    //         $this->validate([
+    //             'prixTrade' => 'required|numeric',
+    //             'id_trader' => 'required|numeric',
+    //             'code_unique' => 'required|string',
+    //             'idProd' => 'required|numeric',
+    //         ]);
+
+
+    //         // Création du commentaire
+    //         $comment = Comment::create([
+    //             'prixProd' => $this->prixTrade,
+    //             'prixTrade' => $this->prixTrade,
+    //             'id_trader' => $this->id_trader,
+    //             'code_unique' => $this->code_unique,
+    //             'id_prod' => $this->idProd,
+    //         ]);
+    //         $this->commentsend($comment);
+
+    //         broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+
+    //         $produit = ProduitService::with('user')->find($this->idProd);
+
+    //         if ($produit) {
+    //             $userId = $produit->user_id; // Directement depuis l'objet ProduitService
+    //         }
+    //         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+    //         $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+    //             ->where('notified', false)
+    //             ->orderBy('start_time', 'desc')
+    //             ->first();
+
+    //         if (!$existingCountdown) {
+    //             // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+    //             Countdown::create([
+    //                 'user_id' => $this->id_trader,
+    //                 'userSender' => $userId,
+    //                 'start_time' => now(),
+    //                 'code_unique' => $this->code_unique,
+    //                 'difference' => 'offredirect',
+    //             ]);
+    //         }
+    //         $this->reset(['prixTrade']);
+    //     } catch (Exception $e) {
+    //         // dd($e)->getMessage();
+    //         // En cas d'erreur, redirection avec un message d'erreur
+    //         return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
+    //     }
+    // }
+
+
+    // #[On('echo:comments,CommentSubmitted')]
+    // public function listenForMessage($event)
+    // {
+    //     // Déboguer pour vérifier la structure de l'événement
+    //     // dd($event);
+
+    //     // Récupérer les données de l'événement
+    //     $commentId = $event['commentId'] ?? null;
+
+    //     if ($commentId) {
+    //         // Récupérer le commentaire par ID
+    //         $comment = Comment::with('user')->find($commentId);
+
+    //         if ($comment) {
+    //             // Ajouter le nouveau commentaire à la liste
+    //             $this->commentsend($comment);
+    //         } else {
+    //             // Gérer le cas où le commentaire n'existe pas
+    //             Log::error('Commentaire non trouvé', ['commentId' => $commentId]);
+    //         }
+    //     } else {
+    //         // Gestion des erreurs si l'ID du commentaire n'est pas fourni
+    //         Log::error('ID du commentaire manquant dans l\'événement', ['event' => $event]);
+    //     }
+    // }
+
+    // public function commentsend($comment)
+    // {
+    //     if ($comment) {
+    //         $this->comments[] = [
+    //             'prix' => $comment->prixTrade,
+    //             'commentId' => $comment->id,
+    //             'nameUser' => $comment->user->name,
+    //             'photoUser' => $comment->user->photo,
+    //         ];
+    //     }
+    // }
 
     public function render()
     {

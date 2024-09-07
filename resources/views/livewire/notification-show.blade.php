@@ -3,6 +3,7 @@
 
         @livewire('appeloffregrouper', ['id' => $id])
 
+
         {{-- Achat Direct --}}
     @elseif ($notification->type === 'App\Notifications\AchatBiicf')
         @livewire('Achatdirect', ['id' => $id])
@@ -15,6 +16,8 @@
         @livewire('command-verif-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAd')
         @livewire('mainleve-ad', ['id' => $id])
+
+
         {{-- Appel Offre Direct --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="bg-white p-6 rounded-lg shadow-md">
@@ -34,12 +37,16 @@
         @livewire('command-verif-ap', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAp')
         @livewire('mainleve-ap', ['id' => $id])
+
+
         {{-- Appel offre grouper --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
         <h1 class="text-center text-3xl font-semibold mb-2 ">Negociations pour la quantitée groupée</h1>
         @livewire('appeloffregroupernegociation', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
         @livewire('appeloffreterminergrouper', ['id' => $id])
+
+
         {{-- fournisseur offre negocier --}}
     @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
         <h1 class="text-center text-3xl font-semibold mb-2">Enchere Sur {{ $notification->data['produit_name'] }}</h1>
@@ -47,7 +54,8 @@
         @livewire('enchere', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\NegosTerminer')
         @livewire('offrenegosterminer', ['id' => $id])
-        
+
+        {{-- fournisseur offre grouper --}}
     @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
         <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
             <h1 class="text-xl font-medium mb-4">Ajout de quantite</h1>
