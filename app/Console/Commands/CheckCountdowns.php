@@ -191,6 +191,7 @@ class CheckCountdowns extends Command
                             'date_tot' => $date_tot,
                             'date_tard' => $date_tard,
                             'nameprod' => $nameprod,
+                            'specificite' => $specificite,
                         ];
                         Log::info('Envoi d\'une autre notification ou action par défaut.');
                         Notification::send($countdown->sender, new CountdownNotificationAg($data));

@@ -14,7 +14,6 @@
     @endif
 
 
-
     <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <header class="mb-9">
             <h1 class="text-3xl font-bold mb-4">Facture Proformat</h1>
@@ -31,6 +30,11 @@
 
         <section class="mb-6 overflow-x-auto">
             <h2 class="text-xl font-semibold mb-4">Détails de la Facture</h2>
+            @if ($notification->data['specificite'] == 'PRO')
+            <p class="text-sm font-semibold mb-4">Vous etes l'utilisateur qui a initié le groupage ,validez et proceder
+                a la main levée</p>
+            @endif
+
             <table class="min-w-full bg-white ">
                 <thead>
                     <tr class="w-full bg-gray-200">
@@ -90,21 +94,41 @@
                                 </svg>
                             </span>
                         </button>
-                        <button wire:click.prevent='refuserPro'
-                            class="bg-red-800 text-white px-4 py-2 rounded-lg relative">
-                            <!-- Texte du bouton et icône -->
-                            <span wire:loading.remove>
-                                Refusez la commande
-                            </span>
-                            <span wire:loading>
-                                Chargement...
-                                <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                </svg>
-                            </span>
-                        </button>
+                        @if ($notification->data['specificite'] == 'NOPRO')
+                            <button wire:click.prevent='refuserPro'
+                                class="bg-red-800 text-white px-4 py-2 rounded-lg relative">
+                                <!-- Texte du bouton et icône -->
+                                <span wire:loading.remove>
+                                    Payez a l'arrivée du livreur
+                                </span>
+                                <span wire:loading>
+                                    Chargement...
+                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                    </svg>
+                                </span>
+                            </button>
+                        @else
+                            <button wire:click.prevent='refuserPro'
+                                class="bg-red-800 text-white px-4 py-2 rounded-lg relative">
+                                <!-- Texte du bouton et icône -->
+                                <span wire:loading.remove>
+                                    Refusez la commande
+                                </span>
+                                <span wire:loading>
+                                    Chargement...
+                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                    </svg>
+                                </span>
+                            </button>
+                        @endif
 
                     </div>
                 @endif

@@ -38,6 +38,7 @@ class CountdownNotificationAg extends Notification implements ShouldQueue
             'date_tot' => $this->details['date_tot'] ?? null,
             'date_tard' => $this->details['date_tard'] ?? null,
             'nameprod' => $this->details['nameprod'] ?? null,
+            'specificite' => $this->details['specificite'] ?? null,
         ];
     }
 }
