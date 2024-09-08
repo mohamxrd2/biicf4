@@ -174,6 +174,13 @@ class NotificationShow extends Component
     public $demandeur;
     public $locked = false; // Déverrouillé par défaut
 
+    public $dateTot;
+    public $dateTard;
+    public $timeStart;
+    public $timeEnd;
+    public $dayPeriod;
+
+
 
     protected $rules = [
         'userSender' => 'required|array',
@@ -761,6 +768,14 @@ class NotificationShow extends Component
             ->pluck('user_id');
         Log::info('Processing userWallet: ' . $distinctUserIds);
 
+        $this->validate([
+            'dateTot' => 'required|date',
+            'dateTard' => 'required|date|after_or_equal:dateTot',
+            'timeStart' => 'required',
+            'timeEnd' => 'required|after:timeStart',
+            'dayPeriod' => 'required|string',
+        ]);
+
 
 
 
@@ -810,6 +825,11 @@ class NotificationShow extends Component
                         'photoProd' => $this->produit->photoProd1,
                         'idProd' => $this->produit_id,
                         'code_unique' => $this->code_unique,
+                        'timeStart' => $this->timeStart,
+                        'date_tot' => $this->dateTot,
+                        'date_tard' => $this->dateTard,
+                        'timeEnd' => $this->timeEnd,
+                        'dayPeriod' => $this->dayPeriod,
                     ];
 
                     foreach ($distinctUserIds as $id_trader) {
@@ -1682,15 +1702,15 @@ class NotificationShow extends Component
     //     }
     // }
 
-    // protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
-    // {
-    //     $transaction = new Transaction();
-    //     $transaction->sender_user_id = $senderId;
-    //     $transaction->receiver_user_id = $receiverId;
-    //     $transaction->type = $type;
-    //     $transaction->amount = $amount;
-    //     $transaction->save();
-    // }
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->save();
+    }
 
     // public function commentFormGroupe()
     // {

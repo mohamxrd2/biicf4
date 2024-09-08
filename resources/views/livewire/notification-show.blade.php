@@ -211,20 +211,73 @@
 
 
                     <!-- Bouton accepter -->
-                    <button wire:click='acceptoffre'
-                        class="px-4 py-1 w-full text-white bg-green-500 rounded-xl hover:bg-green-700">
-                        <span wire:loading.remove>
-                            Accepter
-                        </span>
+                    <form wire:submit.prevent="acceptoffre">
 
-                        <span wire:loading>
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                            </svg>
-                        </span>
-                    </button>
+                        <div class="flex items-center mb-3">
+                            <!-- Date de début -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Au plus tôt</label>
+                                <input type="date" id="datePickerStart" name="dateTot" wire:model="dateTot"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('dateTot') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            </div>
+                    
+                            <!-- Date de fin -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus tard</label>
+                                <input type="date" id="datePickerEnd" name="dateTard" wire:model="dateTard"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('dateTard') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    
+                        <div class="flex items-center mb-3">
+                            <!-- Heure de début -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure de début</label>
+                                <input type="time" id="timePickerStart" name="timeStart" wire:model="timeStart"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('timeStart') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            </div>
+                    
+                            <!-- Heure de fin -->
+                            <div class="w-1/2 mr-2 relative">
+                                <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de fin</label>
+                                <input type="time" id="timePickerEnd" name="timeEnd" wire:model="timeEnd"
+                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('timeEnd') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    
+                        <!-- Sélecteur de période de la journée -->
+                        <div class="mb-3 w-full">
+                            <label for="dayPeriod" class="block text-sm text-gray-700 dark:text-gray-300">Période de la journée</label>
+                            <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
+                                class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                                <option value="" selected>Choisir la période</option>
+                                <option value="Matin">Matin</option>
+                                <option value="Après-midi">Après-midi</option>
+                                <option value="Soir">Soir</option>
+                                <option value="Nuit">Nuit</option>
+                            </select>
+                            @error('dayPeriod') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                        </div>
+                    
+                        <button type="submit" class="px-4 py-1 w-full text-white bg-green-500 rounded-xl hover:bg-green-700">
+                            <span wire:loading.remove>
+                                Accepter
+                            </span>
+                            <span wire:loading>
+                                <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                </svg>
+                            </span>
+                        </button>
+                    
+                    </form>
+                    
                     <button wire:click='refusoffre'
                         class="mt-4 px-4 py-1 w-full text-white bg-red-500 rounded-xl hover:bg-red-700">
                         <span wire:loading.remove>
