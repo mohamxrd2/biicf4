@@ -17,9 +17,9 @@
 
     <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <header class="mb-9">
-            <h1 class="text-3xl font-bold mb-4">Facture Proformat</h1>
+            <h1 class="text-3xl font-bold mb-4">Facture Proformat d'Achat Direct</h1>
             <div class="text-gray-600">
-                <p>Code la de Facture: <span class="font-semibold">#{{ $notification->data['code_unique'] }}</span>
+                <p>Code la de Facture: <span class="font-semibold">{{ $notification->data['code_unique'] }}</span>
                 </p>
                 <p>Date: <span
                         class="font-semibold">{{ \Carbon\Carbon::parse($notification->created_at)->translatedFormat('d F Y') }}</span>
@@ -51,7 +51,7 @@
                             FCFA</td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
+                        <td class="py-2 px-4 border-b">Livreur: {{ $userFour->name }}</td>
                         <td class="py-2 px-4 border-b">1</td>
                         <td class="py-2 px-4 border-b">
                             {{ number_format($notification->data['prixTrade'], 0, ',', '.') }} FCFA</td>
