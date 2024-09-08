@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\commandVerifag;
 use App\Notifications\commandVerifAp;
+use App\Notifications\mainleve;
+use App\Notifications\mainlevefour;
 use App\Notifications\VerifUser;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -141,10 +143,42 @@ class CountdownNotificationAg extends Component
         Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
 
 
-        Notification::send($userSender, new commandVerifag($data));
+        // Envoi de la notification
+        if ($this->notification->data['specificite'] === 'NOPRO') {
 
-        // Utilisez && pour vérifier que les deux conditions sont vraies
-        Notification::send($traderUser, new VerifUser($user));
+            $livreur = User::find($this->notification->data['livreur']);
+            Log::info('le id du livreur', ['livreur' => $livreur]);
+
+            $fournisseur = User::find($this->notification->data['fournisseur']);
+            Log::info('le id du fournisseur', ['fournisseur' => $fournisseur]);
+            $id_client = Auth::user()->id;
+            Log::info('le id du client', ['id_client' => $id_client]);
+
+            $donne = [
+                'idProd' => $this->notification->data['idProd'],
+                'code_unique' => $this->notification->data['code_unique'],
+                'fournisseur' =>  $this->notification->data['fournisseur'],
+                'localité' => $this->localite ?? null,
+                'quantite' => $this->notification->data['quantiteC'],
+                'id_client' => $id_client,
+                'livreur' => $this->notification->data['livreur'],
+                'prixTrade' => $this->notification->data['prixTrade'],
+                'prixProd' => $this->notification->data['prixProd'],
+                'date_tot' => $this->notification->data['date_tot'],
+                'date_tard' => $this->notification->data['date_tard'],
+            ];
+
+
+            Notification::send($livreur, new mainleve($donne));
+
+            Notification::send($fournisseur, new mainlevefour($donne));
+        } else {
+            Notification::send($userSender, new commandVerifag($data));
+
+            // Utilisez && pour vérifier que les deux conditions sont vraies
+            Notification::send($traderUser, new VerifUser($user));
+        }
+
 
 
         // Mettre à jour la notification et valider

@@ -4,7 +4,9 @@ namespace App\Livewire;
 
 use App\Models\ProduitService;
 use App\Models\User;
+use App\Models\userquantites;
 use App\Models\Wallet;
+use App\Notifications\appelivreur;
 use App\Notifications\mainleve;
 use App\Notifications\mainlevefour;
 use Illuminate\Notifications\DatabaseNotification;
@@ -49,12 +51,37 @@ class Mainleveag extends Component
             return;
         }
 
-    if($this->notification->data['nameprod'] && $this->notification->data['specificite'] === 'PRO'){
-        // Vérifiez si le code_unique existe dans userquantites
-        $userQuantites = UserQuantites::where('code_unique', $this->notification->data['code_unique'])->get();
-        Log::info('Recherche du code_unique', ['code_unique' => $this->notification->data['code_unique'], 'count' => $userQuantites->count()]);
+        // Vérifier si le nom du produit et la spécificité sont corrects
+        if ($this->notification->data['nameprod'] && $this->notification->data['specificite'] === 'PRO') {
+            // Récupérer les enregistrements de la table userquantites avec le code_unique
+            $userQuantites = userquantites::where('code_unique', $this->notification->data['nameprod'])->get();
 
-    }
+            // Log pour vérifier le nombre d'enregistrements trouvés
+            Log::info('Recherche du code_unique', [
+                'code_unique' => $this->notification->data['code_unique'],
+                'count' => $userQuantites->count()
+            ]);
+
+            // ID du premier utilisateur à exclure
+            $firstUserId = $userQuantites->first()->user_id;
+
+            // Récupérer les IDs des utilisateurs, en excluant l'utilisateur spécifique
+            $userIds = $userQuantites->pluck('user_id')->unique()->reject(function ($id) use ($firstUserId) {
+                return $id === $firstUserId; // Exclure le premier utilisateur
+            });
+
+            // Récupérer les utilisateurs depuis la base de données
+            $users = User::whereIn('id', $userIds)->get();
+
+            // Diviser les utilisateurs en lots de 50 (par exemple)
+            $users->chunk(50)->each(function ($userChunk) {
+                // Envoyer la notification à chaque lot d'utilisateurs
+                Notification::send($userChunk, new Appelivreur());
+
+                // Log pour vérifier le nombre de notifications envoyées pour chaque lot
+                Log::info('Notifications envoyées pour un lot', ['user_count' => $userChunk->count()]);
+            });
+        }
 
 
         $data = [
@@ -64,7 +91,7 @@ class Mainleveag extends Component
             'localité' => $this->notification->data['localité'],
             'quantite' => $this->notification->data['quantite'],
             'id_client' => $id_client,
-            'livreur' => $livreur,
+            'livreur' => $livreur->id,
             'prixTrade' => $this->notification->data['prixTrade'],
             'prixProd' => $this->notification->data['prixProd'],
             'date_tot' => $this->notification->data['date_tot'],
