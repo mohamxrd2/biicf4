@@ -48,6 +48,8 @@
         @livewire('livraisonagrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\CountdownNotificationAg')
         @livewire('countdown-notification-ag', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\commandVerifag')
+        @livewire('mainleveag', ['id' => $id])
 
 
         {{-- fournisseur offre negocier --}}
@@ -723,8 +725,6 @@
                 </button>
             @endif
         </div>
-    @elseif ($notification->type === 'App\Notifications\commandVerifag')
-        @livewire('mainleveag', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleve')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-3">
 

@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Livewire;
+
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Notifications\commandVerifag;
 use App\Notifications\commandVerifAp;
 use App\Notifications\VerifUser;
 use Illuminate\Notifications\DatabaseNotification;
@@ -117,6 +119,8 @@ class CountdownNotificationAg extends Component
             'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'],
             'date_tot' => $this->notification->data['date_tot'],
             'date_tard' => $this->notification->data['date_tard'],
+            'nameprod' => $this->notification->data['nameprod'],
+            'specificite' => $this->notification->data['specificite'],
         ];
 
         $user = [
@@ -136,23 +140,12 @@ class CountdownNotificationAg extends Component
 
         Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
 
-        if ($this->notification->type_achat == 'reserv/take' || $this->notification->type == 'App\Notifications\AllerChercher') {
-            Notification::send($userSender, new commandVerifAp($data));
 
-            $notification = $userSender->notifications()->where('type', commandVerifAp::class)->latest()->first();
+        Notification::send($userSender, new commandVerifag($data));
 
-            if ($notification) {
-                $notification->update(['type_achat' => 'reserv/take']);
-            }
+        // Utilisez && pour vérifier que les deux conditions sont vraies
+        Notification::send($traderUser, new VerifUser($user));
 
-            // Utilisez && pour vérifier que les deux conditions sont vraies
-            Notification::send($traderUser, new VerifUser($user));
-        } else {
-            Notification::send($userSender, new commandVerifAp($data));
-
-            // Utilisez && pour vérifier que les deux conditions sont vraies
-            Notification::send($traderUser, new VerifUser($user));
-        }
 
         // Mettre à jour la notification et valider
         $this->notification->update(['reponse' => 'valide']);

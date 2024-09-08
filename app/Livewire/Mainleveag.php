@@ -42,8 +42,6 @@ class Mainleveag extends Component
         Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
 
 
-     
-
         // Vérifier si l'utilisateur est authentifié
         if (!$fournisseur) {
             Log::error('Utilisateur non authentifié.');
@@ -51,8 +49,12 @@ class Mainleveag extends Component
             return;
         }
 
+    if($this->notification->data['nameprod'] && $this->notification->data['specificite'] === 'PRO'){
+        // Vérifiez si le code_unique existe dans userquantites
+        $userQuantites = UserQuantites::where('code_unique', $this->notification->data['code_unique'])->get();
+        Log::info('Recherche du code_unique', ['code_unique' => $this->notification->data['code_unique'], 'count' => $userQuantites->count()]);
 
-        $userWallet = Wallet::where('user_id', $fournisseur->id)->first();
+    }
 
 
         $data = [
@@ -67,7 +69,6 @@ class Mainleveag extends Component
             'prixProd' => $this->notification->data['prixProd'],
             'date_tot' => $this->notification->data['date_tot'],
             'date_tard' => $this->notification->data['date_tard'],
-
         ];
 
         Notification::send($livreur, new mainleve($data));

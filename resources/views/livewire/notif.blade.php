@@ -30,7 +30,7 @@
             <div
                 class="w-full px-3 py-2 @if ($notification->read_at == null) bg-white @else bg-gray-50 @endif  border-y border-gray-200 hover:bg-gray-50">
                 @if (
-                    $notification->type === 'App\Notifications\commandVerif' ||
+                    $notification->type === 'App\Notifications\commandVerifag' ||
                         $notification->type === 'App\Notifications\commandVerifAd' ||
                         $notification->type === 'App\Notifications\commandVerifAp')
                     <a href="{{ route('notification.show', $notification->id) }}" class="">
