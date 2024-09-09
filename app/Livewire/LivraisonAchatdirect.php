@@ -40,9 +40,7 @@ class LivraisonAchatdirect extends Component
 
 
         // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['code_unique']
-            ?? $this->notification->data['code_livr']
-            ?? $this->notification->data['Uniquecode'] ?? null;
+        $codeUnique = $this->notification->data['code_livr'];
         $comments = Comment::with('user')
             ->where('code_unique', $codeUnique)
             ->whereNotNull('prixTrade')
@@ -125,7 +123,7 @@ class LivraisonAchatdirect extends Component
         // Émettre un événement pour notifier les autres utilisateurs
         $this->dispatch('form-submitted', 'prix soumis avec succes');
     }
-    
+
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage($event)
     {
