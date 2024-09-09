@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +30,7 @@ class AjoutdeQuantite extends Component
 
         // Récupérer l'offre groupée par son ID
         $appelOffreGroup = AppelOffreGrouper::find($validatedData['codeUnique']);
-        
+
         // Créer un nouvel enregistrement dans la table offregroupe
         $offreGroupe = new AppelOffreGrouper();
         $offreGroupe->codeunique = $validatedData['codeUnique'];
