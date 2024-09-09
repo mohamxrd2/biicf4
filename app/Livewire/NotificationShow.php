@@ -330,6 +330,7 @@ class NotificationShow extends Component
         // foreach ($comments as $comment) {
         //     $this->commentsend($comment);
         // }
+        
         // Récupérer le commentaire de l'utilisateur connecté
         $this->userComment = Comment::with('user')
             ->where('code_unique', $codeUnique)

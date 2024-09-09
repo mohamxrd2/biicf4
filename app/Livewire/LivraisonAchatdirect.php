@@ -27,6 +27,9 @@ class LivraisonAchatdirect extends Component
     public $prixProd;
     public $id_trader;
     public $prixTrade;
+    public $userComment;
+    public $user;
+    public $commentCount;
 
     public function mount($id)
     {
@@ -37,6 +40,7 @@ class LivraisonAchatdirect extends Component
         $this->userSender = $this->notification->data['userSender'] ?? null;
         $this->id_trader = Auth::user()->id ?? null;
         $this->prixProd = $this->notification->data['prixProd'] ?? null;
+        $this->user = Auth::user()->id ?? null;
 
 
         // Vérifier si 'code_unique' existe dans les données de notification
@@ -48,7 +52,14 @@ class LivraisonAchatdirect extends Component
             ->get();
         foreach ($comments as $comment) {
             $this->commentsend($comment);
+            Log::info('État actuel de la liste des commentaires', ['comments' => $this->comments]);
+
         }
+        $this->userComment = Comment::with('user')
+            ->where('code_unique', $codeUnique)
+            ->where('id_trader', $this->user)
+            ->first();
+        $this->commentCount = $comments->count();
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Comment::where('code_unique', $codeUnique)
@@ -129,11 +140,14 @@ class LivraisonAchatdirect extends Component
     {
         // Déboguer pour vérifier la structure de l'événement
         // dd($event);
+        Log::info('Événement reçu', ['event' => $event]);
 
         // Récupérer les données de l'événement
         $commentId = $event['commentId'] ?? null;
 
         if ($commentId) {
+            Log::info('Commentaire trouvé par ID', ['comment' => $commentId]);
+
             // Récupérer le commentaire par ID
             $comment = Comment::with('user')->find($commentId);
 
@@ -159,6 +173,8 @@ class LivraisonAchatdirect extends Component
                 'nameUser' => $comment->user->name,
                 'photoUser' => $comment->user->photo,
             ];
+            Log::info('Commentaire ajouté', ['comment' => $comment->user->name]);
+
         }
     }
     public function render()
