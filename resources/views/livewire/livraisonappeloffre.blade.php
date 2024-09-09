@@ -9,7 +9,6 @@
             $ville = $idProd ? $idProd->villeServ : null;
             $commune = $idProd ? $idProd->comnServ : null;
         @endphp
-
         <h2 class="text-3xl font-semibold mb-2">{{ $idProd->name }}</h2>
 
         <div class="w-full flex justify-between items-center py-4  border-b-2">
