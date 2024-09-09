@@ -301,9 +301,12 @@ class NotificationShow extends Component
 
         //code unique recuperation dans render
         // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['code_unique']
-            ?? $this->notification->data['code_livr']
-            ?? $this->notification->data['Uniquecode'] ?? null;
+        // $codeUnique = $this->notification->data['code_unique']
+        //     ?? $this->notification->data['code_livr']
+        //     ?? $this->notification->data['Uniquecode'] ?? null;
+
+        $codeUnique = $this->notification->data['code_livr'];
+
 
         //offre negocier grouper
         $this->name = $this->notification->data['produit_name'] ?? null;
