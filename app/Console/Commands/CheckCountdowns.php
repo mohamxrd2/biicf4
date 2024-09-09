@@ -183,8 +183,8 @@ class CheckCountdowns extends Command
                             'sender_name' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
                             'code_unique' => $countdown->code_unique,
                             'prixTrade' => $price,
-                            'fournisseur' => $traderId,
-                            'livreur' => $senderId,
+                            'fournisseur' => $senderId,
+                            'livreur' => $traderId,
                             'idProd' => $id_prod,
                             'quantiteC' => $quantiteC,
                             'prixProd' => $prixProd,

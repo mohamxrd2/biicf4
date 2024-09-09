@@ -94,11 +94,11 @@ class LivraisonAchatdirect extends Component
         $comment = Comment::create([
             'prixTrade' => $validatedData['prixTrade'],
             'code_unique' => $validatedData['code_livr'],
-            'id_trader' => $this->notification->data['id_trader'],
+            'id_trader' => Auth::id(),
             'quantiteC' => $validatedData['quantite'],
             'id_prod' => $validatedData['idProd'],
             'prixProd' => $validatedData['prixProd'],
-            'id_sender' => json_encode(Auth::id()), // Si la colonne est de type JSON (ce qui est rare pour une ID)
+            'id_sender' => json_encode($this->notification->data['id_trader']), // Si la colonne est de type JSON (ce qui est rare pour une ID)
             'date_tot' => $this->notification->data['dateTot'],
             'date_tard' => $this->notification->data['dateTard'],
         ]);

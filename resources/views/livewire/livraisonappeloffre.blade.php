@@ -9,13 +9,13 @@
             $ville = $idProd ? $idProd->villeServ : null;
             $commune = $idProd ? $idProd->comnServ : null;
         @endphp
-        <h2 class="text-3xl font-semibold mb-2">{{ $idProd->name }}</h2>
+        <h2 class="text-3xl font-semibold mb-2">{{ $idProd->name }}
+        </h2>
 
         <div class="w-full flex justify-between items-center py-4  border-b-2">
             <p class="text-md font-semibold">Quantité</p>
             <p class="text-md font-medium text-gray-600">{{ $notification->data['quantite'] }}</p>
         </div>
-
 
 
         <div class="w-full py-4 border-b-2">
