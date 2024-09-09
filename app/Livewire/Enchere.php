@@ -39,7 +39,7 @@ class Enchere extends Component
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $this->code_unique = $this->notification->data['code_unique'] ?? null;
+        $this->code_unique = $this->notification->data['Uniquecode'] ?? null;
         $this->prixProd = $this->notification->data['prixProd'] ?? null;
         $this->specificite = $this->notification->data['specificity'] ?? null;
         $this->localite = $this->notification->data['localite'] ?? null;
@@ -48,14 +48,12 @@ class Enchere extends Component
         $this->difference = $this->notification->data['difference'] ?? null;
         $this->quantiteC = $this->notification->data['quantity'] ?? null;
         $this->id_trader = Auth::user()->id ?? null;
+        $this->idProd = $this->notification->data['produit_id'] ?? null;
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
 
-
         // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['code_unique']
-            ?? $this->notification->data['code_livr']
-            ?? $this->notification->data['Uniquecode'] ?? null;
+        $codeUnique = $this->notification->data['Uniquecode'] ;
         $comments = Comment::with('user')
             ->where('code_unique', $codeUnique)
             ->whereNotNull('prixTrade')
@@ -81,21 +79,20 @@ class Enchere extends Component
     {
         try {
             // Récupérer l'utilisateur authentifié
-            $this->validate([
+            $validatedData = $this->validate([
                 'prixTrade' => 'required|numeric',
                 'id_trader' => 'required|numeric',
-                'code_unique' => 'required|string',
                 'idProd' => 'required|numeric',
             ]);
 
 
             // Création du commentaire
             $comment = Comment::create([
-                'prixProd' => $this->prixTrade,
-                'prixTrade' => $this->prixTrade,
-                'id_trader' => $this->id_trader,
+                'prixProd' => $validatedData['prixTrade'],
+                'prixTrade' => $validatedData['prixTrade'],
+                'id_trader' => $validatedData['id_trader'],
                 'code_unique' => $this->code_unique,
-                'id_prod' => $this->idProd,
+                'id_prod' => $validatedData['idProd'],
             ]);
             $this->commentsend($comment);
 

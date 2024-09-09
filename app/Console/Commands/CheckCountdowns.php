@@ -160,7 +160,7 @@ class CheckCountdowns extends Command
                         }
                     } else if ($countdown->difference === 'offredirect') {
                         Log::info('Envoi de la notification pour type "offredirect".', ['user_id' => $lowestPriceComment->user->id]);
-                        Notification::send($lowestPriceComment->user, new NegosTerminer($details));
+                        Notification::send($commentToUse->user, new NegosTerminer($details));
                     } else if ($countdown->difference === 'grouper') {
                         Log::info('Envoi de la notification pour type "grouper".', ['user_id' => $lowestPriceComment->user->id]);
                         Notification::send($lowestPriceComment->user, new AppelOffreTerminerGrouper($Gdetails));
