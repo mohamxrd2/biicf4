@@ -27,7 +27,6 @@ class LivraisonAchatdirect extends Component
     public $prixProd;
     public $id_trader;
     public $prixTrade;
-    public $userComment;
     public $user;
     public $commentCount;
 
@@ -55,10 +54,7 @@ class LivraisonAchatdirect extends Component
             Log::info('État actuel de la liste des commentaires', ['comments' => $this->comments]);
 
         }
-        $this->userComment = Comment::with('user')
-            ->where('code_unique', $codeUnique)
-            ->where('id_trader', $this->user)
-            ->first();
+
         $this->commentCount = $comments->count();
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul

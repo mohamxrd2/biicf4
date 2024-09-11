@@ -45,8 +45,6 @@ class NotificationController extends Controller
 
             return view('biicf.notifshow', compact(
                 'notification',
-
-                
                 'id'
             ));
         } catch (\Exception $e) {

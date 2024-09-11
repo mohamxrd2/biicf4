@@ -221,7 +221,7 @@
                                     class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                 @error('dateTot') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
-                    
+
                             <!-- Date de fin -->
                             <div class="w-1/2 mr-2 relative">
                                 <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus tard</label>
@@ -230,7 +230,7 @@
                                 @error('dateTard') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                    
+
                         <div class="flex items-center mb-3">
                             <!-- Heure de début -->
                             <div class="w-1/2 mr-2 relative">
@@ -239,7 +239,7 @@
                                     class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                 @error('timeStart') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
-                    
+
                             <!-- Heure de fin -->
                             <div class="w-1/2 mr-2 relative">
                                 <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de fin</label>
@@ -248,7 +248,7 @@
                                 @error('timeEnd') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                    
+
                         <!-- Sélecteur de période de la journée -->
                         <div class="mb-3 w-full">
                             <label for="dayPeriod" class="block text-sm text-gray-700 dark:text-gray-300">Période de la journée</label>
@@ -262,7 +262,7 @@
                             </select>
                             @error('dayPeriod') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
-                    
+
                         <button type="submit" class="px-4 py-1 w-full text-white bg-green-500 rounded-xl hover:bg-green-700">
                             <span wire:loading.remove>
                                 Accepter
@@ -275,9 +275,9 @@
                                 </svg>
                             </span>
                         </button>
-                    
+
                     </form>
-                    
+
                     <button wire:click='refusoffre'
                         class="mt-4 px-4 py-1 w-full text-white bg-red-500 rounded-xl hover:bg-red-700">
                         <span wire:loading.remove>
