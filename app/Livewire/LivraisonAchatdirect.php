@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
+use App\Events\OldestCommentUpdated;
 use App\Models\Comment;
 use App\Models\Countdown;
 use Carbon\Carbon;
@@ -52,14 +53,13 @@ class LivraisonAchatdirect extends Component
         foreach ($comments as $comment) {
             $this->commentsend($comment);
             Log::info('État actuel de la liste des commentaires', ['comments' => $this->comments]);
-
         }
 
         $this->commentCount = $comments->count();
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $this->oldestComment = Comment::where('code_unique', $codeUnique)
-            ->whereNotNull('prixTrade')
+        $this->oldestComment = Countdown::where('code_unique', $codeUnique)
+            ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
 
@@ -68,7 +68,10 @@ class LivraisonAchatdirect extends Component
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
         $this->serverTime = Carbon::now()->toIso8601String();
     }
-
+    public function placeholder()
+    {
+        return view('admin.components.placeholder');
+    }
     public function commentFormLivr()
     {
 
@@ -83,9 +86,6 @@ class LivraisonAchatdirect extends Component
             'prixTrade' => 'required|numeric'
         ]);
 
-
-
-
         // Créer un commentaire
         $comment = Comment::create([
             'prixTrade' => $validatedData['prixTrade'],
@@ -98,6 +98,7 @@ class LivraisonAchatdirect extends Component
             'date_tot' => $this->notification->data['dateTot'],
             'date_tard' => $this->notification->data['dateTard'],
         ]);
+
         $this->commentsend($comment);
 
         broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
@@ -118,8 +119,10 @@ class LivraisonAchatdirect extends Component
                 'difference' => 'ad',
                 'code_unique' => $validatedData['code_livr'],
             ]);
+            // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
+            broadcast(new OldestCommentUpdated(now()->toIso8601String()));
+            $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
         }
-
 
         // Afficher un message de succès
         session()->flash('success', 'Commentaire créé avec succès!');
@@ -170,9 +173,17 @@ class LivraisonAchatdirect extends Component
                 'photoUser' => $comment->user->photo,
             ];
             Log::info('Commentaire ajouté', ['comment' => $comment->user->name]);
-
         }
     }
+
+    // #[On('refreshCountdown')]
+    // public function refreshPage()
+    // {
+    //     // Logique pour rafraîchir les données ou la page.
+    //     $this->mount($this->id); // Re-monte les données initiales
+    //     $this->render(); // Ou appelez simplement render() si cela suffit
+    // }
+
     public function render()
     {
         return view('livewire.livraison-achatdirect');

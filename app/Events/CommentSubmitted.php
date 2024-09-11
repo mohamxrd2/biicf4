@@ -17,6 +17,7 @@ class CommentSubmitted implements ShouldBroadcast
 
     public $prix;
     public $commentId;
+    public $timestamp;
 
     /**
      * Create a new event instance.
@@ -27,6 +28,8 @@ class CommentSubmitted implements ShouldBroadcast
     {
         $this->prix = $prix;
         $this->commentId = $commentId;
+        $this->timestamp = now()->toIso8601String(); // Ajoute l'heure actuelle
+
     }
 
     /**
@@ -44,6 +47,8 @@ class CommentSubmitted implements ShouldBroadcast
         return [
             'prix' => $this->prix,
             'commentId' => $this->commentId,
+            'timestamp' => $this->timestamp = now()->toIso8601String(), // Ajoute l'heure actuelle
+
         ];
     }
 }

@@ -203,73 +203,131 @@
 
             </div>
 
-            <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-                @if ($oldestCommentDate)
-                    <span class=" mb-2">Temps restant pour cette negociatiation</span>
+            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})"
+                class="flex flex-col justify-center items-center mt-4">
+                <span class="mb-2" x-show="oldestCommentDate">Temps restant pour cette négociation</span>
 
-                    <div id="countdown"
-                        class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                        <div>-</div>:
-                        <div>-</div>:
-                        <div>-</div>
-                    </div>
-                @endif
+                <div id="countdown" x-show="oldestCommentDate"
+                    class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100 p-3 rounded-xl w-auto">
+                    <div x-text="hours">-</div>:
+                    <div x-text="minutes">-</div>:
+                    <div x-text="seconds">-</div>
+                </div>
             </div>
+
             <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtnAppel');
-                    const prixTradeError = document.getElementById('prixTradeError');
+                document.addEventListener('alpine:init', () => {
+                    Alpine.data('countdownTimer', (oldestCommentDate, comments) => ({
+                        oldestCommentDate: oldestCommentDate ? new Date(oldestCommentDate) : null,
+                        hours: '--',
+                        minutes: '--',
+                        seconds: '--',
+                        comments: comments || [],
+                        startDate: null,
+                        interval: null,
+                        isCountdownActive: false, // Nouvelle variable pour suivre l'état du compte à rebours
 
+                        init() {
+                            console.log('Initialisation du compteur', this.oldestCommentDate);
 
-                    const startDate = new Date("{{ $oldestCommentDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 2);
-
-                    const countdownTimer = setInterval(updateCountdown, 1000);
-
-                    function updateCountdown() {
-                        const currentDate = new Date();
-                        const difference = startDate.getTime() - currentDate.getTime();
-
-                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                        const countdownElement = document.getElementById('countdown');
-                        if (countdownElement) {
-                            countdownElement.innerHTML = `
-                                        <div>${hours}h</div>:
-                                        <div>${minutes}m</div>:
-                                        <div>${seconds}s</div>
-                                    `;
-                        }
-
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            if (countdownElement) {
-                                countdownElement.innerHTML = "Temps écoulé !";
+                            if (this.oldestCommentDate) {
+                                this.startDate = new Date(this.oldestCommentDate);
+                                this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                                this.startCountdown();
                             }
-                            prixTradeInput.disabled = true;
-                            submitBtn.classList.add('hidden');
+
+                            Echo.channel('oldest-comment')
+                                .listen('OldestCommentUpdated', (e) => {
+                                    console.log('Événement OldestCommentUpdated reçu', e);
+                                    if (e.oldestCommentDate) {
+                                        const newDate = new Date(e.oldestCommentDate);
+
+                                        // Ne redémarre que si la nouvelle date est différente
+                                        if (!this.oldestCommentDate || this.oldestCommentDate.getTime() !==
+                                            newDate.getTime()) {
+                                            this.oldestCommentDate = newDate;
+                                            this.startDate = new Date(this.oldestCommentDate);
+                                            this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                                            this.startCountdown();
+
+                                            // Émettre une requête Livewire pour rafraîchir les données
+                                            // Livewire.dispatch('refreshCountdown');
+                                            // console.log('done livewire refresh')
+
+                                            location.reload();
+                                        } else {
+                                            console.log(
+                                                'Le compte à rebours est déjà à jour, aucun redémarrage nécessaire.'
+                                            );
+                                        }
+                                    } else {
+                                        console.error('oldestCommentDate est null ou incorrect !', e);
+                                    }
+                                });
+                        },
 
 
-                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
-                                .prix > max.prix ? comment : max, {
+                        startCountdown() {
+                            if (this.isCountdownActive) {
+                                console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
+                                return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
+                            }
+
+                            if (this.interval) {
+                                clearInterval(this.interval);
+                            }
+                            this.updateCountdown();
+                            this.interval = setInterval(this.updateCountdown.bind(this), 1000);
+                            this.isCountdownActive = true; // Marque le compte à rebours comme actif
+                        },
+
+                        updateCountdown() {
+                            const currentDate = new Date();
+                            const difference = this.startDate.getTime() - currentDate.getTime();
+
+                            if (difference <= 0) {
+                                clearInterval(this.interval);
+                                this.endCountdown();
+                                return;
+                            }
+
+                            this.hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            this.minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                            this.seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                        },
+
+                        endCountdown() {
+                            document.getElementById('countdown').innerText = "Temps écoulé !";
+
+                            const prixTradeInput = document.getElementById('prixTrade');
+                            const submitBtn = document.getElementById('submitBtnAppel');
+                            const prixTradeError = document.getElementById('prixTradeError');
+
+                            if (prixTradeInput) prixTradeInput.disabled = true;
+                            if (submitBtn) submitBtn.classList.add('hidden');
+
+                            const highestPricedComment = this.comments.reduce((max, comment) => comment.prix >
+                                max.prix ? comment : max, {
                                     prix: -Infinity
                                 });
 
                             if (highestPricedComment && highestPricedComment.nameUser) {
-                                prixTradeError.textContent =
-                                    `Le livreur avec le meilleur prix  est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
+                                alert(
+                                    `Le livreur avec le meilleur prix est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`
+                                );
                             } else {
-                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
+                                alert("Aucun commentaire avec un prix trouvé.");
                             }
                             prixTradeError.classList.remove('hidden');
-                        }
-                    }
-                })
+                            this.isCountdownActive =
+                                false; // Marque le compte à rebours comme inactif lorsque terminé
+                        },
+                    }));
+                });
             </script>
+
+
+
 
 
 
