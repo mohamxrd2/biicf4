@@ -18,6 +18,7 @@
 
         <div class="p-4 bg-white w-full ">
 
+
             <p class="text-center my-5 text-2xl">Creer un compte</p>
 
 
@@ -142,6 +143,7 @@
 
 
                             </div>
+
 
                         </div>
                         <!-- End First Contnet -->
@@ -380,6 +382,8 @@
                                 <input type="number"
                                     class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                                     placeholder="Code de parrainage (Optionnel)">
+
+
                             </div>
                         </div>
                         <!-- End First Contnet -->
@@ -394,7 +398,7 @@
                             </div>
                         </div>
                         <!-- End Final Contnet -->
-
+                        
                         <!-- Button Group -->
                         <div class="mt-5 flex justify-between items-center gap-x-2">
                             <button type="button"
