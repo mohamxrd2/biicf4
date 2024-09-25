@@ -85,31 +85,35 @@
                     <div class="mt-5 sm:mt-8">
                         <!-- First Contnet -->
                         <div data-hs-stepper-content-item='{"index": 1 }'>
+
                             <div
-                                class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
+                                class="p-4 bg-gray-50 flex flex-col justify-center items-center gap-2 border border-dashed border-gray-200 rounded-xl h-full">
 
-                                <div class="flex justify-start">
 
+                                <div class="flex justify-start lg:w-1/2">
                                     @include('admin.components.input', [
                                         'type' => 'text',
                                         'name' => 'name',
                                         'placeholder' => 'Nom ou raison social',
                                     ])
+
+
+
                                     @include('admin.components.input', [
                                         'type' => 'text',
                                         'name' => 'last-name',
                                         'placeholder' => 'Prénom',
                                     ])
-
                                 </div>
 
-                                <div class="flex justify-start ">
-                                    @include('admin.components.input', [
+
+                                <div class="flex justify-start lg:w-1/2">
+                                    @include('admin.components.input2', [
                                         'type' => 'text',
                                         'name' => 'username',
                                         'placeholder' => 'Nom d\'utlisateur',
                                     ])
-                                    @include('admin.components.input', [
+                                    @include('admin.components.input2', [
                                         'name' => 'email',
                                         'type' => 'email',
                                         'placeholder' => 'Email',
@@ -141,8 +145,10 @@
                                         'Menage',
                                     ],
                                 ])
+                                <div>
 
-                                <label for="user_type">Proportion à investir (la somme minimale)</label>
+                                    <label for="investisement">Proportion à investir (la somme minimale)</label>
+                                </div>
                                 @include('admin.components.select', [
                                     'name' => 'investisement',
                                     'title' => 'Choisissez une tranche(FCFA)',
@@ -168,26 +174,14 @@
                         <div data-hs-stepper-content-item='{"index": 2 }' style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
-                                <div class="form-item">
-                                    {{-- <label>Telephone number</label> --}}
-                                    <input id="phone" type="tel">
-                                </div>
+                                <input id="phone" type="tel"
+                                    class="py-3 px-4 mb-2 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
 
-                                {{-- <label>Address</label>
-                                        <input id="address-zip" type="text" placeholder="Zip code"> --}}
-                                <select id="address-country"></select>
 
-                                @include('admin.components.selectcon', [
-                                    'name' => 'continent',
-                                    'title' => 'Choisissez un continent',
-                                    'options' => [],
-                                ])
+                                <select id="address-country"
+                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"></select>
 
-                                @include('admin.components.selectreg', [
-                                    'name' => 'sous_region',
-                                    'title' => 'Choisissez une sous-region',
-                                    'options' => [],
-                                ])
+
                                 @include('admin.components.input', [
                                     'name' => 'departement',
                                     'type' => 'text',
@@ -213,7 +207,10 @@
                                     placeholder="Code de parrainage (Optionnel)">
 
 
+                                <!-- Affichage du continent et de la sous-région -->
 
+                                <p id="continent">Continent: </p>
+                                <p id="subregion">Sous-région: </p>
 
                                 <!-- CSS for intl-tel-input -->
                                 <link rel="stylesheet"
@@ -226,6 +223,8 @@
                                     // Sélection des éléments DOM
                                     const input = document.querySelector("#phone");
                                     const addressDropdown = document.querySelector("#address-country");
+                                    const continentElement = document.querySelector("#continent");
+                                    const subregionElement = document.querySelector("#subregion");
 
                                     // Obtenez les données des pays via intl-tel-input
                                     const countryData = window.intlTelInputGlobals.getCountryData();
@@ -242,23 +241,46 @@
 
                                     // Initialisation du plugin intl-tel-input sur le champ du téléphone
                                     const iti = window.intlTelInput(input, {
-                                        initialCountry: "us", // Définit un pays par défaut (exemple: États-Unis)
+                                        initialCountry: "CI", // Définit un pays par défaut (exemple: États-Unis)
                                         utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js" // Pour le formatage et les placeholders
                                     });
 
                                     // Synchroniser le sélecteur de pays avec le champ de téléphone
                                     addressDropdown.value = iti.getSelectedCountryData().iso2;
 
-                                    // Mettre à jour le sélecteur d'adresse lorsqu'il y a un changement dans le champ de téléphone
+                                    // Fonction pour récupérer continent et sous-région via l'API Restcountries
+                                    async function getRegionData(countryCode) {
+                                        try {
+                                            const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+                                            const data = await response.json();
+                                            const countryInfo = data[0];
+
+                                            // Mettre à jour le contenu du DOM avec le continent et la sous-région
+                                            continentElement.textContent = `Continent: ${countryInfo.region}`;
+                                            subregionElement.textContent = `Sous-région: ${countryInfo.subregion}`;
+                                        } catch (error) {
+                                            console.error("Erreur lors de la récupération des informations régionales:", error);
+                                        }
+                                    }
+
+                                    // Mettre à jour les infos lors d'un changement dans le champ de téléphone
                                     input.addEventListener('countrychange', () => {
-                                        addressDropdown.value = iti.getSelectedCountryData().iso2;
+                                        const countryCode = iti.getSelectedCountryData().iso2;
+                                        addressDropdown.value = countryCode;
+                                        getRegionData(countryCode); // Récupérer et afficher les infos régionales
                                     });
 
-                                    // Mettre à jour le champ de téléphone lorsque le sélecteur d'adresse est modifié
+                                    // Mettre à jour le champ de téléphone et les infos régionales lors du changement de pays
                                     addressDropdown.addEventListener('change', () => {
-                                        iti.setCountry(addressDropdown.value);
+                                        const countryCode = addressDropdown.value;
+                                        iti.setCountry(countryCode);
+                                        getRegionData(countryCode); // Récupérer et afficher les infos régionales
                                     });
+
+                                    // Récupérer les infos régionales pour le pays par défaut
+                                    getRegionData(iti.getSelectedCountryData().iso2);
                                 </script>
+
                             </div>
                         </div>
                         <!-- End First Contnet -->
