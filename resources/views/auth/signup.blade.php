@@ -69,30 +69,7 @@
                                 </svg>
                             </span>
                             <span class="ms-2 text-sm font-medium text-gray-800">
-                                Nature d'acteur
-                            </span>
-                        </span>
-                        <div
-                            class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600">
-                        </div>
-                    </li>
-
-
-                    <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
-                        data-hs-stepper-nav-item='{"index": 3 }'>
-                        <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
-                            <span
-                                class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
-                                <span class="hs-stepper-success:hidden hs-stepper-completed:hidden">3</span>
-                                <svg class="hidden flex-shrink-0 size-3 hs-stepper-success:block"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </span>
-                            <span class="ms-2 text-sm font-medium text-gray-800">
-                                Contact
+                                Localisation & Contact
                             </span>
                         </span>
                         <div
@@ -111,23 +88,34 @@
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
 
-                                @include('admin.components.input', [
-                                    'type' => 'text',
-                                    'name' => 'name',
-                                    'placeholder' => 'Nom ou raison social',
-                                ])
+                                <div class="flex justify-start">
 
-                                @include('admin.components.input', [
-                                    'type' => 'text',
-                                    'name' => 'last-name',
-                                    'placeholder' => 'Prénom',
-                                ])
+                                    @include('admin.components.input', [
+                                        'type' => 'text',
+                                        'name' => 'name',
+                                        'placeholder' => 'Nom ou raison social',
+                                    ])
+                                    @include('admin.components.input', [
+                                        'type' => 'text',
+                                        'name' => 'last-name',
+                                        'placeholder' => 'Prénom',
+                                    ])
 
-                                @include('admin.components.input', [
-                                    'type' => 'text',
-                                    'name' => 'username',
-                                    'placeholder' => 'Nom d\'utlisateur',
-                                ])
+                                </div>
+
+                                <div class="flex justify-start ">
+                                    @include('admin.components.input', [
+                                        'type' => 'text',
+                                        'name' => 'username',
+                                        'placeholder' => 'Nom d\'utlisateur',
+                                    ])
+                                    @include('admin.components.input', [
+                                        'name' => 'email',
+                                        'type' => 'email',
+                                        'placeholder' => 'Email',
+                                        // Ajoutez d'autres attributs au besoin
+                                    ])
+                                </div>
 
                                 @include('admin.components.input', [
                                     'type' => 'password',
@@ -140,18 +128,6 @@
                                     'name' => 'repeat-password',
                                     'placeholder' => 'Confirmer mot de passe',
                                 ])
-
-
-                            </div>
-
-
-                        </div>
-                        <!-- End First Contnet -->
-
-                        <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{"index": 2 }' style="display: none;">
-                            <div
-                                class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
 
                                 @include('admin.components.select', [
                                     'name' => 'user_type',
@@ -166,181 +142,50 @@
                                     ],
                                 ])
 
+                                <label for="user_type">Proportion à investir (la somme minimale)</label>
                                 @include('admin.components.select', [
-                                    'name' => 'user_sexe',
-                                    'title' => 'Sexe',
-                                    'options' => ['Masculin', 'Feminin'],
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_age',
-                                    'title' => 'Tranche d\'age',
-                                    'options' => ['Adolescent', 'Jeune', '3ème Age'],
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_status',
-                                    'title' => 'Status social',
-                                    'options' => ['Salarié', 'Travailleur', 'Autonome', 'Etudiant', 'Sans emploi'],
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_comp_size',
-                                    'title' => 'Taille d\'entreprise',
+                                    'name' => 'investisement',
+                                    'title' => 'Choisissez une tranche(FCFA)',
                                     'options' => [
-                                        'Grande entreprise',
-                                        'Moyenne entreprise',
-                                        'Petite entreprise',
-                                        'Mini entreprise',
-                                        'Micro entreprise',
+                                        '1-500.000',
+                                        '500.001-1.000.000',
+                                        '1.000.001-5.000.000',
+                                        '5.000.001-10.000.000',
+                                        '10.000.001-50.000.000',
+                                        '50.000.001 et plus',
                                     ],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_serv',
-                                    'title' => 'Type de service',
-                                    'options' => [
-                                        'Service ministeriel',
-                                        'Administration publique',
-                                        'Collectivité territoriale',
-                                    ],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_orgtyp',
-                                    'title' => 'Type d\'organismes',
-                                    'options' => ['National', 'International'],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_orgtyp2',
-                                    'title' => 'Choisir',
-                                    'options' => ['ONG', 'Institution', 'Programme', 'Projet'],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_com',
-                                    'title' => 'Type de communauté',
-                                    'options' => [
-                                        'Localité',
-                                        'Communauté',
-                                        'Syndicat',
-                                        'Mutuelle',
-                                        'Association',
-                                        'Club',
-                                    ],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_mena1',
-                                    'title' => 'Type de ménage',
-                                    'options' => ['Urbain', 'Rural'],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'user_mena2',
-                                    'title' => 'Statut',
-                                    'options' => [
-                                        'Salarié',
-                                        'Entreprise',
-                                        'Commerçant',
-                                        'Producteur agricole',
-                                        'Artisan',
-                                        'Ouvrier',
-                                        'Autre',
-                                    ],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                            </div>
-                            <div
-                                class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
-                                @include('admin.components.select', [
-                                    'name' => 'sector_activity',
-                                    'title' => 'Secteur d\'activité',
-                                    'options' => ['Industrie', 'Construction', 'Commerce', 'Service', 'Autre'],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'industry',
-                                    'title' => 'Industrie',
-                                    'options' => [
-                                        'Alimentaires',
-                                        'Boissons',
-                                        'Tabac',
-                                        'Bois',
-                                        'Papier',
-                                        'Imprimerie',
-                                        'Chimique',
-                                        'Pharmaceutique',
-                                        'Caoutchouc et plastique',
-                                        'Produits non métalliques',
-                                        'Métallurgie et produits métalliques',
-                                        'Machines et équipements',
-                                        'Matériels de transport',
-                                        'Réparation et installation de machines et d\'équipements',
-                                        'Distribution d\'électricité',
-                                        'Distribution de gaz',
-                                    ],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'building_type',
-                                    'title' => 'Type de bâtiment',
-                                    'options' => ['Habitation', 'Usine', 'Pont & Chaussée'],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'commerce_sector',
-                                    'title' => 'Secteur d\'activité',
-                                    'options' => ['Commerce', 'Réparation d\'automobiles et de motocycles'],
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.select', [
-                                    'name' => 'transport_sector',
-                                    'title' => 'Secteur d\'activité',
-                                    'options' => [
-                                        'Transports et entreposage',
-                                        'Hébergement et restauration',
-                                        'Activités financières et d\'assurance',
-                                        'Activités immobilières',
-                                        'Service juridiques',
-                                        'Service comptables',
-                                        'Service de gestion',
-                                        'Service d\'architecture',
-                                        'Service d\'ingénierie',
-                                        'Service de contrôle et d\'analyses techniques',
-                                        'Autres activités spécialisées, scientifiques et techniques',
-                                        'Services administratifs',
-                                        'Service de soutien',
-                                        'Administration publique',
-                                        'Enseignement',
-                                        'Service santé humaine',
-                                        'Arts, spectacles et activités récréatives',
-                                        'Autres activités de services',
-                                    ],
-                                    // Ajoutez d'autres attributs au besoin
                                 ])
 
 
+
                             </div>
+
+
                         </div>
                         <!-- End First Contnet -->
 
                         <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{ "index": 3}' style="display: none;">
+                        <div data-hs-stepper-content-item='{"index": 2 }' style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
+                                <div class="form-item">
+                                    {{-- <label>Telephone number</label> --}}
+                                    <input id="phone" type="tel">
+                                </div>
+
+                                {{-- <label>Address</label>
+                                        <input id="address-zip" type="text" placeholder="Zip code"> --}}
+                                <select id="address-country"></select>
 
                                 @include('admin.components.selectcon', [
                                     'name' => 'continent',
                                     'title' => 'Choisissez un continent',
                                     'options' => [],
                                 ])
+
                                 @include('admin.components.selectreg', [
                                     'name' => 'sous_region',
                                     'title' => 'Choisissez une sous-region',
-                                    'options' => [],
-                                ])
-                                @include('admin.components.selectpays', [
-                                    'name' => 'country',
-                                    'title' => 'Choisissez un pays',
                                     'options' => [],
                                 ])
                                 @include('admin.components.input', [
@@ -348,34 +193,18 @@
                                     'type' => 'text',
                                     'placeholder' => 'Saisissez votre departement',
                                     // Ajoutez d'autres attributs au besoin
-                                ])@include('admin.components.input', [
+                                ])
+
+                                @include('admin.components.input', [
                                     'name' => 'ville',
                                     'type' => 'text',
                                     'placeholder' => 'Saisissez votre ville',
                                     // Ajoutez d'autres attributs au besoin
-                                ])@include('admin.components.input', [
+                                ])
+                                @include('admin.components.input', [
                                     'name' => 'commune',
                                     'type' => 'text',
                                     'placeholder' => 'Saisissez votre commune',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-
-                                @include('admin.components.input', [
-                                    'name' => 'phone',
-                                    'type' => 'tel',
-                                    'placeholder' => 'Ex: +225 06 12 34 56 78',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.input', [
-                                    'name' => 'email',
-                                    'type' => 'email',
-                                    'placeholder' => 'Email',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.input', [
-                                    'name' => 'address',
-                                    'type' => 'text',
-                                    'placeholder' => 'addresse',
                                     // Ajoutez d'autres attributs au besoin
                                 ])
 
@@ -384,6 +213,52 @@
                                     placeholder="Code de parrainage (Optionnel)">
 
 
+
+
+                                <!-- CSS for intl-tel-input -->
+                                <link rel="stylesheet"
+                                    href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
+
+                                <!-- JS for intl-tel-input -->
+                                <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
+                                <script>
+                                    // Sélection des éléments DOM
+                                    const input = document.querySelector("#phone");
+                                    const addressDropdown = document.querySelector("#address-country");
+
+                                    // Obtenez les données des pays via intl-tel-input
+                                    const countryData = window.intlTelInputGlobals.getCountryData();
+
+                                    // Remplir le sélecteur de pays dans l'adresse
+                                    for (let i = 0; i < countryData.length; i++) {
+                                        const country = countryData[i];
+                                        const optionNode = document.createElement("option");
+                                        optionNode.value = country.iso2;
+                                        const textNode = document.createTextNode(country.name);
+                                        optionNode.appendChild(textNode);
+                                        addressDropdown.appendChild(optionNode);
+                                    }
+
+                                    // Initialisation du plugin intl-tel-input sur le champ du téléphone
+                                    const iti = window.intlTelInput(input, {
+                                        initialCountry: "us", // Définit un pays par défaut (exemple: États-Unis)
+                                        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js" // Pour le formatage et les placeholders
+                                    });
+
+                                    // Synchroniser le sélecteur de pays avec le champ de téléphone
+                                    addressDropdown.value = iti.getSelectedCountryData().iso2;
+
+                                    // Mettre à jour le sélecteur d'adresse lorsqu'il y a un changement dans le champ de téléphone
+                                    input.addEventListener('countrychange', () => {
+                                        addressDropdown.value = iti.getSelectedCountryData().iso2;
+                                    });
+
+                                    // Mettre à jour le champ de téléphone lorsque le sélecteur d'adresse est modifié
+                                    addressDropdown.addEventListener('change', () => {
+                                        iti.setCountry(addressDropdown.value);
+                                    });
+                                </script>
                             </div>
                         </div>
                         <!-- End First Contnet -->
@@ -398,7 +273,7 @@
                             </div>
                         </div>
                         <!-- End Final Contnet -->
-                        
+
                         <!-- Button Group -->
                         <div class="mt-5 flex justify-between items-center gap-x-2">
                             <button type="button"
@@ -455,7 +330,6 @@
 
     </div>
 
-    <script src="{{ asset('js/select.js') }}"></script>
 </body>
 
 </html>

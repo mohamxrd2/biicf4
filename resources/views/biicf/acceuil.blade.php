@@ -15,6 +15,7 @@
             @livewire('search-bar')
 
         </div>
+        
         <div class="lg:col-span-1 lg:block hidden">
             <div class="flex flex-col ">
                 <div class="flex bg-white border border-gray-200 p-4 rounded-xl mb-3">
