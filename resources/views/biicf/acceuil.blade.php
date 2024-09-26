@@ -10,12 +10,10 @@
 
         <div class="lg:col-span-2 col-span-3">
 
-
-             Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptatum quia odit a illum adipisci molestias velit necessitatibus nobis dolor suscipit, quis nemo! Hic reprehenderit esse ullam ipsam tenetur reiciendis aut!
             @livewire('search-bar')
 
         </div>
-        
+
         <div class="lg:col-span-1 lg:block hidden">
             <div class="flex flex-col ">
                 <div class="flex bg-white border border-gray-200 p-4 rounded-xl mb-3">

@@ -8,6 +8,7 @@
             {!! $iconSvg !!}
         @endif
 
-        {{ $title }}
+        <!-- Title, toggled hidden -->
+        <span class="nav-title">{{ $title }}</span>
     </a>
 </li>
