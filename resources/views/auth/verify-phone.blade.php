@@ -12,51 +12,82 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+        <h2 class="text-2xl font-bold mb-6">OTP Verification</h2>
+        <p class="text-gray-500 mb-4">Code has been sent to ****45</p>
 
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Vérification du Numéro de Téléphone</div>
+        <!-- Laravel Form for OTP verification -->
+        <form method="POST" action="{{ route('verify.phone.code') }}">
+            @csrf
 
-                    <div class="card-body">
-                        @if (session('error'))
-                            <div class="alert alert-danger">
-                                {{ session('error') }}
-                            </div>
-                        @endif
-
-                        <form method="POST" action="{{ route('verify.phone.code') }}">
-                            @csrf
-
-                            <div class="form-group">
-                                <label for="verification_code">Code de Vérification</label>
-                                <input id="verification_code" type="text"
-                                    class="form-control @error('verification_code') is-invalid @enderror"
-                                    name="verification_code" required autofocus>
-
-                                @error('verification_code')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-
-                            <input type="hidden" name="phone" value="{{ request()->phone ?? old('phone') }}">
-
-                            <div class="form-group mt-3">
-                                <button type="submit" class="btn btn-primary">
-                                    Vérifier
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            <!-- OTP input fields (each input for one digit) -->
+            <div class="flex justify-center space-x-2 sm:space-x-4 mb-6">
+                <input id="verification_code_1" type="text" maxlength="1" name="verification_code[]"
+                    class="w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-2xl text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required />
+                <input id="verification_code_2" type="text" maxlength="1" name="verification_code[]"
+                    class="w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-2xl text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required />
+                <input id="verification_code_3" type="text" maxlength="1" name="verification_code[]"
+                    class="w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-2xl text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required />
+                <input id="verification_code_4" type="text" maxlength="1" name="verification_code[]"
+                    class="w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-2xl text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required />
+                <input id="verification_code_5" type="text" maxlength="1" name="verification_code[]"
+                    class="w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-2xl text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required />
+                <input id="verification_code_6" type="text" maxlength="1" name="verification_code[]"
+                    class="w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-2xl text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required />
             </div>
-        </div>
-    </div>
 
+            <!-- Hidden field for phone number -->
+            <input type="hidden" name="phone" value="{{ request()->phone ?? old('phone') }}">
+
+            <!-- Error message -->
+            @error('verification_code')
+                <span class="text-red-500 text-sm block" role="alert">
+                    <strong>{{ $message }}</strong>
+                </span>
+            @enderror
+
+            <!-- Resend OTP link -->
+            <p class="text-gray-500 mb-4">Didn’t get the OTP? <a href="#"
+                    class="text-purple-500 font-semibold">Resend</a></p>
+
+            <!-- Submit button -->
+            <div class="mt-3">
+                <button type="submit"
+                    class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition duration-300">
+                    Vérifier
+                </button>
+            </div>
+        </form>
+
+        <!-- JavaScript for auto focus on next input -->
+        <script>
+            const inputs = document.querySelectorAll('input[name="verification_code[]"]');
+
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', () => {
+                    if (input.value.length === 1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+
+                // Permet de passer au champ précédent avec la touche Backspace
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === "Backspace" && input.value === '' && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+            });
+        </script>
+
+
+    </div>
 </body>
 
 </html>
