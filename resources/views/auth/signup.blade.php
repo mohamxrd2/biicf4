@@ -146,7 +146,6 @@
                                     ],
                                 ])
                                 <div>
-
                                     <label for="investisement">Proportion à investir (la somme minimale)</label>
                                 </div>
                                 @include('admin.components.select', [
@@ -174,13 +173,24 @@
                         <div data-hs-stepper-content-item='{"index": 2 }' style="display: none;">
                             <div
                                 class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
-                                <input id="phone" type="tel"
-                                    class="py-3 px-4 mb-2 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+
+                                <div class="flex justify-start lg:w-1/2">
+
+                                    <input id="phone" type="tel" name="phone"
+                                        class="py-3 px-4 mb-2 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
 
 
-                                <select id="address-country"
-                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"></select>
+                                    <select id="address-country" name="country"
+                                        class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"></select>
 
+                                </div>
+                                <!-- Champ pour le continent -->
+                                <input id="continent" type="text" placeholder="Continent" name="continent"
+                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+
+                                <!-- Champ pour la sous-région -->
+                                <input id="subregion" type="text" placeholder="Sous-région" name="sous_region"
+                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
 
                                 @include('admin.components.input', [
                                     'name' => 'departement',
@@ -202,29 +212,26 @@
                                     // Ajoutez d'autres attributs au besoin
                                 ])
 
-                                <input type="number"
+                                <input type="number" name="parrain"
                                     class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                                     placeholder="Code de parrainage (Optionnel)">
 
 
-                                <!-- Affichage du continent et de la sous-région -->
 
-                                <p id="continent">Continent: </p>
-                                <p id="subregion">Sous-région: </p>
 
                                 <!-- CSS for intl-tel-input -->
                                 <link rel="stylesheet"
-                                    href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
+                                    href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/css/intlTelInput.css">
 
                                 <!-- JS for intl-tel-input -->
-                                <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+                                <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/intlTelInput.min.js"></script>
 
                                 <script>
                                     // Sélection des éléments DOM
                                     const input = document.querySelector("#phone");
                                     const addressDropdown = document.querySelector("#address-country");
-                                    const continentElement = document.querySelector("#continent");
-                                    const subregionElement = document.querySelector("#subregion");
+                                    const continentInput = document.querySelector("#continent");
+                                    const subregionInput = document.querySelector("#subregion");
 
                                     // Obtenez les données des pays via intl-tel-input
                                     const countryData = window.intlTelInputGlobals.getCountryData();
@@ -241,8 +248,9 @@
 
                                     // Initialisation du plugin intl-tel-input sur le champ du téléphone
                                     const iti = window.intlTelInput(input, {
-                                        initialCountry: "CI", // Définit un pays par défaut (exemple: États-Unis)
-                                        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js" // Pour le formatage et les placeholders
+                                        initialCountry: "CI", // Définit un pays par défaut (exemple: Côte d'Ivoire)
+                                        separateDialCode: true,
+                                        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/utils.js" // Pour le formatage et les placeholders
                                     });
 
                                     // Synchroniser le sélecteur de pays avec le champ de téléphone
@@ -255,9 +263,9 @@
                                             const data = await response.json();
                                             const countryInfo = data[0];
 
-                                            // Mettre à jour le contenu du DOM avec le continent et la sous-région
-                                            continentElement.textContent = `Continent: ${countryInfo.region}`;
-                                            subregionElement.textContent = `Sous-région: ${countryInfo.subregion}`;
+                                            // Mettre à jour le contenu des inputs avec le continent et la sous-région
+                                            continentInput.value = countryInfo.region;
+                                            subregionInput.value = countryInfo.subregion;
                                         } catch (error) {
                                             console.error("Erreur lors de la récupération des informations régionales:", error);
                                         }
@@ -279,7 +287,23 @@
 
                                     // Récupérer les infos régionales pour le pays par défaut
                                     getRegionData(iti.getSelectedCountryData().iso2);
+
+
+                                    // Lors de la soumission du formulaire, ajouter l'indicatif au numéro de téléphone
+                                    document.querySelector('form').addEventListener('submit', (e) => {
+                                        e.preventDefault(); // Empêche l'envoi du formulaire pour test
+
+                                        // Récupérer le numéro complet (avec indicatif)
+                                        const fullPhoneNumber = iti.getNumber();
+
+                                        // Ajouter le numéro complet au champ ou l'envoyer à la base de données
+                                        input.value = fullPhoneNumber;
+
+                                        // Envoyer le formulaire
+                                        e.target.submit();
+                                    });
                                 </script>
+
 
                             </div>
                         </div>

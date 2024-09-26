@@ -23,11 +23,13 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
+use App\Http\Controllers\SmsController;
 use App\Livewire\WithdrawalComponent;
 
 Route::get('/', function () {
     return view('index');
 })->name('index');
+
 
 Route::prefix('admin')->middleware('admin.auth')->group(function () {
     //liste des dashboard
@@ -206,5 +208,8 @@ Route::post('biicf/login', [BiicfAuthController::class, 'login']);
 
 Route::get('biicf/signup', [UserController::class, 'createPageBiicf'])->name('biicf.signup');
 Route::post('biicf/signup', [UserController::class, 'createUserBiicf']);
+
+Route::get('biicf/verify-phone', [UserController::class, 'showPhoneVerificationForm'])->name('verify.phone');
+Route::post('biicf/verify-phone', [UserController::class, 'verifyPhoneCode'])->name('verify.phone.code');
 
 Route::post('biicf/logout', [BiicfAuthController::class, 'logout'])->name('biicf.logout');

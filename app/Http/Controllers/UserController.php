@@ -12,6 +12,7 @@ use App\Models\ProduitService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Twilio\Rest\Client;
 
 class UserController extends Controller
 {
@@ -243,36 +244,45 @@ class UserController extends Controller
         return back()->with('success', 'Administrateur mis à jour avec succès.');
     }
 
-    public $countries = [];
+    // public $countries = [];
 
-    public function fetchCountries()
-    {
-        try {
-            $response = Http::get('https://restcountries.com/v3.1/all');
-            $this->countries = collect($response->json())->pluck('name.common')->sort()->toArray();
-        } catch (\Exception $e) {
-            // Handle the error (e.g., log it, show an error message)
-            $this->countries = [];
-        }
-    }
+    // public function fetchCountries()
+    // {
+    //     try {
+    //         $response = Http::get('https://restcountries.com/v3.1/all');
+    //         $this->countries = collect($response->json())->pluck('name.common')->sort()->toArray();
+    //     } catch (\Exception $e) {
+    //         // Handle the error (e.g., log it, show an error message)
+    //         $this->countries = [];
+    //     }
+    // }
 
     public function createPageBiicf()
     {
-        $this->fetchCountries();
+        // $this->fetchCountries();
 
-        return view('auth.signup', [
-            'countries' => $this->countries,
-        ]);
+        return view('auth.signup');
     }
     public function createUserBiicf(Request $request)
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'last-name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'repeat-password' => 'required|string|same:password',
-            'email' => 'required|email|max:255|unique:users',
-            'phone' => 'required',
+            'user_type' => 'required|string',
+            'investisement' => 'required|string',
+            'phone' => 'required|unique:users',
+            'continent' => 'required|string',
+            'sous_region' => 'required|string',
+            'country' => 'required|string',
+            'departement' => 'required|string',
+            'ville' => 'required|string',
+            'commune' => 'required|string',
+            'parrain' => 'nullable', // Ajout du champ parrain
+
 
         ], [
             'email.unique' => 'Email deja utlisé',
@@ -287,60 +297,138 @@ class UserController extends Controller
             'email.email' => 'L\'adresse email doit être valide.',
             'phone.required' => 'Le champ téléphone est requis.',
         ]);
+        dd($validatedData);
+        // try {
+        $user = new User();
+        $user->name = $validatedData['name'] . ' ' . $request->input('last-name');
+        $user->username = $validatedData['username'];
+        $user->email = $validatedData['email'];
+        $user->email_verified_at = now();
+        $user->password = Hash::make($validatedData['password']);
+        $user->actor_type = $request->input('user_type');
+        $user->investissement = $request->input('investisement');
+        $user->phone = $validatedData['phone'];
+        $user->continent = $request->input('continent');
+        $user->sous_region = $request->input('sous_region');
+        $user->country = $request->input('country');
+        $user->departe = $request->input('departement');
+        $user->ville = $request->input('ville');
+        $user->commune = $request->input('commune');
+        $user->parrain = $request->input('parrain');
+        $user->save();
+
+
+
+
+        $wallet = new Wallet();
+        $wallet->user_id = $user->id;
+        $wallet->balance = 0; // Solde initial
+        $wallet->save();
+
+        // Après la création de l'utilisateur, on envoie le SMS de vérification
+        $this->sendSmsVerification($user->phone);
+
+        //envoi du couriel au nouveau client
+        // $user->sendEmailVerificationNotification();
+        // $user->email_verified_at = now();
+
+        // return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
+        // return redirect()->route('biicf.login')->with('success', 'Création du compte avec succès, Connectez-vous!');
+        // Récupérer les informations Twilio depuis le fichier .env
+        $sid = env('TWILIO_SID');
+        $token = env('TWILIO_TOKEN');
+        $verifyServiceId = env('TWILIO_VERIFY_SERVICE_ID');
+        $twilio = new Client($sid, $token);
+
+
+        // Récupérer le numéro de téléphone depuis la requête
+        $phoneNumber = $validatedData['phone'];
+
+
+        // Créer la vérification via le service Twilio Verify
+        $verification = $twilio->verify->v2->services($verifyServiceId)
+            ->verifications
+            ->create($phoneNumber, "sms");
+
+        // Retourner une réponse indiquant que le SMS a été envoyé
+        return response()->json([
+            'message' => 'SMS de vérification envoyé',
+            'sid' => $verification->sid
+        ], 200);
+        // return redirect()->route('verify.phone', ['phone' => $user->phone])->with('success', 'Code de vérification envoyé par SMS. Veuillez vérifier votre numéro.');
+        // } catch (\Exception $e) {
+        //     // dd($e->getMessage());
+        //     return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
+        // }
+    }
+
+    private function sendSmsVerification($phoneNumber)
+    {
+        // Récupérer les informations Twilio depuis le fichier .env
+        $sid = env('TWILIO_SID');
+        $token = env('TWILIO_TOKEN');
+        $verifyServiceId = env('TWILIO_VERIFY_SERVICE_ID');
+        $twilio = new Client($sid, $token);
 
         try {
-            $user = new User();
-            $user->name = $validatedData['name'] . ' ' . $request->input('last-name');
-            $user->username = $validatedData['username'];
-            $user->password = Hash::make($validatedData['password']);
-            $user->email = $validatedData['email'];
-            $user->phone = $validatedData['phone'];
-            $user->actor_type = $request->input('user_type');
-            $user->gender = $request->input('user_sexe');
-            $user->age = $request->input('user_age');
-            $user->social_status = $request->input('user_status');
-            $user->company_size = $request->input('user_comp_size');
-            $user->service_type = $request->input('user_serv');
-            $user->organization_type = $request->input('user_orgtyp');
-            $user->second_organization_type = $request->input('user_orgtyp2');
-            $user->communication_type = $request->input('user_com');
-            $user->mena_type = $request->input('user_mena1');
-            $user->mena_status = $request->input('user_mena2');
-            $user->sector = $request->input('sector_activity');
-            $user->industry = $request->input('industry');
-            $user->construction = $request->input('building_type');
-            $user->commerce = $request->input('commerce_sector');
-            $user->services = $request->input('transport_sector');
-            $user->continent = $request->input('continent');
-            $user->sous_region = $request->input('sous_region');
-            $user->country = $request->input('country');
-            $user->departe = $request->input('departement');
-            $user->ville = $request->input('ville');
-            $user->address = $request->input('address');
-            $user->parrain = $request->input('parrain');
-            $user->commune = $request->input('commune');
-            $user->email_verified_at = now();
+            // Créer la vérification via le service Twilio Verify
+            $verification = $twilio->verify->v2->services($verifyServiceId)
+                ->verifications
+                ->create($phoneNumber, "sms");
 
-
-            $user->save();
-
-            $wallet = new Wallet();
-            $wallet->user_id = $user->id;
-            $wallet->balance = 0; // Solde initial
-            $wallet->save();
-
-            //envoi du couriel au nouveau client
-            // $user->sendEmailVerificationNotification();
-            // $user->email_verified_at = now();
-
-            // return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
-            return redirect()->route('biicf.login')->with('success', 'Création du compte avec succès, Connectez-vous!');
+            // Retourner une réponse indiquant que le SMS a été envoyé (facultatif)
+            return response()->json([
+                'message' => 'SMS de vérification envoyé',
+                'sid' => $verification->sid
+            ], 200);
         } catch (\Exception $e) {
-            // dd($e->getMessage());
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
+            // Gérer les erreurs
+            return response()->json([
+                'message' => 'Erreur lors de l\'envoi du SMS de vérification',
+                'error' => $e->getMessage()
+            ], 400);
         }
     }
 
+    public function showPhoneVerificationForm()
+    {
+        return view('auth.verify-phone');
+    }
+
+    public function verifyPhoneCode(Request $request)
+    {
+        $request->validate([
+            'verification_code' => 'required|string',
+            'phone' => 'required|string'
+        ]);
+
+        // Récupérer les informations Twilio depuis le fichier .env
+        $sid = env('TWILIO_SID');
+        $token = env('TWILIO_TOKEN');
+        $verifyServiceId = env('TWILIO_VERIFY_SERVICE_ID');
+        $twilio = new Client($sid, $token);
+
+        try {
+            // Vérifier le code via Twilio Verify
+            $verificationCheck = $twilio->verify->v2->services($verifyServiceId)
+                ->verificationChecks
+                ->create([
+                    'to' => $request->phone,
+                    'code' => $request->verification_code
+                ]);
+
+            if ($verificationCheck->status == 'approved') {
+                // Si la vérification est approuvée, rediriger l'utilisateur avec un message de succès
+                return redirect()->route('biicf.login')->with('success', 'Votre numéro a été vérifié avec succès!');
+            } else {
+                // Si le code est invalide, renvoyer une erreur
+                return back()->withErrors(['verification_code' => 'Code de vérification incorrect.']);
+            }
+        } catch (\Exception $e) {
+            // Gérer les erreurs en cas de problème avec Twilio
+            return back()->withErrors(['error' => 'Une erreur est survenue lors de la vérification du code.']);
+        }
+    }
     public function showProfile()
     {
         $userId = Auth::guard('web')->id();
