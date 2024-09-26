@@ -297,7 +297,7 @@ class UserController extends Controller
             'email.email' => 'L\'adresse email doit être valide.',
             'phone.required' => 'Le champ téléphone est requis.',
         ]);
-        dd($validatedData);
+        // dd($validatedData);
         // try {
         $user = new User();
         $user->name = $validatedData['name'] . ' ' . $request->input('last-name');
@@ -335,26 +335,7 @@ class UserController extends Controller
         // return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
         // return redirect()->route('biicf.login')->with('success', 'Création du compte avec succès, Connectez-vous!');
         // Récupérer les informations Twilio depuis le fichier .env
-        $sid = env('TWILIO_SID');
-        $token = env('TWILIO_TOKEN');
-        $verifyServiceId = env('TWILIO_VERIFY_SERVICE_ID');
-        $twilio = new Client($sid, $token);
-
-
-        // Récupérer le numéro de téléphone depuis la requête
-        $phoneNumber = $validatedData['phone'];
-
-
-        // Créer la vérification via le service Twilio Verify
-        $verification = $twilio->verify->v2->services($verifyServiceId)
-            ->verifications
-            ->create($phoneNumber, "sms");
-
-        // Retourner une réponse indiquant que le SMS a été envoyé
-        return response()->json([
-            'message' => 'SMS de vérification envoyé',
-            'sid' => $verification->sid
-        ], 200);
+        
         // return redirect()->route('verify.phone', ['phone' => $user->phone])->with('success', 'Code de vérification envoyé par SMS. Veuillez vérifier votre numéro.');
         // } catch (\Exception $e) {
         //     // dd($e->getMessage());
