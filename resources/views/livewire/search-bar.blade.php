@@ -1,4 +1,4 @@
-<div>
+<div id="search-input">
     <form wire:submit.prevent="search" class="max-w-2xl mx-auto">
         <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
         <div class="relative">
@@ -70,6 +70,109 @@
             </div>
         </div>
     </form>
+
+
+    <h2 class="text-2xl font-bold tracking-tight text-gray-900">localisation /Produit & Service / quantite / prix</h2>
+
+    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <div>
+                <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+            </div>
+            <div class="p-2 flex-grow">
+                <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Noteworthy</h5>
+                <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">X0F 11111</h1>
+                <p class="font-normal text-gray-700 dark:text-gray-400">pays...</p>
+                <p class="font-normal text-gray-700 dark:text-gray-400">ville...</p>
+                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100">Produit</span>
+                <div class="w-full bottom-0">
+                    <p class="text-sm text-gray-600 text-right">2min</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <div>
+                <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+            </div>
+            <div class="p-2 flex-grow">
+                <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Noteworthy</h5>
+                <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">X0F 11111</h1>
+                <p class="font-normal text-gray-700 dark:text-gray-400">pays...</p>
+                <p class="font-normal text-gray-700 dark:text-gray-400">ville...</p>
+                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100">Produit</span>
+                <div class="w-full bottom-0">
+                    <p class="text-sm text-gray-600 text-right">2min</p>
+                </div>
+            </div>
+        </div>
+        <div class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <div>
+                <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+            </div>
+            <div class="p-2 flex-grow">
+                <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Noteworthy</h5>
+                <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">X0F 11111</h1>
+                <p class="font-normal text-gray-700 dark:text-gray-400">pays...</p>
+                <p class="font-normal text-gray-700 dark:text-gray-400">ville...</p>
+                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100">Produit</span>
+                <div class="w-full bottom-0">
+                    <p class="text-sm text-gray-600 text-right">2min</p>
+                </div>
+            </div>
+        </div>
+        <div class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <div>
+                <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+            </div>
+            <div class="p-2 flex-grow">
+                <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Noteworthy</h5>
+                <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">X0F 11111</h1>
+                <p class="font-normal text-gray-700 dark:text-gray-400">pays...</p>
+                <p class="font-normal text-gray-700 dark:text-gray-400">ville...</p>
+                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100">Produit</span>
+                <div class="w-full bottom-0">
+                    <p class="text-sm text-gray-600 text-right">2min</p>
+                </div>
+            </div>
+        </div>
+        <div class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <div>
+                <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+            </div>
+            <div class="p-2 flex-grow">
+                <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Noteworthy</h5>
+                <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">X0F 11111</h1>
+                <p class="font-normal text-gray-700 dark:text-gray-400">pays...</p>
+                <p class="font-normal text-gray-700 dark:text-gray-400">ville...</p>
+                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100">Produit</span>
+                <div class="w-full bottom-0">
+                    <p class="text-sm text-gray-600 text-right">2min</p>
+                </div>
+            </div>
+        </div>
+        <div class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <div>
+                <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+            </div>
+            <div class="p-2 flex-grow">
+                <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Noteworthy</h5>
+                <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">X0F 11111</h1>
+                <p class="font-normal text-gray-700 dark:text-gray-400">pays...</p>
+                <p class="font-normal text-gray-700 dark:text-gray-400">ville...</p>
+                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100">Produit</span>
+                <div class="w-full bottom-0">
+                    <p class="text-sm text-gray-600 text-right">2min</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ajoute les autres divs de produit ici de la même manière -->
+    </div>
+
+
+
+
 
     @foreach ($produits as $produit)
         <div class="max-w-2xl mx-auto my-3">

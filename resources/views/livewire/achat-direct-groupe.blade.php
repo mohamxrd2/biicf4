@@ -1,6 +1,6 @@
 <div>
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect"
-        class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md" style="display: none;" method="POST">
+        class="mt-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md"  method="POST">
         @csrf
         <h1 class="text-xl text-center mb-3">Achat direct</h1>
 
@@ -125,7 +125,7 @@
                             <div class="w-1/2 mr-2 relative">
                                 <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Au plus
                                     tôt</label>
-                                <input type="date" id="datePickerStart" name="dateTot" 
+                                <input type="date" id="datePickerStart" name="dateTot"
                                     wire:model="dateTot"
                                     class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             </div>
@@ -134,7 +134,7 @@
                             <div class="w-1/2 mr-2 relative">
                                 <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus
                                     tard</label>
-                                <input type="date" id="datePickerEnd" name="dateTard" 
+                                <input type="date" id="datePickerEnd" name="dateTard"
                                     wire:model="dateTard"
                                     class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             </div>

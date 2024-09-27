@@ -17,9 +17,9 @@
         </div>
     @endif
 
-    <div class="max-w-7xl mx-auto p-4 grid lg:grid-cols-5 gap-4 ">
-        <!-- Left Side: Image -->
-        <div class="lg:h-screen fixed-image lg:col-span-3 col-span-5">
+    {{-- <div class="max-w-7xl mx-auto p-4 grid lg:grid-cols-5 gap-4 "> --}}
+    <!-- Left Side: Image -->
+    {{-- <div class="lg:h-screen fixed-image lg:col-span-3 col-span-5">
             <div data-hs-carousel='{
                 "loadingClasses": "opacity-0",
                 "isAutoPlay": true
@@ -94,10 +94,10 @@
                     </div>
                 @endif
             </div>
-        </div>
+        </div> --}}
 
-        <!-- Right Side: Product Details -->
-        <div class="lg:h-500px h-auto overflow-y-auto p-4 lg:col-span-2 col-span-5">
+    <!-- Right Side: Product Details -->
+    {{-- <div class="lg:h-500px h-auto overflow-y-auto p-4 lg:col-span-2 col-span-5">
             <h2 class="text-3xl font-semibold mb-2">{{ $produit->name }}</h2>
             <p class="text-sm font-medium text-gray-600 mb-7">{{ $produit->villeServ }}, {{ $produit->comnServ }}</p>
             <p class="text-gray-500 mb-8">
@@ -180,12 +180,12 @@
                     data-hs-overlay="#hs-offreNeg-{{ $produit->id }}">faire une offre negocié </button>
 
                 <button class="w-full mt-3 bg-blue-600 text-white py-2 mr- rounded-xl"
-                    data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">faire une offre Groupé </button>
+                    data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">faire une offre Groupé </button> --}}
 
-                {{-- <button class="w-full mt-3 bg-purple-600 text-white py-2 mr- rounded-xl"
+    {{-- <button class="w-full mt-3 bg-purple-600 text-white py-2 mr- rounded-xl"
                     data-hs-overlay="#hs-offreGrpNeg-{{ $produit->id }}">faire une offre Groupé negocié</button> --}}
 
-                <div id="hs-offreGrpNeg-{{ $produit->id }}"
+    {{-- <div id="hs-offreGrpNeg-{{ $produit->id }}"
                     class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
                     <div
                         class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
@@ -238,10 +238,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
 
-                <div id="hs-delete-{{ $produit->id }}"
+    {{-- <div id="hs-delete-{{ $produit->id }}"
                     class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
                     <div
                         class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
@@ -517,17 +517,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            @endif
+                </div> --}}
+    {{-- @endif --}}
 
 
-            @livewire('achat-direct-groupe ', ['id' => $id])
+    {{-- @livewire('achat-direct-groupe ', ['id' => $id]) --}}
 
 
-        </div>
-    </div>
+    {{-- </div>
+    </div> --}}
 
-    <style>
+    {{-- <style>
         #toggleContent {
             overflow: hidden;
             max-height: 0;
@@ -555,8 +555,91 @@
             max-height: 100%;
             max-width: 100%;
         }
-    </style>
+    </style> --}}
+
+    {{-- <div class="w-96 h-96">
+        <div class="grid gap-4">
+            <div>
+                <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg"
+                    alt="">
+            </div>
+            <div class="grid grid-cols-5 gap-4">
+                <div>
+                    <img class="h-auto max-w-full rounded-lg"
+                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+                </div>
+                <div>
+                    <img class="h-auto max-w-full rounded-lg"
+                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg" alt="">
+                </div>
+                <div>
+                    <img class="h-auto max-w-full rounded-lg"
+                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg" alt="">
+                </div>
+
+            </div>
+        </div>
+    </div> --}}
 
 
+    <!-- Carousel wrapper -->
+
+
+    <div>
+        <!-- Carousel wrapper -->
+        <div class="relative h-54 overflow-hidden rounded-lg md:h-96">
+            <!-- Item 1 -->
+            <div>
+                <img src="https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg"
+                    class="absolute block max-w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+                    alt="">
+            </div>
+        </div>
+
+        <div class="grid gap-4">
+
+            <div class="grid grid-cols-7 gap-4">
+                <div>
+                    <img class="h-auto max-w-full rounded-lg"
+                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+                </div>
+                <div>
+                    <img class="h-auto max-w-full rounded-lg"
+                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg" alt="">
+                </div>
+                <div>
+                    <img class="h-auto max-w-full rounded-lg"
+                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg" alt="">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+            <div>
+                <h2 class="text-3xl font-semibold mb-2">Montre</h2>
+                <p class="text-sm font-medium text-gray-600 mb-7">localisation1, localisation2</p>
+                <p class="text-4xl font-medium text-purple-600 mb-8" data-price="{{ $produit->prix }}">
+                    100.000 FCFA
+                    <span class="text-sm text-gray-600 font-medium uppercase">Prix unitaire</span>
+                </p>
+                <p class="text-gray-500 mb-8">
+                    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aperiam, accusantium. Dolore rerum fugit
+                    temporibus eveniet tempora iste distinctio laborum et.
+                </p>
+                <p class="text-gray-500 mb-8">
+                    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aperiam, accusantium. Dolore rerum fugit
+                    temporibus eveniet tempora iste distinctio laborum et.
+                </p>
+
+            </div>
+            <div>
+                @livewire('achat-direct-groupe ', ['id' => $id])
+
+            </div>
+
+        </div>
+
+    </div>
 
 @endsection

@@ -6,7 +6,7 @@
 
 
 
-    <div class="grid grid-cols-3 gap-4">
+    <div class=" grid grid-cols-3 gap-4">
 
         <div class="lg:col-span-2 col-span-3">
 
@@ -14,7 +14,7 @@
 
         </div>
 
-        <div class="lg:col-span-1 lg:block hidden">
+        <div class="ml-5 lg:col-span-1 lg:block hidden">
             <div class="flex flex-col ">
                 <div class="flex bg-white border border-gray-200 p-4 rounded-xl mb-3">
                     <img class="h-12 w-12 border-2 border-white rounded-full dark:border-gray-800 object-cover"
