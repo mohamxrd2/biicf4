@@ -11,7 +11,7 @@
         <div class="lg:col-span-2 col-span-3">
 
 
-             Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptatum quia odit a illum adipisci molestias velit necessitatibus nobis dolor suscipit, quis nemo! Hic reprehenderit esse ullam ipsam tenetur reiciendis aut!
+            
             @livewire('search-bar')
 
         </div>
