@@ -200,8 +200,43 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     })->name('biicf.postuler');
 
 
+    //Route pour bourse du financement
+
+    Route::get('finance/acceuil', function(){
+        return view ('finance.acceuil');
+    })->name('finance.acceuil');
+
+    Route::get('finance/recherche', function(){
+        return view ('finance.search');
+    })->name('finance.search');
+
+    Route::get('finance/notification', function(){
+        return view ('finance.notif');
+    })->name('finance.notif');
+
+    Route::get('finance/Porte-feuille', function(){
+        return view ('finance.wallet');
+    })->name('finance.wallet');
+
+    Route::get('finance/projet', function(){
+        return view ('finance.projet');
+    })->name('finance.projet');
+
+    Route::get('finance/profile', function(){
+        return view ('finance.profile');
+    })->name('finance.profile');
+
+    Route::get('finance/Ajouter-projet', function(){
+        return view ('finance.addproject');
+    })->name('finance.addproject');
+
+
 
 });
+
+
+
+
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');
 Route::post('biicf/login', [BiicfAuthController::class, 'login']);
