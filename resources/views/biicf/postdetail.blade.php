@@ -585,61 +585,258 @@
     <!-- Carousel wrapper -->
 
 
-    <div>
-        <!-- Carousel wrapper -->
-        <div class="relative h-54 overflow-hidden rounded-lg md:h-96">
-            <!-- Item 1 -->
-            <div>
-                <img src="https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg"
-                    class="absolute block max-w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-                    alt="">
-            </div>
-        </div>
-
-        <div class="grid gap-4">
-
-            <div class="grid grid-cols-7 gap-4">
+    {{-- <div class="relative">
+        <div class="">
+            <!-- Carousel wrapper -->
+            <div class="relative h-54 overflow-hidden rounded-lg md:h-96">
+                <!-- Item 1 -->
                 <div>
-                    <img class="h-auto max-w-full rounded-lg"
-                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
-                </div>
-                <div>
-                    <img class="h-auto max-w-full rounded-lg"
-                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg" alt="">
-                </div>
-                <div>
-                    <img class="h-auto max-w-full rounded-lg"
-                        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg" alt="">
+                    <img src="https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg"
+                        class="absolute block max-w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+                        alt="">
                 </div>
             </div>
 
+            <div class="grid gap-4 mt-4">
+                <div class="grid grid-cols-7 md:grid-cols-7 gap-4">
+                    <div>
+                        <img class="h-auto max-w-full rounded-lg"
+                            src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+                    </div>
+                    <div>
+                        <img class="h-auto max-w-full rounded-lg"
+                            src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg" alt="">
+                    </div>
+                    <div>
+                        <img class="h-auto max-w-full rounded-lg"
+                            src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg" alt="">
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <!-- Description produit -->
+                <div class="bg-white p-4 rounded-lg">
+                    <h2 class="text-3xl font-semibold mb-2">Montre</h2>
+                    <p class="text-sm font-medium text-gray-600 mb-7">localisation1, localisation2</p>
+                    <p class="text-4xl font-medium text-purple-600 mb-8" data-price="{{ $produit->prix }}">
+                        100.000 FCFA
+                        <span class="text-sm text-gray-600 font-medium uppercase">Prix unitaire</span>
+                    </p>
+                    <p class="text-gray-500 mb-4">
+                        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aperiam, accusantium. Dolore rerum fugit
+                        temporibus eveniet tempora iste distinctio laborum et.
+                    </p>
+                    <p class="text-gray-500 mb-4">
+                        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aperiam, accusantium. Dolore rerum fugit
+                        temporibus eveniet tempora iste distinctio laborum et.
+                    </p>
+                </div>
+                {{-- <div class="absolute bottom-0 right-0 z-40"> --}}
+    {{-- @livewire('achat-direct-groupe ', ['id' => $id]) --}}
+    {{-- <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Champ quantité -->
+                            <input type="text" placeholder="quantité"
+                                class="col-span-1 border border-gray-300 rounded-lg p-2">
+                            <!-- Champ type de livraison -->
+                            <input type="text" placeholder="type de livraison"
+                                class="col-span-1 border border-gray-300 rounded-lg p-2">
+
+                            <!-- Champ lieu de livraison -->
+                            <input type="text" placeholder="Lieu de livraison"
+                                class="col-span-2 border border-gray-300 rounded-lg p-2">
+
+                            <!-- Champ spécificité -->
+                            <input type="text" placeholder="specificité"
+                                class="col-span-2 border border-gray-300 rounded-lg p-2">
+
+                            <!-- Date et heure - Au plus tôt -->
+                            <div class="col-span-1">
+                                <input type="date" placeholder="Au plus tôt"
+                                    class="w-full border border-gray-300 rounded-lg p-2 mb-2">
+                                <input type="time" placeholder="Heure début"
+                                    class="w-full border border-gray-300 rounded-lg p-2">
+                            </div>
+
+                            <!-- Date et heure - Au plus tard -->
+                            <div class="col-span-1">
+                                <input type="date" placeholder="Au plus tard"
+                                    class="w-full border border-gray-300 rounded-lg p-2 mb-2">
+                                <input type="time" placeholder="Heure fin"
+                                    class="w-full border border-gray-300 rounded-lg p-2">
+                            </div>
+
+                            <!-- Nouvelle ligne d'input -->
+                            <div class="col-span-1">
+                                <input type="date" placeholder="Nouvelle date"
+                                    class="w-full border border-gray-300 rounded-lg p-2 mb-2">
+                            </div>
+
+                            <!-- Nouvelle heure -->
+                            <div class="col-span-1">
+                                <input type="time" placeholder="Nouvelle heure"
+                                    class="w-full border border-gray-300 rounded-lg p-2 mb-2">
+                            </div>
+                        </div>
+
+                        <!-- Prix total -->
+                        <div class="mt-4 flex justify-between items-center">
+                            <p class="text-lg font-bold text-purple-600">Prix total :</p>
+                            <p class="text-xl font-semibold text-purple-600">10.000 FCFA</p>
+                        </div>
+
+                        <!-- Boutons Annuler et Accepter -->
+                        <div class="mt-6 flex justify-between">
+                            <button class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">
+                                Annuler
+                            </button>
+                            <button class="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600">
+                                Accepter
+                            </button>
+                        </div>
+                    </div> --}}
+    {{-- </div> --}}
+
+    {{-- </div>
+
         </div>
 
-        <div class="grid grid-cols-2 gap-2">
-            <div>
-                <h2 class="text-3xl font-semibold mb-2">Montre</h2>
-                <p class="text-sm font-medium text-gray-600 mb-7">localisation1, localisation2</p>
-                <p class="text-4xl font-medium text-purple-600 mb-8" data-price="{{ $produit->prix }}">
-                    100.000 FCFA
-                    <span class="text-sm text-gray-600 font-medium uppercase">Prix unitaire</span>
-                </p>
-                <p class="text-gray-500 mb-8">
-                    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aperiam, accusantium. Dolore rerum fugit
-                    temporibus eveniet tempora iste distinctio laborum et.
-                </p>
-                <p class="text-gray-500 mb-8">
-                    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aperiam, accusantium. Dolore rerum fugit
-                    temporibus eveniet tempora iste distinctio laborum et.
-                </p>
+    </div>  --}}
 
+
+    {{-- <div class="max-w-5xl mx-auto">
+
+        <!-- Barre du haut avec timer -->
+        <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
+            <h1 class="text-lg font-bold">NEGOCIATION ...</h1>
+            <div class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg">
+                10:00:00
             </div>
-            <div>
-                @livewire('achat-direct-groupe ', ['id' => $id])
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+            <div class="grid gap-4">
+                <div class="grid grid-rows-2 gap-4">
+
+                    <!-- Section images à gauche -->
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <img class="h-auto max-w-full rounded-lg"
+                                src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
+                        </div>
+                        <div>
+                            <img class="h-auto max-w-full rounded-lg"
+                                src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg" alt="">
+                        </div>
+                        <div>
+                            <img class="h-auto max-w-full rounded-lg"
+                                src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg" alt="">
+                        </div>
+                        <div>
+                            <img class="h-auto max-w-full rounded-lg"
+                                src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-4.jpg" alt="">
+                        </div>
+                    </div>
+                    <!-- Section offre en bas -->
+                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
+                        uk-sticky="media: 1024; end: #js-oversized; offset: 80">
+
+                        <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
+
+                            <!-- comments -->
+                            <div
+                                class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
+
+                                <div class="flex items-center gap-3 relative">
+                                    <img src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-4.jpg"
+                                        alt="" class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
+                                    <div class="flex-1">
+                                        <p class=" text-base text-black font-medium inline-block dark:text-white">
+                                            chance </p>
+                                        <p class="text-sm mt-0.5">
+                                            111111 FCFA</p>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <form wire:submit.prevent="commentFormLivr">
+
+                                <div
+                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                    <input type="hidden" name="code_livr" wire:model="code_livr">
+                                    <input type="hidden" name="quantiteC" wire:model="quantite">
+                                    <input type="hidden" name="idProd" wire:model="idProd">
+                                    <input type="hidden" name="nameSender" wire:model="user_id">
+                                    <input type="hidden" name="id_trader" wire:model="id_trader">
+                                    <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd">
+                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                        placeholder="Faire une offre..." required>
+
+                                    <button type="submit" id="submitBtnAppel"
+                                        class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                        <!-- Button Text and Icon -->
+                                        <span wire:loading.remove>
+                                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
+                                                <path
+                                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                            </svg>
+                                        </span>
+                                        <!-- Loading Spinner -->
+                                        <span wire:loading>
+                                            <svg class="w-5 h-5 animate-spin inline-block"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                            </svg>
+                                            </svg>
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="grid gap-4">
+                <!-- Section détails du produit à droite -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-bold mb-4">Banane</h2>
+
+                    <div class="mb-4">
+                        <p class="font-bold">Quantité:</p>
+                        <p>100</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="font-bold">Conditionnement du colis:</p>
+                        <p>Emballage: ..., Dimension: ..., Poids: ..., Autre: ...</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="font-bold">Localisation du produit:</p>
+                        <p>...</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="font-bold">Localisation du client:</p>
+                        <p>...</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="font-bold">Lieu de livraison:</p>
+                        <p>...</p>
+                    </div>
+                </div>
 
             </div>
 
         </div>
-
-    </div>
-
+    </div> --}}
 @endsection
