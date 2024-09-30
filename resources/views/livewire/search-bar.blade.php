@@ -72,9 +72,10 @@
     </form>
 
 
-    <h2 class="text-2xl font-bold tracking-tight text-gray-900">localisation /Produit & Service / quantite / prix</h2>
+    <h2 class="text-2xl font-bold tracking-tight text-gray-900 hidden">localisation /Produit & Service / quantite / prix
+    </h2>
 
-    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    {{-- <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         <div class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
             <div>
                 <img class="h-auto max-w-full rounded-lg" src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" alt="">
@@ -168,14 +169,15 @@
         </div>
 
         <!-- Ajoute les autres divs de produit ici de la même manière -->
-    </div>
+    </div> --}}
 
 
 
 
+    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 
-    @foreach ($produits as $produit)
-        <div class="max-w-2xl mx-auto my-3">
+        @foreach ($produits as $produit)
+            {{-- <div class="max-w-2xl mx-auto my-3">
 
             <div class="w-full flex p-4 rounded-xl bg-white border border-gray-200">
                 <div class="h-32 w-32 mr-2 ">
@@ -226,6 +228,55 @@
 
 
             </div>
-        </div>
-    @endforeach
+        </div> --}}
+            <a href="{{ route('biicf.postdet', $produit->id) }}">
+                <div
+                    class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+
+                    <div class="h-36 w-full mr-2 ">
+                        <img class="w-full h-full rounded-xl  object-cover"
+                            src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                            alt="">
+                    </div>
+                    <div class="p-2 flex-grow">
+                        <div class="flex items-center justify-between">
+
+                            <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                {{ $produit->name }}
+                            </h5>
+                            @if ($produit->type == 'Produit')
+                                <span
+                                    class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none  text-green-800 bg-green-100">Produit</span>
+                            @else
+                                <span
+                                    class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none  text-yellow-800 bg-yellow-100">Service</span>
+                            @endif
+                        </div>
+                        <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">
+                            {{ $produit->prix }} XOF
+                        </h1>
+
+                        <hr>
+
+                        <div class="flex items-center text-[12px] text-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                class="w-4 h-4 inline-block align-middle">
+                                <path fill-rule="evenodd"
+                                    d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+
+                            <p class="font-normal text-gray-700 dark:text-gray-400">{{ $produit->comnServ }}</p>
+                            <p class="font-normal text-gray-700 dark:text-gray-400">{{ $produit->villeServ }}</p>
+                        </div>
+
+                        <div class="w-full bottom-0 ml-1">
+                            <p class="text-sm text-gray-600 text-left">
+                                {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        @endforeach
+    </div>
 </div>

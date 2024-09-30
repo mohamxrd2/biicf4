@@ -704,7 +704,7 @@
     </div>  --}}
 
 
-    {{-- <div class="max-w-5xl mx-auto">
+    <div class="max-w-5xl mx-auto">
 
         <!-- Barre du haut avec timer -->
         <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
@@ -838,5 +838,5 @@
             </div>
 
         </div>
-    </div> --}}
+    </div>
 @endsection

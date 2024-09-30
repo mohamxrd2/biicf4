@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 
 class AjoutProduitServices extends Component
@@ -289,8 +290,6 @@ class AjoutProduitServices extends Component
 
             // Gestion des photos
 
-            // Gestion des photos
-
             if ($this->photoProd1 && is_string($this->photoProd1)) {
                 // If photoProd1 is a string (from input field), use it directly
                 $produitService->update(['photoProd1' => $this->photoProd1]);
@@ -347,7 +346,23 @@ class AjoutProduitServices extends Component
         if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {
             $photo = $this->$photoField;
             $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $photo->extension();
-            $photo->storeAs('all', $photoName); // Ensure to specify a directory
+
+
+            // Redimensionner l'image à 300x300 pixels
+            $imageResized = Image::make($photo->getRealPath());
+            $imageResized->resize(300, 300, function ($constraint) {
+                // Ceci permet de conserver le ratio de l'image pour éviter une distorsion
+                $constraint->aspectRatio();
+                // Empêche l'image de dépasser la taille donnée
+                $constraint->upsize();
+            });
+
+
+            // Sauvegarder l'image redimensionnée
+            $imageResized->save(public_path('post/all/' . $photoName)); // Corriger le chemin avec '/' entre 'post' et le nom du fichier
+
+
+            // $photo->storeAs('all', $photoName); // Ensure to specify a directory
             $produitService->update([$photoField => $photoName]);
         }
     }
