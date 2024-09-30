@@ -485,7 +485,7 @@
 
                     <!-- Bouton pour afficher la section -->
                     <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-                        <a href="javascript:void(0)" id="toggleButton"
+                        <a href="javascript:void(0)" id="toggleForm"
                             class="flex w-full items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                             role="button">
                             Procédez à l'achat.
@@ -584,7 +584,7 @@
 
     <!-- JavaScript function to change main image -->
     <script>
-        document.getElementById('toggleButton').addEventListener('click', function() {
+        document.getElementById('toggleForm').addEventListener('click', function() {
             var section = document.getElementById('hiddenSection');
             // Vérifie si la section est visible
             if (section.style.display === 'none' || section.style.display === '') {

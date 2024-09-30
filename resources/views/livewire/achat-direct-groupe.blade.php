@@ -290,7 +290,18 @@
     </form>
 </div>
 <script>
-    
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     const btnAchatDirect = document.getElementById('btnAchatDirect');
+    //     const formAchatDirect = document.getElementById('formAchatDirect');
+
+    //     btnAchatDirect.addEventListener('click', function() {
+    //         if (formAchatDirect.style.display === 'none' || formAchatDirect.style.display === '') {
+    //             formAchatDirect.style.display = 'block';
+    //         } else {
+    //             formAchatDirect.style.display = 'none';
+    //         }
+    //     });
+    // });
 
     function toggleVisibility() {
         const contentDiv = document.getElementById('toggleContent');
