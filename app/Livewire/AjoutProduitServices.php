@@ -236,16 +236,35 @@ class AjoutProduitServices extends Component
             'ville' => 'required|string',
             'commune' => 'required|string',
             //photo
-            // 'photoProd1' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            // 'photoProd2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            // 'photoProd3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            // 'photoProd4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-
+            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd2' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd3' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd4' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
             'name.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
             'reference.unique' => 'Vous ne pouvez pas inscrire deux fois le même nom de produit',
+            // Messages d'erreur pour les photos
+            'photoProd1.required' => 'La photo principale est requise.',
+            'photoProd1.image' => 'La photo principale doit être une image.',
+            'photoProd1.mimes' => 'La photo principale doit être au format jpeg, png, jpg ou gif.',
+            'photoProd1.dimensions' => 'La photo principale doit avoir des dimensions d\'au moins 500x400 pixels.',
+
+            'photoProd2.required' => 'La deuxième photo est requise.',
+            'photoProd2.image' => 'La deuxième photo doit être une image.',
+            'photoProd2.mimes' => 'La deuxième photo doit être au format jpeg, png, jpg ou gif.',
+            'photoProd2.dimensions' => 'La deuxième photo doit avoir des dimensions d\'au moins 500x400 pixels.',
+
+            'photoProd3.required' => 'La troisième photo est requise.',
+            'photoProd3.image' => 'La troisième photo doit être une image.',
+            'photoProd3.mimes' => 'La troisième photo doit être au format jpeg, png, jpg ou gif.',
+            'photoProd3.dimensions' => 'La troisième photo doit avoir des dimensions d\'au moins largeur=  500x longeur = 400 pixels.',
+
+            'photoProd4.required' => 'La quatrième photo est requise.',
+            'photoProd4.image' => 'La quatrième photo doit être une image.',
+            'photoProd4.mimes' => 'La quatrième photo doit être au format jpeg, png, jpg ou gif.',
+            'photoProd4.dimensions' => 'La quatrième photo doit avoir des dimensions d\'au moins 500x400 pixels.',
         ]);
 
         // 'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
@@ -350,16 +369,12 @@ class AjoutProduitServices extends Component
 
             // Redimensionner l'image à 300x300 pixels
             $imageResized = Image::make($photo->getRealPath());
-            $imageResized->resize(300, 300, function ($constraint) {
-                // Ceci permet de conserver le ratio de l'image pour éviter une distorsion
-                $constraint->aspectRatio();
-                // Empêche l'image de dépasser la taille donnée
-                $constraint->upsize();
-            });
+            // Redimensionner l'image en la recadrant pour obtenir exactement 500x400 pixels
+            $imageResized->fit(500, 400);
 
 
             // Sauvegarder l'image redimensionnée
-            $imageResized->save(public_path('post/all/' . $photoName)); // Corriger le chemin avec '/' entre 'post' et le nom du fichier
+            $imageResized->save(public_path('post/all/' . $photoName), 90); // Corriger le chemin avec '/' entre 'post' et le nom du fichier
 
 
             // $photo->storeAs('all', $photoName); // Ensure to specify a directory
