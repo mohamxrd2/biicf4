@@ -13,9 +13,9 @@ class AjoutMontant extends Model
 
     protected $fillable = [
         'montant',
-        'code_unique',
         'id_invest',
         'id_emp',
+        'id_projet',
     ];
 
     /**
@@ -32,5 +32,9 @@ class AjoutMontant extends Model
     public function emprunteur()
     {
         return $this->belongsTo(User::class, 'id_emp');
+    }
+    public function projet()
+    {
+        return $this->belongsTo(Projet::class, 'id_projet');
     }
 }

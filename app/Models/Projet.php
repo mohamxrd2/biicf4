@@ -19,7 +19,14 @@ class Projet extends Model
         'type_financement',
         'statut',
         'id_user',
+        'photo1', // Si vous avez ajouté ces colonnes
+        'photo2',
+        'photo3',
+        'photo4',
+        'photo5',
+        'durer'
     ];
+
 
     /**
      * Relation avec le demandeur (User)
@@ -27,5 +34,9 @@ class Projet extends Model
     public function demandeur()
     {
         return $this->belongsTo(User::class, 'id_user');
+    }
+    public function ajoutsMontants()
+    {
+        return $this->hasMany(AjoutMontant::class, 'id_projet');
     }
 }
