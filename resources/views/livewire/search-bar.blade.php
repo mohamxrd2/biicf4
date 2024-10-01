@@ -15,24 +15,7 @@
                     placeholder="Recherche de produit ou service..." required />
 
             </div>
-            {{-- @if (!empty($keyword) && $produits->isNotEmpty())
-                <div
-                    class="absolute z-50 w-full max-h-72 p-1 bg-white border border-gray-200 rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300">
-                    @foreach ($produits as $produit)
-                        <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-none focus:bg-gray-100"
-                            tabindex="{{ $loop->index }}">
-                            <div class="flex">
-                                <img class="w-8 h-8 mr-2 rounded-md"
-                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                                    alt="">
-                                <div class="flex justify-between items-center w-full">
-                                    <span>{{ $produit->name }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif --}}
+
         </div>
 
 
@@ -76,58 +59,60 @@
     </h2>
 
 
-    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         @foreach ($produits as $produit)
+            <a href="{{ route('biicf.postdet', $produit->id) }}" class="group relative transform hover:scale-105 transition-transform duration-300 ease-in-out">
+                <div class="bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
 
-            <a href="{{ route('biicf.postdet', $produit->id) }}">
-                <div
-                    class="w-full sm:w-48 md:w-56 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-
-                    <div class="h-36 w-full mr-2 ">
-                        <img class="w-full h-full rounded-xl  object-cover"
+                    <!-- Image Section -->
+                    <div class="h-48 w-full relative">
+                        <img class="w-full h-full object-cover transition-opacity duration-500 ease-in-out group-hover:opacity-90"
                             src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                            alt="">
-                    </div>
-                    <div class="p-2 flex-grow">
-                        <div class="flex items-center justify-between">
-
-                            <h5 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                                {{ $produit->name }}
-                            </h5>
+                            alt="Image Produit">
+                        <!-- Badge for Product/Service -->
+                        <div class="absolute top-2 right-2">
                             @if ($produit->type == 'Produit')
-                                <span
-                                    class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none  text-green-800 bg-green-100">Produit</span>
+                                <span class="inline-block bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                                    Produit
+                                </span>
                             @else
-                                <span
-                                    class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none  text-yellow-800 bg-yellow-100">Service</span>
+                                <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                                    Service
+                                </span>
                             @endif
                         </div>
-                        <h1 class="text-base sm:text-base font-bold tracking-tight text-gray-900 dark:text-white">
-                            {{ $produit->prix }} XOF
-                        </h1>
+                    </div>
 
-                        <hr>
+                    <!-- Content Section -->
+                    <div class="p-4 space-y-3">
+                        <!-- Title -->
+                        <h5 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">{{ $produit->name }}</h5>
 
-                        <div class="flex items-center text-[12px] text-gray-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                class="w-4 h-4 inline-block align-middle">
-                                <path fill-rule="evenodd"
-                                    d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                    clip-rule="evenodd" />
+                        <!-- Price -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-xl font-bold text-indigo-600">{{ number_format($produit->prix, 0, ',', ' ') }} XOF</span>
+                        </div>
+
+                        <!-- Location and Service Info -->
+                        <div class="flex items-center text-gray-600 dark:text-gray-400 text-sm space-x-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                <path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd" />
                             </svg>
-
-                            <p class="font-normal text-gray-700 dark:text-gray-400">{{ $produit->comnServ }}</p>
-                            <p class="font-normal text-gray-700 dark:text-gray-400">{{ $produit->villeServ }}</p>
+                            <p class="truncate">{{ $produit->comnServ }} • {{ $produit->villeServ }}</p>
                         </div>
 
-                        <div class="w-full bottom-0 ml-1">
-                            <p class="text-sm text-gray-600 text-left">
-                                {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}</p>
-                        </div>
+                        <!-- Time Ago -->
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}
+                        </p>
                     </div>
                 </div>
             </a>
         @endforeach
     </div>
+
 </div>
