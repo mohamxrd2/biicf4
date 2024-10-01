@@ -336,16 +336,20 @@
     <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
         <h1 class="text-lg font-bold">NEGOCIATION ...</h1>
 
-        <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex flex-col justify-center items-center mt-4">
-            <span class="mb-2" x-show="oldestCommentDate">Temps restant pour cette négociation</span>
+        <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
+            <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
 
-            <div id="countdown" x-show="oldestCommentDate" class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg">
-                <div x-text="hours">-</div>:
-                <div x-text="minutes">-</div>:
-                <div x-text="seconds">-</div>
+            <div id="countdown" x-show="oldestCommentDate"
+                class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
+                <div x-text="hours">--</div>
+                <span>:</span>
+                <div x-text="minutes">--</div>
+                <span>:</span>
+                <div x-text="seconds">--</div>
             </div>
         </div>
     </div>
+
     <div class="grid lg:grid-cols-2 sm:grid-cols-1 gap-4">
 
         <div class="grid gap-4">

@@ -4,7 +4,6 @@
     @if ($notification->type === 'App\Notifications\AchatBiicf')
         @livewire('Achatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
-        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
         @livewire('livraisonAchatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\CountdownNotificationAd')
         @livewire('CountdownNotificationAd', ['id' => $id])
@@ -576,7 +575,7 @@
                 <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
             </footer>
         </div>
-    
+
     @elseif ($notification->type === 'App\Notifications\commandVerif')
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-xl font-semibold mb-2">Informations Sur Le Fournisseur</h2>

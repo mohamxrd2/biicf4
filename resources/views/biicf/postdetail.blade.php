@@ -22,8 +22,6 @@
     <!-- Right Side: Product Details -->
     {{-- <div class="lg:h-500px h-auto overflow-y-auto p-4 lg:col-span-2 col-span-5">
 
-
-
         @if ($produit->user_id != $user->id)
             <div class="w-full flex">
                 <button class="w-full bg-purple-500 text-white py-2 mr- rounded-xl" id="btnAchatDirect">Achat
@@ -382,9 +380,6 @@
                 </div>
             </div>
         @endif
-
-
-
 
     </div> --}}
 
