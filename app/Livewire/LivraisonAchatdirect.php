@@ -6,6 +6,7 @@ use App\Events\CommentSubmitted;
 use App\Events\OldestCommentUpdated;
 use App\Models\Comment;
 use App\Models\Countdown;
+use App\Models\ProduitService;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +31,7 @@ class LivraisonAchatdirect extends Component
     public $prixTrade;
     public $user;
     public $commentCount;
+    public $produit;
 
     public function mount($id)
     {
@@ -41,7 +43,7 @@ class LivraisonAchatdirect extends Component
         $this->id_trader = Auth::user()->id ?? null;
         $this->prixProd = $this->notification->data['prixProd'] ?? null;
         $this->user = Auth::user()->id ?? null;
-
+        $this->produit = ProduitService::find($this->idProd);
 
         // Vérifier si 'code_unique' existe dans les données de notification
         $codeUnique = $this->notification->data['code_livr'];
