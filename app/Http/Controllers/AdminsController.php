@@ -166,4 +166,11 @@ class AdminsController extends Controller
             return back()->withErrors(['error' => 'Une erreur est survenue lors de la mise à jour de la photo de profil.'])->withInput();
         }
     }
+
+    public function detailprojet($id)
+    {
+         return view ('admin.projetdetail',compact('id'));
+    }
+
+
 }

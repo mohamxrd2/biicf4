@@ -12,6 +12,7 @@ class Projet extends Model
     protected $table = 'projet';
 
     protected $fillable = [
+        
         'montant',
         'taux',
         'description',
@@ -24,7 +25,8 @@ class Projet extends Model
         'photo3',
         'photo4',
         'photo5',
-        'durer'
+        'durer',
+        'name',
     ];
 
 
@@ -39,4 +41,13 @@ class Projet extends Model
     {
         return $this->hasMany(AjoutMontant::class, 'id_projet');
     }
+    //  // Méthode pour récupérer les photos
+    //  public function getPhotosAttribute()
+    //  {
+    //      return collect([$this->photo1, $this->photo2, $this->photo3, $this->photo4, $this->photo5])
+    //          ->filter() // Filtrer les valeurs nulles
+    //          ->map(function ($photo) {
+    //              return asset('storage/' . $photo); // Générer l'URL absolue pour les photos
+    //          });
+    //  }
 }

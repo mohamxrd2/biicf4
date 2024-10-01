@@ -1,10 +1,13 @@
 <?php
 
+use App\Livewire\ProjetDetails;
 use App\Livewire\RechargeAgent;
 use App\Livewire\DetailLivraison;
 use App\Http\Controllers\OffreNegos;
-use Illuminate\Support\Facades\Route;
 
+use App\Livewire\WithdrawalComponent;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SmsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsoController;
 use App\Http\Controllers\AdminsController;
@@ -23,8 +26,6 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
-use App\Http\Controllers\SmsController;
-use App\Livewire\WithdrawalComponent;
 
 Route::get('/', function () {
     return view('index');
@@ -109,6 +110,13 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/demande', [UserController::class, 'livraisonliste'])->name('admin.demande');
     Route::get('demande-livraison/{id}', [UserController::class, 'detaillivraison'])->name('livraison.show');
     Route::get('demande-psap{id}', [UserController::class, 'detailpsap'])->name('psap.show');
+
+    Route::get('projet', function(){
+        return view ('admin.projetlist');
+    })->name('admin.projetlist');
+
+    Route::get('/projet/{id}',[AdminsController::class, 'detailprojet'] )->name('projet.details');
+
 
 
 });

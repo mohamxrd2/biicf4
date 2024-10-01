@@ -6,18 +6,19 @@ use App\Models\Projet;
 use Livewire\Component;
 use Livewire\WithFileUploads; // Ajout pour gérer les fichiers
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon; // N'oublie pas d'importer Carbon
 
 class AddProjetFinance extends Component
 {
     use WithFileUploads; // Utilisation du trait pour gérer les fichiers
 
+    public $name;
     public $montant;
     public $taux;
     public $description;
     public $categorie;
     public $type_financement;
     public $statut = 'en attente'; // Statut par défaut
-
     public $durer; // Nouvel attribut pour la date limite
 
     // Propriétés pour les photos
@@ -28,6 +29,7 @@ class AddProjetFinance extends Component
 
     // Définition des règles de validation
     protected $rules = [
+        'name' => 'required|string|max:255',
         'montant' => 'required|numeric',
         'taux' => 'required|numeric',
         'description' => 'required|string',
@@ -45,6 +47,8 @@ class AddProjetFinance extends Component
     public function messages()
     {
         return [
+            'name.required' => 'Le nom du projet est requis.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
             'montant.required' => 'Le montant est requis.',
             'montant.numeric' => 'Le montant doit être un nombre.',
             'taux.required' => 'Le taux est requis.',
@@ -78,6 +82,16 @@ class AddProjetFinance extends Component
         $this->resetForm(); // Réinitialiser les champs du formulaire par défaut
     }
 
+    // Fonction pour gérer l'upload des photos
+    protected function handlePhotoUpload($projet, $photoField)
+    {
+        if ($this->$photoField) {
+            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $this->$photoField->extension();
+            $this->$photoField->storeAs('photos/' . $projet->id, $photoName); // Spécifier un répertoire
+            $projet->$photoField = 'photos/' . $projet->id . '/' . $photoName; // Mettre à jour le champ du projet
+        }
+    }
+
     // Fonction pour soumettre le formulaire
     public function submit()
     {
@@ -95,6 +109,7 @@ class AddProjetFinance extends Component
         try {
             // Création du projet avec le statut 'en attente'
             $projet = Projet::create([
+                'name' => $this->name,
                 'montant' => $this->montant,
                 'taux' => $this->taux,
                 'description' => $this->description,
@@ -105,27 +120,12 @@ class AddProjetFinance extends Component
                 'id_user' => auth()->id(), // ID de l'utilisateur connecté
             ]);
 
-            // Gestion des photos
-            if ($this->photo1) {
-                $this->photo1->storeAs('photos/' . $projet->id, 'photo1.' . $this->photo1->getClientOriginalExtension());
-                $projet->photo1 = 'photos/' . $projet->id . '/photo1.' . $this->photo1->getClientOriginalExtension();
-            }
-            if ($this->photo2) {
-                $this->photo2->storeAs('photos/' . $projet->id, 'photo2.' . $this->photo2->getClientOriginalExtension());
-                $projet->photo2 = 'photos/' . $projet->id . '/photo2.' . $this->photo2->getClientOriginalExtension();
-            }
-            if ($this->photo3) {
-                $this->photo3->storeAs('photos/' . $projet->id, 'photo3.' . $this->photo3->getClientOriginalExtension());
-                $projet->photo3 = 'photos/' . $projet->id . '/photo3.' . $this->photo3->getClientOriginalExtension();
-            }
-            if ($this->photo4) {
-                $this->photo4->storeAs('photos/' . $projet->id, 'photo4.' . $this->photo4->getClientOriginalExtension());
-                $projet->photo4 = 'photos/' . $projet->id . '/photo4.' . $this->photo4->getClientOriginalExtension();
-            }
-            if ($this->photo5) {
-                $this->photo5->storeAs('photos/' . $projet->id, 'photo5.' . $this->photo5->getClientOriginalExtension());
-                $projet->photo5 = 'photos/' . $projet->id . '/photo5.' . $this->photo5->getClientOriginalExtension();
-            }
+            // Gestion des photos en appelant la méthode handlePhotoUpload
+            $this->handlePhotoUpload($projet, 'photo1');
+            $this->handlePhotoUpload($projet, 'photo2');
+            $this->handlePhotoUpload($projet, 'photo3');
+            $this->handlePhotoUpload($projet, 'photo4');
+            $this->handlePhotoUpload($projet, 'photo5');
 
             // Sauvegarder les chemins des photos dans le projet
             $projet->save();
@@ -149,6 +149,7 @@ class AddProjetFinance extends Component
     // Fonction pour réinitialiser les champs du formulaire
     public function resetForm()
     {
+        $this->name = '';
         $this->montant = '';
         $this->taux = '';
         $this->description = '';

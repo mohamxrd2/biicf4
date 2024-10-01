@@ -11,6 +11,12 @@
 
 
         <form wire:submit.prevent="submit" class="space-y-6">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Nom du projet</label>
+                <input type="text" wire:model="name" id="name" class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
+                placeholder="Entrez le nom du projet">
+                @error('name') <span class="error">{{ $message }}</span> @enderror
+            </div>
             <!-- Montant -->
             <div class="relative">
                 <label for="montant" class="block text-sm font-medium text-gray-700">Montant</label>
