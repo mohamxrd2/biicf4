@@ -15,7 +15,9 @@ use App\Events\MyEvent;
 use App\Events\NotificationSent;
 use App\Models\AchatGrouper;
 use App\Models\Consommation;
+use App\Models\CrediScore;
 use App\Models\NotificationLog;
+use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
 use App\Notifications\AchatGroupBiicf;
 use Carbon\Carbon;
@@ -194,6 +196,47 @@ class AchatDirectGroupe extends Component
                 'data' => $validated,
             ]);
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
+        }
+    }
+
+    public function requestCredit()
+    {
+        // Récupérer l'utilisateur actuellement connecté
+        $user = auth()->user();
+        $userNumber = $user->phone;
+
+        // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
+        $userInPromir = UserPromir::where('numero', $userNumber)->exists();
+
+        if ($userInPromir) {
+            // Vérifier si un score de crédit existe pour cet utilisateur
+            $crediScore = CrediScore::where('id_user', $userInPromir)->first();
+
+            if ($crediScore) {
+                // Vérifier si le score est A+, A, ou A-
+                if (in_array($crediScore->ccc, ['A+', 'A', 'A-'])) {
+                    $this->dispatch(
+                        'formSubmitted',
+                        'Votre numéro existe dans Promir et votre score de crédit est ' . $crediScore->ccc . ', Alors vous etes éligible au credit'
+                    );
+                } else {
+                    $this->dispatch(
+                        'formSubmitted',
+                        'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.'
+                    );
+                }
+            } else {
+                $this->dispatch(
+                    'formSubmitted',
+                    'Votre numéro existe dans Promir, mais aucun score de crédit n\'a été trouvé.'
+                );
+            }
+        } else {
+            // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
+            $this->dispatch(
+                'formSubmitted',
+                'Votre numéro n\'existe pas dans la base de données Promir. Vous n\'etes pas eligible.'
+            );
         }
     }
 

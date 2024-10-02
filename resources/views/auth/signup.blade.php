@@ -91,7 +91,7 @@
 
 
                                 <div class="flex justify-start lg:w-1/2">
-                                    @include('admin.components.input', [
+                                    @include('admin.components.input2', [
                                         'type' => 'text',
                                         'name' => 'name',
                                         'placeholder' => 'Nom ou raison social',
@@ -99,7 +99,7 @@
 
 
 
-                                    @include('admin.components.input', [
+                                    @include('admin.components.input2', [
                                         'type' => 'text',
                                         'name' => 'last-name',
                                         'placeholder' => 'Prénom',

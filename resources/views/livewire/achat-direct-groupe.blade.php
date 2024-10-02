@@ -245,9 +245,16 @@
                         <input type="hidden" name="montantTotal" id="montant_total_input">
                     </div> --}}
 
-                    <p id="errorMessage" class="text-sm text-center text-red-500 hidden">Erreur</p>
+                    <p id="errorMessage" class="text-sm text-center text-red-500 hidden"></p>
 
 
+                    <div class="text-center mt-3">
+                        <button id="requestCreditButton" wire:click="requestCredit" wire:loading.attr="disabled"
+                            class="hidden py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-gray-200">
+                            <span wire:loading.remove>Demander un crédit</span>
+                            <span wire:loading>Envoi en cours...</span>
+                        </button>
+                    </div>
 
                     <div class="mt-6 w-full space-y-6 sm:mt-8 lg:mt-0 lg:max-w-xs xl:max-w-md">
                         <div class="flow-root">
@@ -290,19 +297,6 @@
     </form>
 </div>
 <script>
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     const btnAchatDirect = document.getElementById('btnAchatDirect');
-    //     const formAchatDirect = document.getElementById('formAchatDirect');
-
-    //     btnAchatDirect.addEventListener('click', function() {
-    //         if (formAchatDirect.style.display === 'none' || formAchatDirect.style.display === '') {
-    //             formAchatDirect.style.display = 'block';
-    //         } else {
-    //             formAchatDirect.style.display = 'none';
-    //         }
-    //     });
-    // });
-
     function toggleVisibility() {
         const contentDiv = document.getElementById('toggleContent');
 
@@ -333,6 +327,7 @@
         const errorMessageElement = document.getElementById('errorMessage');
         const submitButton = document.getElementById('submitButton');
         const montantTotalInput = document.getElementById('montant_total_input');
+        const requestCreditButton = document.getElementById('requestCreditButton');
 
         const userBalance = {{ $userWallet->balance }};
 
@@ -341,17 +336,24 @@
             errorMessageElement.classList.remove('hidden');
             montantTotalElement.innerText = '0 FCFA';
             submitButton.disabled = true;
+            requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit si autre erreur
+
         } else if (montantTotal > userBalance) {
             errorMessageElement.innerText =
                 `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
             errorMessageElement.classList.remove('hidden');
             montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
             submitButton.disabled = true;
+            requestCreditButton.classList.remove('hidden'); // Afficher le bouton pour demander un crédit
+
         } else {
             errorMessageElement.classList.add('hidden');
             montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
             montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
             submitButton.disabled = false;
+            requestCreditButton.classList.add('hidden'); // Masquer le bouton si tout est correct
+
         }
     }
+    
 </script>

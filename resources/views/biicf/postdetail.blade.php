@@ -383,13 +383,8 @@
 
     </div> --}}
 
-
-
-
-
-
     <!-- Carousel wrapper -->
-    <section id="checkoutSection" class="py-8 bg-white md:py-16 dark:bg-gray-900 antialiased rounded-lg shadow-lg">
+    <section id="checkoutSection"  class=" py-8 bg-white md:py-16 dark:bg-gray-900 antialiased rounded-lg shadow-lg">
 
         <ol
             class="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base mb-5 p-5">
@@ -420,13 +415,13 @@
             </li>
         </ol>
 
-        <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0">
+        <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0 ">
             <div class="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
                 <!-- Images Section -->
                 <div class="flex flex-col space-y-4">
                     <!-- Main Image -->
                     <div class="shrink-0 max-w-md lg:max-w-lg mx-auto">
-                        <img id="mainImage" class="w-full dark:hidden"
+                        <img id="mainImage" class="w-full dark:hidden rounded-lg"
                             src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Main Product Image" />
                         <img id="mainImage" class="w-full hidden dark:block"
                             src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Main Product Image" />
