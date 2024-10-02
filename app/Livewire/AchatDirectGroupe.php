@@ -201,7 +201,7 @@ class AchatDirectGroupe extends Component
 
     public function requestCredit()
     {
-        // Récupérer l'utilisateur actuellement connecté
+        // Récupérer l'utilisateur actuellement connec
         $user = auth()->user();
         $userNumber = $user->phone;
 
