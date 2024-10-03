@@ -467,7 +467,6 @@
             const content = document.getElementById('content-container');
             const logo = document.getElementById('logo');
             const titles = document.querySelectorAll('.nav-title');
-            const input = document.getElementById('search-input');
             const toggleButton = document.getElementById('toggleButton');
             const checkoutSection = document.getElementById('checkoutSection'); // Récupérer l'élément checkoutSection
             const hiddenSection = document.getElementById('hiddenSection'); // Récupérer l'élément hiddenSection
@@ -481,19 +480,16 @@
                 content.classList.add('lg:ps-32');
                 content.classList.remove('lg:ps-72');
 
-                // Appliquer une marge à gauche à l'input si l'élément existe
-                if (input) {
-                    input.style.marginLeft = '8rem';
-                }
+
 
                 // Appliquer une marge à gauche à checkoutSection si l'élément existe
                 if (checkoutSection) {
-                    checkoutSection.style.marginLeft = '6rem';
+                    checkoutSection.style.marginLeft = '2rem';
                 }
 
                 // Appliquer une marge à gauche à hiddenSection si l'élément existe
                 if (hiddenSection) {
-                    hiddenSection.style.marginLeft = '6rem';
+                    hiddenSection.style.marginLeft = '2rem';
                 }
 
                 // Rotate the button
@@ -502,10 +498,7 @@
                 content.classList.add('lg:ps-72');
                 content.classList.remove('lg:ps-32');
 
-                // Remettre la marge à sa valeur initiale pour l'input si l'élément existe
-                if (input) {
-                    input.style.marginLeft = '0';
-                }
+
 
                 // Remettre la marge à sa valeur initiale pour checkoutSection si l'élément existe
                 if (checkoutSection) {
@@ -534,7 +527,7 @@
 
             // Adjust logo font size based on sidebar width
             if (sidebar.classList.contains('w-28')) {
-                logo.style.fontSize = '1rem'; // Diminuer la taille du texte
+                logo.style.fontSize = '0.75rem'; // Diminuer la taille du texte
             } else {
                 logo.style.fontSize = '1.25rem'; // Taille normale du texte
             }

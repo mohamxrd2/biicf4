@@ -43,27 +43,29 @@
 
         <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit</h2>
         <form action="#">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 p-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 p-5">
                 <div class="sm:col-span-2">
-                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product
-                        ID (Demande) </label>
+                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Demande
+                        ID (Demande)</label>
                     <input type="text" name="name" id="name"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                         placeholder="Type product name" required="">
                 </div>
+
                 <div class="w-full">
-                    <label for="brand" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Objet
-                        du financement</label>
+                    <label for="brand" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Objet du
+                        financement</label>
                     <input type="text" name="brand" id="brand"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                         placeholder="Product brand" required="">
                 </div>
+
                 <div class="w-full">
                     <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Montant
                         recherché</label>
                     <input type="number" name="price" id="price"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="$2999" required="">
+                        placeholder="10.000 XOF" required="">
                 </div>
                 <div>
                     <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Choisir
@@ -71,24 +73,22 @@
                         Financement recherché</label>
                     <select id="category"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                        <option selected="">Select category</option>
-                        <option value="TV">TV/Monitors</option>
-                        <option value="PC">PC</option>
-                        <option value="GA">Gaming/Console</option>
-                        <option value="PH">Phones</option>
+                        <option selected="">choisir un type</option>
+                        <option value="TV">Demande Directe </option>
+                        <option value="PC">Offre composite (groupée)</option>
                     </select>
                 </div>
                 <div>
                     <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cibler le
                         groupe de
-                        bailleur souhaité</label>
+                        bailleur souhaité ou username du bailleur </label>
                     <select id="category"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                        <option selected="">Select category</option>
-                        <option value="TV">TV/Monitors</option>
-                        <option value="PC">PC</option>
-                        <option value="GA">Gaming/Console</option>
-                        <option value="PH">Phones</option>
+                        <option selected="">Choisir un bailleur</option>
+                        <option value="Bank">Bank/IFD</option>
+                        <option value="Pgm">Pgm Public/Para-Public</option>
+                        <option value="Fonds">Fonds d’investissement</option>
+                        <option value="Particulier">Particulier</option>
                     </select>
                 </div>
                 <div>
@@ -101,15 +101,16 @@
                         placeholder="12" required="">
                 </div>
                 <div>
-                    <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date debut
+                    <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date
+                        debut
                     </label>
                     <input type="number" name="item-weight" id="item-weight"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                         placeholder="12" required="">
                 </div>
                 <div>
-                    <label for="item-weight"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date fin
+                    <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date
+                        fin
                     </label>
                     <input type="number" name="item-weight" id="item-weight"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
