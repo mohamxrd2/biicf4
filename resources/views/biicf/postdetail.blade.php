@@ -18,7 +18,7 @@
     @endif
 
     <!-- Carousel wrapper -->
-    <section id="checkoutSection" class=" py-2 bg-white md:py-16 dark:bg-gray-900 antialiased rounded-lg shadow-lg">
+    <section id="checkoutSection" class="bg-white md:py-16 dark:bg-gray-900 antialiased rounded-lg shadow-lg">
 
         <ol
             class="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base  p-5">
@@ -217,10 +217,11 @@
 
     <!-- Section à afficher ou cacher -->
     <section id="hiddenSection" class="mt-5" style="display: none;">
-        @livewire('achat-direct-groupe ', ['id' => $id])
+        @livewire('achat-direct-groupe', ['id' => $id])
     </section>
-    <section class="mt-5">
-        @livewire('demandecredit ')
+
+    <section  class="mt-5">
+        @livewire('demandecredit')
     </section>
 
     <!-- JavaScript function to change main image -->

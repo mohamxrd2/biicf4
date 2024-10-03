@@ -43,108 +43,103 @@
 
         <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit</h2>
         <form action="#">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 p-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-lg shadow-md dark:bg-gray-800">
+                <!-- Titre -->
                 <div class="sm:col-span-2">
-                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Demande
-                        ID (Demande)</label>
-                    <input type="text" name="name" id="name"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="Type product name" required="">
+                    <label for="name" class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">Demande
+                        ID (Demande):</label>
+                    <label for="brand" class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">Objet
+                        du financement:</label>
                 </div>
 
-                <div class="w-full">
-                    <label for="brand" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Objet du
-                        financement</label>
-                    <input type="text" name="brand" id="brand"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="Product brand" required="">
-                </div>
-
+                <!-- Montant recherché -->
                 <div class="w-full">
                     <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Montant
                         recherché</label>
                     <input type="number" name="price" id="price"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="10.000 XOF" required="">
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        placeholder="10.000 XOF" required>
                 </div>
+
+                <!-- Type de financement -->
                 <div>
-                    <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Choisir
-                        le type de
-                        Financement recherché</label>
+                    <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type de
+                        financement</label>
                     <select id="category"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                        <option selected="">choisir un type</option>
-                        <option value="TV">Demande Directe </option>
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                        <option selected>Choisir un type</option>
+                        <option value="TV">Demande Directe</option>
                         <option value="PC">Offre composite (groupée)</option>
                     </select>
                 </div>
+
+                <!-- Ciblage du bailleur -->
                 <div>
-                    <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cibler le
-                        groupe de
-                        bailleur souhaité ou username du bailleur </label>
+                    <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un
+                        bailleur ou entrez son username</label>
                     <select id="category"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                        <option selected="">Choisir un bailleur</option>
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                        <option selected>Choisir un bailleur</option>
                         <option value="Bank">Bank/IFD</option>
                         <option value="Pgm">Pgm Public/Para-Public</option>
                         <option value="Fonds">Fonds d’investissement</option>
                         <option value="Particulier">Particulier</option>
                     </select>
                 </div>
+
+                <!-- Durée du crédit -->
                 <div>
                     <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Durée
-                        du crédit(date de
-                        fin)
-                    </label>
+                        du crédit (mois)</label>
                     <input type="number" name="item-weight" id="item-weight"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12" required="">
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        placeholder="12" required>
                 </div>
+
+                <!-- Dates de début et de fin -->
                 <div>
-                    <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date
-                        debut
-                    </label>
-                    <input type="number" name="item-weight" id="item-weight"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12" required="">
+                    <label for="start-date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
+                        début</label>
+                    <input type="date" name="start-date" id="start-date"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        required>
                 </div>
+
                 <div>
-                    <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date
-                        fin
-                    </label>
-                    <input type="number" name="item-weight" id="item-weight"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12" required="">
+                    <label for="end-date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
+                        fin</label>
+                    <input type="date" name="end-date" id="end-date"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        required>
                 </div>
+
+                <!-- Heures de début et de fin -->
                 <div>
-                    <label for="item-weight"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">heure debut
-                    </label>
-                    <input type="number" name="item-weight" id="item-weight"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12" required="">
+                    <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure
+                        de début</label>
+                    <input type="time" name="start-time" id="start-time"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        required>
                 </div>
+
                 <div>
-                    <label for="item-weight"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure fin
-                    </label>
-                    <input type="number" name="item-weight" id="item-weight"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12" required="">
+                    <label for="end-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
+                        fin</label>
+                    <input type="time" name="end-time" id="end-time"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        required>
                 </div>
-                <div>
-                    <label for="item-weight"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rretour sur investisement
-                    </label>
-                    <input type="number" name="item-weight" id="item-weight"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12" required="">
+
+                <!-- Retour sur investissement -->
+                <div class="sm:col-span-2">
+                    <label for="roi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Retour
+                        sur investissement</label>
+                    <input type="number" name="roi" id="roi"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        placeholder="12%" required>
                 </div>
             </div>
-            <button type="submit"
-                class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800">
-                Add product
-            </button>
+
         </form>
     </div>
 </div>
