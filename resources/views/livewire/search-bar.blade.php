@@ -59,9 +59,6 @@
     </h2>
 
 
-
-
-    
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         @foreach ($produits as $produit)
             <div

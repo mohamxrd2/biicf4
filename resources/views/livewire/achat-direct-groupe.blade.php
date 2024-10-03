@@ -256,40 +256,35 @@
                         </button>
                     </div>
 
-                    <div class="mt-6 w-full space-y-6 sm:mt-8 lg:mt-0 lg:max-w-xs xl:max-w-md">
-                        <div class="flow-root">
-                            <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
-                                <dl class="flex items-center justify-between gap-4 py-3">
-                                    <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Subtotal</dt>
-                                    <dd class="text-base font-medium text-gray-900 dark:text-white">0</dd>
-                                </dl>
+                    <div class="flow-root">
+                        <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
+                            <dl class="flex items-center justify-between gap-4 py-3">
+                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Subtotal</dt>
+                                <dd class="text-base font-medium text-gray-900 dark:text-white">0</dd>
+                            </dl>
 
+                            <dl class="flex items-center justify-between gap-4 py-3">
+                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Tax</dt>
+                                <dd class="text-base font-medium text-gray-900 dark:text-white">0</dd>
+                            </dl>
 
+                            <dl class="flex items-center justify-between gap-4 py-3">
+                                <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
+                                <dd class="text-base font-bold text-gray-900 dark:text-white" id="montantTotal">0
+                                </dd>
+                                <input type="hidden" name="montantTotal" id="montant_total_input">
 
-                                <dl class="flex items-center justify-between gap-4 py-3">
-                                    <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Tax</dt>
-                                    <dd class="text-base font-medium text-gray-900 dark:text-white">0</dd>
-                                </dl>
-
-                                <dl class="flex items-center justify-between gap-4 py-3">
-                                    <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
-                                    <dd class="text-base font-bold text-gray-900 dark:text-white" id="montantTotal">0
-                                    </dd>
-                                    <input type="hidden" name="montantTotal" id="montant_total_input">
-
-                                </dl>
-                            </div>
+                            </dl>
                         </div>
-                        <div class="text-center mt-3">
+                    </div>
+                    <div class="text-center mt-3">
 
-                            <button type="submit" id="submitButton"
-                                class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                                wire:loading.attr="disabled" disabled>
-                                <span wire:loading.remove>Payement</span>
-                                <span wire:loading>Envoi en cours...</span>
-                            </button>
-                        </div>
-
+                        <button type="submit" id="submitButton"
+                            class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
+                            wire:loading.attr="disabled" disabled>
+                            <span wire:loading.remove>Payement</span>
+                            <span wire:loading>Envoi en cours...</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -355,5 +350,4 @@
 
         }
     }
-
 </script>
