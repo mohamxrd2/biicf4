@@ -15,7 +15,7 @@
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                     stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
-                            Cart
+                            Details
                         </span>
                     </li>
 
@@ -29,7 +29,7 @@
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                     stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
-                            Checkout
+                            achat
                         </span>
                     </li>
                 </ol>
@@ -355,5 +355,5 @@
 
         }
     }
-    
+
 </script>
