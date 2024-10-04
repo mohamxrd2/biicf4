@@ -221,9 +221,9 @@
     </section>
 
 
-        <section class="mt-5">
-            @livewire('demandecredit')
-        </section>
+    <section class="mt-5">
+        @livewire('demandecredit')
+    </section>
 
 
 

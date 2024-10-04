@@ -202,7 +202,6 @@ class AchatDirectGroupe extends Component
     }
 
 
-    public $montantTotal;
     public function requestCredit()
     {
         // Récupérer l'utilisateur actuellement connec

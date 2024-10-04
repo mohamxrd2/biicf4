@@ -319,6 +319,9 @@
         }
     }
 
+
+
+
     // Fonction pour mettre à jour le montant total pour l'achat direct
     function updateMontantTotalDirect() {
         const quantityInput = document.getElementById('quantityInput');
@@ -363,5 +366,14 @@
             requestCreditButton.classList.add('hidden'); // Masquer le bouton si tout est correct
 
         }
+
+        document.addEventListener('livewire:init', function() {
+        Livewire.on('updateFromAchatDirectGroupe', function(montantTotal) {
+            // Effectue des actions en fonction de la mise à jour du montant
+            console.log('Montant total mis à jour depuis achat-direct-groupe:', montantTotal);
+
+
+        });
+    });
     }
 </script>

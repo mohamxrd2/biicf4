@@ -18,6 +18,13 @@ class DemandeCredi extends Model
         'bailleur',
         'duree',
         'id_user',
+        'demande_id',
+        'objet_financement',
+        'id_investisseur',
+        'date_debut',
+        'date_fin',
+        'heure_debut',
+        'heure_fin',
     ];
 
     // Relation avec le modèle User

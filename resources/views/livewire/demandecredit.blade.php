@@ -92,9 +92,26 @@
                                 <label for="username"
                                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Entrez le
                                     username</label>
-                                <input type="text" wire:model="username" id="username"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    placeholder="Username">
+
+                                <input wire:model.live="search"
+                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                                    type="text" placeholder="Entrez le nom de l'user">
+
+                                @if (!empty($search))
+
+                                    @foreach ($users as $user)
+                                        <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg"
+                                            wire:click="selectUser('{{ $user->id }}', '{{ $user->username }}')">
+                                            <div class="flex">
+                                                <img class="w-5 h-5 mr-2 rounded-full" src="{{ asset($user->photo) }}"
+                                                    alt="">
+                                                <div class="flex justify-between items-center w-full">
+                                                    <span>{{ $user->username }} ({{ $user->name }})</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
                             </div>
 
                             <!-- Ciblage du bailleur -->
@@ -169,11 +186,13 @@
                             {{ session('message') }}
                         </div>
                     @endif
+                    <div class="sm:col-span-2">
 
-                    <button type="submit"
-                        class="mt-6 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Soumettre</button>
+                        <button type="submit"
+                            class="mt-6 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Soumettre</button>
+
+                    </div>
                 </div>
-
             </form>
 
         </div>
