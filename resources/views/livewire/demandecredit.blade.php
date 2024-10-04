@@ -1,4 +1,5 @@
 <div>
+    {{-- @if ($showSection) --}}
     <div class="relative md:static  bg-white rounded-lg shadow-lg">
         <ol
             class="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base  p-5">
@@ -41,15 +42,16 @@
             </li>
         </ol>
 
-        <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit</h2>
+        <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit
+        </h2>
         <form action="#">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-lg shadow-md dark:bg-gray-800">
                 <!-- Titre -->
                 <div class="sm:col-span-2">
-                    <label for="name" class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">Demande
-                        ID (Demande):</label>
-                    <label for="brand" class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">Objet
-                        du financement:</label>
+                    <label for="name" class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+                        Demande ID (Demande): {{ $referenceCode }}</label>
+                    <label for="brand" class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+                        Objet du financement: Demande de crédit</label>
                 </div>
 
                 <!-- Montant recherché -->
@@ -61,32 +63,6 @@
                         placeholder="10.000 XOF" required>
                 </div>
 
-                <!-- Type de financement -->
-                <div>
-                    <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type de
-                        financement</label>
-                    <select id="category"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                        <option selected>Choisir un type</option>
-                        <option value="TV">Demande Directe</option>
-                        <option value="PC">Offre composite (groupée)</option>
-                    </select>
-                </div>
-
-                <!-- Ciblage du bailleur -->
-                <div>
-                    <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un
-                        bailleur ou entrez son username</label>
-                    <select id="category"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                        <option selected>Choisir un bailleur</option>
-                        <option value="Bank">Bank/IFD</option>
-                        <option value="Pgm">Pgm Public/Para-Public</option>
-                        <option value="Fonds">Fonds d’investissement</option>
-                        <option value="Particulier">Particulier</option>
-                    </select>
-                </div>
-
                 <!-- Durée du crédit -->
                 <div>
                     <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Durée
@@ -96,50 +72,103 @@
                         placeholder="12" required>
                 </div>
 
-                <!-- Dates de début et de fin -->
-                <div>
-                    <label for="start-date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
-                        début</label>
-                    <input type="date" name="start-date" id="start-date"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        required>
-                </div>
+                <!-- Type de financement -->
+                    <div x-data="{ typeFinancement: '' }" class="flex flex-col space-y-4">
+                        <label for="financement"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type de
+                            financement</label>
+                        <select id="financement" x-model="typeFinancement"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                            <option selected>Choisir un type</option>
+                            <option value="demande-directe">Demande Directe</option>
+                            <option value="offre-composite">Offre composite (groupée)</option>
+                        </select>
 
-                <div>
-                    <label for="end-date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
-                        fin</label>
-                    <input type="date" name="end-date" id="end-date"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        required>
-                </div>
+                        <div class="flex space-x-4 mt-4"> <!-- Conteneur flex pour l'alignement horizontal -->
+                            <!-- Champ de saisie pour Demande Directe -->
+                            <div x-show="typeFinancement === 'demande-directe'" class="flex flex-col flex-1">
+                                <label for="username"
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Entrez le
+                                    username</label>
+                                <input type="text" id="username"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    placeholder="Username">
+                            </div>
 
-                <!-- Heures de début et de fin -->
-                <div>
-                    <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure
-                        de début</label>
-                    <input type="time" name="start-time" id="start-time"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        required>
-                </div>
+                            <!-- Ciblage du bailleur -->
+                            <div x-show="typeFinancement === 'offre-composite'" class="flex flex-col flex-1">
+                                <label for="bailleur"
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un
+                                    bailleur ou entrez son username</label>
+                                <select id="bailleur"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <option selected>Choisir un bailleur</option>
+                                    <option value="bank">Bank/IFD</option>
+                                    <option value="pgm">Pgm Public/Para-Public</option>
+                                    <option value="fonds">Fonds d’investissement</option>
+                                    <option value="particulier">Particulier</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-                <div>
-                    <label for="end-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
-                        fin</label>
-                    <input type="time" name="end-time" id="end-time"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        required>
-                </div>
 
-                <!-- Retour sur investissement -->
-                <div class="sm:col-span-2">
-                    <label for="roi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Retour
-                        sur investissement</label>
-                    <input type="number" name="roi" id="roi"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12%" required>
-                </div>
+
+                    <!-- Dates et Heures alignées -->
+                    <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="start-date"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
+                                début</label>
+                            <input type="date" name="start-date" id="start-date"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                required>
+                        </div>
+
+                        <div>
+                            <label for="start-time"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
+                                début</label>
+                            <input type="time" name="start-time" id="start-time"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                required>
+                        </div>
+
+                        <div>
+                            <label for="end-date"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
+                                fin</label>
+                            <input type="date" name="end-date" id="end-date"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                required>
+                        </div>
+
+                        <div>
+                            <label for="end-time"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
+                                fin</label>
+                            <input type="time" name="end-time" id="end-time"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                required>
+                        </div>
+                    </div>
+
+                    <!-- Retour sur investissement -->
+                    <div class="sm:col-span-2">
+                        <label for="roi"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Retour
+                            sur investissement</label>
+                        <input type="number" name="roi" id="roi"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                            placeholder="12%" required>
+                    </div>
             </div>
-
         </form>
+
+        <!-- Inclure Alpine.js -->
+        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+
     </div>
+    {{-- @endif --}}
 </div>

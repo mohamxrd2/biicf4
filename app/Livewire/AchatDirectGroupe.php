@@ -74,6 +74,8 @@ class AchatDirectGroupe extends Component
         $this->code_unique = $this->generateUniqueReference();
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
 
+
+
     }
     protected function generateUniqueReference()
     {
@@ -199,6 +201,8 @@ class AchatDirectGroupe extends Component
         }
     }
 
+
+    public $montantTotal;
     public function requestCredit()
     {
         // Récupérer l'utilisateur actuellement connec
@@ -219,6 +223,7 @@ class AchatDirectGroupe extends Component
                         'formSubmitted',
                         'Votre numéro existe dans Promir et votre score de crédit est ' . $crediScore->ccc . ', Alors vous etes éligible au credit'
                     );
+                    $this->checkEligibility();
                 } else {
                     $this->dispatch(
                         'formSubmitted',
@@ -240,7 +245,16 @@ class AchatDirectGroupe extends Component
         }
     }
 
+    public function checkEligibility()
+    {
+        // Logique de vérification ici...
+        $isEligible = true; // Votre logique d'éligibilité ici
 
+        // Émettre l'événement si l'utilisateur est éligible
+        if ($isEligible) {
+            $this->dispatch('userIsEligible', $isEligible);
+        }
+    }
 
     public function render()
     {

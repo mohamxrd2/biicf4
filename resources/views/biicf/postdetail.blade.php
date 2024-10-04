@@ -220,9 +220,13 @@
         @livewire('achat-direct-groupe', ['id' => $id])
     </section>
 
-    <section  class="mt-5">
-        @livewire('demandecredit')
-    </section>
+
+        <section class="mt-5">
+            @livewire('demandecredit')
+        </section>
+
+
+
 
     <!-- JavaScript function to change main image -->
     <script>

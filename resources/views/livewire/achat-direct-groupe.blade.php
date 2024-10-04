@@ -20,7 +20,7 @@
                     </li>
 
                     <li
-                        class="after:border-1 flex items-center text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
+                        class="after:border-1 flex items-center text-blue-600 text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
                         <span
                             class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
                             <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true"
@@ -29,19 +29,20 @@
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                     stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
-                            achat
+                            Achat
                         </span>
                     </li>
 
                     <li>
                         <span
-                            class="flex items-center after:mx-2 text-blue-600 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                            <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            class="flex items-center after:mx-2  after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
+                            <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
-                            Procedure
+                            Crédit
                         </span>
                     </li>
                 </ol>
@@ -251,11 +252,7 @@
                     <input type="hidden" name="idProd" wire:model.defer="idProd">
                     <input type="hidden" name="prix" wire:model.defer="prix">
 
-                    {{-- <div class="flex justify-between px-4 mb-3 w-full">
-                        <p class="font-semibold text-sm text-gray-500">Prix total:</p>
-                        <p class="text-sm text-purple-600" id="montantTotal">0 FCFA</p>
-                        <input type="hidden" name="montantTotal" id="montant_total_input">
-                    </div> --}}
+
 
                     <p id="errorMessage" class="text-sm text-center text-red-500 hidden"></p>
 
@@ -282,7 +279,7 @@
 
                             <dl class="flex items-center justify-between gap-4 py-3">
                                 <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
-                                <dd class="text-base font-bold text-gray-900 dark:text-white" id="montantTotal">0
+                                <dd class="text-base font-bold text-purple-600 dark:text-white" id="montantTotal">0
                                 </dd>
                                 <input type="hidden" name="montantTotal" id="montant_total_input">
 
@@ -336,6 +333,8 @@
         const montantTotalInput = document.getElementById('montant_total_input');
         const requestCreditButton = document.getElementById('requestCreditButton');
 
+
+
         const userBalance = {{ $userWallet->balance }};
 
         if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
@@ -343,6 +342,8 @@
             errorMessageElement.classList.remove('hidden');
             montantTotalElement.innerText = '0 FCFA';
             submitButton.disabled = true;
+            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+
             requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit si autre erreur
 
         } else if (montantTotal > userBalance) {
@@ -351,6 +352,7 @@
             errorMessageElement.classList.remove('hidden');
             montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
             submitButton.disabled = true;
+            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
             requestCreditButton.classList.remove('hidden'); // Afficher le bouton pour demander un crédit
 
         } else {
