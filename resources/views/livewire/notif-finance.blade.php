@@ -79,10 +79,10 @@
 
                                 <div
                                     class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
-                                    <a href="#"
+                                    <button data-modal-target="extralarge-modal" data-modal-toggle="extralarge-modal"
                                         class="w-full inline-flex justify-center rounded-lg  border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 lg:w-auto">
                                         View details
-                                    </a>
+                                    </button>
                                 </div>
 
                             </div>
@@ -141,71 +141,88 @@
                 </nav> --}}
             </div>
 
-            <body class="bg-gray-100">
-                <div class="container mx-auto p-6">
-                    <!-- Header -->
-                    <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-3xl font-semibold text-gray-800">Détails de la demande de crédit</h1>
-                        <button class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2">Retour à la liste</button>
-                    </div>
+            <!-- Extra Large Modal -->
+            <div id="extralarge-modal" tabindex="-1"
+                class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                <div class="relative w-full max-w-7xl max-h-full">
+                    <!-- Modal content -->
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <!-- Modal header -->
 
-                    <!-- Card de détails du client -->
-                    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                        <h2 class="text-xl font-bold mb-4 text-gray-800">Informations sur le client</h2>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-gray-600 font-medium">Nom du client:</p>
-                                <p class="text-gray-800">Jean Dupont</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 font-medium">Email:</p>
-                                <p class="text-gray-800">jean.dupont@email.com</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 font-medium">Numéro de téléphone:</p>
-                                <p class="text-gray-800">+33 6 12 34 56 78</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 font-medium">Adresse:</p>
-                                <p class="text-gray-800">12 Rue de la République, 75001 Paris</p>
+                        <div class="bg-gray-100">
+                            <div class="container mx-auto p-6">
+                                <!-- Header -->
+                                <div class="flex justify-between items-center mb-6">
+                                    <h1 class="text-3xl font-semibold text-gray-800">Détails de la demande de crédit
+                                    </h1>
+                                    <button
+                                        class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2">Retour
+                                        à la liste</button>
+                                </div>
+
+                                <!-- Card de détails du client -->
+                                <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                                    <h2 class="text-xl font-bold mb-4 text-gray-800">Informations sur le client</h2>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Nom du client:</p>
+                                            <p class="text-gray-800">Jean Dupont</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Email:</p>
+                                            <p class="text-gray-800">jean.dupont@email.com</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Numéro de téléphone:</p>
+                                            <p class="text-gray-800">+33 6 12 34 56 78</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Adresse:</p>
+                                            <p class="text-gray-800">12 Rue de la République, 75001 Paris</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card de détails de la demande de crédit -->
+                                <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                                    <h2 class="text-xl font-bold mb-4 text-gray-800">Informations sur la demande de
+                                        crédit</h2>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Montant demandé:</p>
+                                            <p class="text-gray-800">15,000€</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Durée du crédit:</p>
+                                            <p class="text-gray-800">5 ans</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Type de crédit:</p>
+                                            <p class="text-gray-800">Crédit personnel</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Date de la demande:</p>
+                                            <p class="text-gray-800">05 Octobre 2024</p>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <p class="text-gray-600 font-medium">Motif du crédit:</p>
+                                            <p class="text-gray-800">Achat d'une voiture</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex justify-end space-x-4">
+                                    <button
+                                        class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">Approuver</button>
+                                    <button
+                                        class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">Rejeter</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Card de détails de la demande de crédit -->
-                    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                        <h2 class="text-xl font-bold mb-4 text-gray-800">Informations sur la demande de crédit</h2>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-gray-600 font-medium">Montant demandé:</p>
-                                <p class="text-gray-800">15,000€</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 font-medium">Durée du crédit:</p>
-                                <p class="text-gray-800">5 ans</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 font-medium">Type de crédit:</p>
-                                <p class="text-gray-800">Crédit personnel</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 font-medium">Date de la demande:</p>
-                                <p class="text-gray-800">05 Octobre 2024</p>
-                            </div>
-                            <div class="col-span-2">
-                                <p class="text-gray-600 font-medium">Motif du crédit:</p>
-                                <p class="text-gray-800">Achat d'une voiture</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex justify-end space-x-4">
-                        <button class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">Approuver</button>
-                        <button class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">Rejeter</button>
                     </div>
                 </div>
-            </body>
-        </div>
+
+            </div>
     </section>
 </div>
