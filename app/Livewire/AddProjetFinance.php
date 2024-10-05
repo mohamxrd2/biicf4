@@ -4,9 +4,10 @@ namespace App\Livewire;
 
 use App\Models\Projet;
 use Livewire\Component;
-use Livewire\WithFileUploads; // Ajout pour gérer les fichiers
 use Illuminate\Support\Facades\Auth;
+use Intervention\Image\Facades\Image;
 use Carbon\Carbon; // N'oublie pas d'importer Carbon
+use Livewire\WithFileUploads; // Ajout pour gérer les fichiers
 
 class AddProjetFinance extends Component
 {
@@ -82,15 +83,38 @@ class AddProjetFinance extends Component
         $this->resetForm(); // Réinitialiser les champs du formulaire par défaut
     }
 
-    // Fonction pour gérer l'upload des photos
+
     protected function handlePhotoUpload($projet, $photoField)
-    {
-        if ($this->$photoField) {
-            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $this->$photoField->extension();
-            $this->$photoField->storeAs('photos/' . $projet->id, $photoName); // Spécifier un répertoire
-            $projet->$photoField = 'photos/' . $projet->id . '/' . $photoName; // Mettre à jour le champ du projet
+{
+    // Vérifier si la propriété est une instance de UploadedFile
+    if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {
+        $photo = $this->$photoField;
+        $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $photo->extension();
+
+        // Redimensionner l'image en la recadrant pour obtenir exactement 500x400 pixels
+        $imageResized = Image::make($photo->getRealPath());
+        $imageResized->fit(600, 600); // Redimensionner à 500x400 pixels
+
+        // Spécifier le chemin où sauvegarder l'image
+        $path = public_path('post/photos/' . $projet->id);
+
+        // Créer le dossier s'il n'existe pas
+        if (!file_exists($path)) {
+            mkdir($path, 0775, true); // Créer le dossier avec les permissions appropriées
         }
+
+        // Sauvegarder l'image redimensionnée dans le chemin spécifié
+        $imageResized->save($path . '/' . $photoName, 90); // 90 est la qualité de l'image
+
+        // Mettre à jour le champ du projet avec le chemin relatif
+        $projet->$photoField = 'post/photos/' . $projet->id . '/' . $photoName; // Utiliser le chemin relatif
+
+        // Sauvegarder les modifications dans le projet
+        $projet->save();
     }
+}
+
+
 
     // Fonction pour soumettre le formulaire
     public function submit()

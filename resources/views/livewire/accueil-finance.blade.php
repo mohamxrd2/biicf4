@@ -8,10 +8,12 @@
             </h2>
         </div>
 
+        @if($projetRecent)
+
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Image du projet -->
             <img class="w-full md:w-1/2  md:h-96 object-cover rounded-md"
-                src="{{ asset('post/' . $projetRecent->photo1) }}"
+                src="{{ asset($projetRecent->photo1) }}"
                 alt="Image du projet" />
 
             <!-- Contenu du projet -->
@@ -27,7 +29,7 @@
                 </div>
 
                 <!-- Titre du projet -->
-                <a href="#">
+                <a href="{{ route('detailprojet', $projetRecent->id) }}">
                     <h3 class="text-xl font-semibold text-gray-800 mt-2">
                         {{ $projetRecent->name }}
                     </h3>
@@ -41,19 +43,19 @@
                 <!-- Informations de progression -->
                 <div class="mt-4">
                     <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: 80%"></div>
+                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ $projetRecent->pourcentageInvesti }}%"></div>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
                         <!-- Montant Reçu -->
                         <div class="flex flex-col text-center">
-                            <span class="font-semibold text-lg">2 000 FCFA</span>
+                            <span class="font-semibold text-lg">{{ $projetRecent->sommeInvestie }} FCFA</span>
                             <span class="text-gray-500 text-sm">Reçu de {{ number_format($projetRecent->montant, 0, ',', ' ') }} FCFA </span>
                         </div>
 
                         <!-- Nombre d'Investisseurs -->
                         <div class="flex flex-col text-center">
-                            <span class="font-semibold text-lg">173</span>
+                            <span class="font-semibold text-lg">{{ $projetRecent->nombreInvestisseursDistinct }}</span>
                             <span class="text-gray-500 text-sm">Investisseurs</span>
                         </div>
 
@@ -65,7 +67,7 @@
 
                         <!-- Progression -->
                         <div class="flex flex-col text-center">
-                            <span class="font-semibold text-lg">78%</span>
+                            <span class="font-semibold text-lg">{{ number_format($projetRecent->pourcentageInvesti, 2) }}%</span>
                             <span class="text-gray-500 text-sm">Progression</span>
                         </div>
                     </div>
@@ -73,11 +75,13 @@
             </div>
         </div>
 
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($projets as $projet)
                 <div class="bg-white shadow-md rounded-lg overflow-hidden">
                     <img class="w-full h-48 object-cover"
-                    src="{{ asset('post/' . $projet->photo1) }}"
+                    src="{{ asset( $projet->photo1) }}"
                     alt="Projet image" />
                     <div class="p-4">
                         <div class="flex items-center mb-2">
@@ -88,7 +92,7 @@
                             </svg>
                             <span class="ml-2 text-sm text-gray-500">{{ $projet->categorie }}</span> <!-- Catégorie -->
                         </div>
-                        <a href="#">
+                        <a href="{{ route('detailprojet', $projet->id) }}">
                             <h3 class="text-lg font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3> <!-- Nom du projet -->
                         </a>
         
@@ -97,16 +101,16 @@
                         </p>
         
                         <div class="bg-gray-200 h-2 mt-2 rounded-full">
-                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ $projet->taux }}%"></div> <!-- Taux d'avancement -->
+                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ $projet->pourcentageInvesti }}%"></div> <!-- Taux d'avancement -->
                         </div>
                         <div class="flex justify-between items-center mt-4">
                             <div class="flex flex-col">
-                                <span class="font-semibold text-lg">{{ number_format($projet->montant, 0, ',', ' ') }} FCFA</span> <!-- Montant -->
+                                <span class="font-semibold text-lg">{{ number_format($projet->sommeInvestie, 0, ',', ' ') }} FCFA</span> <!-- Montant -->
                                 <span class="text-gray-500 text-sm">Reçu de {{ number_format($projet->montant, 0, ',', ' ') }} FCFA </span> <!-- Montant reçu -->
                             </div>
         
                             <div class="flex flex-col">
-                                <span class="font-semibold text-lg text-right">173</span> <!-- Nombre d'investisseurs (exemple statique) -->
+                                <span class="font-semibold text-lg text-right">{{ $projet->nombreInvestisseursDistinct }}</span> <!-- Nombre d'investisseurs (exemple statique) -->
                                 <span class="text-gray-500 text-sm">Investisseurs</span>
                             </div>
                         </div>
