@@ -119,6 +119,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
 
 
+
 });
 
 //email
@@ -237,6 +238,8 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('finance/Ajouter-projet', function(){
         return view ('finance.addproject');
     })->name('finance.addproject');
+
+    Route::get('finance/detail-projet/{id}', [UserController::class, 'detailprojet'])->name('detailprojet');
 
 
 

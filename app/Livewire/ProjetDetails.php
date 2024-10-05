@@ -4,15 +4,27 @@ namespace App\Livewire;
 
 use App\Models\Projet;
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 
 class ProjetDetails extends Component
 {
     public $projet;
 
+  
+
+
     public function mount($id)
     {
         $this->projet = Projet::with('demandeur')->find($id);
+
+        
+       
+        
     }
+
+  
+
+
 
     public function accepterProjet()
     {
