@@ -367,13 +367,7 @@
 
         }
 
-        document.addEventListener('livewire:init', function() {
-        Livewire.on('updateFromAchatDirectGroupe', function(montantTotal) {
-            // Effectue des actions en fonction de la mise à jour du montant
-            console.log('Montant total mis à jour depuis achat-direct-groupe:', montantTotal);
 
 
-        });
-    });
     }
 </script>
