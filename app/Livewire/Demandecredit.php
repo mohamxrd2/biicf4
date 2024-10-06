@@ -14,7 +14,6 @@ class Demandecredit extends Component
 {
     public $showSection = false;
     public $referenceCode;
-
     public $price;
     public $duration;
     public $financementType;
@@ -25,7 +24,9 @@ class Demandecredit extends Component
     public $endDate;
     public $endTime;
     public $roi;
-
+    public $search = '';   // Champ de recherche
+    public $users = [];    // Liste des utilisateurs trouvés
+    public $user_id;       // ID de l'utilisateur sélectionné
 
 
     protected $listeners = ['userIsEligible' => 'handleEligibility'];
@@ -40,9 +41,7 @@ class Demandecredit extends Component
             $this->referenceCode = $this->generateReferenceCode();
         }
     }
-    public $search = '';   // Champ de recherche
-    public $users = [];    // Liste des utilisateurs trouvés
-    public $user_id;       // ID de l'utilisateur sélectionné
+
 
     // Méthode appelée lors de la mise à jour de la recherche
     public function updatedSearch()
@@ -65,9 +64,6 @@ class Demandecredit extends Component
         $this->users = [];           // Vider la liste des résultats
         Log::info('User selected.', ['user_id' => $userId, 'user_name' => $userName]);
     }
-
-
-
     public function submit()
     {
         $this->validate([

@@ -248,10 +248,12 @@ class AchatDirectGroupe extends Component
     {
         // Logique de vérification ici...
         $isEligible = true; // Votre logique d'éligibilité ici
+        $quantiteMax = $this->produit->qteProd_max; // Votre logique d'éligibilité ici
+        $prix = $this->produit->prix; // Votre logique d'éligibilité ici
 
         // Émettre l'événement si l'utilisateur est éligible
         if ($isEligible) {
-            $this->dispatch('userIsEligible', $isEligible);
+            $this->dispatch('userIsEligible', $isEligible, $quantiteMax, $prix);
         }
     }
 

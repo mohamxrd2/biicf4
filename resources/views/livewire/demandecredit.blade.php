@@ -180,6 +180,7 @@
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             placeholder="12%" required>
                     </div>
+
                     <!-- Message de succès -->
                     @if (session()->has('message'))
                         <div class="mt-4 text-green-600">
@@ -197,4 +198,23 @@
 
         </div>
     @endif
+    <!-- Divs where the values will be displayed -->
+
+    <p id="eligibilityStatus"></p>
+
+    <script>
+        document.addEventListener('livewire:update', () => {
+            Livewire.on('userIsEligible', (isEligible) => {
+                const eligibilityStatus = document.getElementById('eligibilityStatus');
+
+                if (eligibilityStatus) {
+                    eligibilityStatus.innerText = `Éligibilité : ${(isEligible[0] ? 'Oui' : 'Non')}`;
+                } else {
+                    console.error("L'élément avec l'ID 'eligibilityStatus' n'existe pas.");
+                }
+            });
+        });
+    </script>
+
+
 </div>
