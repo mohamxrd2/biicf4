@@ -65,74 +65,88 @@
             <div>
                 <label for="categorie" class="block text-sm font-medium text-gray-700">Catégorie</label>
                 <select id="categorie" wire:model="categorie" required
-                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-purple-500 focus:border-purple-500">
+                    class="mt-1 block w-full border  border-gray-300 rounded-md p-2 focus:ring-purple-500 focus:border-purple-500">
                     <option value="" disabled>Sélectionnez une catégorie</option>
-                    <!-- Catégories Principales -->
-                    <option value="Technologie et Innovation" selected>Technologie et Innovation</option>
-                    <option value="Travaux Créatifs">Travaux Créatifs</option>
-                    <option value="Projets Communautaires">Projets Communautaires</option>
-
-                    <!-- Sous-catégories Technologiques -->
-                    <option value="Technologie Audio">Technologie Audio</option>
-                    <option value="Technologie Vestimentaire">Technologie Vestimentaire</option>
-                    <option value="Énergie et Tech Verte">Énergie et Tech Verte</option>
-                    <option value="Télécommunications et Accessoires">Télécommunications et Accessoires</option>
-                    <option value="Produits Innovants">Produits Innovants</option>
-
-                    <!-- Sous-catégories Éducation & Formation -->
-                    <option value="Éducation">Éducation</option>
-                    <option value="Formations en Ligne">Formations en Ligne</option>
-                    <option value="Programmes Académiques">Programmes Académiques</option>
-
-                    <!-- Sous-catégories Santé et Bien-être -->
-                    <option value="Santé et Bien-être">Santé et Bien-être</option>
-                    <option value="Nutrition et Alimentation">Nutrition et Alimentation</option>
-                    <option value="Fitness et Entraînement">Fitness et Entraînement</option>
-
-                    <!-- Sous-catégories Environnement -->
-                    <option value="Environnement">Environnement</option>
-                    <option value="Projets Écologiques">Projets Écologiques</option>
-                    <option value="Conservation des Ressources">Conservation des Ressources</option>
-
-                    <!-- Sous-catégories Culture et Art -->
-                    <option value="Culture">Culture</option>
-                    <option value="Art">Art</option>
-                    <option value="Musique">Musique</option>
-                    <option value="Film">Film</option>
-                    <option value="Photographie">Photographie</option>
-                    <option value="Comédie et Théâtre">Comédie et Théâtre</option>
-                    <option value="Écriture et Publication">Écriture et Publication</option>
-                    <option value="Jeux Vidéo">Jeux Vidéo</option>
-                    <option value="Webséries et TV">Webséries et TV</option>
-                    <option value="Podcasts et Blogs">Podcasts et Blogs</option>
-
-                    <!-- Sous-catégories Projets Communautaires -->
-                    <option value="Projets Communautaires">Projets Communautaires</option>
-                    <option value="Droits Humains">Droits Humains</option>
-                    <option value="Petites Entreprises">Petites Entreprises</option>
-                    <option value="Activités Sociales">Activités Sociales</option>
-                    <option value="Actions Humanitaires">Actions Humanitaires</option>
-                    <option value="Autres Projets Communautaires">Autres Projets Communautaires</option>
-
-                    <!-- Sous-catégories Entrepreneuriat -->
-                    <option value="Entrepreneuriat">Entrepreneuriat</option>
-                    <option value="Startups Technologiques">Startups Technologiques</option>
-                    <option value="Commerce Électronique">Commerce Électronique</option>
-
-                    <!-- Autres Catégories -->
-                    <option value="Voyage et Aventure">Voyage et Aventure</option>
-                    <option value="Mode et Accessoires">Mode et Accessoires</option>
-                    <option value="Nourriture et Boissons">Nourriture et Boissons</option>
-                    <option value="Transport et Mobilité">Transport et Mobilité</option>
-                    <option value="Immobilier">Immobilier</option>
-                    <option value="Sports et Loisirs">Sports et Loisirs</option>
-                    <option value="Autres">Autres</option>
+            
+                    <!-- Catégories tirées du document -->
+                    <option value="AGRICULTURE VIVRIERE">AGRICULTURE VIVRIERE</option>
+                    <option value="AGRICULTURE DESTINEE A L'INDUSTRIE OU A L'EXPORTATION">AGRICULTURE DESTINEE A L'INDUSTRIE OU A L'EXPORTATION</option>
+                    <option value="ELEVAGE ET CHASSE">ELEVAGE ET CHASSE</option>
+                    <option value="ACTIVITES ANNEXES A L'AGRICULTURE L'ELEVAGE ET LA CHASSE">ACTIVITES ANNEXES A L'AGRICULTURE L'ELEVAGE ET LA CHASSE</option>
+                    <option value="SYLVICULTURE ET EXPLOITATION FORESTIERE">SYLVICULTURE ET EXPLOITATION FORESTIERE</option>
+                    <option value="PECHE">PECHE</option>
+                    <option value="AQUACULTURE PISCICULTURE">AQUACULTURE PISCICULTURE</option>
+                    <option value="EXTRACTION DE CHARBON ET DE LIGNITE">EXTRACTION DE CHARBON ET DE LIGNITE</option>
+                    <option value="EXTRACTION D'HYDROCARBURES">EXTRACTION D'HYDROCARBURES</option>
+                    <option value="EXTRACTION DE MINERAIS MÉTALLIQUES">EXTRACTION DE MINERAIS MÉTALLIQUES</option>
+                    <option value="EXTRACTION DE PIERRES DE SABLES ET D'ARGILES">EXTRACTION DE PIERRES DE SABLES ET D'ARGILES</option>
+                    <option value="ACTIVITES EXTRACTIVES N.C.A.">ACTIVITES EXTRACTIVES N.C.A.</option>
+                    <option value="ACTIVITES DE SOUTIEN A L’EXTRACTION D’HYDROCARBURES">ACTIVITES DE SOUTIEN A L’EXTRACTION D’HYDROCARBURES</option>
+                    <option value="ACTIVITES DE SOUTIEN AUX AUTRES INDUSTRIES EXTRACTIVES">ACTIVITES DE SOUTIEN AUX AUTRES INDUSTRIES EXTRACTIVES</option>
+                    <option value="ABATTAGE TRANSFORMATION ET CONSERVATION DE LA VIANDE">ABATTAGE TRANSFORMATION ET CONSERVATION DE LA VIANDE</option>
+                    <option value="TRANSFORMATION ET CONSERVATION DE POISSONS CRUSTACES ET MOLLUSQUES">TRANSFORMATION ET CONSERVATION DE POISSONS CRUSTACES ET MOLLUSQUES</option>
+                    <option value="TRANSFORMATION ET CONSERVATION DE FRUITS ET LEGUMES">TRANSFORMATION ET CONSERVATION DE FRUITS ET LEGUMES</option>
+                    <option value="FABRICATION DE CORPS GRAS D'ORIGINE ANIMALE ET VEGETALE">FABRICATION DE CORPS GRAS D'ORIGINE ANIMALE ET VEGETALE</option>
+                    <option value="TRAVAIL DES GRAINS ; FABRICATION DE PRODUITS AMYLACES">TRAVAIL DES GRAINS ; FABRICATION DE PRODUITS AMYLACES</option>
+                    <option value="FABRICATION DE PRODUITS ALIMENTAIRES A BASE DE CEREALES N.C.A.">FABRICATION DE PRODUITS ALIMENTAIRES A BASE DE CEREALES N.C.A.</option>
+                    <option value="TRANSFORMATION DU CACAO ET DU CAFÉ">TRANSFORMATION DU CACAO ET DU CAFÉ</option>
+                    <option value="FABRICATION D'AUTRES PRODUITS ALIMENTAIRES">FABRICATION D'AUTRES PRODUITS ALIMENTAIRES</option>
+                    <option value="FABRICATION DE BOISSONS ALCOOLISÉES">FABRICATION DE BOISSONS ALCOOLISÉES</option>
+                    <option value="FABRICATION DE BOISSONS NON ALCOOLISES ET D'EAUX MINERALES">FABRICATION DE BOISSONS NON ALCOOLISES ET D'EAUX MINERALES</option>
+                    <option value="FABRICATION DE PRODUITS A BASE DE TABAC">FABRICATION DE PRODUITS A BASE DE TABAC</option>
+                    <option value="FILATURE TISSAGE ET ENNOBLISSEMENT DE TEXTILE">FILATURE TISSAGE ET ENNOBLISSEMENT DE TEXTILE</option>
+                    <option value="FABRICATION D'AUTRES ARTICLES TEXTILES">FABRICATION D'AUTRES ARTICLES TEXTILES</option>
+                    <option value="FABRICATION DE VETEMENTS">FABRICATION DE VETEMENTS</option>
+                    <option value="SERVICE DE COUTURE SUR MESURE">SERVICE DE COUTURE SUR MESURE</option>
+                    <option value="TRAVAIL DU CUIR; FABRICATION D'ARTICLES DE VOYAGE">TRAVAIL DU CUIR; FABRICATION D'ARTICLES DE VOYAGE</option>
+                    <option value="FABRICATION DE CHAUSSURES ET ARTICLES CHAUSSANTS">FABRICATION DE CHAUSSURES ET ARTICLES CHAUSSANTS</option>
+                    <option value="TRAVAIL DU BOIS">TRAVAIL DU BOIS</option>
+                    <option value="FABRICATION D'ARTICLES EN BOIS LIEGE VANNERIE ET SPARTERIE">FABRICATION D'ARTICLES EN BOIS LIEGE VANNERIE ET SPARTERIE</option>
+                    <option value="FABRICATION DE PAPIER CARTONS ET D’ARTICLES EN PAPIER OU EN CARTON">FABRICATION DE PAPIER CARTONS ET D’ARTICLES EN PAPIER OU EN CARTON</option>
+                    <option value="IMPRIMERIE ET ACTIVITES CONNEXES">IMPRIMERIE ET ACTIVITES CONNEXES</option>
+                    <option value="REPRODUCTION D'ENREGISTREMENTS">REPRODUCTION D'ENREGISTREMENTS</option>
+                    <option value="RAFFINAGE DU PETROLE">RAFFINAGE DU PETROLE</option>
+                    <option value="COKEFACTION">COKEFACTION</option>
+                    <option value="FABRICATION DE PRODUITS CHIMIQUES DE BASE">FABRICATION DE PRODUITS CHIMIQUES DE BASE</option>
+                    <option value="FABRICATION DE PRODUITS CHIMIQUES FONCTIONNELS">FABRICATION DE PRODUITS CHIMIQUES FONCTIONNELS</option>
+                    <option value="FABRICATION DE PRODUITS PHARMACEUTIQUES">FABRICATION DE PRODUITS PHARMACEUTIQUES</option>
+                    <option value="TRAVAIL DU CAOUTCHOUC">TRAVAIL DU CAOUTCHOUC</option>
+                    <option value="TRAVAIL DU PLASTIQUE">TRAVAIL DU PLASTIQUE</option>
+                    <option value="FABRICATION DE VERRE ET D'ARTICLES EN VERRE">FABRICATION DE VERRE ET D'ARTICLES EN VERRE</option>
+                    <option value="FABRICATION DE PRODUITS CÉRAMIQUES">FABRICATION DE PRODUITS CÉRAMIQUES</option>
+                    <option value="FABRICATION DE CIMENTS ET AUTRES PRODUITS MINERAUX">FABRICATION DE CIMENTS ET AUTRES PRODUITS MINERAUX</option>
+                    <option value="FABRICATION DE COMPOSANTS ELECTRONIQUE D'ORDINATEURS ET DE PERIPHERIQUES">FABRICATION DE COMPOSANTS ELECTRONIQUE D'ORDINATEURS ET DE PERIPHERIQUES</option>
+                    <option value="FABRICATION D'EQUIPEMENTS DE COMMUNICATION ET DE PRODUITS ELECTRONIQUES GRAND PUBLICS">FABRICATION D'EQUIPEMENTS DE COMMUNICATION ET DE PRODUITS ELECTRONIQUES GRAND PUBLICS</option>
+                    <option value="FABRICATION D'EQUIPEMENTS D'IMAGERIE MEDICALE DE PRECISION D'OPTIQUE ET D'HORLOGERIE">FABRICATION D'EQUIPEMENTS D'IMAGERIE MEDICALE DE PRECISION D'OPTIQUE ET D'HORLOGERIE</option>
+                    <option value="FABRICATION DE MACHINES ET MATERIELS ELECTROTECHNIQUES">FABRICATION DE MACHINES ET MATERIELS ELECTROTECHNIQUES</option>
+                    <option value="FABRICATION D'AUTRES MATERIELS ELECTRIQUES">FABRICATION D'AUTRES MATERIELS ELECTRIQUES</option>
+                    <option value="CONSTRUCTION DE VÉHICULES AUTOMOBILES">CONSTRUCTION DE VÉHICULES AUTOMOBILES</option>
+                    <option value="CONSTRUCTION NAVALE AÉRONAUTIQUE ET FERROVIAIRE">CONSTRUCTION NAVALE AÉRONAUTIQUE ET FERROVIAIRE</option>
+                    <option value="FABRICATION DE MEUBLES ET MATELAS">FABRICATION DE MEUBLES ET MATELAS</option>
+                    <option value="AUTRES INDUSTRIES">AUTRES INDUSTRIES</option>
+                    <option value="REPARATION DE MACHINES ET D'EQUIPEMENTS PROFESSIONNELS">REPARATION DE MACHINES ET D'EQUIPEMENTS PROFESSIONNELS</option>
+                    <option value="INSTALLATION DE MACHINES ET D'EQUIPEMENTS PROFESSIONNELS">INSTALLATION DE MACHINES ET D'EQUIPEMENTS PROFESSIONNELS</option>
+                    <option value="PRODUCTION TRANSPORT ET DISTRIBUTION D'ÉLECTRICITÉ">PRODUCTION TRANSPORT ET DISTRIBUTION D'ÉLECTRICITÉ</option>
+                    <option value="PRODUCTION ET DISTRIBUTION DE COMBUSTIBLES GAZEUX ET DE GLACE">PRODUCTION ET DISTRIBUTION DE COMBUSTIBLES GAZEUX ET DE GLACE</option>
+                    <option value="CAPTAGE TRAITEMENT ET DISTRIBUTION D'EAU">CAPTAGE TRAITEMENT ET DISTRIBUTION D'EAU</option>
+                    <option value="COLLECTE ET TRAITEMENT DES EAUX USEES">COLLECTE ET TRAITEMENT DES EAUX USEES</option>
+                    <option value="COLLECTE TRAITEMENT ET ELIMINATION DES DECHETS ; RECUPERATION">COLLECTE TRAITEMENT ET ELIMINATION DES DECHETS ; RECUPERATION</option>
+                    <option value="DEPOLLUTION ET GESTION DES DECHETS">DEPOLLUTION ET GESTION DES DECHETS</option>
+                    <option value="PROMOTION IMMOBILIÈRE">PROMOTION IMMOBILIÈRE</option>
+                    <option value="CONSTRUCTION DE BÂTIMENTS COMPLETS">CONSTRUCTION DE BÂTIMENTS COMPLETS</option>
+                    <option value="GENIE CIVIL">GENIE CIVIL</option>
+                    <option value="ACTIVITÉS SPECIALISEES DE CONSTRUCTION">ACTIVITÉS SPECIALISEES DE CONSTRUCTION</option>
+                    <option value="COMMERCE DE VÉHICULES AUTOMOBILES">COMMERCE DE VÉHICULES AUTOMOBILES</option>
+                    <option value="ENTRETIEN ET REPARATION DE VEHICULES AUTOMOBILES">ENTRETIEN ET REPARATION DE VEHICULES AUTOMOBILES</option>
+                    <option value="COMMERCE DE PIECES DETACHEES ET D'ACCESSOIRES AUTOMOBILES">COMMERCE DE PIECES DETACHEES ET D'ACCESSOIRES AUTOMOBILES</option>
+                    <option value="COMMERCE ET RÉPARATION DE MOTOCYCLES">COMMERCE ET RÉPARATION DE MOTOCYCLES</option>
+            
                 </select>
                 @error('categorie')
                     <span class="text-red-500 text-sm">{{ $message }}</span>
                 @enderror
             </div>
-
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <!-- Photo 1 -->
 

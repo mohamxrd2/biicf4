@@ -2,11 +2,12 @@
 
 namespace App\Livewire;
 
-use App\Models\AjoutMontant;
 use DB;
 use App\Models\Projet;
 use App\Models\Wallet;
 use Livewire\Component;
+use App\Models\Transaction;
+use App\Models\AjoutMontant;
 use Illuminate\Support\Facades\Auth;
 
 class DetailProjet extends Component
@@ -113,6 +114,8 @@ class DetailProjet extends Component
         $wallet->balance -= $montant; // Utilisez la valeur float
         $wallet->save();
 
+        $this->createTransaction(Auth::id(), $projet->demandeur->id, 'Envoie', $montant);
+
         // Message de succès
         session()->flash('success', 'Le montant a été ajouté avec succès.');
 
@@ -129,6 +132,16 @@ class DetailProjet extends Component
          $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
              ->distinct()
              ->count('id_invest');
+    }
+
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->save();
     }
 
 

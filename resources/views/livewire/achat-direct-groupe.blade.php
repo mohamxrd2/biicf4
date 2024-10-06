@@ -259,7 +259,7 @@
 
                     <div class="text-center mt-3">
                         <button id="requestCreditButton" wire:click="requestCredit" wire:loading.attr="disabled"
-                            class="hidden py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-gray-200">
+                            class="hidden py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700">
                             <span wire:loading.remove>Demander un crédit</span>
                             <span wire:loading>Envoi en cours...</span>
                         </button>
@@ -306,7 +306,7 @@
 
         if (contentDiv.classList.contains('hidden')) {
             contentDiv.classList.remove('hidden');
-            // Forcing reflow to enable transition
+            // Forcing reflow to enable   transition
             contentDiv.offsetHeight;
             contentDiv.classList.add('show');
         } else {

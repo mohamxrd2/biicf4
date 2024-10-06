@@ -145,11 +145,17 @@
                 <p id="messageSommeRestante" class="text-red-500 text-center mt-2 hidden">Le montant doit être supérieur
                     ou égal à la somme restante</p>
 
-                <button id="confirmerButton" disabled
+                    <button id="confirmerButton" disabled
                     class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
-                    wire:click="confirmer">
-                    Confirmer le montant
+                    wire:click="confirmer" wire:loading.attr="disabled">
+                    <span wire:loading.remove>
+                        Confirmer le montant
+                    </span>
+                    <span wire:loading>
+                        Chargement...
+                    </span>
                 </button>
+                
             </div>
 
 

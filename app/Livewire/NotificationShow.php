@@ -1452,16 +1452,6 @@ class NotificationShow extends Component
         $this->validate();
     }
 
-    // protected function handleCommission($user, $amount, $type)
-    // {
-    //     if ($user->parrain) {
-    //         $commission = $amount * 0.05;
-    //         $parrainWallet = Wallet::where('user_id', $user->parrain)->first();
-    //         $parrainWallet->increment('balance', $commission);
-    //         $this->createTransaction($user->id, $user->parrain, 'Commission', $commission);
-    //     }
-    // }
-
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
     {
         $transaction = new Transaction();
