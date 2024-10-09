@@ -33,21 +33,33 @@ class DetailsCredit extends Component
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        // Récupérer l'ID de l'utilisateur depuis les données de la notification
+        // Récupérer l'ID de l'utilisateur qui a demnder le credit depuis les données de la notification
         $userId = $this->notification->data['user_id'];
         // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
         $this->userDetails = User::find($userId);
         $userNumber = $this->userDetails->phone;
-        $wallet = Wallet::where('user_id', $userId)->first();
 
+        // Récupérer l'ID de l'utilisateur connecté
+        $user_connecte = Auth::id();
+        $wallet = Wallet::where('user_id', $user_connecte)->first();
         $this->solde = $wallet ? $wallet->balance : 0;
 
-        // $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
-        //     ->distinct()
-        //     ->count('id_invest');
 
-        // $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)
-        //     ->sum('montant'); // Somme des montants investis
+        // Récupérer l'ID de la demande de credi du userId
+        $demandeId = $this->notification->data['demande_id'];
+        $this->demandeCredit = DemandeCredi::where('demande_id', $demandeId)->first();
+
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', operator: $this->demandeCredit->id)
+            ->distinct()
+            ->count('id_invest');
+
+        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->sum('montant'); // Somme des montants investis
+        // Calculer la somme restante à investir
+        $this->sommeRestante = $this->userDetails->montant - $this->sommeInvestie; // Montant total - Somme investie
+
+
+
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
         $this->userInPromir = UserPromir::where('numero', $userNumber)->exists();
 
@@ -56,88 +68,81 @@ class DetailsCredit extends Component
             $this->crediScore = CrediScore::where('id_user', $this->userInPromir)->first();
         }
 
-        $demandeId = $this->notification->data['demande_id'];
 
-        $this->demandeCredit = DemandeCredi::where('demande_id', $demandeId)->first();
-
-        // // Calculer le pourcentage investi
-        // if ($this->projet->montant > 0) {
-        //     $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Calculer le pourcentage investi
-        // } else {
-        //     $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
-        // }
-
-        // // Calculer la somme restante à investir
-        // $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Montant total - Somme investie
+        // Calculer le pourcentage investi
+        if ($this->userDetails->montant > 0) {
+            $this->pourcentageInvesti = ($this->sommeInvestie / $this->userDetails->montant) * 100; // Calculer le pourcentage investi
+        } else {
+            $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
+        }
     }
 
-    // public function confirmer()
-    // {
-    //     // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-    //     $montant = floatval($this->montant); // Convertir le montant en float
+    public function confirmer()
+    {
+        // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
+        $montant = floatval($this->montant); // Convertir le montant en float
 
-    //     // if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
-    //     //     session()->flash('error', 'Veuillez saisir un montant valide.');
-    //     //     return;
-    //     // }
+        if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
+            session()->flash('error', 'Veuillez saisir un montant valide.');
+            return;
+        }
 
-    //     // Récupérer le projet et le wallet de l'utilisateur (investisseur)
-    //     $projet = $this->projet;
+        // Récupérer le projet et le wallet de l'utilisateur (investisseur)
+        $demandeCredit = $this->demandeCredit;
 
-    //     // Vérifiez si le projet et le demandeur existent
-    //     if (!$projet || !$projet->demandeur->id) {
-    //         session()->flash('error', 'Le projet ou le demandeur est introuvable.');
-    //         return;
-    //     }
+        // Vérifiez si le projet et le demandeur existent
+        if (!$demandeCredit || !$this->notification->data['demande_id']) {
+            session()->flash('error', 'La demande de credit ou le demandeur est introuvable.');
+            return;
+        }
 
-    //     $wallet = Wallet::where('user_id', Auth::id())->first();
+        $wallet = Wallet::where('user_id', Auth::id())->first();
 
-    //     // Vérifier que l'utilisateur possède un wallet
-    //     if (!$wallet) {
-    //         session()->flash('error', 'Votre portefeuille est introuvable.');
-    //         return;
-    //     }
+        // Vérifier que l'utilisateur possède un wallet
+        if (!$wallet) {
+            session()->flash('error', 'Votre portefeuille est introuvable.');
+            return;
+        }
 
-    //     // Vérifier que le solde du wallet est suffisant
-    //     if ($wallet->balance < $montant) {
-    //         session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
-    //         return;
-    //     }
+        // Vérifier que le solde du wallet est suffisant
+        if ($wallet->balance < $montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
+            return;
+        }
+        //Sauvegarder le montant dans la table `ajout_montant`
+        try {
+            $ajoumontant = AjoutMontant::create([
+                'montant' => $montant, // Utilisez la valeur float
+                'id_invest' => Auth::id(),
+                'id_emp' => $this->demandeCredit->id_user, // Vérifiez que cela n'est pas nul
+                'id_demnd_credit' => $this->demandeCredit->id,
+            ]);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
+            return;
+        }
+        // dd(vars: $ajoumontant);
+        // // Mettre à jour le solde de l'utilisateur (investisseur)
+        $wallet->balance -= $montant; // Utilisez la valeur float
+        $wallet->save();
 
-    //     // Sauvegarder le montant dans la table `ajout_montant`
-    //     try {
-    //         $ajoumontant = AjoutMontant::create([
-    //             'montant' => $montant, // Utilisez la valeur float
-    //             'id_invest' => Auth::id(),
-    //             'id_emp' => $projet->demandeur->id, // Vérifiez que cela n'est pas nul
-    //             'id_projet' => $projet->id,
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
-    //         return;
-    //     }
+        // Message de succès
+        session()->flash('success', 'Le montant a été ajouté avec succès.');
 
-    //     // Mettre à jour le solde de l'utilisateur (investisseur)
-    //     $wallet->balance -= $montant; // Utilisez la valeur float
-    //     $wallet->save();
+        // Réinitialiser le montant saisi et le drapeau de vérification de solde insuffisant
+        $this->montant = '';
+        $this->insuffisant = false;
 
-    //     // Message de succès
-    //     session()->flash('success', 'Le montant a été ajouté avec succès.');
+        // Rafraîchir les propriétés du composant
+        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant'); // Met à jour la somme investie
+        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Met à jour la somme restante
+        $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Met à jour le pourcentage investi
 
-    //     // Réinitialiser le montant saisi et le drapeau de vérification de solde insuffisant
-    //     $this->montant = '';
-    //     $this->insuffisant = false;
-
-    //     // Rafraîchir les propriétés du composant
-    //     $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant'); // Met à jour la somme investie
-    //     $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Met à jour la somme restante
-    //     $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Met à jour le pourcentage investi
-
-    //     // Mettre à jour le nombre d'investisseurs distincts
-    //     $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
-    //         ->distinct()
-    //         ->count('id_invest');
-    // }
+        // Mettre à jour le nombre d'investisseurs distincts
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->projet->id)
+            ->distinct()
+            ->count('id_invest');
+    }
 
     public function joursRestants()
     {

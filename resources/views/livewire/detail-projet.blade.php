@@ -62,7 +62,7 @@
                             <span class="font-semibold text-lg"> {{ number_format($sommeInvestie, 0, ',', ' ') }}
                                 FCFA</span>
                             <span class="text-gray-500 text-sm">Reçu de
-                                {{ number_format($projet->montant, 0, ',', ' ') }} FCFA </span>
+                                {{ number_format($this->userDetails->montant, 0, ',', ' ') }} FCFA </span>
                         </div>
 
                         <!-- Nombre d'Investisseurs -->
@@ -128,7 +128,7 @@
                     </button>
                 @else
 
-                <button 
+                <button
                         class="w-full py-3 bg-gray-200 hover:bg-gray-300 transition-colors rounded-md text-black font-medium" disabled>
                         Ceci est votre projet
                     </button>

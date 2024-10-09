@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('investisseurs', function (Blueprint $table) {
-            $table->string('invest_type')->nullable()->change()->after('tranche'); // Exemple de modification
-
+        Schema::table('ajout_montant', function (Blueprint $table) {
+            $table->foreignId('id_demnd_credit')->nullable()->constrained('demande_credi')->onDelete('cascade');
         });
     }
 
@@ -22,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('investisseurs', function (Blueprint $table) {
+        Schema::table('ajout_montant', function (Blueprint $table) {
             //
         });
     }
