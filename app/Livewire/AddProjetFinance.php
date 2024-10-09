@@ -2,8 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use App\Models\Projet;
 use Livewire\Component;
+use App\Models\CrediScore;
+use App\Models\UserPromir;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
 use Carbon\Carbon; // N'oublie pas d'importer Carbon
@@ -27,6 +31,16 @@ class AddProjetFinance extends Component
 
     public $isSubmitting = false; // Pour indiquer si la soumission est en cours
     public $successMessage = '';  // Message de succès
+
+    public $message = '';
+
+    public $isEligible = false;
+
+
+    public $search = '';   // Champ de recherche
+    public $users = [];    // Liste des utilisateurs trouvés
+    public $user_id;       // ID de l'utilisateur sélectionné
+    public $username_direct;
 
     // Définition des règles de validation
     protected $rules = [
@@ -83,36 +97,58 @@ class AddProjetFinance extends Component
         $this->resetForm(); // Réinitialiser les champs du formulaire par défaut
     }
 
+    public function updatedSearch()
+    {
+        if (!empty($this->search)) {
+            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')->get();
+            Log::info('Search updated.', ['search' => $this->search]);
+        } else {
+            // Si la barre de recherche est vide, ne rien afficher
+            $this->users = [];
+        }
+    }
+
+    // Méthode pour sélectionner un utilisateur
+    public function selectUser($userId, $userName)
+    {
+        $this->user_id = $userId;
+        $this->search = $userName;   // Mettre à jour le champ de recherche avec le nom d'utilisateur sélectionné
+        $this->users = [];           // Vider la liste des résultats
+        Log::info('User selected.', ['user_id' => $userId, 'user_name' => $userName]);
+    }
+
 
     protected function handlePhotoUpload($projet, $photoField)
-{
-    // Vérifier si la propriété est une instance de UploadedFile
-    if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {
-        $photo = $this->$photoField;
-        $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $photo->extension();
+    {
+        // Vérifier si la propriété est une instance de UploadedFile
+        if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {
+            $photo = $this->$photoField;
+            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $photo->extension();
 
-        // Redimensionner l'image en la recadrant pour obtenir exactement 500x400 pixels
-        $imageResized = Image::make($photo->getRealPath());
-        $imageResized->fit(600, 600); // Redimensionner à 500x400 pixels
+            // Redimensionner l'image en la recadrant pour obtenir exactement 500x400 pixels
+            $imageResized = Image::make($photo->getRealPath());
+            $imageResized->fit(600, 600); // Redimensionner à 500x400 pixels
 
-        // Spécifier le chemin où sauvegarder l'image
-        $path = public_path('post/photos/' . $projet->id);
+            // Spécifier le chemin où sauvegarder l'image
+            $path = public_path('post/photos/' . $projet->id);
 
-        // Créer le dossier s'il n'existe pas
-        if (!file_exists($path)) {
-            mkdir($path, 0775, true); // Créer le dossier avec les permissions appropriées
+            // Créer le dossier s'il n'existe pas
+            if (!file_exists($path)) {
+                mkdir($path, 0775, true); // Créer le dossier avec les permissions appropriées
+            }
+
+            // Sauvegarder l'image redimensionnée dans le chemin spécifié
+            $imageResized->save($path . '/' . $photoName, 90); // 90 est la qualité de l'image
+
+            // Mettre à jour le champ du projet avec le chemin relatif
+            $projet->$photoField = 'post/photos/' . $projet->id . '/' . $photoName; // Utiliser le chemin relatif
+
+            // Sauvegarder les modifications dans le projet
+            $projet->save();
         }
-
-        // Sauvegarder l'image redimensionnée dans le chemin spécifié
-        $imageResized->save($path . '/' . $photoName, 90); // 90 est la qualité de l'image
-
-        // Mettre à jour le champ du projet avec le chemin relatif
-        $projet->$photoField = 'post/photos/' . $projet->id . '/' . $photoName; // Utiliser le chemin relatif
-
-        // Sauvegarder les modifications dans le projet
-        $projet->save();
     }
-}
+
 
 
 
@@ -160,7 +196,6 @@ class AddProjetFinance extends Component
 
             // Message de succès
             $this->successMessage = 'Le projet a été ajouté avec succès !';
-
         } catch (\Exception $e) {
             // Si une erreur survient, réinitialiser l'indicateur de soumission
             $this->addError('submitError', 'Une erreur est survenue lors de la soumission : ' . $e->getMessage());
@@ -188,6 +223,44 @@ class AddProjetFinance extends Component
         $this->photo5 = null; // Réinitialiser les photos
         $this->successMessage = '';
     }
+
+    public function verifyUser()
+    {
+        // Récupérer l'utilisateur actuellement connecté
+        $user = auth()->user();
+        $userNumber = $user->phone;
+
+        // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
+        $userInPromir = UserPromir::where('numero', $userNumber)->exists();
+
+        if ($userInPromir) {
+            // Vérifier si un score de crédit existe pour cet utilisateur
+            $crediScore = CrediScore::where('id_user', $userInPromir)->first();
+
+            if ($crediScore) {
+                // Vérifier si le score est A+, A, ou A-
+                if (in_array($crediScore->ccc, ['A+', 'A', 'A-'])) {
+
+                    $this->message = 'Votre numéro existe dans Promir et votre score de crédit est ' . $crediScore->ccc . ', alors vous êtes éligible au crédit.';
+
+                    $this->isEligible = true;
+                } else {
+
+                    $this->message = 'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.';
+                
+                }
+            } else {
+
+                $this->message = 'Votre numéro existe dans Promir, mais aucun score de crédit n\'a été trouvé.';
+             
+            }
+        } else {
+            // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
+            $this->message = 'Votre numéro n\'existe pas dans la base de données Promir. Vous n\'êtes pas éligible.';
+        }
+    }
+
+
 
     // Fonction pour afficher la vue associée
     public function render()

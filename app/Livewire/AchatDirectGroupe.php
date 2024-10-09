@@ -257,6 +257,8 @@ class AchatDirectGroupe extends Component
         }
     }
 
+    
+
     public function render()
     {
         // Récupérer le produit ou échouer

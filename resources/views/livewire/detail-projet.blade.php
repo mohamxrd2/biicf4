@@ -137,6 +137,9 @@
             </div>
 
             <div id="inputDiv" class="mt-6 hidden">
+
+                <p class="text-md mb-3 text-gray-700">Le montant restant est de : <span class="font-bold"> {{ number_format($sommeRestante, 0, ',', ' ') }}  FCFA</span></p>
+
                 <input type="number" id="montantInput"
                     class="w-full py-3 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Entrez le montant" wire:model="montant" oninput="verifierSolde()">
@@ -144,7 +147,7 @@
                 <p id="messageSolde" class="text-red-500 text-center mt-2 hidden">Votre solde est insuffisant</p>
                 <p id="messageSommeRestante" class="text-red-500 text-center mt-2 hidden">Le montant doit être supérieur
                     ou égal à la somme restante</p>
-
+                
                     <button id="confirmerButton" disabled
                     class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
                     wire:click="confirmer" wire:loading.attr="disabled">
