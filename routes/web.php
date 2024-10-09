@@ -240,6 +240,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     })->name('finance.addproject');
 
     Route::get('finance/detail-projet/{id}', [UserController::class, 'detailprojet'])->name('detailprojet');
+    Route::get('finance/detail-credit/{id}', [UserController::class, 'detailcredit'])->name('detailcredit');
 
 
 

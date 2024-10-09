@@ -274,6 +274,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
             'repeat-password' => 'required|string|same:password',
             'user_type' => 'required|string',
+            'invest_type' => 'required|string',
             'investisement' => 'required|string',
             'phone' => 'required|unique:users',
             'continent' => 'required|string',
@@ -307,6 +308,7 @@ class UserController extends Controller
             $user->email_verified_at = now();
             $user->password = Hash::make($validatedData['password']);
             $user->actor_type = $request->input('user_type');
+            $user->invest_type = $request->input('invest_type');
             $user->investissement = $request->input('investisement');
             $user->phone = $validatedData['phone'];
             $user->continent = $request->input('continent');
@@ -412,6 +414,7 @@ class UserController extends Controller
                 $investisseur->nom = $user->name;  // Le nom complet de l'utilisateur
                 $investisseur->prenom = $user->username;  // Le prénom, ici j'utilise le username
                 $investisseur->tranche = $user->investissement;  // L'investissement de l'utilisateur
+                $investisseur->invest_type = $request->invest_type;
                 $investisseur->user_id = $user->id;  // Associer l'utilisateur à l'investisseur
                 $investisseur->save();  // Sauvegarder les informations dans la table
 
@@ -545,5 +548,9 @@ class UserController extends Controller
     public function detailprojet($id)
     {
         return view ('finance.detailprojet', compact('id'));
+    }
+    public function detailcredit($id)
+    {
+        return view ('finance.detailcredit', compact('id'));
     }
 }

@@ -17,7 +17,7 @@ class DetailProjet extends Component
     public $montant = ''; // Stocke le montant saisi
     public $solde; // Stocke le solde de l'utilisateur
     public $insuffisant = false; // Pour vérifier si le solde est insuffisant
-    public $nombreInvestisseursDistinct = 0; 
+    public $nombreInvestisseursDistinct = 0;
     public $sommeRestante = 0;
 
     public $pourcentageInvesti = 0;
@@ -41,21 +41,21 @@ class DetailProjet extends Component
         $this->solde = $wallet ? $wallet->balance : 0;
 
         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
-        ->distinct()
-        ->count('id_invest');
+            ->distinct()
+            ->count('id_invest');
 
         $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)
-        ->sum('montant'); // Somme des montants investis
+            ->sum('montant'); // Somme des montants investis
 
-    // Calculer le pourcentage investi
-    if ($this->projet->montant > 0) {
-        $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Calculer le pourcentage investi
-    } else {
-        $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
-    }
+        // Calculer le pourcentage investi
+        if ($this->projet->montant > 0) {
+            $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Calculer le pourcentage investi
+        } else {
+            $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
+        }
 
-    // Calculer la somme restante à investir
-    $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Montant total - Somme investie
+        // Calculer la somme restante à investir
+        $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Montant total - Somme investie
     }
 
     public function updatedMontant()
@@ -123,15 +123,15 @@ class DetailProjet extends Component
         $this->montant = '';
         $this->insuffisant = false;
 
-         // Rafraîchir les propriétés du composant
-         $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant'); // Met à jour la somme investie
-         $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Met à jour la somme restante
-         $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Met à jour le pourcentage investi
-         
-         // Mettre à jour le nombre d'investisseurs distincts
-         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
-             ->distinct()
-             ->count('id_invest');
+        // Rafraîchir les propriétés du composant
+        $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant'); // Met à jour la somme investie
+        $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Met à jour la somme restante
+        $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Met à jour le pourcentage investi
+
+        // Mettre à jour le nombre d'investisseurs distincts
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
+            ->distinct()
+            ->count('id_invest');
     }
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void

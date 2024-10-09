@@ -26,6 +26,7 @@ class DemandeCreditNotification extends Notification
     public function toArray($notifiable)
     {
         return [
+            'demande_id' => $this->demande->demande_id,
             'montant' => $this->demande->montant,
             'duree' => $this->demande->duree,
             'type_financement' => $this->demande->type_financement,

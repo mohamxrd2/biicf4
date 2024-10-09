@@ -128,7 +128,7 @@
                     </button>
                 @else
 
-                <button 
+                <button
                         class="w-full py-3 bg-gray-200 hover:bg-gray-300 transition-colors rounded-md text-black font-medium" disabled>
                         Ceci est votre projet
                     </button>

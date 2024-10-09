@@ -499,7 +499,7 @@ class NotificationShow extends Component
         }
     }
 
-    
+
 
     public function acceptoffre()
     {
