@@ -45,6 +45,17 @@
             <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit
             </h2>
             <form wire:submit.prevent="submit">
+                @if ($messages && count($messages) > 0)
+                    <div class="m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
+                        <strong class="font-bold">Attention!</strong>
+                        <ul class="mt-2">
+                            @foreach ($messages as $message)
+                                <li class="list-disc list-inside">{{ $message }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-lg shadow-md dark:bg-gray-800">
                     <!-- Titre -->
                     <div class="sm:col-span-2">
@@ -57,25 +68,26 @@
                                 Objet du financement: Demande de crédit pour Achat du produit
                                 {{ $nameProd }}</label>
                             <div class="hidden">
-
-                                <!-- Afficher la somme demandée -->
                                 <p>Montant Plafond pour ce produit : {{ $montantmax }} FCFA</p>
                                 <p>Prix Plafond pour ce produit : {{ $sommedemnd }} FCFA</p>
-                                <p>Quantite Plafond pour ce produit : {{ $quantiteMax }} </p>
-                                <p>Quantite Minimale pour ce produit : {{ $quantiteMin }} </p>
+                                <p>Quantité Plafond pour ce produit : {{ $quantiteMax }} </p>
+                                <p>Quantité Minimale pour ce produit : {{ $quantiteMin }} </p>
                             </div>
                         @endif
                     </div>
 
                     <!-- Montant recherché -->
                     <div class="w-full">
-                        <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        <label for="quantitInput" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Entrez la quantité (déterminera la somme dont vous avez besoin)
                         </label>
                         <input type="number" id="quantitInput" placeholder="quantité" wire:model="quantite"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             data-min="{{ $quantiteMin }}" data-max="{{ $quantiteMax }}"
                             data-price="{{ $montantmax }}" oninput="updateMontantTotalCredit()" required>
+                        @error('quantite')
+                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <div>
@@ -85,6 +97,9 @@
                         <input type="number" id="roi" wire:model="roi"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             placeholder="12%" oninput="updateMontantTotalCredit()" required>
+                        @error('roi')
+                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <p id="error_Message" class="text-sm text-center text-red-500 hidden"></p>
@@ -104,37 +119,34 @@
                                     investissement/ Taux d'intérêt</dt>
                                 <dd class="text-base font-medium text-gray-900 dark:text-white" id="tauxInteret">0 FCFA
                                 </dd>
-                                <input type="hidden"  name="tauxInteret" id="taux_interet">
-
+                                <input type="hidden" name="tauxInteret" id="taux_interet" required>
                             </dl>
 
                             <dl class="flex items-center justify-between gap-4 py-3">
                                 <dt class="text-base font-bold text-gray-900 dark:text-white">Crédit Total</dt>
                                 <dd class="text-base font-bold text-purple-600 dark:text-white" id="creditotal">0 FCFA
                                 </dd>
-                                <input type="hidden"  name="creditotal" id="credi_total">
-
+                                <input type="hidden" name="creditotal" id="credi_total">
                             </dl>
                             <dl class="flex items-center justify-between gap-4 py-3">
-
-
                             </dl>
                         </div>
                     </div>
 
-
-
                     <!-- Type de financement -->
                     <div x-data="{ typeFinancement: '' }" class="flex flex-col space-y-4 sm:col-span-2">
                         <label for="financement"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type
-                            de financement</label>
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type de
+                            financement</label>
                         <select wire:model="financementType" id="financement" x-model="typeFinancement"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                             <option selected>Choisir un type</option>
                             <option value="demande-directe">Demande Directe</option>
                             <option value="offre-composite">Offre composite (groupée)</option>
                         </select>
+                        @error('financementType')
+                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                        @enderror
 
                         <!-- Conteneur pour l'alignement horizontal -->
                         <div class="flex space-x-4 mt-4" x-show="typeFinancement">
@@ -143,13 +155,14 @@
                                 <label for="username"
                                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Entrez le
                                     username</label>
-
                                 <input wire:model.live="search"
                                     class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                                     type="text" placeholder="Entrez le nom de l'user">
+                                @error('search')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
 
                                 @if (!empty($search))
-
                                     @foreach ($users as $user)
                                         <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg"
                                             wire:click="selectUser('{{ $user->id }}', '{{ $user->username }}')">
@@ -169,8 +182,7 @@
                             <div x-show="typeFinancement === 'offre-composite'" class="flex flex-col flex-1">
                                 <label for="bailleur"
                                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un
-                                    bailleur
-                                    ou entrez son username</label>
+                                    bailleur ou entrez son username</label>
                                 <select wire:model="bailleur" id="bailleur"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                     <option selected>Choisir un bailleur</option>
@@ -179,14 +191,14 @@
                                     <option value="Fonds d’investissement">Fonds d’investissement</option>
                                     <option value="Particulier">Particulier</option>
                                 </select>
+                                @error('bailleur')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                @enderror
                             </div>
-
-
-
-                            
                         </div>
                     </div>
 
+                    <!-- Dates et Heures alignées -->
                     <!-- Dates et Heures alignées -->
                     <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
@@ -196,8 +208,11 @@
                             <input type="date" wire:model="startDate" id="start-date"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
+                            @error('startDate') 
+                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @enderror
                         </div>
-
+                    
                         <div>
                             <label for="start-time"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
@@ -205,8 +220,11 @@
                             <input type="time" wire:model="startTime" id="start-time"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
+                            @error('startTime') 
+                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @enderror
                         </div>
-
+                    
                         <div>
                             <label for="end-date"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
@@ -214,8 +232,11 @@
                             <input type="date" wire:model="endDate" id="end-date"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
+                            @error('endDate') 
+                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @enderror
                         </div>
-
+                    
                         <div>
                             <label for="end-time"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
@@ -223,9 +244,12 @@
                             <input type="time" wire:model="endTime" id="end-time"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
+                            @error('endTime') 
+                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @enderror
                         </div>
                     </div>
-
+                    
                     <!-- Durée du crédit -->
                     <div class="sm:col-span-2">
                         <label for="duration"
@@ -234,19 +258,20 @@
                         <input type="number" wire:model="duration" id="duration"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             placeholder="12" required>
+                        @error('duration') 
+                            <span class="text-red-600 text-sm">{{ $message }}</span> 
+                        @enderror
                     </div>
+                    
 
-
-                    <!-- Message de succès -->
-
+                    <!-- Soumission du formulaire -->
                     <div class="sm:col-span-2">
-
-                        <button type="submit" id="submitCredit"
-                            class="mt-6 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Soumettre</button>
-
+                        <button type="submit"
+                            class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Soumettre
+                        </button>
                     </div>
                 </div>
-
             </form>
 
 
