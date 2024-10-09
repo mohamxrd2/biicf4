@@ -18,13 +18,13 @@ class DetailsCredit extends Component
     public $notification;
     public $userDetails;
     public $demandeCredit;
-    public $insuffisant;
+    public $insuffisant = false;
     public $userInPromir;
     public $crediScore;
     public $solde;
-    public $nombreInvestisseursDistinct;
-    public $sommeInvestie;
-    public $sommeRestante;
+    public $nombreInvestisseursDistinct = 0;
+    public $sommeInvestie = 0;
+    public $sommeRestante = 0;
     public $montant = ''; // Stocke le montant saisi
 
     public $pourcentageInvesti = 0;
@@ -55,8 +55,6 @@ class DetailsCredit extends Component
 
         $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
             ->sum('montant'); // Somme des montants investis
-        // Calculer la somme restante à investir
-        $this->sommeRestante = $this->userDetails->montant - $this->sommeInvestie; // Montant total - Somme investie
 
 
 
@@ -70,22 +68,30 @@ class DetailsCredit extends Component
 
 
         // Calculer le pourcentage investi
-        if ($this->userDetails->montant > 0) {
-            $this->pourcentageInvesti = ($this->sommeInvestie / $this->userDetails->montant) * 100; // Calculer le pourcentage investi
+        if ($this->demandeCredit->montant > 0) {
+            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
         } else {
             $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
         }
-    }
 
+        // Calculer la somme restante à investir
+        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
+
+    }
+    public function updatedMontant()
+    {
+        // Vérifier si le montant saisi dépasse le solde
+        $this->insuffisant = !empty($this->montant) && $this->montant > $this->solde;
+    }
     public function confirmer()
     {
         // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
         $montant = floatval($this->montant); // Convertir le montant en float
 
-        if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
-            session()->flash('error', 'Veuillez saisir un montant valide.');
-            return;
-        }
+        // if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
+        //     session()->flash('error', 'Veuillez saisir un montant valide.');
+        //     return;
+        // }
 
         // Récupérer le projet et le wallet de l'utilisateur (investisseur)
         $demandeCredit = $this->demandeCredit;
@@ -136,10 +142,10 @@ class DetailsCredit extends Component
         // Rafraîchir les propriétés du composant
         $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant'); // Met à jour la somme investie
         $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Met à jour la somme restante
-        $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Met à jour le pourcentage investi
+        $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Met à jour le pourcentage investi
 
         // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->projet->id)
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
             ->distinct()
             ->count('id_invest');
     }
