@@ -133,18 +133,32 @@
                                     'placeholder' => 'Confirmer mot de passe',
                                 ])
 
-                                @include('admin.components.select', [
-                                    'name' => 'user_type',
-                                    'title' => 'Type d\'acteur',
-                                    'options' => [
-                                        'Personne physique',
-                                        'Personne morale',
-                                        'Service public',
-                                        'Organisme',
-                                        'Communauté',
-                                        'Menage',
-                                    ],
-                                ])
+
+                                <div class="flex justify-start lg:w-1/2">
+                                    @include('admin.components.select', [
+                                        'name' => 'user_type',
+                                        'title' => 'Type d\'acteur',
+                                        'options' => [
+                                            'Personne physique',
+                                            'Personne morale',
+                                            'Service public',
+                                            'Organisme',
+                                            'Communauté',
+                                            'Menage',
+                                        ],
+                                    ])
+                                    @include('admin.components.select', [
+                                        'name' => 'invest_type',
+                                        'title' => 'Type d\'investisseur',
+                                        'options' => [
+                                            'Bank/IFD',
+                                            'Pgm Public/Para-Public',
+                                            'Fonds d’investissement',
+                                            'Particulier',
+                                        ],
+                                    ])
+                                </div>
+
                                 <div>
                                     <label for="investisement">Proportion à investir (la somme minimale)</label>
                                 </div>
