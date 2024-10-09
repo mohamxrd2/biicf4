@@ -170,6 +170,9 @@ class Demandecredit extends Component
                         'taux' => $this->roi, // Le taux de retour sur investissement
                     ]);
                 }
+                // Reset des champs après soumission
+                $this->reset();
+                
                 // Envoi de la notification aux investisseurs concernés
                 foreach ($investisseurs as $investisseur) {
                     // Récupérer l'utilisateur associé à l'investisseur

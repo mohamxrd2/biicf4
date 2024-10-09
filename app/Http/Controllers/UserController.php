@@ -549,4 +549,8 @@ class UserController extends Controller
     {
         return view ('finance.detailprojet', compact('id'));
     }
+    public function detailcredit($id)
+    {
+        return view ('finance.detailcredit', compact('id'));
+    }
 }

@@ -49,16 +49,16 @@
                                 $userNumber = $userDetails->phone;
 
                                 // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-                                $userInPromir = App\Models\UserPromir::where('numero', $userNumber)->exists();
+$userInPromir = App\Models\UserPromir::where('numero', $userNumber)->exists();
 
-                                if ($userInPromir) {
-                                // Vérifier si un score de crédit existe pour cet utilisateur
-                                  $crediScore = App\Models\CrediScore::where('id_user', $userInPromir)->first();
-                                }
+if ($userInPromir) {
+    // Vérifier si un score de crédit existe pour cet utilisateur
+    $crediScore = App\Models\CrediScore::where('id_user', $userInPromir)->first();
+}
 
-                                $demandeId = $notification->data['demande_id'];
+$demandeId = $notification->data['demande_id'];
 
-                                $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
+$demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
 
                             @endphp
                             <div class="flex flex-wrap items-center gap-y-4 py-6">
@@ -108,165 +108,14 @@
                                 <div
                                     class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
                                     <!-- Affichage conditionnel basé sur la réponse -->
-                                    @if ($notification->reponse == 'refuse')
-                                        <span class="text-sm text-gray-500">Refusé</span>
-                                    @else
-                                        <!-- Bouton "Refuser" -->
-                                        <button type="button" wire:click="refuse('{{ $notification->id }}')"
-                                            class="w-full rounded-lg border border-red-700 px-3 py-2 text-center text-sm font-medium text-red-700 hover:bg-red-700 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-300 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-600 dark:hover:text-white dark:focus:ring-red-900 lg:w-auto">
-                                            <span wire:loading.remove>Refuser</span>
 
-                                            <!-- Loader qui s'affiche pendant le chargement -->
-                                            <span wire:loading class="ml-2">
-                                                <svg class="animate-spin h-5 w-5 text-red-700"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                        stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"></path>
-                                                </svg>
-                                            </span>
-                                        </button>
-
-
-                                        <button data-modal-target="extralarge-{{ $notification->id }}"
-                                            data-modal-toggle="extralarge-{{ $notification->id }}"
-                                            class="w-full inline-flex justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 lg:w-auto">
-                                            View details
-                                        </button>
-                                    @endif
+                                    
+                                    <a href="{{ route('detailcredit', $notification->id) }}"
+                                        data-modal-toggle="extralarge-{{ $notification->id }}"
+                                        class="w-full inline-flex justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 lg:w-auto">
+                                        Voir details
+                                    </a>
                                 </div>
-
-                                <!-- Extra Large Modal -->
-                                <div id="extralarge-{{ $notification->id }}" tabindex="-1"
-                                    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-                                    <div class="relative w-full max-w-7xl max-h-full">
-                                        <!-- Modal content -->
-                                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                                            <!-- Modal header -->
-                                            <div class="bg-gray-100">
-                                                <div class="container mx-auto p-6">
-                                                    <!-- Header -->
-                                                    <div class="flex justify-between items-center mb-6">
-                                                        <h1 class="text-3xl font-semibold text-gray-800">Détails de la
-                                                            demande de crédit</h1>
-                                                        <button
-                                                            class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
-                                                            data-modal-hide="extralarge-modal">Retour à la
-                                                            liste</button>
-                                                    </div>
-
-                                                    <!-- Card de détails du client -->
-                                                    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                                                        <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
-                                                            sur le client</h2>
-                                                        <div class="grid grid-cols-3 gap-4">
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Nom du client:</p>
-                                                                <p class="text-gray-800">{{ $userDetails->name }}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Email:</p>
-                                                                <p class="text-gray-800">{{ $userDetails->email }}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Numéro de
-                                                                    téléphone:</p>
-                                                                <p class="text-gray-800">{{ $userDetails->phone }}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Cote de Crédit</p>
-                                                                <p class="text-gray-800">{{ $crediScore->ccc }}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Adresse:</p>
-                                                                <p class="text-gray-800">
-                                                                    {{ $userDetails->country }},{{ $userDetails->ville }},{{ $userDetails->departe }}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Card de détails de la demande de crédit -->
-                                                    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                                                        <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
-                                                            sur la demande de crédit</h2>
-                                                        <div class="grid grid-cols-3 gap-4">
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Montant demandé:
-                                                                </p>
-                                                                <p class="text-gray-800">
-                                                                    {{ $notification->data['montant'] }} FCFA</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Durée du crédit:
-                                                                </p>
-                                                                <p class="text-gray-800">{{ $demandeCredit->duree }}
-                                                                    mois</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Taux du crédit:
-                                                                </p>
-                                                                <p class="text-gray-800">{{ $demandeCredit->taux }} %
-                                                                    </p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Date debut:
-                                                                </p>
-                                                                <p class="text-gray-800">{{ $demandeCredit->date_debut }}
-                                                                    </p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Date fin:
-                                                                </p>
-                                                                <p class="text-gray-800">{{ $demandeCredit->date_fin }}
-                                                                    </p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Type de crédit:
-                                                                </p>
-                                                                <p class="text-gray-800">
-                                                                    {{ $demandeCredit->type_financement }}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">heure debut:
-                                                                </p>
-                                                                <p class="text-gray-800">{{ $demandeCredit->heure_debut }}
-                                                                    </p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">heure fin:
-                                                                </p>
-                                                                <p class="text-gray-800">{{ $demandeCredit->heure_fin }}
-                                                                    </p>
-                                                            </div>
-
-                                                            <div>
-                                                                <p class="text-gray-600 font-medium">Motif du crédit:
-                                                                </p>
-                                                                <p class="text-gray-800">
-                                                                    {{ $demandeCredit->objet_financement }}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Actions -->
-                                                    <div class="flex justify-end space-x-4">
-                                                        <button wire:click = "sendCredit"
-                                                            class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5"
-                                                            data-modal-hide="extralarge-modal">Approuver</button>
-                                                        <button
-                                                            class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5"
-                                                            data-modal-hide="extralarge-modal">Rejeter</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-
                             </div>
                         @endforeach
                     </div>

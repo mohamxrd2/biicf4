@@ -20,20 +20,7 @@ class NotifFinance extends Component
         });
     }
 
-    public function refuse($notificationId)
-    {
-        // Récupérer la notification par ID
-        $notification = auth()->user()->notifications->find($notificationId);
 
-        if ($notification) {
-            // Modifier le champ 'reponse' dans les données JSON de la notification
-            $data = $notification->data;
-            $data['reponse'] = 'refuse'; // Ajouter ou mettre à jour la réponse
-
-            // Sauvegarder les modifications dans le champ 'data'
-            $notification->update(['data' => $data]);
-        }
-    }
 
     public function sendCredit($clientId, $montant)
     {
