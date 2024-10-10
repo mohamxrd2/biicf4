@@ -14,79 +14,184 @@
                 </ul>
             </div>
         @endif
-        <!-- Balance Summary -->
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="lg:text-3xl text-xl font-semibold">{{ number_format($userWallet->balance, 2, ',', ' ') }} FCFA
-                </h1>
-                <p class="text-gray-500">Revenus total</p>
+
+        <div class="flex gap-4 mb-6">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-lg w-96 shadow-lg">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-semibold tracking-wider">{{ strtoupper($user->name) }}</h2>
+                        <p class="text-sm">{{ $user->created_at->format('d/m/Y H:i') }}</p>
+                    </div>
+                    <div>
+                        <!-- Add any logo or card image -->
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/800px-Mastercard-logo.svg.png"
+                            alt="Card Logo" class="h-10">
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-mono tracking-widest">{{$coi->Numero_compte}}</div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-4xl font-bold">{{ number_format($userWallet->balance, 2, ',', ' ') }}<span
+                                class="text-white text-2xl">FCFA</span>
+                        </h1>
+                    </div>
+                    <div class="flex space-x-4 mt-6">
+                        <button wire:click="transfert" data-tooltip-target="tooltip-A"
+                            class="bg-black text-white font-semibold py-2 px-4 rounded-lg flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 10h1v4h1m6 0v6h1.293l3.293-3.293A1 1 0 0015 16V8a1 1 0 00-1.707-.707L10 10H6v4m8-4v6m6 2a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h8m4 0h.5a1.5 1.5 0 011.5 1.5v.5">
+                                </path>
+                            </svg>
+                            <div id="tooltip-A" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                Transfert d'argent <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        </button>
+                        <button wire:click="retrait" data-tooltip-target="tooltip-B"
+                            class="bg-yellow-400 text-black font-semibold py-2 px-4 rounded-lg flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6M9 8h6M9 16h6m-7 4h8a1 1 0 001-1V4a1 1 0 00-1-1h-8a1 1 0 00-1 1v15a1 1 0 001 1zm-3 0h-.01">
+                                </path>
+                            </svg>
+                            <div id="tooltip-B" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                Retrait d'argent <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="space-x-2">
 
 
+            <div class="bg-gray-100 p-3 rounded-lg shadow-lg max-w-xl">
 
+                <div class="relative slider-container">
+                    <div class="slider">
+                        <!-- COC -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
 
+                            <div class="flex items-center space-x-2">
+                                {{-- <div id="tooltip-1" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte des Opérations Courantes
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div> --}}
+                                <button data-tooltip-target="tooltip-1"
+                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                    </svg>
+                                    COC
+                                </button>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800 mt-4">15,235.50</p>
+                        </div>
+                        <!-- COI -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
+
+                            <div class="flex items-center space-x-2">
+                                {{-- <div id="tooltip-2" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte des Opérations d’Investissement
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div> --}}
+                                <button data-tooltip-target="tooltip-2"
+                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                    </svg>
+                                    COI
+                                </button>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800 mt-4">{{$coi->Solde}}</p>
+                        </div>
+                        <!-- COA -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
+
+                            <div class="flex items-center space-x-2">
+                                {{-- <div id="tooltip-3" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte des Opérations en Attente
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div> --}}
+                                <button data-tooltip-target="tooltip-3"
+                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                    </svg>
+                                    COA
+                                </button>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800 mt-4">{{$coa->Solde}}</p>
+                        </div>
+                        <!-- CEDD -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
+
+                            <div class="flex items-center space-x-2">
+                                {{-- <div id="tooltip-4" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte d’Epargne à Durée Déterminée
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div> --}}
+                                <button data-tooltip-target="tooltip-4"
+                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                    </svg>
+                                    CEDD
+                                </button>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800 mt-4">{{$cedd->Solde}}</p>
+                        </div>
+                        <!-- CEFP -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
+
+                            <div class="flex items-center space-x-2">
+                                {{-- <div id="tooltip-5" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte d’Epargne des Fonds Propres
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div> --}}
+                                <button data-tooltip-target="tooltip-5"
+                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="size-6 w-10 h-8 rounded-full">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                    </svg>
+                                    CEFP
+                                </button>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800 mt-4">{{$cefd->Solde}}</p>
+                        </div>
+
+                    </div>
+                    <button class="prev">←</button>
+                    <button class="next">→</button>
+                </div>
+                <div class="slider-indicators mt-4 flex justify-center space-x-2">
+                    <span class="indicator"></span>
+                    <span class="indicator"></span>
+                </div>
             </div>
         </div>
 
-        <!-- Currency Cards -->
-        <div class="grid grid-cols-4 gap-4 mb-6">
-            <div class="lg:col-span-1 col-span-3 flex items-center p-4 bg-white border rounded-xl shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6 w-10 h-10 rounded-full mr-4">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                </svg>
 
-                <div>
-                    <h2 class="text-lg font-medium">{{ number_format($userWallet->balance, 2, ',', ' ') }} </h2>
-                    <p class="text-sm text-gray-500">Compte d'operation courant</p>
-                </div>
-            </div>
-            <div class="lg:col-span-1 col-span-3  flex items-center p-4 bg-white border rounded-xl shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6 w-10 h-10 rounded-full mr-4">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-                </svg>
-
-                <div>
-                    <h2 class="text-lg font-medium">0.00</h2>
-                    <p class="text-sm text-gray-500">Compte d'operation boursiere</p>
-                </div>
-            </div>
-            <a  href="#" wire:click="retrait"
-                class="lg:col-span-1 col-span-3  flex items-center p-4 bg-white border rounded-xl shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6 w-10 h-10 rounded-full mr-4">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-                </svg>
-
-                <div >
-                    <p class="text-sm text-gray-500">
-                        {{-- <a wire:navigate href="{{ route('biicf.retrait') }}">Retrait</a> --}}
-                        Retrait
-                    </p>
-                </div>
-            </a>
-            <a href="#" wire:click="transfert"
-                class="lg:col-span-1 col-span-3 flex items-center p-4 bg-white border rounded-xl shadow-sm">
-                {{-- <a wire:navigate href="{{ route('biicf.retrait') }}" class="flex items-center"> --}}
-                <div class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full mr-4">
-                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
-                        </path>
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500">Transfert d'un compte à un autre</p>
-                </div>
-                {{-- </a> --}}
-
-            </a>
-        </div>
         @if ($currentPage === 'transaction')
             <!-- Transactions Section -->
             <div class="bg-white p-4 rounded-lg shadow-sm">
@@ -262,5 +367,128 @@
         @endif
 
     </div>
-</div>
 
+    <style>
+        .slider-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slider {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slide {
+            margin: 0 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            animation: slideInRight 0.5s ease-out forwards;
+        }
+
+        .slide:hover {
+            transform: translateY(-10px);
+        }
+
+        button.prev,
+        button.next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        button.prev:hover,
+        button.next:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        button.prev {
+            left: 10px;
+        }
+
+        button.next {
+            right: 10px;
+        }
+
+        .slider-indicators {
+            display: flex;
+            justify-content: center;
+        }
+
+        .indicator {
+            background-color: #ccc;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .indicator.active {
+            background-color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                min-width: 80%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slide {
+                min-width: 100%;
+            }
+
+            button.prev,
+            button.next {
+                padding: 5px;
+            }
+        }
+
+        @keyframes slideInRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <script>
+        const slider = document.querySelector('.slider');
+        const slides = document.querySelectorAll('.slide');
+        const prevButton = document.querySelector('.prev');
+        const nextButton = document.querySelector('.next');
+        const indicators = document.querySelectorAll('.indicator');
+
+        let currentIndex = 0;
+
+        function updateSliderPosition() {
+            slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        prevButton.addEventListener('click', () => {
+            currentIndex = (currentIndex > 0) ? currentIndex - 1 : slides.length - 1;
+            updateSliderPosition();
+        });
+
+        nextButton.addEventListener('click', () => {
+            currentIndex = (currentIndex < slides.length - 1) ? currentIndex + 1 : 0;
+            updateSliderPosition();
+        });
+
+        updateSliderPosition();
+    </script>
+</div>

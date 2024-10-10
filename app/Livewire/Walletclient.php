@@ -2,6 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Cedd;
+use App\Models\Cefp;
+use App\Models\Cfa;
+use App\Models\Coi;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
@@ -13,6 +17,11 @@ use Livewire\Component;
 class Walletclient extends Component
 {
     public $userWallet;
+    public $user;
+    public $coi;
+    public $coa;
+    public $cedd;
+    public $cefd;
 
     public $currentPage = 'transaction';
 
@@ -34,6 +43,12 @@ class Walletclient extends Component
     }
     public function mount()
     {
+        $userId = Auth::guard('web')->id();
+
+        // Récupérer l'utilisateur
+        $this->user = User::find($userId);
+
+
 
         $this->wallet();
     }
@@ -44,6 +59,13 @@ class Walletclient extends Component
         Log::info('User ID:', ['user_id' => $userId]);
         $this->userWallet = Wallet::where('user_id', $userId)->first();
         Log::info('User Wallet:', ['wallet' => $this->userWallet]);
+
+        // Récupérer l'enregistrement dans la table Coi en fonction de id_user
+        $this->coi = Coi::where('id_user', $userId)->first();
+        $this->coa = Cfa::where('id_user', $userId)->first();
+        $this->cedd = Cedd::where('id_user', $userId)->first();
+        $this->cefd = Cefp::where('id_user', $userId)->first();
+
     }
     #[On('refreshComponent')]
     public function render()

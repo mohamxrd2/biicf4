@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Investisseur;
 use App\Models\User;
 use App\Models\Admin;
+use App\Models\Cedd;
+use App\Models\Cefp;
+use App\Models\Cfa;
+use App\Models\Coi;
 use App\Models\Wallet;
 use App\Models\Transaction;
 use App\Models\Consommation;
@@ -418,6 +422,9 @@ class UserController extends Controller
                 $investisseur->user_id = $user->id;  // Associer l'utilisateur à l'investisseur
                 $investisseur->save();  // Sauvegarder les informations dans la table
 
+                // Créer et sauvegarder les différents sous-comptes
+                $this->createUserWallets($user->id);
+
                 // Rediriger l'utilisateur avec un message de succès
                 return redirect()->route('biicf.login')->with('success', 'Votre numéro a été vérifié avec succès et vous avez été ajouté en tant qu\'investisseur !');
             } else {
@@ -430,6 +437,52 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Génère un numéro IBAN unique
+     */
+    private function generateIban($userId)
+    {
+        $countryCode = 'CI';  // Exemple : Code de la Côte d'Ivoire
+        // $bankCode = '10001';  // Code de la banque
+        // $branchCode = '00001';  // Code de la succursale
+        $accountNumber = str_pad($userId, 12, '0', STR_PAD_LEFT);  // Numéro de compte basé sur l'ID utilisateur
+        $iban = $countryCode . $accountNumber;
+
+        return $iban;  // Dans une vraie application, il faudrait également calculer les deux chiffres de contrôle IBAN
+    }
+
+    /**
+     * Crée les sous-comptes pour l'utilisateur
+     */
+    private function createUserWallets($userId)
+    {
+        // Créer un portefeuille principal
+        $wallet = new Wallet();
+        $wallet->user_id = $userId;
+        $wallet->balance = 0; // Solde initial
+        $wallet->save();
+
+        // Créer les sous-comptes avec des IBAN générés
+        $walletCoc = new Coi();
+        $walletCoc->id_user = $userId;
+        $walletCoc->Numero_compte = $this->generateIban($userId);
+        $walletCoc->save();
+
+        $walletCfa = new Cfa();
+        $walletCfa->id_user = $userId;
+        $walletCfa->Numero_compte = $this->generateIban($userId);
+        $walletCfa->save();
+
+        $walletCefp = new Cefp();
+        $walletCefp->id_user = $userId;
+        $walletCefp->Numero_compte = $this->generateIban($userId);
+        $walletCefp->save();
+
+        $walletCedd = new Cedd();
+        $walletCedd->id_user = $userId;
+        $walletCedd->Numero_compte = $this->generateIban($userId);
+        $walletCedd->save();
+    }
     public function showProfile()
     {
         $userId = Auth::guard('web')->id();
@@ -547,10 +600,10 @@ class UserController extends Controller
 
     public function detailprojet($id)
     {
-        return view ('finance.detailprojet', compact('id'));
+        return view('finance.detailprojet', compact('id'));
     }
     public function detailcredit($id)
     {
-        return view ('finance.detailcredit', compact('id'));
+        return view('finance.detailcredit', compact('id'));
     }
 }

@@ -5,9 +5,6 @@
 @section('content')
 
 
-
     @livewire('walletclient')
-
-
 
 @endsection
