@@ -89,23 +89,11 @@
 
                 <!-- Product Info Section -->
                 <div class="mt-6 sm:mt-8 lg:mt-0">
-                    <div class="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
-                        <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                            {{ $produit->name }} localisation" All-In-One Computer, Apple M1, 8GB RAM, 256GB SSD,
-        
-                        </h1>
-                        <div class="mt-2 text-lg text-gray-700 dark:text-gray-300">
-                            <p class="mb-1"><span class="font-semibold">Continent:</span> {{ $produit->continent }}</p>
-                            <p class="mb-1"><span class="font-semibold">Sous-région:</span> {{ $produit->sous_region }}
-                            </p>
-                            <p class="mb-1"><span class="font-semibold">Pays:</span> {{ $produit->pays }}</p>
-                            <p class="mb-1"><span class="font-semibold">Zone économique:</span>
-                                {{ $produit->zoneecoServ }}</p>
-                            <p class="mb-1"><span class="font-semibold">Ville:</span> {{ $produit->villeServ }}</p>
-                            <p><span class="font-semibold">Commune:</span> {{ $produit->comnServ }}</p>
-                        </div>
-                    </div>
-
+                    <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
+                        {{ $produit->name }}" Situé a, {{ $produit->continent }}, {{ $produit->sous_region }},
+                        {{ $produit->pays }}, {{ $produit->zoneecoServ }}, {{ $produit->villeServ }},
+                        {{ $produit->comnServ }}
+                    </h1>
 
                     <!-- Price and Rating -->
                     <div class="mt-4 sm:items-center sm:gap-4 sm:flex">
@@ -140,8 +128,8 @@
                             <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                 viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 12H5m14 0-4 4m4-4-4-4" />
                             </svg>
                         </a>
                     </div>
