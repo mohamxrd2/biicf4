@@ -9,5 +9,5 @@
     @livewire('walletclient')
 
 
-    
+
 @endsection

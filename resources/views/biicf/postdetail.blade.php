@@ -89,15 +89,13 @@
 
                 <!-- Product Info Section -->
                 <div class="mt-6 sm:mt-8 lg:mt-0">
-                    <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                        {{ $produit->name }}" Situé a, {{ $produit->continent }}, {{ $produit->sous_region }},
-                        {{ $produit->pays }}, {{ $produit->zoneecoServ }}, {{ $produit->villeServ }},
-                        {{ $produit->comnServ }}
-                    </h1>
+                    <p class="text-xl font-extrabold text-gray-900 sm:text-3xl dark:text-white mr-4">
+                        {{ $produit->name }}
+                    </p>
 
                     <!-- Price and Rating -->
                     <div class="mt-4 sm:items-center sm:gap-4 sm:flex">
-                        <p class="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white mr-4"
+                        <p class="text-xl font-bold text-gray-900 sm:text-3xl dark:text-white mr-4"
                             data-price="{{ $produit->prix }}">
                             {{ number_format($produit->prix, 0, ',', ' ') }} FCFA
                         </p>
@@ -106,8 +104,10 @@
                                 <!-- SVGs for rating stars (repeated for all stars) -->
                                 <svg class="w-4 h-4 text-yellow-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                     fill="currentColor">
-                                    <path
-                                        d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                    <path d=" M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397
+                            8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
+                            2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
+                            3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
                                 </svg>
                                 <!-- Repeat for additional stars -->
                             </div>
@@ -147,6 +147,15 @@
 
                     <!-- Product Description -->
                     <div id="toggleContent" class="w-full p-3 gap-y-2 hidden mb-4">
+                        @if ($produit->continent)
+                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                <p class="text-sm font-semibold">Localisation</p>
+                                <p class="text-sm font-medium text-gray-600"> {{ $produit->continent }},
+                                    {{ $produit->sous_region }},
+                                    {{ $produit->pays }}, {{ $produit->zoneecoServ }}, {{ $produit->villeServ }},
+                                    {{ $produit->comnServ }}</p>
+                            </div>
+                        @endif
                         @if ($produit->reference)
                             <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
                                 <p class="text-sm font-semibold">Reference</p>
