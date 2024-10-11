@@ -129,7 +129,7 @@
                         <!-- Montant Reçu -->
                         <div class="flex flex-col text-center">
                             <span class="font-semibold text-lg">
-                                {{ number_format($notification->data['montant'], 0, ',', ' ') }}
+                                {{ number_format($sommeInvestie, 0, ',', ' ') }}
                                 FCFA</span>
                             <span class="text-gray-500 text-sm">Reçu de
                                 {{ number_format($demandeCredit->montant, 0, ',', ' ') }} FCFA </span>
@@ -179,13 +179,8 @@
                     <p class="text-gray-600 text-md mb-6">
                         Contribuez a la demande crédit pour l'aider à atteindre la somme souhaitée.
                     </p>
-                    @if (isset($demandeCredit) && $demandeCredit->objet_financement === 'demande-directe')
+                    @if (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe')
                         <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
-                        <button id="showInputButton"
-                            class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
-                            Ajouter un montant
-                        </button>
-                    @else
                         <div class="flex space-x-4">
                             @if ($pourcentageInvesti < 100)
                                 <!-- Bouton Approuver -->
@@ -210,10 +205,6 @@
                                     class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
                                     Refuser
                                 </button>
-                            @elseif ($notification->reponse == 'refuser')
-                                <div class="text-red-600 font-bold">
-                                    Demande de crédit refusée.
-                                </div>
                             @else
                                 <div class="text-green-600 font-bold">
                                     Demande de crédit approuvée.
@@ -221,6 +212,21 @@
                             @endif
 
                         </div>
+                    @elseif ($notification->reponse == 'refuser')
+                        <div class="text-red-600 font-bold">
+                            Demande de crédit refusée.
+                        </div>
+                    @else
+                        @if ($pourcentageInvesti < 100)
+                            <button id="showInputButton"
+                                class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                                Ajouter un montant
+                            </button>
+                        @else
+                            <div class="text-green-600 font-bold">
+                                Demande de crédit terminé.
+                            </div>
+                        @endif
                     @endif
 
                 </div>
@@ -256,7 +262,7 @@
         </div>
 
     </div>
-    @if (isset($demandeCredit) && $demandeCredit->objet_financement === 'demande-directe')
+    @if (isset($demandeCredit) && $demandeCredit->type_financement === 'offre-composite')
         <script>
             document.getElementById('showInputButton').addEventListener('click', function() {
                 var inputDiv = document.getElementById('inputDiv');
