@@ -185,6 +185,10 @@
                             class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
                             Ajouter un montant
                         </button>
+                    @elseif ($notification->reponse == 'refuser')
+                        <div class="text-red-600 font-bold">
+                            Demande de crédit refusée.
+                        </div>
                     @else
                         <div class="flex space-x-4">
                             @if ($pourcentageInvesti < 100)
@@ -210,10 +214,6 @@
                                     class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
                                     Refuser
                                 </button>
-                            @elseif ($notification->reponse == 'refuser')
-                                <div class="text-red-600 font-bold">
-                                    Demande de crédit refusée.
-                                </div>
                             @else
                                 <div class="text-green-600 font-bold">
                                     Demande de crédit approuvée.
@@ -221,6 +221,7 @@
                             @endif
 
                         </div>
+
                     @endif
 
                 </div>
