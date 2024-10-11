@@ -123,95 +123,94 @@
                     </div>
 
                     <!-- Bouton pour afficher la section -->
-                    {{-- @if ($produit->user_id != $user->id) --}}
-                    <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-                        <a href="javascript:void(0)" id="toggleForm"
-                            class="flex w-full items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                            role="button">
-                            Procédez à l'achat.
-                            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 12H5m14 0-4 4m4-4-4-4" />
+                    @if ($produit->user_id != $user->id)
+                        <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
+                            <a href="javascript:void(0)" id="toggleForm"
+                                class="flex w-full items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                role="button">
+                                Procédez à l'achat.
+                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
+                                </svg>
+                            </a>
+                        </div>
+
+                        <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
+
+                        <div class="w-full p-3 bg-gray-200 rounded-2xl flex justify-between items-center cursor-pointer "
+                            onclick="toggleVisibility()">
+                            <p class="font-medium text-sm text-gray-700">Caracteristique</p>
+                            <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                             </svg>
-                        </a>
-                    </div>
+                        </div>
+                    @else
+                        <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
+                            <div class="relative inline-block w-full">
+                                <div>
+                                    <button type="button"
+                                        class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        id="options-menu" aria-haspopup="true" aria-expanded="true"
+                                        onclick="toggleDropdown()">
+                                        Filter Options
+                                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
 
-                    <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
-
-                    <div class="w-full p-3 bg-gray-200 rounded-2xl flex justify-between items-center cursor-pointer "
-                        onclick="toggleVisibility()">
-                        <p class="font-medium text-sm text-gray-700">Caracteristique</p>
-                        <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                    </div>
-                {{-- @else --}}
-                    {{-- <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-                        <div class="relative inline-block w-full">
-                            <div>
-                                <button type="button"
-                                    class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    id="options-menu" aria-haspopup="true" aria-expanded="true"
-                                    onclick="toggleDropdown()">
-                                    Filter Options
-                                    <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd"
-                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div id="dropdown-menu"
-                                class="absolute right-0 z-10 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
-                                <div class="py-1" role="menu" aria-orientation="vertical"
-                                    aria-labelledby="options-menu">
-                                    <div class="px-4 py-2">
-                                        <span class="font-bold">Filter by Properties</span>
-                                    </div>
-                                    <div class="px-4 py-2">
-                                        <div class="flex items-center">
-                                            <button class="w-full mt-3 bg-green-500 text-white py-2 mr- rounded-xl"
-                                                data-hs-overlay="#hs-offre-{{ $produit->id }}">faire une offre
+                                <div id="dropdown-menu"
+                                    class="absolute right-0 z-10 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                                    <div class="py-1" role="menu" aria-orientation="vertical"
+                                        aria-labelledby="options-menu">
+                                        <div class="px-4 py-2">
+                                            <span class="font-bold">Filter by Properties</span>
+                                        </div>
+                                        <div class="px-4 py-2">
+                                            <div class="flex items-center">
+                                                <button class="w-full mt-3 bg-green-500 text-white py-2 mr- rounded-xl"
+                                                    data-hs-overlay="#hs-offre-{{ $produit->id }}">faire une offre
+                                                </button>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <button class="w-full mt-3 bg-yellow-300 text-white py-2 mr- rounded-xl"
+                                                    data-hs-overlay="#hs-offreNeg-{{ $produit->id }}">faire une offre
+                                                    negocié
+                                                </button>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <button class="w-full mt-3 bg-blue-600 text-white py-2 mr- rounded-xl"
+                                                    data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">faire une offre
+                                                    Groupé
+                                                </button>
+                                            </div>
+                                            {{-- <div class="flex items-center">
+                                        <button class="w-full mt-3 bg-purple-600 text-white py-2 mr- rounded-xl"
+                                            data-hs-overlay="#hs-offreGrpNeg-{{ $produit->id }}">faire une offre Groupé negocié</button>
+                                    </div> --}}
+                                        </div>
+                                        <div class="border-t border-gray-200"></div>
+                                        <div class="px-4 py-2">
+                                            <button
+                                                class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none">
+                                                Apply Filters
                                             </button>
                                         </div>
-                                        <div class="flex items-center">
-                                            <button class="w-full mt-3 bg-yellow-300 text-white py-2 mr- rounded-xl"
-                                                data-hs-overlay="#hs-offreNeg-{{ $produit->id }}">faire une offre
-                                                negocié
-                                            </button>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <button class="w-full mt-3 bg-blue-600 text-white py-2 mr- rounded-xl"
-                                                data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">faire une offre
-                                                Groupé
-                                            </button>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <button class="w-full mt-3 bg-purple-600 text-white py-2 mr- rounded-xl"
-                                                data-hs-overlay="#hs-offreGrpNeg-{{ $produit->id }}">faire une offre
-                                                Groupé negocié</button>
-                                        </div>
-                                    </div>
-                                    <div class="border-t border-gray-200"></div>
-                                    <div class="px-4 py-2">
-                                        <button
-                                            class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none">
-                                            Apply Filters
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
+                        <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 
-                    <button class="w-full bg-red-500 text-white py-2 mb-3 rounded-xl"
-                        data-hs-overlay="#hs-delete-{{ $produit->id }}">Supprimé produit</button>
+                        <button class="w-full bg-red-500 text-white py-2 mb-3 rounded-xl"
+                            data-hs-overlay="#hs-delete-{{ $produit->id }}">Supprimé produit</button>
                     @endif
 
 
@@ -287,7 +286,7 @@
                                 <p class="text-sm font-medium text-gray-600">{{ $produit->qteServ }}</p>
                             </div>
                         @endif
-                    </div> --}}
+                    </div>
 
                 </div>
             </div>
