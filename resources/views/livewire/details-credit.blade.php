@@ -113,12 +113,7 @@
                 <span class="ml-2 text-sm text-gray-500">{{ $demandeCredit->objet_financement }}</span>
             </div>
 
-            <!-- Titre du projet -->
-            <a href="details.html">
-                <h3 class="text-xl font-semibold text-gray-800 mt-2">
-                    {{-- {{ $projet->name }} --}}
-                </h3>
-            </a>
+
 
             <!-- Informations de progression -->
             <div class="mt-4">
@@ -192,7 +187,37 @@
                             Ajouter un montant
                         </button>
                     @else
-                        <p>good</p>
+                        <div class="flex space-x-4">
+                            @if ($pourcentageInvesti < 100)
+                                <!-- Bouton Approuver -->
+                                <button id="approveButton" wire:click="approuver({{ $notification->data['montant'] }})"
+                                    class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
+                                    wire:loading.attr="disabled">
+                                    <span wire:loading.remove>Approuver</span>
+                                    <span wire:loading>
+                                        <svg class="animate-spin h-5 w-5 text-white inline-block"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v8h8a8 8 0 11-8 8v-8H4z"></path>
+                                        </svg>
+                                    </span>
+                                </button>
+
+                                <!-- Bouton Refuser -->
+                                <button id="rejectButton"
+                                    class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
+                                    Refuser
+                                </button>
+                            @else
+                                <div class="text-green-600 font-bold">
+                                    Demande de crédit approuvée.
+                                </div>
+                            @endif
+
+                        </div>
                     @endif
 
                 </div>
