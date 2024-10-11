@@ -17,6 +17,7 @@ use App\Models\ProduitService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
 
 class UserController extends Controller
@@ -327,10 +328,11 @@ class UserController extends Controller
 
 
 
-            $wallet = new Wallet();
-            $wallet->user_id = $user->id;
-            $wallet->balance = 0; // Solde initial
-            $wallet->save();
+            // Création du portefeuille
+            // $wallet = new Wallet();
+            // $wallet->user_id = $user->id;
+            // $wallet->balance = 0; // Solde initial
+            // $wallet->save();
 
             // Après la création de l'utilisateur, on envoie le SMS de vérification
             $this->sendSmsVerification($user->phone);
@@ -351,137 +353,131 @@ class UserController extends Controller
 
     private function sendSmsVerification($phoneNumber)
     {
-        // Récupérer les informations Twilio depuis le fichier .env
+        // Récupération des informations Twilio depuis le fichier .env
         $sid = env('TWILIO_SID');
         $token = env('TWILIO_TOKEN');
         $verifyServiceId = env('TWILIO_VERIFY_SERVICE_ID');
         $twilio = new Client($sid, $token);
 
         try {
-            // Créer la vérification via le service Twilio Verify
-            $verification = $twilio->verify->v2->services($verifyServiceId)
+            // Création de la vérification via le service Twilio Verify
+            $twilio->verify->v2->services($verifyServiceId)
                 ->verifications
                 ->create($phoneNumber, "sms");
-
-            // Retourner une réponse indiquant que le SMS a été envoyé (facultatif)
-            // return response()->json([
-            //     'message' => 'SMS de vérification envoyé',
-            //     'sid' => $verification->sid
-            // ], 200);
         } catch (\Exception $e) {
-            // Gérer les erreurs
-            return response()->json([
-                'message' => 'Erreur lors de l\'envoi du SMS de vérification',
-                'error' => $e->getMessage()
-            ], 400);
+            Log::error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur lors de l\'envoi du SMS de vérification', 'error' => $e->getMessage()], 400);
         }
     }
+
+    public function verifyPhoneCode(Request $request)
+    {
+        // Ajout d'un log pour indiquer que la vérification commence
+        Log::info('Début de la vérification du code OTP.', ['phone' => $request->phone]);
+
+        // Validation du code de vérification
+        $validatedData = $request->validate([
+            'verification_code' => 'required|array|min:6|max:6', // Le code doit être un tableau de 6 éléments
+            'verification_code.*' => 'required|string|max:1', // Chaque champ doit être un caractère
+            'phone' => 'required|string'
+        ]);
+
+        // Ajout d'un log pour vérifier les données validées
+        Log::info('Données validées pour la vérification.', $validatedData);
+
+        // Combinaison du tableau en une seule chaîne
+        $verificationCode = implode('', $validatedData['verification_code']);
+        Log::info('Code OTP combiné', ['code' => $verificationCode]);
+
+        // Récupération des informations Twilio
+        // $sid = env('TWILIO_SID');
+        // $token = env('TWILIO_TOKEN');
+        // $verifyServiceId = env('TWILIO_VERIFY_SERVICE_ID');
+        // $twilio = new Client($sid, $token);
+
+        try {
+            // Vérification du code via Twilio Verify
+            Log::info('Envoi du code OTP à Twilio pour vérification.', ['phone' => $validatedData['phone'], 'code' => $verificationCode]);
+
+            // $verificationCheck = $twilio->verify->v2->services($verifyServiceId)
+            //     ->verificationChecks
+            //     ->create([
+            //         'to' => $validatedData['phone'],
+            //         'code' => $verificationCode // Utilisation du code combiné
+            //     ]);
+
+
+            // Log::info('Réponse de Twilio', ['status' => $verificationCheck->status]);
+
+            // if ($verificationCheck->status == 'approved') {
+                Log::info('Code OTP approuvé pour le téléphone', ['phone' => $validatedData['phone']]);
+
+                // Récupération de l'utilisateur lié au numéro de téléphone
+                $user = User::where('phone', $validatedData['phone'])->firstOrFail();
+                Log::info('Utilisateur trouvé', ['user_id' => $user->id]);
+
+                // Création de l'investisseur
+                $investisseur = new Investisseur();
+                $investisseur->nom = $user->name;
+                $investisseur->prenom = $user->username;
+                $investisseur->tranche = $user->investissement;
+                $investisseur->invest_type = $user->invest_type;
+                $investisseur->user_id = $user->id;
+                $investisseur->save();
+                Log::info('Investisseur créé avec succès', ['investisseur_id' => $investisseur->id]);
+
+                // Création des sous-comptes
+                $this->createUserWallets($user->id);
+                Log::info('Sous-comptes créés pour l\'utilisateur', ['user_id' => $user->id]);
+
+                return redirect()->route('biicf.login')
+                    ->with('success', 'Votre numéro a été vérifié avec succès et vous avez été ajouté en tant qu\'investisseur !');
+            // } else {
+            //     Log::warning('Code OTP incorrect pour le téléphone', ['phone' => $validatedData['phone']]);
+            //     return back()->withErrors(['verification_code' => 'Code de vérification incorrect.']);
+            // }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la vérification du code OTP', ['message' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Une erreur est survenue lors de la vérification du code.']);
+        }
+    }
+
 
     public function showPhoneVerificationForm()
     {
         return view('auth.verify-phone');
     }
 
-    public function verifyPhoneCode(Request $request)
-    {
-        // Validation du code de vérification
-        $request->validate([
-            'verification_code' => 'required|array',  // Le code est reçu sous forme de tableau
-            'verification_code.*' => 'required|string|max:1',  // Chaque élément est une chaîne de 1 caractère
-            'phone' => 'required|string'
-        ]);
 
-        // Fusionner le tableau en une seule chaîne de caractères
-        $verificationCode = implode('', $request->input('verification_code'));
 
-        // Récupérer les informations Twilio depuis le fichier .env
-        $sid = env('TWILIO_SID');
-        $token = env('TWILIO_TOKEN');
-        $verifyServiceId = env('TWILIO_VERIFY_SERVICE_ID');
-        $twilio = new Client($sid, $token);
-
-        try {
-            // Vérifier le code via Twilio Verify
-            $verificationCheck = $twilio->verify->v2->services($verifyServiceId)
-                ->verificationChecks
-                ->create([
-                    'to' => $request->phone,
-                    'code' => $verificationCode
-                ]);
-
-            if ($verificationCheck->status == 'approved') {
-                // Récupérer l'utilisateur via son numéro de téléphone
-                $user = User::where('phone', $request->phone)->firstOrFail();
-
-                // Insérer les informations dans la table 'investisseurs'
-                $investisseur = new Investisseur();
-                $investisseur->nom = $user->name;  // Le nom complet de l'utilisateur
-                $investisseur->prenom = $user->username;  // Le prénom, ici j'utilise le username
-                $investisseur->tranche = $user->investissement;  // L'investissement de l'utilisateur
-                $investisseur->invest_type = $request->invest_type;
-                $investisseur->user_id = $user->id;  // Associer l'utilisateur à l'investisseur
-                $investisseur->save();  // Sauvegarder les informations dans la table
-
-                // Créer et sauvegarder les différents sous-comptes
-                $this->createUserWallets($user->id);
-
-                // Rediriger l'utilisateur avec un message de succès
-                return redirect()->route('biicf.login')->with('success', 'Votre numéro a été vérifié avec succès et vous avez été ajouté en tant qu\'investisseur !');
-            } else {
-                // Si le code est invalide, renvoyer une erreur
-                return back()->withErrors(['verification_code' => 'Code de vérification incorrect.']);
-            }
-        } catch (\Exception $e) {
-            // Gérer les erreurs en cas de problème avec Twilio
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de la vérification du code.']);
-        }
-    }
-
-    /**
-     * Génère un numéro IBAN unique
-     */
-    private function generateIban($userId)
-    {
-        $countryCode = 'CI';  // Exemple : Code de la Côte d'Ivoire
-        // $bankCode = '10001';  // Code de la banque
-        // $branchCode = '00001';  // Code de la succursale
-        $accountNumber = str_pad($userId, 12, '0', STR_PAD_LEFT);  // Numéro de compte basé sur l'ID utilisateur
-        $iban = $countryCode . $accountNumber;
-
-        return $iban;  // Dans une vraie application, il faudrait également calculer les deux chiffres de contrôle IBAN
-    }
-
-    /**
-     * Crée les sous-comptes pour l'utilisateur
-     */
     private function createUserWallets($userId)
     {
-        // Créer un portefeuille principal
+        // Création d'un portefeuille principal et des sous-comptes
         $wallet = new Wallet();
         $wallet->user_id = $userId;
         $wallet->balance = 0; // Solde initial
         $wallet->save();
 
-        // Créer les sous-comptes avec des IBAN générés
-        $walletCoc = new Coi();
-        $walletCoc->id_user = $userId;
-        $walletCoc->Numero_compte = $this->generateIban($userId);
-        $walletCoc->save();
+        $this->createWallet($userId, new Coi(), 'Numero_compte', $this->generateIban($userId));
+        $this->createWallet($userId, new Cfa(), 'Numero_compte', $this->generateIban($userId));
+        $this->createWallet($userId, new Cefp(), 'Numero_compte', $this->generateIban($userId));
+        $this->createWallet($userId, new Cedd(), 'Numero_compte', $this->generateIban($userId));
+    }
 
-        $walletCfa = new Cfa();
-        $walletCfa->id_user = $userId;
-        $walletCfa->Numero_compte = $this->generateIban($userId);
-        $walletCfa->save();
+    private function createWallet($userId, $walletInstance, $field, $value)
+    {
+        $walletInstance->id_user = $userId;
+        $walletInstance->Date_Creation = now();
+        $walletInstance->Solde = 0;
+        $walletInstance->$field = $value;
+        $walletInstance->save();
+    }
 
-        $walletCefp = new Cefp();
-        $walletCefp->id_user = $userId;
-        $walletCefp->Numero_compte = $this->generateIban($userId);
-        $walletCefp->save();
-
-        $walletCedd = new Cedd();
-        $walletCedd->id_user = $userId;
-        $walletCedd->Numero_compte = $this->generateIban($userId);
-        $walletCedd->save();
+    private function generateIban($userId)
+    {
+        $countryCode = 'CI';  // Exemple : Code de la Côte d'Ivoire
+        $accountNumber = str_pad($userId, 12, '0', STR_PAD_LEFT);  // Numéro de compte basé sur l'ID utilisateur
+        return $countryCode . $accountNumber;
     }
     public function showProfile()
     {
