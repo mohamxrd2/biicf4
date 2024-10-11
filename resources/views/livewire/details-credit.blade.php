@@ -113,12 +113,7 @@
                 <span class="ml-2 text-sm text-gray-500">{{ $demandeCredit->objet_financement }}</span>
             </div>
 
-            <!-- Titre du projet -->
-            <a href="details.html">
-                <h3 class="text-xl font-semibold text-gray-800 mt-2">
-                    {{-- {{ $projet->name }} --}}
-                </h3>
-            </a>
+
 
             <!-- Informations de progression -->
             <div class="mt-4">
@@ -179,15 +174,55 @@
                 @endif
                 <div class="border border-gray-300 rounded-lg p-6 shadow-md">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                        Participer au financement du projet
+                        Participer a la demande crédit
                     </h3>
                     <p class="text-gray-600 text-md mb-6">
-                        Contribuez au financement du projet pour l'aider à atteindre la somme souhaitée.
+                        Contribuez a la demande crédit pour l'aider à atteindre la somme souhaitée.
                     </p>
-                    <button id="showInputButton"
-                        class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
-                        Ajouter un montant
-                    </button>
+                    @if (isset($demandeCredit) && $demandeCredit->objet_financement === 'demande-directe')
+                        <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
+                        <button id="showInputButton"
+                            class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                            Ajouter un montant
+                        </button>
+                    @else
+                        <div class="flex space-x-4">
+                            @if ($pourcentageInvesti < 100)
+                                <!-- Bouton Approuver -->
+                                <button id="approveButton" wire:click="approuver({{ $notification->data['montant'] }})"
+                                    class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
+                                    wire:loading.attr="disabled">
+                                    <span wire:loading.remove>Approuver</span>
+                                    <span wire:loading>
+                                        <svg class="animate-spin h-5 w-5 text-white inline-block"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v8h8a8 8 0 11-8 8v-8H4z"></path>
+                                        </svg>
+                                    </span>
+                                </button>
+
+                                <!-- Bouton Refuser -->
+                                <button id="rejectButton" wire:click="refuser"
+                                    class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
+                                    Refuser
+                                </button>
+                            @elseif ($notification->reponse == 'refuser')
+                                <div class="text-red-600 font-bold">
+                                    Demande de crédit refusée.
+                                </div>
+                            @else
+                                <div class="text-green-600 font-bold">
+                                    Demande de crédit approuvée.
+                                </div>
+                            @endif
+
+                        </div>
+                    @endif
+
                 </div>
                 <div id="inputDiv" class="mt-6 hidden">
                     <input type="number" id="montantInput"
@@ -221,65 +256,67 @@
         </div>
 
     </div>
-    <script>
-        document.getElementById('showInputButton').addEventListener('click', function() {
-            var inputDiv = document.getElementById('inputDiv');
-            inputDiv.classList.toggle('hidden'); // Basculer l'affichage
-        });
+    @if (isset($demandeCredit) && $demandeCredit->objet_financement === 'demande-directe')
+        <script>
+            document.getElementById('showInputButton').addEventListener('click', function() {
+                var inputDiv = document.getElementById('inputDiv');
+                inputDiv.classList.toggle('hidden'); // Basculer l'affichage
+            });
 
-        const solde = @json($solde);
-        const sommeRestante = @json($sommeRestante); // Récupérer sommeRestante depuis le composant Livewire
+            const solde = @json($solde);
+            const sommeRestante = @json($sommeRestante); // Récupérer sommeRestante depuis le composant Livewire
 
-        // function verifierSolde() {
-        //     const montantInput = document.getElementById('montantInput');
-        //     const messageSolde = document.getElementById('messageSolde');
-        //     const messageSommeRestante = document.getElementById('messageSommeRestante');
-        //     const confirmerButton = document.getElementById('confirmerButton');
+            function verifierSolde() {
+                const montantInput = document.getElementById('montantInput');
+                const messageSolde = document.getElementById('messageSolde');
+                const messageSommeRestante = document.getElementById('messageSommeRestante');
+                const confirmerButton = document.getElementById('confirmerButton');
 
-        //     //Récupérer la valeur directement sans modifications
-        //     const montant = montantInput.value;
+                //Récupérer la valeur directement sans modifications
+                const montant = montantInput.value;
 
-        //     //Vérifie si la valeur est vide
-        //     if (montant.trim() === '') {
-        //         messageSolde.classList.add('hidden');
-        //         messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-        //         confirmerButton.disabled = true; // Désactiver le bouton si le montant est vide
-        //         return;
-        //     }
+                //Vérifie si la valeur est vide
+                if (montant.trim() === '') {
+                    messageSolde.classList.add('hidden');
+                    messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                    confirmerButton.disabled = true; // Désactiver le bouton si le montant est vide
+                    return;
+                }
 
-        //     //Convertir en nombre flottant
-        //     const montantFloat = parseFloat(montant);
+                //Convertir en nombre flottant
+                const montantFloat = parseFloat(montant);
 
-        //     //Vérifiez si la conversion a fonctionné (montant est NaN si non valide)
-        //     if (isNaN(montantFloat)) {
-        //         messageSolde.classList.remove('hidden');
-        //         messageSolde.innerText = 'Le montant saisi n\'est pas valide';
-        //         messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-        //         confirmerButton.disabled = true;
-        //         return;
-        //     }
+                //Vérifiez si la conversion a fonctionné (montant est NaN si non valide)
+                if (isNaN(montantFloat)) {
+                    messageSolde.classList.remove('hidden');
+                    messageSolde.innerText = 'Le montant saisi n\'est pas valide';
+                    messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                    confirmerButton.disabled = true;
+                    return;
+                }
 
-        //     //Vérifie si le montant saisi dépasse le solde
-        //     if (montantFloat > solde) {
-        //         messageSolde.classList.remove('hidden');
-        //         messageSolde.innerText = 'Votre solde est insuffisant';
-        //         messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-        //         confirmerButton.disabled = true; // Désactive le bouton si le solde est insuffisant
-        //     } else {
-        //         messageSolde.classList.add('hidden');
+                //Vérifie si le montant saisi dépasse le solde
+                if (montantFloat > solde) {
+                    messageSolde.classList.remove('hidden');
+                    messageSolde.innerText = 'Votre solde est insuffisant';
+                    messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                    confirmerButton.disabled = true; // Désactive le bouton si le solde est insuffisant
+                } else {
+                    messageSolde.classList.add('hidden');
 
-        //         //Vérifie si le montant est supérieur à la somme restante
-        //         if (montantFloat > sommeRestante) {
-        //             messageSommeRestante.classList.remove('hidden');
-        //             messageSommeRestante.innerText = 'Le montant doit être inférieur ou égal à la somme restante';
-        //             confirmerButton.disabled = true; // Désactive le bouton si le montant est supérieur à la somme restante
-        //         } else {
-        //             messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                    //Vérifie si le montant est supérieur à la somme restante
+                    if (montantFloat > sommeRestante) {
+                        messageSommeRestante.classList.remove('hidden');
+                        messageSommeRestante.innerText = 'Le montant doit être inférieur ou égal à la somme restante';
+                        confirmerButton.disabled = true; // Désactive le bouton si le montant est supérieur à la somme restante
+                    } else {
+                        messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
 
-        //             //Vérifie si le montant est supérieur à zéro pour activer le bouton
-        //             confirmerButton.disabled = montantFloat <= 0; // Désactive le bouton si le montant est négatif ou zéro
-        //         }
-        //     }
-        // }
-    </script>
+                        //Vérifie si le montant est supérieur à zéro pour activer le bouton
+                        confirmerButton.disabled = montantFloat <= 0; // Désactive le bouton si le montant est négatif ou zéro
+                    }
+                }
+            }
+        </script>
+    @endif
 </div>

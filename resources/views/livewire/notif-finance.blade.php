@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.2ms>
     <section class="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
         <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
             <div class="mx-auto max-w-5xl">
@@ -45,23 +45,34 @@
                             @php
                                 // Récupérer l'ID de l'utilisateur depuis les données de la notification
                                 $userId = $notification->data['user_id'];
-                                // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
-                                $userDetails = App\Models\User::find($userId);
-                                $userNumber = $userDetails->phone;
 
-                                // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-$userInPromir = App\Models\UserPromir::where('numero', $userNumber)->exists();
+                                // Vérifier si l'utilisateur existe dans la table "users"
+$userDetails = App\Models\User::find($userId);
 
-if ($userInPromir) {
-    // Vérifier si un score de crédit existe pour cet utilisateur
-    $crediScore = App\Models\CrediScore::where('id_user', $userInPromir)->first();
+if ($userDetails) {
+    // Récupérer le numéro de téléphone de l'utilisateur
+                                    $userNumber = $userDetails->phone;
+
+                                    // Vérifier si le numéro de téléphone existe dans la table "user_promir"
+                                    $userInPromir = App\Models\UserPromir::where('numero', $userNumber)->first();
+
+                                    if ($userInPromir) {
+                                        // Récupérer le score de crédit de l'utilisateur
+        $crediScore = App\Models\CrediScore::where(
+            'id_user',
+            $userInPromir->id,
+        )->first();
+    }
 }
 
-$demandeId = $notification->data['demande_id'];
+// Récupérer l'ID de la demande depuis les données de la notification
+                                $demandeId = $notification->data['demande_id'];
 
-$demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
+                                // Vérifier si la demande de crédit existe
+                                $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
 
                             @endphp
+
                             <div class="flex flex-wrap items-center gap-y-4 py-6">
                                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Demande ID:</dt>
@@ -94,22 +105,48 @@ $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first
 
                                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1 ml-3">
                                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Status:</dt>
-                                    <dd
-                                        class="me-2 mt-1.5 inline-flex items-center rounded bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                                        <svg class="me-1 h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                            width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
-                                        </svg>
-                                        En Attente
-                                    </dd>
+                                    @if ($notification->reponse == 'approved')
+                                        <dd
+                                            class="me-2 mt-1.5 inline-flex items-center rounded bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            <svg class="me-1 h-3 w-3" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                    stroke-linejoin="round" stroke-width="2"
+                                                    d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+                                            </svg>
+                                            confirmer
+                                        </dd>
+                                    @elseif ($notification->reponse == 'refuser')
+                                        <dd
+                                            class="me-2 mt-1.5 inline-flex items-center rounded bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-300">
+                                            <svg class="me-1 h-3 w-3" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                    stroke-linejoin="round" stroke-width="2"
+                                                    d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+                                            </svg>
+                                            refuser
+                                        </dd>
+                                    @else
+                                        <dd
+                                            class="me-2 mt-1.5 inline-flex items-center rounded bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                            <svg class="me-1 h-3 w-3" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                    stroke-linejoin="round" stroke-width="2"
+                                                    d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+                                            </svg>
+                                            En Attente
+                                        </dd>
+                                    @endif
                                 </dl>
 
                                 <div
                                     class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
                                     <!-- Affichage conditionnel basé sur la réponse -->
-
 
                                     <a href="{{ route('detailcredit', $notification->id) }}"
                                         data-modal-toggle="extralarge-{{ $notification->id }}"

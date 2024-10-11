@@ -30,7 +30,7 @@ class Demandecredit extends Component
     public $users = [];    // Liste des utilisateurs trouvés
     public $user_id, $sommedemnd, $montantmax,  $quantiteMax, $nameProd, $quantiteMin;
 
-    public $messages = []; 
+    public $messages = [];
 
 
     protected $listeners = ['userIsEligible' => 'handleEligibility'];
@@ -60,14 +60,22 @@ class Demandecredit extends Component
     public function updatedSearch()
     {
         if (!empty($this->search)) {
-            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie
-            $this->users = User::where('username', 'like', '%' . $this->search . '%')->get();
+            // Récupérer l'ID de l'utilisateur connecté
+            $currentUserId = auth()->id();
+
+            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie,
+            // mais exclure l'utilisateur connecté
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')
+                ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
+                ->get();
+
             Log::info('Search updated.', ['search' => $this->search]);
         } else {
             // Si la barre de recherche est vide, ne rien afficher
             $this->users = [];
         }
     }
+
 
     // Méthode pour sélectionner un utilisateur
     public function selectUser($userId, $userName)
@@ -93,18 +101,18 @@ class Demandecredit extends Component
                 'endTime' => 'required|date_format:H:i',
                 'duration' => 'required|numeric',
             ]);
-    
-    
+
+
             // Calculs
             $montantMax = $this->montantmax * (is_nan($this->quantite) ? 0 : $this->quantite);
             $interet = $montantMax * (is_nan($this->roi) ? 0 : $this->roi / 100);
             $creditTotal = $montantMax + $interet;
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
             // Vérifie si l'investisseur existe
             if ($this->user_id) {
                 // Recherche de l'investisseur par user_id
@@ -112,7 +120,7 @@ class Demandecredit extends Component
                 // Récupère l'id de l'investisseur
                 $investorId = $investor->id ?? null; // ou $investor->id_investisseur selon ton schéma
                 Log::info('Investor found.', ['investor_id' => $investorId]);
-    
+
                 // Insérer les données dans la table demande_credi
                 $demande = DemandeCredi::create([
                     'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
@@ -129,25 +137,25 @@ class Demandecredit extends Component
                     'heure_fin' => $this->endTime,
                     'taux' => $this->roi, // Le taux de retour sur investissement
                 ]);
-    
+
                 // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
                 $this->dispatch(
                     'formSubmitted',
                     'Demande de crédit envoyé avec success'
                 );
-    
+
                 $owner = User::find($this->user_id);
-    
+
                 // Envoyer la notification à l'investisseur
                 Notification::send($owner, new DemandeCreditNotification($demande));
-    
+
                 // Reset des champs après soumission
                 $this->reset();
             } else if ($this->bailleur) {
                 $investisseurs = Investisseur::where('invest_type', $this->bailleur)
                     ->with('user') // Assure-toi que la relation "user" est définie dans le modèle Investisseur
                     ->get();
-    
+
                 // Vérifie s'il y a des investisseurs trouvés
                 if ($investisseurs->isEmpty()) {
                     // Gérer le cas où aucun investisseur n'est trouvé
@@ -176,12 +184,12 @@ class Demandecredit extends Component
                     }
                     // Reset des champs après soumission
                     $this->reset();
-                    
+
                     // Envoi de la notification aux investisseurs concernés
                     foreach ($investisseurs as $investisseur) {
                         // Récupérer l'utilisateur associé à l'investisseur
                         $investisseurUser = $investisseur->user;
-    
+
                         if ($investisseurUser) {
                             Notification::send($investisseurUser, new DemandeCreditNotification($demande));
                         } else {
@@ -192,12 +200,10 @@ class Demandecredit extends Component
                     $this->dispatch('formSubmitted', 'Demandes de crédit envoyées avec succès');
                 }
             }
-
-        }catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             // Assurez-vous que $messages est un tableau et ajoutez les nouvelles erreurs
             $this->messages = array_merge($this->messages, $e->validator->errors()->all());
         }
-       
     }
 
     // Fonction pour générer un code de référence de 5 chiffres
