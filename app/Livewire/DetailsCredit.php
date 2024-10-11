@@ -76,9 +76,7 @@ class DetailsCredit extends Component
 
         // Calculer la somme restante à investir
         $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
-         // Mettre à jour la notification et valider
-         $this->notification->update(['reponse' => 'approved']);
-
+        // Mettre à jour la notification et valider
     }
     public function updatedMontant()
     {
@@ -217,8 +215,14 @@ class DetailsCredit extends Component
         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
             ->distinct()
             ->count('id_invest');
+        $this->notification->update(['reponse' => 'approved']);
     }
+    public function refuser()
+    {
+        $this->notification->update(['reponse' => 'refuser']);
+        session()->flash('error', 'Demande de credit refuser avec succes.');
 
+    }
     public function joursRestants()
     {
         $dateFin = \Carbon\Carbon::parse($this->demandeCredit->date_debut);
