@@ -231,11 +231,11 @@ class AddProjetFinance extends Component
         $userNumber = $user->phone;
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-        $userInPromir = UserPromir::where('numero', $userNumber)->exists();
+        $userInPromir = UserPromir::where('numero', $userNumber)->first();
 
         if ($userInPromir) {
             // Vérifier si un score de crédit existe pour cet utilisateur
-            $crediScore = CrediScore::where('id_user', $userInPromir)->first();
+            $crediScore = CrediScore::where('id_user', $userInPromir->id)->first();
 
             if ($crediScore) {
                 // Vérifier si le score est A+, A, ou A-
@@ -247,12 +247,12 @@ class AddProjetFinance extends Component
                 } else {
 
                     $this->message = 'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.';
-                
+
                 }
             } else {
 
                 $this->message = 'Votre numéro existe dans Promir, mais aucun score de crédit n\'a été trouvé.';
-             
+
             }
         } else {
             // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
