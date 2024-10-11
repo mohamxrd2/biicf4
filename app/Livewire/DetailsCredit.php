@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\AjoutMontant;
+use App\Models\Cfa;
 use App\Models\CrediScore;
 use App\Models\DemandeCredi;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Models\UserPromir;
 use App\Models\Wallet;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class DetailsCredit extends Component
@@ -115,22 +117,46 @@ class DetailsCredit extends Component
             session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
             return;
         }
-        //Sauvegarder le montant dans la table `ajout_montant`
+
+        // Utilisation d'une transaction pour garantir la cohérence des données
+        DB::beginTransaction();
+
         try {
+            // Sauvegarder le montant dans la table `ajout_montant`
             $ajoumontant = AjoutMontant::create([
-                'montant' => $montant, // Utilisez la valeur float
+                'montant' => $montant,
                 'id_invest' => Auth::id(),
-                'id_emp' => $this->demandeCredit->id_user, // Vérifiez que cela n'est pas nul
+                'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
                 'id_demnd_credit' => $this->demandeCredit->id,
             ]);
+
+            // Mettre à jour le solde du wallet de l'investisseur
+            $wallet->balance -= $montant;
+            $wallet->save();
+
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+            Cfa::updateOrCreate(
+                ['id_user' => $this->userDetails->id], // Assurez-vous de mettre à jour par l'ID de l'utilisateur
+                [
+                    'Solde' => $montant, // Ajout du montant à la somme existante
+                    'Date_Creation' => now(),
+                ]
+            );
+
+            // Mettre à jour l'état de la notification en approuvé
+            $this->notification->update(['reponse' => 'approved']);
+
+            // Committer la transaction
+            DB::commit();
+
+            // Message de succès
+            session()->flash('success', 'Le montant a été ajouté avec succès.');
         } catch (\Exception $e) {
+            // Annuler la transaction en cas d'erreur
+            DB::rollBack();
             session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
             return;
         }
-        // dd(vars: $ajoumontant);
-        // // Mettre à jour le solde de l'utilisateur (investisseur)
-        $wallet->balance -= $montant; // Utilisez la valeur float
-        $wallet->save();
 
         // Message de succès
         session()->flash('success', 'Le montant a été ajouté avec succès.');
@@ -160,15 +186,16 @@ class DetailsCredit extends Component
             return;
         }
 
-        // Récupérer le projet et le wallet de l'utilisateur (investisseur)
+        // Récupérer la demande de crédit et le wallet de l'utilisateur (investisseur)
         $demandeCredit = $this->demandeCredit;
 
-        // Vérifiez si le projet et le demandeur existent
+        // Vérifiez si la demande de crédit et l'ID de la demande existent
         if (!$demandeCredit || !$this->notification->data['demande_id']) {
-            session()->flash('error', 'La demande de credit ou le demandeur est introuvable.');
+            session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
             return;
         }
 
+        // Récupérer le wallet de l'utilisateur connecté
         $wallet = Wallet::where('user_id', Auth::id())->first();
 
         // Vérifier que l'utilisateur possède un wallet
@@ -182,50 +209,76 @@ class DetailsCredit extends Component
             session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
             return;
         }
-        //Sauvegarder le montant dans la table `ajout_montant`
+
+        // Utilisation d'une transaction pour garantir la cohérence des données
+        DB::beginTransaction();
+
         try {
+            // Sauvegarder le montant dans la table `ajout_montant`
             $ajoumontant = AjoutMontant::create([
-                'montant' => $montant, // Utilisez la valeur float
+                'montant' => $montant,
                 'id_invest' => Auth::id(),
-                'id_emp' => $this->demandeCredit->id_user, // Vérifiez que cela n'est pas nul
+                'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
                 'id_demnd_credit' => $this->demandeCredit->id,
             ]);
+
+            // Mettre à jour le solde du wallet de l'investisseur
+            $wallet->balance -= $montant;
+            $wallet->save();
+
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+            Cfa::updateOrCreate(
+                ['id_user' => $this->userDetails->id], // Assurez-vous de mettre à jour par l'ID de l'utilisateur
+                [
+                    'Solde' => $montant, // Ajout du montant à la somme existante
+                    'Date_Creation' => now(),
+                ]
+            );
+
+            // Mettre à jour l'état de la notification en approuvé
+            $this->notification->update(['reponse' => 'approved']);
+
+            // Committer la transaction
+            DB::commit();
+
+            // Message de succès
+            session()->flash('success', 'Le montant a été ajouté avec succès.');
         } catch (\Exception $e) {
+            // Annuler la transaction en cas d'erreur
+            DB::rollBack();
             session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
             return;
         }
-        // dd(vars: $ajoumontant);
-        // // Mettre à jour le solde de l'utilisateur (investisseur)
-        $wallet->balance -= $montant; // Utilisez la valeur float
-        $wallet->save();
-
-        // Message de succès
-        session()->flash('success', 'Le montant a été ajouté avec succès.');
-
-        // Réinitialiser le montant saisi et le drapeau de vérification de solde insuffisant
-        $this->montant = '';
-        $this->insuffisant = false;
 
         // Rafraîchir les propriétés du composant
-        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant'); // Met à jour la somme investie
-        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Met à jour la somme restante
-        $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Met à jour le pourcentage investi
+        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
+        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie;
+
+        // Assurez-vous que la division n'est pas par zéro
+        if ($this->demandeCredit->montant > 0) {
+            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100;
+        } else {
+            $this->pourcentageInvesti = 0;
+        }
 
         // Mettre à jour le nombre d'investisseurs distincts
         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
             ->distinct()
             ->count('id_invest');
-        $this->notification->update(['reponse' => 'approved']);
+
+        // Réinitialiser le montant saisi et le drapeau de solde insuffisant
+        $this->montant = '';
+        $this->insuffisant = false;
     }
+
     public function refuser()
     {
         $this->notification->update(['reponse' => 'refuser']);
         session()->flash('error', 'Demande de credit refuser avec succes.');
-
     }
     public function joursRestants()
     {
-        $dateFin = \Carbon\Carbon::parse($this->demandeCredit->date_debut);
+        $dateFin = \Carbon\Carbon::parse($this->demandeCredit->date_fin);
         $dateActuelle = now();
         $joursRestants = $dateActuelle->diffInDays($dateFin);
         return max(0, $joursRestants); // Retournez 0 si le projet est déjà terminé
