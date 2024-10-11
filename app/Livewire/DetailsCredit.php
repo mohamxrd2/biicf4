@@ -59,11 +59,11 @@ class DetailsCredit extends Component
 
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-        $this->userInPromir = UserPromir::where('numero', $userNumber)->exists();
+        $this->userInPromir = UserPromir::where('numero', $userNumber)->first();
 
         if ($this->userInPromir) {
             // Vérifier si un score de crédit existe pour cet utilisateur
-            $this->crediScore = CrediScore::where('id_user', $this->userInPromir)->first();
+            $this->crediScore = CrediScore::where('id_user', $this->userInPromir->id)->first();
         }
 
 

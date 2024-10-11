@@ -179,15 +179,22 @@
                 @endif
                 <div class="border border-gray-300 rounded-lg p-6 shadow-md">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                        Participer au financement du projet
+                        Participer a la demande crédit
                     </h3>
                     <p class="text-gray-600 text-md mb-6">
-                        Contribuez au financement du projet pour l'aider à atteindre la somme souhaitée.
+                        Contribuez a la demande crédit pour l'aider à atteindre la somme souhaitée.
                     </p>
-                    <button id="showInputButton"
-                        class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
-                        Ajouter un montant
-                    </button>
+                    @if (isset($demandeCredit) && $demandeCredit->objet_financement === 'demande-directe')
+                        <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
+                        <!-- Si l'objet du financement est différent, afficher le bouton -->
+                        <button id="showInputButton"
+                            class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                            Ajouter un montant
+                        </button>
+                    @else
+                        <p>good</p>
+                    @endif
+
                 </div>
                 <div id="inputDiv" class="mt-6 hidden">
                     <input type="number" id="montantInput"

@@ -41,26 +41,34 @@
                 <div class="mt-6 flow-root sm:mt-8">
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach ($notifications as $notification)
-                            @php
-                                // Récupérer l'ID de l'utilisateur depuis les données de la notification
-                                $userId = $notification->data['user_id'];
-                                // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
-                                $userDetails = App\Models\User::find($userId);
-                                $userNumber = $userDetails->phone;
+                        @php
+                        // Récupérer l'ID de l'utilisateur depuis les données de la notification
+                        $userId = $notification->data['user_id'];
 
-                                // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-$userInPromir = App\Models\UserPromir::where('numero', $userNumber)->exists();
+                        // Vérifier si l'utilisateur existe dans la table "users"
+                        $userDetails = App\Models\User::find($userId);
 
-if ($userInPromir) {
-    // Vérifier si un score de crédit existe pour cet utilisateur
-    $crediScore = App\Models\CrediScore::where('id_user', $userInPromir)->first();
-}
+                        if ($userDetails) {
+                            // Récupérer le numéro de téléphone de l'utilisateur
+                            $userNumber = $userDetails->phone;
 
-$demandeId = $notification->data['demande_id'];
+                            // Vérifier si le numéro de téléphone existe dans la table "user_promir"
+                            $userInPromir = App\Models\UserPromir::where('numero', $userNumber)->first();
 
-$demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
+                            if ($userInPromir) {
+                                // Récupérer le score de crédit de l'utilisateur
+                                $crediScore = App\Models\CrediScore::where('id_user', $userInPromir->id)->first();
+                            }
+                        }
 
-                            @endphp
+                        // Récupérer l'ID de la demande depuis les données de la notification
+                        $demandeId = $notification->data['demande_id'];
+
+                        // Vérifier si la demande de crédit existe
+                        $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
+
+                    @endphp
+
                             <div class="flex flex-wrap items-center gap-y-4 py-6">
                                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Demande ID:</dt>
@@ -109,7 +117,6 @@ $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first
                                     class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
                                     <!-- Affichage conditionnel basé sur la réponse -->
 
-                                    
                                     <a href="{{ route('detailcredit', $notification->id) }}"
                                         data-modal-toggle="extralarge-{{ $notification->id }}"
                                         class="w-full inline-flex justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 lg:w-auto">
