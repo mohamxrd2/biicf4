@@ -16,7 +16,12 @@ class AccueilFinance extends Component
     public function mount()
     {
         // Charger tous les projets avec leurs demandeurs et calculer les valeurs
-        $this->projets = Projet::with('demandeur')->take($this->nombreProjets)->get()->map(function ($projet) {
+        $this->projets = Projet::with('demandeur')
+        ->where('type_financement', 'groupé') // Ajouter la condition pour le type de financement
+        ->where('statut', 'approuvé') // Ajouter la condition pour le statut
+        ->take($this->nombreProjets)
+        ->get()
+        ->map(function ($projet) {
             // Calculer les valeurs pour chaque projet
             $sommeInvestie = AjoutMontant::where('id_projet', $projet->id)->sum('montant');
             $sommeRestante = $projet->montant - $sommeInvestie;
@@ -24,15 +29,16 @@ class AccueilFinance extends Component
             $nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $projet->id)
                 ->distinct()
                 ->count('id_invest');
-
+    
             // Ajouter les valeurs calculées au projet
             $projet->sommeInvestie = $sommeInvestie;
             $projet->sommeRestante = $sommeRestante;
             $projet->pourcentageInvesti = $pourcentageInvesti;
             $projet->nombreInvestisseursDistinct = $nombreInvestisseursDistinct;
-
+    
             return $projet;
         });
+    
 
         // Récupérer le projet le plus récent
         $this->projetRecent = Projet::with('demandeur')->orderBy('created_at', 'desc')->first();

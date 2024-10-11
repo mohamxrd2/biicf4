@@ -122,7 +122,7 @@ class Demandecredit extends Component
                     'type_financement' => $this->financementType,
                     'bailleur' => $this->bailleur,
                     'id_user' => auth()->id(), // Utilisateur connecté
-                    'id_investisseur' => $investorId ?? null, // Utiliser l'id récupéré
+                    'id_investisseur' => $this->user_id, // Utiliser l'id récupéré
                     'date_debut' => $this->startDate,
                     'heure_debut' => $this->startTime,
                     'date_fin' => $this->endDate,

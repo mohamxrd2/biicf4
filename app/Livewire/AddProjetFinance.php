@@ -9,7 +9,9 @@ use App\Models\CrediScore;
 use App\Models\UserPromir;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Intervention\Image\Facades\Image;
+use App\Notifications\DemandeCreditNotification;
 use Carbon\Carbon; // N'oublie pas d'importer Carbon
 use Livewire\WithFileUploads; // Ajout pour gérer les fichiers
 
@@ -41,6 +43,8 @@ class AddProjetFinance extends Component
     public $users = [];    // Liste des utilisateurs trouvés
     public $user_id;       // ID de l'utilisateur sélectionné
     public $username_direct;
+
+    public $bailleur_groupé;
 
     // Définition des règles de validation
     protected $rules = [
@@ -194,6 +198,25 @@ class AddProjetFinance extends Component
             $this->resetForm();
             $this->resetErrorBag();
 
+            // Récupérer l'ID du projet nouvellement ajouté
+            $projetId = $projet->id;
+
+            if ($this->user_id) {
+                $data = [
+                    'id_projet' => $projetId, // Utilisez l'ID du projet ici
+                    'montant' => $this->montant,
+                ];
+
+                $owner = User::find($this->user_id);
+
+                Notification::send($owner, new DemandeCreditNotification($data));
+
+                $this->dispatch(
+                    'formSubmitted',
+                    'Demande de financement envoyé avec success'
+                );
+            }
+
             // Message de succès
             $this->successMessage = 'Le projet a été ajouté avec succès !';
         } catch (\Exception $e) {
@@ -222,6 +245,7 @@ class AddProjetFinance extends Component
         $this->photo4 = null;
         $this->photo5 = null; // Réinitialiser les photos
         $this->successMessage = '';
+        $this->bailleur_groupé;
     }
 
     public function verifyUser()
@@ -247,12 +271,10 @@ class AddProjetFinance extends Component
                 } else {
 
                     $this->message = 'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.';
-                
                 }
             } else {
 
                 $this->message = 'Votre numéro existe dans Promir, mais aucun score de crédit n\'a été trouvé.';
-             
             }
         } else {
             // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
