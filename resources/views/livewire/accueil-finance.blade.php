@@ -1,10 +1,12 @@
 <div>
     {{-- Be like water. --}}
 
+    @if ($projetCount > 0)
+
     <div class="bg-gray-50">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-semibold text-gray-800">
-                Tout les projets <span class="text-purple-600">(298)</span>
+                Tout les projets <span class="text-purple-600">({{ $projetCount }})</span>
             </h2>
         </div>
 
@@ -141,4 +143,15 @@
             </button>
         </div>
     </div>
+        
+    @else
+
+    <div class="text-center text-gray-500">
+        Aucun projet
+
+    </div>
+        
+    @endif
+
+    
 </div>

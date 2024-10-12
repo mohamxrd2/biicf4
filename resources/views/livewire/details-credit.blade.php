@@ -50,52 +50,57 @@
                     <div>
                         <p class="text-gray-600 font-medium">Durée du crédit:
                         </p>
-                        <p class="text-gray-800">{{ $demandeCredit->duree }}
+                        <p class="text-gray-800">{{ $joursRestants }}
                             mois</p>
                     </div>
                     <div>
-                        <p class="text-gray-600 font-medium">Taux du crédit:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->taux }} %
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Date debut:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->date_debut }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Date fin:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->date_fin }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Type de crédit:
-                        </p>
+                        <p class="text-gray-600 font-medium">Taux du crédit:</p>
                         <p class="text-gray-800">
-                            {{ $demandeCredit->type_financement }}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">heure debut:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->heure_debut }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">heure fin:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->heure_fin }}
+                            {{ $demandeCredit->taux ?? ($projet->taux ?? 'Taux non disponible') }} %
                         </p>
                     </div>
 
-                    <div>
-                        <p class="text-gray-600 font-medium">Motif du crédit:
-                        </p>
-                        <p class="text-gray-800">
-                            {{ $demandeCredit->objet_financement }}</p>
-                    </div>
+                    @if ($demandeCredit)
+                        <div>
+                            <p class="text-gray-600 font-medium">Date debut:
+                            </p>
+                            <p class="text-gray-800">{{ $demandeCredit->date_debut }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 font-medium">Date fin:
+                            </p>
+                            <p class="text-gray-800">{{ $demandeCredit->date_fin }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 font-medium">Type de crédit:
+                            </p>
+                            <p class="text-gray-800">
+                                {{ $demandeCredit->type_financement }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 font-medium">heure debut:
+                            </p>
+                            <p class="text-gray-800">{{ $demandeCredit->heure_debut }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 font-medium">heure fin:
+                            </p>
+                            <p class="text-gray-800">{{ $demandeCredit->heure_fin }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-gray-600 font-medium">Motif du crédit:
+                            </p>
+                            <p class="text-gray-800">
+                                {{ $demandeCredit->objet_financement }}</p>
+                        </div>
+                    @endif
+
+
                 </div>
             </div>
         </div>
@@ -105,18 +110,18 @@
         <div class="md:px-4 flex flex-col w-full md:w-1/2 py-4">
             <!-- Catégorie du projet -->
             <div class="flex items-center mb-2">
-                <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                </svg>
-                <span class="ml-2 text-sm text-gray-500">{{ $demandeCredit->objet_financement }}</span>
+
+                <span
+                    class="ml-2 text-xl capitalize font-semibold text-slate-700">{{ $demandeCredit->objet_financement ?? $projet->name }}</span>
             </div>
 
 
 
             <!-- Informations de progression -->
+
             <div class="mt-4">
+                @if ($notification->data['type_financement'] === 'groupe')
+
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%"></div>
                 </div>
@@ -132,7 +137,7 @@
                                 {{ number_format($sommeInvestie, 0, ',', ' ') }}
                                 FCFA</span>
                             <span class="text-gray-500 text-sm">Reçu de
-                                {{ number_format($demandeCredit->montant, 0, ',', ' ') }} FCFA </span>
+                                {{ number_format($notification['montant'], 0, ',', ' ') }} FCFA </span>
                         </div>
 
                         <!-- Nombre d'Investisseurs -->
@@ -154,6 +159,9 @@
                         </div>
                     </div>
                 </div>
+                    
+                @endif
+                
 
                 <div class="flex py-2 mt-2 items-center">
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
@@ -179,10 +187,13 @@
                     <p class="text-gray-600 text-md mb-6">
                         Contribuez a la demande crédit pour l'aider à atteindre la somme souhaitée.
                     </p>
-                    @if (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe')
+                    @if (
+                        (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe') ||
+                            (isset($projet) && $notification->data['type_financement'] === 'direct'))
+
                         <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
                         <div class="flex space-x-4">
-                            @if ($pourcentageInvesti < 100)
+                            @if ($notification->reponse == '')
                                 <!-- Bouton Approuver -->
                                 <button id="approveButton" wire:click="approuver({{ $notification->data['montant'] }})"
                                     class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
@@ -205,7 +216,7 @@
                                     class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
                                     Refuser
                                 </button>
-                            @else
+                            @elseif ($notification->reponse == 'approved')
                                 <div class="text-green-600 font-bold">
                                     Demande de crédit approuvée.
                                 </div>

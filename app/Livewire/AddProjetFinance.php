@@ -104,8 +104,15 @@ class AddProjetFinance extends Component
     public function updatedSearch()
     {
         if (!empty($this->search)) {
-            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie
-            $this->users = User::where('username', 'like', '%' . $this->search . '%')->get();
+            // Récupérer l'ID de l'utilisateur connecté
+            $currentUserId = auth()->id();
+
+            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie,
+            // mais exclure l'utilisateur connecté
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')
+                ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
+                ->get();
+
             Log::info('Search updated.', ['search' => $this->search]);
         } else {
             // Si la barre de recherche est vide, ne rien afficher
@@ -203,8 +210,16 @@ class AddProjetFinance extends Component
 
             if ($this->user_id) {
                 $data = [
-                    'id_projet' => $projetId, // Utilisez l'ID du projet ici
-                    'montant' => $this->montant,
+
+
+                    'demande_id' => null, // Accéder aux clés du tableau
+                    'id_projet' => $projetId,
+                    'montant' => $projet->montant,
+                    'duree' => $projet->durer,
+                    'type_financement' => $projet->type_financement,
+                    'bailleur' => null,
+                    'user_id' => auth()->id(),
+                    'id_investisseur' => $this->user_id,
                 ];
 
                 $owner = User::find($this->user_id);
@@ -257,9 +272,12 @@ class AddProjetFinance extends Component
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
         $userInPromir = UserPromir::where('numero', $userNumber)->exists();
 
+
+
         if ($userInPromir) {
+            $userPromir =  UserPromir::where('numero', $userNumber)->first();
             // Vérifier si un score de crédit existe pour cet utilisateur
-            $crediScore = CrediScore::where('id_user', $userInPromir)->first();
+            $crediScore = CrediScore::where('id_user', $userPromir->id)->first();
 
             if ($crediScore) {
                 // Vérifier si le score est A+, A, ou A-
