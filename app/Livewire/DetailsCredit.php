@@ -6,6 +6,7 @@ use App\Models\AjoutMontant;
 use App\Models\Cfa;
 use App\Models\CrediScore;
 use App\Models\DemandeCredi;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserPromir;
 use App\Models\Wallet;
@@ -225,6 +226,8 @@ class DetailsCredit extends Component
             // Mettre à jour le solde du wallet de l'investisseur
             $wallet->balance -= $montant;
             $wallet->save();
+            
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant);
 
             // Mettre à jour ou créer un enregistrement dans la table CFA
             Cfa::updateOrCreate(
@@ -270,6 +273,18 @@ class DetailsCredit extends Component
         $this->montant = '';
         $this->insuffisant = false;
     }
+
+
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->save();
+    }
+
 
     public function refuser()
     {

@@ -208,11 +208,11 @@
                             <input type="date" wire:model="startDate" id="start-date"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
-                            @error('startDate') 
-                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @error('startDate')
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
-                    
+
                         <div>
                             <label for="start-time"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
@@ -220,11 +220,11 @@
                             <input type="time" wire:model="startTime" id="start-time"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
-                            @error('startTime') 
-                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @error('startTime')
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
-                    
+
                         <div>
                             <label for="end-date"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
@@ -232,11 +232,11 @@
                             <input type="date" wire:model="endDate" id="end-date"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
-                            @error('endDate') 
-                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @error('endDate')
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
-                    
+
                         <div>
                             <label for="end-time"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
@@ -244,12 +244,12 @@
                             <input type="time" wire:model="endTime" id="end-time"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
-                            @error('endTime') 
-                                <span class="text-red-600 text-sm">{{ $message }}</span> 
+                            @error('endTime')
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                    
+
                     <!-- Durée du crédit -->
                     <div class="sm:col-span-2">
                         <label for="duration"
@@ -258,16 +258,16 @@
                         <input type="number" wire:model="duration" id="duration"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             placeholder="12" required>
-                        @error('duration') 
-                            <span class="text-red-600 text-sm">{{ $message }}</span> 
+                        @error('duration')
+                            <span class="text-red-600 text-sm">{{ $message }}</span>
                         @enderror
                     </div>
-                    
+
 
                     <!-- Soumission du formulaire -->
                     <div class="sm:col-span-2">
                         <button type="submit"
-                            class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            class="inline-flex justify-center w-full rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             Soumettre
                         </button>
                     </div>
