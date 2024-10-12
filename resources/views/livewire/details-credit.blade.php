@@ -129,6 +129,7 @@
             <!-- Informations de progression -->
 
             <div class="mt-4">
+               
                 @if ($notification->data['type_financement'] === 'groupe')
                     <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
                         <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%"></div>
@@ -145,7 +146,7 @@
                                     {{ number_format($sommeInvestie, 0, ',', ' ') }}
                                     FCFA</span>
                                 <span class="text-gray-500 text-sm">Reçu de
-                                    {{ number_format($notification['montant'], 0, ',', ' ') }} FCFA </span>
+                                    {{ number_format($notification->data['montant'] , 0, ',', ' ') }} FCFA </span>
                             </div>
 
                             <!-- Nombre d'Investisseurs -->
@@ -167,6 +168,23 @@
                             </div>
                         </div>
                     </div>
+                @else
+
+                <div class="grid grid-cols-2  gap-4 text-sm border border-gray-300 rounded-lg p-6 shadow-md text-gray-600 mt-4 w-full justify-between">
+                    <div class="flex flex-col text-center">
+                        <span
+                            class="font-semibold text-lg">{{ number_format($notification->data['montant'] , 0, ',', ' ') }} FCFA</span>
+                        <span class="text-gray-500 text-sm">Montant</span>
+                    </div>
+
+                    <!-- Jours Restants -->
+                    <div class="flex flex-col text-center">
+                        <span
+                            class="font-semibold text-lg">{{ $demandeCredit->taux ?? ($projet->taux ?? 'Rate not available') }}%</span>
+                        <span class="text-gray-500 text-sm">Taux</span>
+                    </div>
+                </div>
+
                 @endif
 
 
@@ -282,7 +300,6 @@
     </div>
     @if (isset($demandeCredit) && $demandeCredit->type_financement === 'offre-composite')
         <script>
-          
             document.getElementById('showInputButton').addEventListener('click', function() {
                 var inputDiv = document.getElementById('inputDiv');
                 inputDiv.classList.toggle('hidden'); // Basculer l'affichage

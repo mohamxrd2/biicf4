@@ -75,13 +75,16 @@ class DetailsCredit extends Component
             // Gérer le cas où $this->demandeCredit est nul
             $this->sommeInvestie = 0; // ou toute autre valeur par défaut
         }
-        $this->images = array_filter([
-            $this->projet->photo1,
-            $this->projet->photo2,
-            $this->projet->photo3,
-            $this->projet->photo4,
-            $this->projet->photo5 // Ajoutez autant de photos que vous avez dans la base de données
-        ]);
+        if($this->projet){
+            $this->images = array_filter([
+                $this->projet->photo1,
+                $this->projet->photo2,
+                $this->projet->photo3,
+                $this->projet->photo4,
+                $this->projet->photo5 // Ajoutez autant de photos que vous avez dans la base de données
+            ]);
+        }
+        
 
 
 
