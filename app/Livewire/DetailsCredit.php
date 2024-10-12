@@ -33,10 +33,12 @@ class DetailsCredit extends Component
     public $pourcentageInvesti = 0;
 
     public $projet;
+    public $images = [];
 
 
     public function mount($id)
     {
+      
         $this->notification = DatabaseNotification::findOrFail($id);
         // Récupérer l'ID de l'utilisateur qui a demnder le credit depuis les données de la notification
         $userId = $this->notification->data['user_id'];
@@ -73,6 +75,13 @@ class DetailsCredit extends Component
             // Gérer le cas où $this->demandeCredit est nul
             $this->sommeInvestie = 0; // ou toute autre valeur par défaut
         }
+        $this->images = array_filter([
+            $this->projet->photo1,
+            $this->projet->photo2,
+            $this->projet->photo3,
+            $this->projet->photo4,
+            $this->projet->photo5 // Ajoutez autant de photos que vous avez dans la base de données
+        ]);
 
 
 
@@ -332,6 +341,7 @@ class DetailsCredit extends Component
             'nombreInvestisseurs' => $this->nombreInvestisseursDistinct,
             'sommeRestante' => $this->sommeRestante,
             'pourcentageInvesti' => $this->pourcentageInvesti,
+            'images' => $this->images,
         ]);
     }
 }
