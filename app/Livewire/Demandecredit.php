@@ -109,10 +109,6 @@ class Demandecredit extends Component
             $creditTotal = $montantMax + $interet;
 
 
-
-
-
-
             // Vérifie si l'investisseur existe
             if ($this->user_id) {
                 // Recherche de l'investisseur par user_id

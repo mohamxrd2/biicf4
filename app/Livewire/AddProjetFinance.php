@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Investisseur;
 use App\Models\User;
 use App\Models\Projet;
 use Livewire\Component;
@@ -49,6 +50,7 @@ class AddProjetFinance extends Component
         'taux' => 'required|numeric',
         'description' => 'required|string',
         'categorie' => 'required|string|max:100',
+        'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
         'type_financement' => 'required|string|max:100',
         'photo1' => 'required|image|max:2048', // Photo 1 obligatoire
         'photo2' => 'nullable|image|max:2048', // Photos 2-5 facultatives
@@ -167,35 +169,74 @@ class AddProjetFinance extends Component
         $this->isSubmitting = true;
 
         try {
-            // Création du projet avec le statut 'en attente'
-            $projet = Projet::create([
-                'name' => $this->name,
-                'montant' => $this->montant,
-                'taux' => $this->taux,
-                'description' => $this->description,
-                'categorie' => $this->categorie,
-                'type_financement' => $this->type_financement,
-                'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
-                'durer' => $this->durer,
-                'id_user' => auth()->id(), // ID de l'utilisateur connecté
-            ]);
+            if ($this->user_id) {
 
-            // Gestion des photos en appelant la méthode handlePhotoUpload
-            $this->handlePhotoUpload($projet, 'photo1');
-            $this->handlePhotoUpload($projet, 'photo2');
-            $this->handlePhotoUpload($projet, 'photo3');
-            $this->handlePhotoUpload($projet, 'photo4');
-            $this->handlePhotoUpload($projet, 'photo5');
+                // Recherche de l'investisseur par user_id
+                $investor = Investisseur::where('user_id', $this->user_id)->first();
+                // Récupère l'id de l'investisseur
+                $investorId = $investor->id ?? null; // ou $investor->id_investisseur selon ton schéma
+                Log::info('Investor found.', ['investor_id' => $investorId]);
 
-            // Sauvegarder les chemins des photos dans le projet
-            $projet->save();
+                // Création du projet avec le statut 'en attente'
+                $projet = Projet::create([
+                    'name' => $this->name,
+                    'montant' => $this->montant,
+                    'taux' => $this->taux,
+                    'description' => $this->description,
+                    'categorie' => $this->categorie,
+                    'type_financement' => $this->type_financement,
+                    'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
+                    'durer' => $this->durer,
+                    'id_user' => auth()->id(), // ID de l'utilisateur connecté
+                ]);
 
-            // Réinitialiser le formulaire et les erreurs
-            $this->resetForm();
-            $this->resetErrorBag();
+                // Gestion des photos en appelant la méthode handlePhotoUpload
+                $this->handlePhotoUpload($projet, 'photo1');
+                $this->handlePhotoUpload($projet, 'photo2');
+                $this->handlePhotoUpload($projet, 'photo3');
+                $this->handlePhotoUpload($projet, 'photo4');
+                $this->handlePhotoUpload($projet, 'photo5');
 
-            // Message de succès
-            $this->successMessage = 'Le projet a été ajouté avec succès !';
+                // Sauvegarder les chemins des photos dans le projet
+                $projet->save();
+
+                // Réinitialiser le formulaire et les erreurs
+                $this->resetForm();
+                $this->resetErrorBag();
+
+                // Message de succès
+                $this->successMessage = 'Le projet a été ajouté avec succès !';
+            } else {
+                // Création du projet avec le statut 'en attente'
+                $projet = Projet::create([
+                    'name' => $this->name,
+                    'montant' => $this->montant,
+                    'taux' => $this->taux,
+                    'description' => $this->description,
+                    'categorie' => $this->categorie,
+                    'type_financement' => $this->type_financement,
+                    'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
+                    'durer' => $this->durer,
+                    'id_user' => auth()->id(), // ID de l'utilisateur connecté
+                ]);
+
+                // Gestion des photos en appelant la méthode handlePhotoUpload
+                $this->handlePhotoUpload($projet, 'photo1');
+                $this->handlePhotoUpload($projet, 'photo2');
+                $this->handlePhotoUpload($projet, 'photo3');
+                $this->handlePhotoUpload($projet, 'photo4');
+                $this->handlePhotoUpload($projet, 'photo5');
+
+                // Sauvegarder les chemins des photos dans le projet
+                $projet->save();
+
+                // Réinitialiser le formulaire et les erreurs
+                $this->resetForm();
+                $this->resetErrorBag();
+
+                // Message de succès
+                $this->successMessage = 'Le projet a été ajouté avec succès !';
+            }
         } catch (\Exception $e) {
             // Si une erreur survient, réinitialiser l'indicateur de soumission
             $this->addError('submitError', 'Une erreur est survenue lors de la soumission : ' . $e->getMessage());
@@ -247,12 +288,10 @@ class AddProjetFinance extends Component
                 } else {
 
                     $this->message = 'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.';
-
                 }
             } else {
 
                 $this->message = 'Votre numéro existe dans Promir, mais aucun score de crédit n\'a été trouvé.';
-
             }
         } else {
             // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
