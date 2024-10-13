@@ -44,6 +44,7 @@
                 </div>
 
                 @livewire('notif-finance')
+                @livewire('notif-finance-projet')
 
 
             </div>

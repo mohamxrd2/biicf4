@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Investisseur;
 use App\Models\User;
 use App\Models\Projet;
+use App\Notifications\DemandeCreditProjetNotification;
 use Livewire\Component;
 use App\Models\CrediScore;
 use App\Models\UserPromir;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
 use Carbon\Carbon; // N'oublie pas d'importer Carbon
+use Illuminate\Support\Facades\Notification;
 use Livewire\WithFileUploads; // Ajout pour gérer les fichiers
 
 class AddProjetFinance extends Component
@@ -169,73 +171,60 @@ class AddProjetFinance extends Component
         $this->isSubmitting = true;
 
         try {
-            if ($this->user_id) {
 
+            $projet = Projet::create([
+                'name' => $this->name,
+                'montant' => $this->montant,
+                'taux' => $this->taux,
+                'description' => $this->description,
+                'categorie' => $this->categorie,
+                'type_financement' => $this->type_financement,
+                'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
+                'durer' => $this->durer,
+                'id_user' => auth()->id(), // ID de l'utilisateur connecté
+            ]);
+
+            // Gestion des photos en appelant la méthode handlePhotoUpload
+            $this->handlePhotoUpload($projet, 'photo1');
+            $this->handlePhotoUpload($projet, 'photo2');
+            $this->handlePhotoUpload($projet, 'photo3');
+            $this->handlePhotoUpload($projet, 'photo4');
+            $this->handlePhotoUpload($projet, 'photo5');
+
+            // Sauvegarder les chemins des photos dans le projet
+            $projet->save();
+
+            // Réinitialiser le formulaire et les erreurs
+            $this->resetForm();
+            $this->resetErrorBag();
+
+            // Récupérer l'ID du projet nouvellement ajouté
+            $projetId = $projet->id;
+
+            if ($this->user_id) {
                 // Recherche de l'investisseur par user_id
                 $investor = Investisseur::where('user_id', $this->user_id)->first();
                 // Récupère l'id de l'investisseur
                 $investorId = $investor->id ?? null; // ou $investor->id_investisseur selon ton schéma
                 Log::info('Investor found.', ['investor_id' => $investorId]);
+                // Récupération des informations du projet
+                $data = [
+                    'id_projet' => $projetId,
+                    'montant' => $projet->montant,
+                    'duree' => $projet->duree,  // Corriger 'durer' en 'duree'
+                    'type_financement' => $projet->type_financement,
+                    'user_id' => auth()->id(),
+                    'id_investisseur' => $investorId,  // Utilise l'id de l'investisseur récupéré
+                ];
 
-                // Création du projet avec le statut 'en attente'
-                $projet = Projet::create([
-                    'name' => $this->name,
-                    'montant' => $this->montant,
-                    'taux' => $this->taux,
-                    'description' => $this->description,
-                    'categorie' => $this->categorie,
-                    'type_financement' => $this->type_financement,
-                    'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
-                    'durer' => $this->durer,
-                    'id_user' => auth()->id(), // ID de l'utilisateur connecté
-                ]);
+                $owner = User::find($this->user_id);
 
-                // Gestion des photos en appelant la méthode handlePhotoUpload
-                $this->handlePhotoUpload($projet, 'photo1');
-                $this->handlePhotoUpload($projet, 'photo2');
-                $this->handlePhotoUpload($projet, 'photo3');
-                $this->handlePhotoUpload($projet, 'photo4');
-                $this->handlePhotoUpload($projet, 'photo5');
+                Notification::send($owner, new DemandeCreditProjetNotification($data));
 
-                // Sauvegarder les chemins des photos dans le projet
-                $projet->save();
-
-                // Réinitialiser le formulaire et les erreurs
-                $this->resetForm();
-                $this->resetErrorBag();
-
-                // Message de succès
-                $this->successMessage = 'Le projet a été ajouté avec succès !';
-            } else {
-                // Création du projet avec le statut 'en attente'
-                $projet = Projet::create([
-                    'name' => $this->name,
-                    'montant' => $this->montant,
-                    'taux' => $this->taux,
-                    'description' => $this->description,
-                    'categorie' => $this->categorie,
-                    'type_financement' => $this->type_financement,
-                    'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
-                    'durer' => $this->durer,
-                    'id_user' => auth()->id(), // ID de l'utilisateur connecté
-                ]);
-
-                // Gestion des photos en appelant la méthode handlePhotoUpload
-                $this->handlePhotoUpload($projet, 'photo1');
-                $this->handlePhotoUpload($projet, 'photo2');
-                $this->handlePhotoUpload($projet, 'photo3');
-                $this->handlePhotoUpload($projet, 'photo4');
-                $this->handlePhotoUpload($projet, 'photo5');
-
-                // Sauvegarder les chemins des photos dans le projet
-                $projet->save();
-
-                // Réinitialiser le formulaire et les erreurs
-                $this->resetForm();
-                $this->resetErrorBag();
-
-                // Message de succès
-                $this->successMessage = 'Le projet a été ajouté avec succès !';
+                $this->dispatch(
+                    'formSubmitted',
+                    'Demande de financement envoyé avec success'
+                );
             }
         } catch (\Exception $e) {
             // Si une erreur survient, réinitialiser l'indicateur de soumission
