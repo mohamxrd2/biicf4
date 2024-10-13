@@ -24,25 +24,25 @@ if ($userDetails) {
 }
 
 // Récupérer l'ID de la demande depuis les données de la notification
-                $demandeId = $notification->data['demande_id'];
+                // $demandeId = $notification->data['demande_id'];
 
                 // Vérifier si la demande de crédit existe
-                $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
+                // $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
 
             @endphp
 
             <div class="flex flex-wrap items-center gap-y-4 py-6">
                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-                    <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Demande ID:</dt>
+                    <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Projet ID:</dt>
                     <dd class="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                        <a href="#" class="hover:underline">#{{ $notification->data['demande_id'] }}</a>
+                        <a href="#" class="hover:underline">#{{ $notification->data['projet_id'] }}</a>
                     </dd>
                 </dl>
 
                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Date fin:</dt>
                     <dd class="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                        {{ $demandeCredit->date_fin }}
+                        {{ $notification->data['projet_id'] }}
                     </dd>
                 </dl>
 
@@ -56,7 +56,7 @@ if ($userDetails) {
                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1 mr-3">
                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">type:</dt>
                     <dd class="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                        {{ $demandeCredit->type_financement }}
+                        {{ $notification->data['projet_id'] }}
                     </dd>
                 </dl>
 
@@ -101,7 +101,7 @@ if ($userDetails) {
                 <div class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
                     <!-- Affichage conditionnel basé sur la réponse -->
 
-                    <a href="{{ route('detailcredit', $notification->id) }}"
+                    <a href="{{ route('detailcreditprojet', $notification->id) }}"
                         data-modal-toggle="extralarge-{{ $notification->id }}"
                         class="w-full inline-flex justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 lg:w-auto">
                         Voir details

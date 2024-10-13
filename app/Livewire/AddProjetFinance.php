@@ -2,8 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Investisseur;
 use App\Models\User;
 use App\Models\Projet;
+use App\Notifications\DemandeCreditProjetNotification;
 use Livewire\Component;
 use App\Models\CrediScore;
 use App\Models\UserPromir;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Notification;
 use Intervention\Image\Facades\Image;
 use App\Notifications\DemandeCreditNotification;
 use Carbon\Carbon; // N'oublie pas d'importer Carbon
+use Illuminate\Support\Facades\Notification;
 use Livewire\WithFileUploads; // Ajout pour gérer les fichiers
 
 class AddProjetFinance extends Component
@@ -53,6 +56,7 @@ class AddProjetFinance extends Component
         'taux' => 'required|numeric',
         'description' => 'required|string',
         'categorie' => 'required|string|max:100',
+        'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
         'type_financement' => 'required|string|max:100',
         'photo1' => 'required|image|max:2048', // Photo 1 obligatoire
         'photo2' => 'nullable|image|max:2048', // Photos 2-5 facultatives
@@ -178,7 +182,7 @@ class AddProjetFinance extends Component
         $this->isSubmitting = true;
 
         try {
-            // Création du projet avec le statut 'en attente'
+
             $projet = Projet::create([
                 'name' => $this->name,
                 'montant' => $this->montant,
@@ -209,31 +213,30 @@ class AddProjetFinance extends Component
             $projetId = $projet->id;
 
             if ($this->user_id) {
+                // Recherche de l'investisseur par user_id
+                $investor = Investisseur::where('user_id', $this->user_id)->first();
+                // Récupère l'id de l'investisseur
+                $investorId = $investor->id ?? null; // ou $investor->id_investisseur selon ton schéma
+                Log::info('Investor found.', ['investor_id' => $investorId]);
+                // Récupération des informations du projet
                 $data = [
-
-
-                    'demande_id' => null, // Accéder aux clés du tableau
                     'id_projet' => $projetId,
                     'montant' => $projet->montant,
-                    'duree' => $projet->durer,
+                    'duree' => $projet->duree,  // Corriger 'durer' en 'duree'
                     'type_financement' => $projet->type_financement,
-                    'bailleur' => null,
                     'user_id' => auth()->id(),
-                    'id_investisseur' => $this->user_id,
+                    'id_investisseur' => $investorId,  // Utilise l'id de l'investisseur récupéré
                 ];
 
                 $owner = User::find($this->user_id);
 
-                Notification::send($owner, new DemandeCreditNotification($data));
+                Notification::send($owner, new DemandeCreditProjetNotification($data));
 
                 $this->dispatch(
                     'formSubmitted',
                     'Demande de financement envoyé avec success'
                 );
             }
-
-            // Message de succès
-            $this->successMessage = 'Le projet a été ajouté avec succès !';
         } catch (\Exception $e) {
             // Si une erreur survient, réinitialiser l'indicateur de soumission
             $this->addError('submitError', 'Une erreur est survenue lors de la soumission : ' . $e->getMessage());
@@ -270,14 +273,14 @@ class AddProjetFinance extends Component
         $userNumber = $user->phone;
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-        $userInPromir = UserPromir::where('numero', $userNumber)->exists();
+        $userInPromir = UserPromir::where('numero', $userNumber)->first();
 
 
 
         if ($userInPromir) {
             $userPromir =  UserPromir::where('numero', $userNumber)->first();
             // Vérifier si un score de crédit existe pour cet utilisateur
-            $crediScore = CrediScore::where('id_user', $userPromir->id)->first();
+            $crediScore = CrediScore::where('id_user', $userInPromir->id)->first();
 
             if ($crediScore) {
                 // Vérifier si le score est A+, A, ou A-

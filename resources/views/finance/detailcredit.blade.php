@@ -4,6 +4,12 @@
 
 @section('content')
 
-  @livewire('details-credit', ['id' => $id])
+    @if ($id)
+        @livewire('details-credit', ['id' => $id])
+    @endif
+
+    @if ($id_projet)
+        @livewire('details-credit-projet', ['id' => $id_projet])
+    @endif
 
 @endsection

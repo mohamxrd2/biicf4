@@ -410,28 +410,28 @@ class UserController extends Controller
             // Log::info('Réponse de Twilio', ['status' => $verificationCheck->status]);
 
             // if ($verificationCheck->status == 'approved') {
-                Log::info('Code OTP approuvé pour le téléphone', ['phone' => $validatedData['phone']]);
+            Log::info('Code OTP approuvé pour le téléphone', ['phone' => $validatedData['phone']]);
 
-                // Récupération de l'utilisateur lié au numéro de téléphone
-                $user = User::where('phone', $validatedData['phone'])->firstOrFail();
-                Log::info('Utilisateur trouvé', ['user_id' => $user->id]);
+            // Récupération de l'utilisateur lié au numéro de téléphone
+            $user = User::where('phone', $validatedData['phone'])->firstOrFail();
+            Log::info('Utilisateur trouvé', ['user_id' => $user->id]);
 
-                // Création de l'investisseur
-                $investisseur = new Investisseur();
-                $investisseur->nom = $user->name;
-                $investisseur->prenom = $user->username;
-                $investisseur->tranche = $user->investissement;
-                $investisseur->invest_type = $user->invest_type;
-                $investisseur->user_id = $user->id;
-                $investisseur->save();
-                Log::info('Investisseur créé avec succès', ['investisseur_id' => $investisseur->id]);
+            // Création de l'investisseur
+            $investisseur = new Investisseur();
+            $investisseur->nom = $user->name;
+            $investisseur->prenom = $user->username;
+            $investisseur->tranche = $user->investissement;
+            $investisseur->invest_type = $user->invest_type;
+            $investisseur->user_id = $user->id;
+            $investisseur->save();
+            Log::info('Investisseur créé avec succès', ['investisseur_id' => $investisseur->id]);
 
-                // Création des sous-comptes
-                $this->createUserWallets($user->id);
-                Log::info('Sous-comptes créés pour l\'utilisateur', ['user_id' => $user->id]);
+            // Création des sous-comptes
+            $this->createUserWallets($user->id);
+            Log::info('Sous-comptes créés pour l\'utilisateur', ['user_id' => $user->id]);
 
-                return redirect()->route('biicf.login')
-                    ->with('success', 'Votre numéro a été vérifié avec succès et vous avez été ajouté en tant qu\'investisseur !');
+            return redirect()->route('biicf.login')
+                ->with('success', 'Votre numéro a été vérifié avec succès et vous avez été ajouté en tant qu\'investisseur !');
             // } else {
             //     Log::warning('Code OTP incorrect pour le téléphone', ['phone' => $validatedData['phone']]);
             //     return back()->withErrors(['verification_code' => 'Code de vérification incorrect.']);
@@ -600,6 +600,11 @@ class UserController extends Controller
     }
     public function detailcredit($id)
     {
-        return view('finance.detailcredit', compact('id'));
+        return view('finance.detailcredit', ['id' => $id, 'id_projet' => null]); // Si vous n'avez pas d'ID de projet
+    }
+
+    public function detailcreditprojet($id)
+    {
+        return view('finance.detailcredit', ['id' => null, 'id_projet' => $id]); // Passer un ID de projet
     }
 }
