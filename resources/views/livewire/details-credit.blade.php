@@ -117,43 +117,86 @@
 
             <!-- Informations de progression -->
             <div class="mt-4">
-                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%"></div>
-                </div>
+                @if ($demandeCredit->type_financement === 'demande-directe')
+                    @php
+                        // Récupérer les données actuelles
+                        $montantTotal = $notification->data['montant'];
+                        $taux = $demandeCredit->taux ?? 0;
 
-                <div class="mt-4">
-
+                        // Calculer le montant sans pourcentage (montant de base)
+                        $montantDeBase = $montantTotal / (1 + $taux / 100);
+                    @endphp
 
                     <div
-                        class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
-                        <!-- Montant Reçu -->
+                        class="grid grid-cols-2 gap-4 text-sm border border-gray-300 rounded-lg p-3 shadow-md text-gray-600 mt-4 w-full justify-between">
+
+                        <!-- Montant de base (sans pourcentage) -->
                         <div class="flex flex-col text-center">
-                            <span class="font-semibold text-lg">
-                                {{ number_format($sommeInvestie, 0, ',', ' ') }}
+                            <span class="font-semibold text-lg">{{ number_format($montantDeBase, 0, ',', ' ') }}
                                 FCFA</span>
-                            <span class="text-gray-500 text-sm">Reçu de
-                                {{ number_format($demandeCredit->montant, 0, ',', ' ') }} FCFA </span>
+                            <span class="text-gray-500 text-sm">Montant de base (sans intérêt)</span>
                         </div>
 
-                        <!-- Nombre d'Investisseurs -->
+                        <!-- Taux -->
                         <div class="flex flex-col text-center">
-                            <span class="font-semibold text-lg">{{ $nombreInvestisseursDistinct }}</span>
-                            <span class="text-gray-500 text-sm">Investisseurs</span>
+                            <span class="font-semibold text-lg">{{ $taux }}%</span>
+                            <span class="text-gray-500 text-sm">Taux</span>
                         </div>
 
-                        <!-- Jours Restants -->
+                        <!-- Montant total (avec pourcentage) -->
                         <div class="flex flex-col text-center">
-                            <span class="font-semibold text-lg">{{ $this->joursRestants() }}</span>
-                            <span class="text-gray-500 text-sm">Jours restants</span>
+                            <span class="font-semibold text-lg">{{ number_format($montantTotal, 0, ',', ' ') }}
+                                FCFA</span>
+                            <span class="text-gray-500 text-sm">Montant Total</span>
+                        </div>
+                        <!-- Montant total (avec pourcentage) -->
+                        <div class="flex flex-col text-center">
+                            <span class="font-semibold text-lg">{{ $demandeCredit->duree }}(mois)</span>
+                            <span class="text-gray-500 text-sm">Durée du crédit</span>
                         </div>
 
-                        <!-- Progression -->
-                        <div class="flex flex-col text-center">
-                            <span class="font-semibold text-lg">{{ number_format($pourcentageInvesti, 2) }}%</span>
-                            <span class="text-gray-500 text-sm">Progression</span>
+                    </div>
+                @else
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%"></div>
+                    </div>
+
+                    <div class="mt-4">
+
+
+                        <div
+                            class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
+                            <!-- Montant Reçu -->
+                            <div class="flex flex-col text-center">
+                                <span class="font-semibold text-lg">
+                                    {{ number_format($sommeInvestie, 0, ',', ' ') }}
+                                    FCFA</span>
+                                <span class="text-gray-500 text-sm">Reçu de
+                                    {{ number_format($demandeCredit->montant, 0, ',', ' ') }} FCFA </span>
+                            </div>
+
+                            <!-- Nombre d'Investisseurs -->
+                            <div class="flex flex-col text-center">
+                                <span class="font-semibold text-lg">{{ $nombreInvestisseursDistinct }}</span>
+                                <span class="text-gray-500 text-sm">Investisseurs</span>
+                            </div>
+
+                            <!-- Jours Restants -->
+                            <div class="flex flex-col text-center">
+                                <span class="font-semibold text-lg">{{ $this->joursRestants() }}</span>
+                                <span class="text-gray-500 text-sm">Jours restants</span>
+                            </div>
+
+                            <!-- Progression -->
+                            <div class="flex flex-col text-center">
+                                <span class="font-semibold text-lg">{{ number_format($pourcentageInvesti, 2) }}%</span>
+                                <span class="text-gray-500 text-sm">Progression</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
+
+
 
                 <div class="flex py-2 mt-2 items-center">
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
@@ -174,10 +217,10 @@
                 @endif
                 <div class="border border-gray-300 rounded-lg p-6 shadow-md">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                        Participer a la demande crédit
+                        Approuver la demande crédit
                     </h3>
                     <p class="text-gray-600 text-md mb-6">
-                        Contribuez a la demande crédit pour l'aider à atteindre la somme souhaitée.
+                        Contribuez a la finalisation de l'achat d'un produit.
                     </p>
                     @if (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe')
                         <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
