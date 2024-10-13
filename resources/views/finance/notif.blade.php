@@ -42,11 +42,13 @@
                         </div>
                     </div>
                 </div>
+                <div class="mt-6 flow-root sm:mt-8">
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @livewire('notif-finance')
+                        @livewire('notif-finance-projet')
 
-                @livewire('notif-finance')
-                @livewire('notif-finance-projet')
-
-
+                    </div>
+                </div>
             </div>
         </div>
 

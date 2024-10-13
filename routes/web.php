@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\DetailsCreditProjet;
 use App\Livewire\ProjetDetails;
 use App\Livewire\RechargeAgent;
 use App\Livewire\DetailLivraison;
@@ -111,15 +112,11 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('demande-livraison/{id}', [UserController::class, 'detaillivraison'])->name('livraison.show');
     Route::get('demande-psap{id}', [UserController::class, 'detailpsap'])->name('psap.show');
 
-    Route::get('projet', function(){
-        return view ('admin.projetlist');
+    Route::get('projet', function () {
+        return view('admin.projetlist');
     })->name('admin.projetlist');
 
-    Route::get('/projet/{id}',[AdminsController::class, 'detailprojet'] )->name('projet.details');
-
-
-
-
+    Route::get('/projet/{id}', [AdminsController::class, 'detailprojet'])->name('projet.details');
 });
 
 //email
@@ -168,7 +165,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 
 
     Route::get('porte-feuille', [AdminWalletController::class, 'indexBiicf'])->name('biicf.wallet');
-    Route::get('retrait', [AdminWalletController::class, 'retrait'] )->name('biicf.retrait');
+    Route::get('retrait', [AdminWalletController::class, 'retrait'])->name('biicf.retrait');
 
 
     Route::post('envoyer-client', [AdminWalletController::class, 'sendToClientAccount'])->name('biicf.send');
@@ -204,46 +201,44 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 
     Route::post('offrenegroup', [OffreNegos::class, 'offregroupneg'])->name('biicf.offregroupneg');
 
-    Route::get('postuler', function(){
-        return view ('biicf.postuler');
+    Route::get('postuler', function () {
+        return view('biicf.postuler');
     })->name('biicf.postuler');
 
 
     //Route pour bourse du financement
 
-    Route::get('finance/acceuil', function(){
-        return view ('finance.acceuil');
+    Route::get('finance/acceuil', function () {
+        return view('finance.acceuil');
     })->name('finance.acceuil');
 
-    Route::get('finance/recherche', function(){
-        return view ('finance.search');
+    Route::get('finance/recherche', function () {
+        return view('finance.search');
     })->name('finance.search');
 
-    Route::get('finance/notification', function(){
-        return view ('finance.notif');
+    Route::get('finance/notification', function () {
+        return view('finance.notif');
     })->name('finance.notif');
 
-    Route::get('finance/Porte-feuille', function(){
-        return view ('finance.wallet');
+    Route::get('finance/Porte-feuille', function () {
+        return view('finance.wallet');
     })->name('finance.wallet');
 
-    Route::get('finance/projet', function(){
-        return view ('finance.projet');
+    Route::get('finance/projet', function () {
+        return view('finance.projet');
     })->name('finance.projet');
 
-    Route::get('finance/profile', function(){
-        return view ('finance.profile');
+    Route::get('finance/profile', function () {
+        return view('finance.profile');
     })->name('finance.profile');
 
-    Route::get('finance/Ajouter-projet', function(){
-        return view ('finance.addproject');
+    Route::get('finance/Ajouter-projet', function () {
+        return view('finance.addproject');
     })->name('finance.addproject');
 
     Route::get('finance/detail-projet/{id}', [UserController::class, 'detailprojet'])->name('detailprojet');
     Route::get('finance/detail-credit/{id}', [UserController::class, 'detailcredit'])->name('detailcredit');
-
-
-
+    Route::get('finance/detail-credit-projet/{id}', [UserController::class, 'detailcreditprojet'])->name('detailcreditprojet');
 });
 
 
