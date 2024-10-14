@@ -12,6 +12,7 @@ use App\Models\UserPromir;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
+use App\Notifications\DemandeCreditNotification;
 use Carbon\Carbon; // N'oublie pas d'importer Carbon
 use Illuminate\Support\Facades\Notification;
 use Livewire\WithFileUploads; // Ajout pour gérer les fichiers
@@ -44,6 +45,8 @@ class AddProjetFinance extends Component
     public $users = [];    // Liste des utilisateurs trouvés
     public $user_id;       // ID de l'utilisateur sélectionné
     public $username_direct;
+
+    public $bailleur_groupé;
 
     // Définition des règles de validation
     protected $rules = [
@@ -104,8 +107,15 @@ class AddProjetFinance extends Component
     public function updatedSearch()
     {
         if (!empty($this->search)) {
-            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie
-            $this->users = User::where('username', 'like', '%' . $this->search . '%')->get();
+            // Récupérer l'ID de l'utilisateur connecté
+            $currentUserId = auth()->id();
+
+            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie,
+            // mais exclure l'utilisateur connecté
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')
+                ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
+                ->get();
+
             Log::info('Search updated.', ['search' => $this->search]);
         } else {
             // Si la barre de recherche est vide, ne rien afficher
@@ -252,6 +262,7 @@ class AddProjetFinance extends Component
         $this->photo4 = null;
         $this->photo5 = null; // Réinitialiser les photos
         $this->successMessage = '';
+        $this->bailleur_groupé;
     }
 
     public function verifyUser()
@@ -263,7 +274,10 @@ class AddProjetFinance extends Component
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
         $userInPromir = UserPromir::where('numero', $userNumber)->first();
 
+
+
         if ($userInPromir) {
+            $userPromir =  UserPromir::where('numero', $userNumber)->first();
             // Vérifier si un score de crédit existe pour cet utilisateur
             $crediScore = CrediScore::where('id_user', $userInPromir->id)->first();
 

@@ -2,18 +2,23 @@
 
 namespace App\Livewire;
 
-use App\Models\AjoutMontant;
+use Carbon\Carbon;
 use App\Models\Cfa;
-use App\Models\CrediScore;
-use App\Models\DemandeCredi;
-use App\Models\Transaction;
 use App\Models\User;
-use App\Models\UserPromir;
+
+use App\Models\Projet;
+
 use App\Models\Wallet;
-use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use App\Models\CrediScore;
+use App\Models\UserPromir;
+
+use App\Models\Transaction;
+use App\Models\AjoutMontant;
+use App\Models\DemandeCredi;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Notifications\DatabaseNotification;
 
 class DetailsCredit extends Component
 {
@@ -32,9 +37,13 @@ class DetailsCredit extends Component
 
     public $pourcentageInvesti = 0;
 
+    public $projet;
+    public $images = [];
+
 
     public function mount($id)
     {
+      
         $this->notification = DatabaseNotification::findOrFail($id);
         // Récupérer l'ID de l'utilisateur qui a demnder le credit depuis les données de la notification
         $userId = $this->notification->data['user_id'];
@@ -52,12 +61,36 @@ class DetailsCredit extends Component
         $demandeId = $this->notification->data['demande_id'];
         $this->demandeCredit = DemandeCredi::where('demande_id', $demandeId)->first();
 
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', operator: $this->demandeCredit->id)
-            ->distinct()
-            ->count('id_invest');
+        $projetId = $this->notification->data['id_projet'] ?? null;
+        $this->projet = $projetId ? Projet::find($projetId) : null;
 
-        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->sum('montant'); // Somme des montants investis
+
+        if ($this->demandeCredit) {
+            $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+                ->distinct()
+                ->count('id_invest');
+        } else {
+            // Gérer le cas où $this->demandeCredit est nul
+            $this->nombreInvestisseursDistinct = 0; // ou toute autre valeur par défaut
+        }
+        if ($this->demandeCredit) {
+            $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+                ->sum('montant');
+        } else {
+            // Gérer le cas où $this->demandeCredit est nul
+            $this->sommeInvestie = 0; // ou toute autre valeur par défaut
+        }
+        if($this->projet){
+            $this->images = array_filter([
+                $this->projet->photo1,
+                $this->projet->photo2,
+                $this->projet->photo3,
+                $this->projet->photo4,
+                $this->projet->photo5 // Ajoutez autant de photos que vous avez dans la base de données
+            ]);
+        }
+        
+
 
 
 
@@ -68,18 +101,18 @@ class DetailsCredit extends Component
             // Vérifier si un score de crédit existe pour cet utilisateur
             $this->crediScore = CrediScore::where('id_user', $this->userInPromir->id)->first();
         }
+        if ($this->demandeCredit) {
+            // Calculer le pourcentage investi
+            if ($this->demandeCredit->montant > 0) {
+                $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
+            } else {
+                $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
+            }
+            // Calculer la somme restante à investir
+            $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
+            // Mettre à jour la notification et valider
 
-
-        // Calculer le pourcentage investi
-        if ($this->demandeCredit->montant > 0) {
-            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
-        } else {
-            $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
         }
-
-        // Calculer la somme restante à investir
-        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
-        // Mettre à jour la notification et valider
     }
     public function updatedMontant()
     {
@@ -188,13 +221,13 @@ class DetailsCredit extends Component
         }
 
         // Récupérer la demande de crédit et le wallet de l'utilisateur (investisseur)
-        $demandeCredit = $this->demandeCredit;
+        // $demandeCredit = $this->demandeCredit;
 
-        // Vérifiez si la demande de crédit et l'ID de la demande existent
-        if (!$demandeCredit || !$this->notification->data['demande_id']) {
-            session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
-            return;
-        }
+        // // Vérifiez si la demande de crédit et l'ID de la demande existent
+        // if (!$demandeCredit || !$this->notification->data['demande_id']) {
+        //     session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
+        //     return;
+        // }
 
         // Récupérer le wallet de l'utilisateur connecté
         $wallet = Wallet::where('user_id', Auth::id())->first();
@@ -219,8 +252,9 @@ class DetailsCredit extends Component
             $ajoumontant = AjoutMontant::create([
                 'montant' => $montant,
                 'id_invest' => Auth::id(),
-                'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
-                'id_demnd_credit' => $this->demandeCredit->id,
+                'id_emp' => $this->notification->data['user_id'], // Assurez-vous que cet ID existe
+                'id_demnd_credit' => $this->demandeCredit->id ?? null,
+                'id_projet' => $this->projet->id ?? null
             ]);
 
             // Mettre à jour le solde du wallet de l'investisseur
@@ -231,7 +265,7 @@ class DetailsCredit extends Component
 
             // Mettre à jour ou créer un enregistrement dans la table CFA
             Cfa::updateOrCreate(
-                ['id_user' => $this->userDetails->id], // Assurez-vous de mettre à jour par l'ID de l'utilisateur
+                ['id_user' => $this->notification->data['user_id']], // Assurez-vous de mettre à jour par l'ID de l'utilisateur
                 [
                     'Solde' => $montant, // Ajout du montant à la somme existante
                     'Date_Creation' => now(),
@@ -254,20 +288,44 @@ class DetailsCredit extends Component
         }
 
         // Rafraîchir les propriétés du composant
-        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
-        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie;
+        if ($this->demandeCredit) {
 
-        // Assurez-vous que la division n'est pas par zéro
-        if ($this->demandeCredit->montant > 0) {
-            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100;
-        } else {
-            $this->pourcentageInvesti = 0;
-        }
+            $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
+            $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie;
 
-        // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            // Assurez-vous que la division n'est pas par zéro
+            if ($this->demandeCredit->montant > 0) {
+                $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100;
+            } else {
+                $this->pourcentageInvesti = 0;
+            }
+
+            $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
             ->distinct()
             ->count('id_invest');
+        } else {
+
+            $this->sommeInvestie = AjoutMontant::where('id_projet', $this->notification->data['id_projet'])->sum('montant');
+            $this->sommeRestante = $this->notification->data['montant'] - $this->sommeInvestie;
+
+            // Assurez-vous que la division n'est pas par zéro
+            if ($this->notification->data['montant'] > 0) {
+                $this->pourcentageInvesti = ($this->sommeInvestie / $this->notification->data['montant']) * 100;
+            } else {
+                $this->pourcentageInvesti = 0;
+            }
+
+            $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->notification->data['id_projet'])
+            ->distinct()
+            ->count('id_invest');
+        }
+
+
+        
+
+
+        // Mettre à jour le nombre d'investisseurs distincts
+        
 
         // Réinitialiser le montant saisi et le drapeau de solde insuffisant
         $this->montant = '';
@@ -293,7 +351,7 @@ class DetailsCredit extends Component
     }
     public function joursRestants()
     {
-        $dateFin = \Carbon\Carbon::parse($this->demandeCredit->date_fin);
+        $dateFin = \Carbon\Carbon::parse($this->notification->data['duree']);
         $dateActuelle = now();
         $joursRestants = $dateActuelle->diffInDays($dateFin);
         return max(0, $joursRestants); // Retournez 0 si le projet est déjà terminé
@@ -305,6 +363,7 @@ class DetailsCredit extends Component
             'nombreInvestisseurs' => $this->nombreInvestisseursDistinct,
             'sommeRestante' => $this->sommeRestante,
             'pourcentageInvesti' => $this->pourcentageInvesti,
+            'images' => $this->images,
         ]);
     }
 }

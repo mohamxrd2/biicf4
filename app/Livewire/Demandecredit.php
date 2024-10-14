@@ -126,13 +126,24 @@ class Demandecredit extends Component
                     'type_financement' => $this->financementType,
                     'bailleur' => $this->bailleur,
                     'id_user' => auth()->id(), // Utilisateur connecté
-                    'id_investisseur' => $investorId ?? null, // Utiliser l'id récupéré
+                    'id_investisseur' => $investorId, // Utiliser l'id récupéré
                     'date_debut' => $this->startDate,
                     'heure_debut' => $this->startTime,
                     'date_fin' => $this->endDate,
                     'heure_fin' => $this->endTime,
                     'taux' => $this->roi, // Le taux de retour sur investissement
                 ]);
+
+                $data = [
+                    'demande_id' => $this->referenceCode, // Accéder aux clés du tableau
+                    'id_projet' => null,
+                    'montant' => $creditTotal,
+                    'duree' => $this->duration,
+                    'type_financement' => $this->financementType,
+                    'bailleur' => $this->bailleur,
+                    'user_id' => auth()->id(),
+                    'id_investisseur' => $investorId,
+                ];
 
                 // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
                 $this->dispatch(
@@ -143,7 +154,7 @@ class Demandecredit extends Component
                 $owner = User::find($this->user_id);
 
                 // Envoyer la notification à l'investisseur
-                Notification::send($owner, new DemandeCreditNotification($demande));
+                Notification::send($owner, new DemandeCreditNotification($data));
 
                 // Reset des champs après soumission
                 $this->reset();

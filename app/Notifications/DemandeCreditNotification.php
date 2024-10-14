@@ -26,13 +26,14 @@ class DemandeCreditNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'demande_id' => $this->demande->demande_id,
-            'montant' => $this->demande->montant,
-            'duree' => $this->demande->duree,
-            'type_financement' => $this->demande->type_financement,
-            'bailleur' => $this->demande->bailleur,
-            'user_id' => $this->demande->id_user,
-            'id_investisseur' => $this->demande->id_investisseur,
+            'demande_id' => $this->demande['demande_id'] ?? null, // Accéder aux clés du tableau
+            'id_projet' => $this->demande['id_projet'],
+            'montant' => $this->demande['montant'] ?? null,
+            'duree' => $this->demande['duree'] ?? null,
+            'type_financement' => $this->demande['type_financement'] ?? null,
+            'bailleur' => $this->demande['bailleur'] ?? null,
+            'user_id' => $this->demande['user_id'] ?? null,
+            'id_investisseur' => $this->demande['id_investisseur'] ?? null,
         ];
     }
 }
