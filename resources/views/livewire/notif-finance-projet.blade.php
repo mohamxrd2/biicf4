@@ -20,14 +20,8 @@ if ($userDetails) {
                     if ($userInPromir) {
                         // Récupérer le score de crédit de l'utilisateur
         $crediScore = App\Models\CrediScore::where('id_user', $userInPromir->id)->first();
-    }
-}
-
-// Récupérer l'ID de la demande depuis les données de la notification
-                // $demandeId = $notification->data['demande_id'];
-
-                // Vérifier si la demande de crédit existe
-                // $demandeCredit = App\Models\DemandeCredi::where('demande_id', $demandeId)->first();
+                    }
+                }
 
             @endphp
 
@@ -42,7 +36,7 @@ if ($userDetails) {
                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Date fin:</dt>
                     <dd class="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                        {{ $notification->data['projet_id'] }}
+                        {{ $notification->data['duree'] }}
                     </dd>
                 </dl>
 

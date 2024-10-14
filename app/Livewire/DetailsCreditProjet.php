@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+
 use App\Models\Cfa;
 use App\Models\User;
 use App\Models\Projet;
@@ -49,41 +50,16 @@ class DetailsCreditProjet extends Component
         $wallet = Wallet::where('user_id', $user_connecte)->first();
         $this->solde = $wallet ? $wallet->balance : 0;
 
-
-
-
         $projetId = $this->notification->data['projet_id'] ?? null;
         $this->projet = $projetId ? Projet::find($projetId) : null;
 
-
-        if ($this->demandeCredit) {
-            $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-                ->distinct()
-                ->count('id_invest');
-        } else {
-            // Gérer le cas où $this->demandeCredit est nul
-            $this->nombreInvestisseursDistinct = 0; // ou toute autre valeur par défaut
-        }
-        if ($this->demandeCredit) {
-            $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-                ->sum('montant');
-        } else {
-            // Gérer le cas où $this->demandeCredit est nul
-            $this->sommeInvestie = 0; // ou toute autre valeur par défaut
-        }
-
-        if ($this->projet) {
-            $this->images = array_filter([
-                $this->projet->photo1,
-                $this->projet->photo2,
-                $this->projet->photo3,
-                $this->projet->photo4,
-                $this->projet->photo5 // Ajoutez autant de photos que vous avez dans la base de données
-            ]);
-        }
-
-
-
+        $this->images = array_filter([
+            $this->projet->photo1,
+            $this->projet->photo2,
+            $this->projet->photo3,
+            $this->projet->photo4,
+            $this->projet->photo5 // Ajoutez autant de photos que vous avez dans la base de données
+        ]);
 
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
@@ -92,18 +68,6 @@ class DetailsCreditProjet extends Component
         if ($this->userInPromir) {
             // Vérifier si un score de crédit existe pour cet utilisateur
             $this->crediScore = CrediScore::where('id_user', $this->userInPromir->id)->first();
-        }
-        if ($this->demandeCredit) {
-            // Calculer le pourcentage investi
-            if ($this->demandeCredit->montant > 0) {
-                $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
-            } else {
-                $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
-            }
-            // Calculer la somme restante à investir
-            $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
-            // Mettre à jour la notification et valider
-
         }
     }
     public function updatedMontant()
@@ -151,29 +115,13 @@ class DetailsCreditProjet extends Component
         DB::beginTransaction();
 
         try {
-            // Sauvegarder le montant dans la table `ajout_montant`
-            $ajoumontant = AjoutMontant::create([
-                'montant' => $montant,
-                'id_invest' => Auth::id(),
-                'id_emp' => $this->notification->data['user_id'], // Assurez-vous que cet ID existe
-                'id_demnd_credit' => $this->demandeCredit->id ?? null,
-                'id_projet' => $this->projet->id ?? null
-            ]);
+
 
             // Mettre à jour le solde du wallet de l'investisseur
             $wallet->balance -= $montant;
             $wallet->save();
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant);
-
-            // Mettre à jour ou créer un enregistrement dans la table CFA
-            Cfa::updateOrCreate(
-                ['id_user' => $this->notification->data['user_id']], // Assurez-vous de mettre à jour par l'ID de l'utilisateur
-                [
-                    'Solde' => $montant, // Ajout du montant à la somme existante
-                    'Date_Creation' => now(),
-                ]
-            );
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant);
 
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);
@@ -183,52 +131,13 @@ class DetailsCreditProjet extends Component
 
             // Message de succès
             session()->flash('success', 'Le montant a été ajouté avec succès.');
+
         } catch (\Exception $e) {
             // Annuler la transaction en cas d'erreur
             DB::rollBack();
             session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
             return;
         }
-
-        // Rafraîchir les propriétés du composant
-        if ($this->demandeCredit) {
-
-            $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
-            $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie;
-
-            // Assurez-vous que la division n'est pas par zéro
-            if ($this->demandeCredit->montant > 0) {
-                $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100;
-            } else {
-                $this->pourcentageInvesti = 0;
-            }
-
-            $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-                ->distinct()
-                ->count('id_invest');
-        } else {
-
-            $this->sommeInvestie = AjoutMontant::where('id_projet', $this->notification->data['id_projet'])->sum('montant');
-            $this->sommeRestante = $this->notification->data['montant'] - $this->sommeInvestie;
-
-            // Assurez-vous que la division n'est pas par zéro
-            if ($this->notification->data['montant'] > 0) {
-                $this->pourcentageInvesti = ($this->sommeInvestie / $this->notification->data['montant']) * 100;
-            } else {
-                $this->pourcentageInvesti = 0;
-            }
-
-            $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->notification->data['id_projet'])
-                ->distinct()
-                ->count('id_invest');
-        }
-
-
-
-
-
-        // Mettre à jour le nombre d'investisseurs distincts
-
 
         // Réinitialiser le montant saisi et le drapeau de solde insuffisant
         $this->montant = '';
@@ -269,6 +178,5 @@ class DetailsCreditProjet extends Component
             'pourcentageInvesti' => $this->pourcentageInvesti,
             'images' => $this->images,
         ]);
-
     }
 }

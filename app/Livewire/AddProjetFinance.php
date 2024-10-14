@@ -221,7 +221,7 @@ class AddProjetFinance extends Component
                 $data = [
                     'id_projet' => $projetId,
                     'montant' => $projet->montant,
-                    'duree' => $projet->duree,  // Corriger 'durer' en 'duree'
+                    'duree' => $projet->durer,  // Corriger 'durer' en 'duree'
                     'type_financement' => $projet->type_financement,
                     'user_id' => auth()->id(),
                     'id_investisseur' => $investorId,  // Utilise l'id de l'investisseur récupéré
