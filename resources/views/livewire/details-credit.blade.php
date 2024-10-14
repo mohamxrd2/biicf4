@@ -6,54 +6,13 @@
 
     <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
         <!-- Images Section -->
-
-        <div class="container mx-auto py-8 space-y-12">
-            @if ($projet)
-
-                <!-- Section Projet Images -->
-                <div class="flex flex-col w-full md:space-x-8 items-center">
-                    <!-- Main Image -->
-                    <div class="relative max-w-md lg:max-w-lg mx-auto shadow-lg rounded-lg overflow-hidden">
-                        <img id="mainImage"
-                            class="w-full object-cover transition duration-300 ease-in-out transform hover:scale-105"
-                            src="{{ asset($images[0]) }}" alt="Main Product Image" />
-                    </div>
-
-
-                    <!-- Thumbnail Images -->
-                    <div class="flex justify-center space-x-4">
-                        @foreach ($images as $image)
-                            @if ($image)
-                                <!-- Vérifie si l'image existe -->
-                                <img onclick="changeImage('{{ asset($image) }}')"
-                                    class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-200 rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-105 hover:border-gray-400"
-                                    src="{{ asset($image) }}" alt="Thumbnail">
-                            @endif
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-lg p-8">
-                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Description</h2>
-                    <p class="text-gray-800">
-                        {{ $projet->description }}
-                    </p>
-
-                </div>
-
-                {{-- Description du  projet --}}
-
-            @endif
-
-
-
-
-            <!-- Client Information -->
-            <div class="bg-white rounded-lg shadow-lg p-8">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800">Client Information</h2>
-                <div class="grid grid-cols-3 gap-6">
+        <div class="w-full md:w-1/2 md:h-auto flex flex-col space-y-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 ">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
+                    sur le client</h2>
+                <div class="grid grid-cols-3 gap-4">
                     <div>
-                        <p class="text-gray-600 font-medium">Client Name:</p>
+                        <p class="text-gray-600 font-medium">Nom du client:</p>
                         <p class="text-gray-800">{{ $userDetails->name }}</p>
                     </div>
                     <div>
@@ -61,55 +20,82 @@
                         <p class="text-gray-800">{{ $userDetails->email }}</p>
                     </div>
                     <div>
-                        <p class="text-gray-600 font-medium">Phone Number:</p>
+                        <p class="text-gray-600 font-medium">Numéro de
+                            téléphone:</p>
                         <p class="text-gray-800">{{ $userDetails->phone }}</p>
                     </div>
                     <div>
-                        <p class="text-gray-600 font-medium">Credit Score:</p>
+                        <p class="text-gray-600 font-medium">Cote de Crédit</p>
                         <p class="text-gray-800">{{ $crediScore->ccc }}</p>
                     </div>
                     <div>
-                        <p class="text-gray-600 font-medium">Address:</p>
+                        <p class="text-gray-600 font-medium">Adresse:</p>
                         <p class="text-gray-800">
-                            {{ $userDetails->country }}, {{ $userDetails->ville }}, {{ $userDetails->departe }}
+                            {{ $userDetails->country }},{{ $userDetails->ville }},{{ $userDetails->departe }}
                         </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Credit Request Information -->
-            <div class="bg-white rounded-lg shadow-lg p-8">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800">Credit Request Information</h2>
-                <div class="grid grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 ">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
+                    sur la demande de crédit</h2>
+                <div class="grid grid-cols-3 gap-4">
                     <div>
-                        <p class="text-gray-600 font-medium">Requested Amount:</p>
-                        <p class="text-gray-800">{{ $notification->data['montant'] }} FCFA</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Credit Duration:</p>
-                        <p class="text-gray-800">{{ $joursRestants }} months</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Credit Rate:</p>
+                        <p class="text-gray-600 font-medium">Montant demandé:
+                        </p>
                         <p class="text-gray-800">
-                            {{ $demandeCredit->taux ?? ($projet->taux ?? 'Rate not available') }} %
+                            {{ $notification->data['montant'] }} FCFA</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 font-medium">Durée du crédit:
+                        </p>
+                        <p class="text-gray-800">{{ $demandeCredit->duree }}
+                            mois</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 font-medium">Taux du crédit:
+                        </p>
+                        <p class="text-gray-800">{{ $demandeCredit->taux }} %
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 font-medium">Date debut:
+                        </p>
+                        <p class="text-gray-800">{{ $demandeCredit->date_debut }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 font-medium">Date fin:
+                        </p>
+                        <p class="text-gray-800">{{ $demandeCredit->date_fin }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 font-medium">Type de crédit:
+                        </p>
+                        <p class="text-gray-800">
+                            {{ $demandeCredit->type_financement }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 font-medium">heure debut:
+                        </p>
+                        <p class="text-gray-800">{{ $demandeCredit->heure_debut }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 font-medium">heure fin:
+                        </p>
+                        <p class="text-gray-800">{{ $demandeCredit->heure_fin }}
                         </p>
                     </div>
 
-                    @if ($demandeCredit)
-                        <div>
-                            <p class="text-gray-600 font-medium">Start Date:</p>
-                            <p class="text-gray-800">{{ $demandeCredit->date_debut }}</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-600 font-medium">End Date:</p>
-                            <p class="text-gray-800">{{ $demandeCredit->date_fin }}</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-600 font-medium">Credit Type:</p>
-                            <p class="text-gray-800">{{ $demandeCredit->type_financement }}</p>
-                        </div>
-                    @endif
+                    <div>
+                        <p class="text-gray-600 font-medium">Motif du crédit:
+                        </p>
+                        <p class="text-gray-800">
+                            {{ $demandeCredit->objet_financement }}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -119,15 +105,17 @@
         <div class="md:px-4 flex flex-col w-full md:w-1/2 py-4">
             <!-- Catégorie du projet -->
             <div class="flex items-center mb-2">
-
-                <span
-                    class="ml-2 text-xl capitalize font-semibold text-slate-700">{{ $demandeCredit->objet_financement ?? $projet->name }}</span>
+                <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                </svg>
+                <span class="ml-2 text-sm text-gray-500">{{ $demandeCredit->objet_financement }}</span>
             </div>
 
 
 
             <!-- Informations de progression -->
-
             <div class="mt-4">
                 @if ($demandeCredit->type_financement === 'demande-directe')
                     @php
@@ -234,13 +222,10 @@
                     <p class="text-gray-600 text-md mb-6">
                         Contribuez a la finalisation de l'achat d'un produit.
                     </p>
-                    @if (
-                        (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe') ||
-                            (isset($projet) && $notification->data['type_financement'] === 'direct'))
-
+                    @if (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe')
                         <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
                         <div class="flex space-x-4">
-                            @if ($notification->reponse == '')
+                            @if ($pourcentageInvesti < 100)
                                 <!-- Bouton Approuver -->
                                 <button id="approveButton" wire:click="approuver({{ $notification->data['montant'] }})"
                                     class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
@@ -263,7 +248,7 @@
                                     class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
                                     Refuser
                                 </button>
-                            @elseif ($notification->reponse == 'approved')
+                            @else
                                 <div class="text-green-600 font-bold">
                                     Demande de crédit approuvée.
                                 </div>
@@ -327,8 +312,6 @@
                 inputDiv.classList.toggle('hidden'); // Basculer l'affichage
             });
 
-
-
             const solde = @json($solde);
             const sommeRestante = @json($sommeRestante); // Récupérer sommeRestante depuis le composant Livewire
 
@@ -385,9 +368,4 @@
             }
         </script>
     @endif
-    <script>
-        function changeImage(src) {
-            document.getElementById('mainImage').src = src;
-        }
-    </script>
 </div>
