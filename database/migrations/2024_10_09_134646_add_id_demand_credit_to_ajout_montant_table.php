@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ajout_montant', function (Blueprint $table) {
-            //
+
         });
     }
 };

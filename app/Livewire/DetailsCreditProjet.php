@@ -87,15 +87,6 @@ class DetailsCreditProjet extends Component
             return;
         }
 
-        // Récupérer la demande de crédit et le wallet de l'utilisateur (investisseur)
-        // $demandeCredit = $this->demandeCredit;
-
-        // // Vérifiez si la demande de crédit et l'ID de la demande existent
-        // if (!$demandeCredit || !$this->notification->data['demande_id']) {
-        //     session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
-        //     return;
-        // }
-
         // Récupérer le wallet de l'utilisateur connecté
         $wallet = Wallet::where('user_id', Auth::id())->first();
 
@@ -115,8 +106,6 @@ class DetailsCreditProjet extends Component
         DB::beginTransaction();
 
         try {
-
-
             // Mettre à jour le solde du wallet de l'investisseur
             $wallet->balance -= $montant;
             $wallet->save();
@@ -142,6 +131,7 @@ class DetailsCreditProjet extends Component
         // Réinitialiser le montant saisi et le drapeau de solde insuffisant
         $this->montant = '';
         $this->insuffisant = false;
+
     }
 
 
