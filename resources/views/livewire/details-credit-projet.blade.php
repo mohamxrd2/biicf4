@@ -3,6 +3,7 @@
     <div class="flex flex-col justify-center items-center text-center bg-gray-200 p-4 rounded-lg mb-6">
         <h1 class="text-lg font-bold">FINANCEMENT D'UN PROJET</h1>
     </div>
+    
 
     <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
         <!-- Images Section -->
@@ -143,25 +144,66 @@
                         <span class="font-medium text-gray-500 mr-2">De</span>{{ $userDetails->name }}
                     </div>
                 </div>
-            </div>
-            <div class="mt-4">
-                @if (session()->has('success'))
-                    <p class="bg-green-500 text-white p-4 rounded-md mt-2 mb-6">{{ session('success') }}</p>
-                @endif
-                @if (session()->has('error'))
-                    <p class="bg-red-500 text-white p-4 rounded-md mt-2 mb-6">{{ session('error') }}</p>
-                @endif
-                
+                <div class="border border-gray-300 rounded-lg p-6 shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                        Approuver la demande crédit
+                    </h3>
+                    <p class="text-gray-600 text-md mb-6">
+                        Contribuez a la finalisation de l'achat d'un produit.
+                    </p>
+                    <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
+                    <div class="flex space-x-4">
+                        @if ($notification->reponse == 'approved')
+                            <div class="text-green-600 font-bold">
+                                Demande de crédit approuvée.
+                            </div>
+                        @else
+                            <!-- Bouton Approuver -->
+                            <button id="approveButton" wire:click="approuver({{ $notification->data['montant'] }})"
+                                class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
+                                wire:loading.attr="disabled">
+                                <span wire:loading.remove>Approuver</span>
+                                <span wire:loading>
+                                    <svg class="animate-spin h-5 w-5 text-white inline-block"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v8h8a8 8 0 11-8 8v-8H4z"></path>
+                                    </svg>
+                                </span>
+                            </button>
 
+                            <!-- Bouton Refuser -->
+                            <button id="rejectButton" wire:click="refuser"
+                                class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
+                                Refuser
+                            </button>
+                        @endif
+                    </div>
+                </div>
             </div>
+
+        </div>
+        <div class="mt-4">
+            @if (session()->has('success'))
+                <p class="bg-green-500 text-white p-4 rounded-md mt-2 mb-6">{{ session('success') }}</p>
+            @endif
+            @if (session()->has('error'))
+                <p class="bg-red-500 text-white p-4 rounded-md mt-2 mb-6">{{ session('error') }}</p>
+            @endif
+
 
         </div>
 
     </div>
 
-    <script>
-        function changeImage(src) {
-            document.getElementById('mainImage').src = src;
-        }
-    </script>
+</div>
+
+<script>
+    function changeImage(src) {
+        document.getElementById('mainImage').src = src;
+    }
+</script>
 </div>
