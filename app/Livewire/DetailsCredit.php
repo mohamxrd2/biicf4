@@ -2,19 +2,22 @@
 
 namespace App\Livewire;
 
+use Carbon\Carbon;
 use App\Models\Cfa;
 use App\Models\User;
+
 use App\Models\Projet;
+
 use App\Models\Wallet;
 use Livewire\Component;
 use App\Models\CrediScore;
 use App\Models\UserPromir;
+
+use App\Models\Transaction;
 use App\Models\AjoutMontant;
 use App\Models\DemandeCredi;
-use App\Models\Transaction;
-use App\Models\User;
-use App\Models\UserPromir;
-use App\Models\Wallet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\DatabaseNotification;
 
 class DetailsCredit extends Component

@@ -11,7 +11,6 @@ use App\Models\CrediScore;
 use App\Models\UserPromir;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
 use Intervention\Image\Facades\Image;
 use App\Notifications\DemandeCreditNotification;
 use Carbon\Carbon; // N'oublie pas d'importer Carbon
