@@ -13,15 +13,18 @@ class Coi extends Model
 
     protected $fillable = [
         'Solde',
-        'Numero_compte',
+        'type_compte',
         'Date_Creation',
-        'id_user',
+        'id_wallet',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'id_user');
     }
-
-
+    // Relation avec le modèle Wallet
+    public function wallet()
+    {
+        return $this->belongsTo(Wallet::class, 'id_wallet');
+    }
 }

@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::table('coi', function (Blueprint $table) {
             // Ajout de la colonne 'type_compte'
-            $table->string('type_compte')->after('Numero_compte'); // Ajout du type de compte
+            $table->string('type_compte')->after('Solde'); // Ajout du type de compte
 
             // Suppression de la clé étrangère 'id_user' et de la colonne associée
-            $table->dropForeign(['id_user']);
-            $table->dropColumn('id_user');
+            // $table->dropForeign(['id_user']);
+            // $table->dropColumn('id_user');
 
             // Suppression de la colonne 'Numero_compte' si nécessaire
-            $table->dropColumn('Numero_compte');  // Retire Numero_compte (non une clé étrangère)
+            // $table->dropColumn('Numero_compte');  // Retire Numero_compte (non une clé étrangère)
 
             // Ajout de la clé étrangère 'id_wallet' pour la table 'wallet'
             $table->foreignId('id_wallet')->constrained('wallets')->onDelete('cascade'); // Ajoute la relation avec wallet
