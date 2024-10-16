@@ -77,6 +77,9 @@
 
                     <!-- Thumbnail Images -->
                     <div class="flex space-x-4">
+                        <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd1) }}')"
+                        class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
+                        src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Thumbnail 1">
                         <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd2) }}')"
                             class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
                             src="{{ asset('post/all/' . $produit->photoProd2) }}" alt="Thumbnail 2">

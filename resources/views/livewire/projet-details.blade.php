@@ -5,24 +5,29 @@
         <h1 class="text-2xl font-bold">{{ $projet->name }}</h1>
         
         <!-- Carousel d'images -->
-        @if($projet->photo1 || $projet->photo2 || $projet->photo3 || $projet->photo4 || $projet->photo5)
-        <div class="swiper-container mb-6">
-            <div class="swiper-wrapper">
-                @if($projet->photo1)
-                    <div class="swiper-slide">
-                        <img src="{{ asset('post/'. $projet->photo1) }}" alt="Photo 1" class="w-full h-64 object-cover rounded-lg">
-                    </div>
-                @endif
-               
+        
+        <div class="w-full md:w-1/2 md:h-auto flex flex-col space-y-6">
+            <!-- Main Image -->
+            <div class="relative max-w-md lg:max-w-lg mx-auto shadow-lg rounded-lg overflow-hidden">
+                <img id="mainImage"
+                    class="w-full object-cover transition duration-300 ease-in-out transform hover:scale-105"
+                    src="{{ asset($images[0]) }}" alt="Main Product Image" />
             </div>
-    
-            <div class="swiper-pagination"></div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+        
+            <!-- Thumbnail Images -->
+            <div class="flex justify-center space-x-4">
+                @foreach ($images as $image)
+                    @if ($image)
+                        <!-- Vérifie si l'image existe -->
+                        <img onclick="changeImage('{{ asset($image) }}')"
+                            class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-200 rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-105 hover:border-gray-400"
+                            src="{{ asset($image) }}" alt="Thumbnail">
+                    @endif
+                @endforeach
+            </div>
         </div>
-    @else
-        <p>Aucune photo disponible pour ce projet.</p>
-    @endif
+        
+   
     
     
 
