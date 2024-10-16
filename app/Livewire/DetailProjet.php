@@ -2,12 +2,13 @@
 
 namespace App\Livewire;
 
-use DB;
+use Illuminate\Support\Facades\DB;
 use App\Models\Projet;
 use App\Models\Wallet;
 use Livewire\Component;
 use App\Models\Transaction;
 use App\Models\AjoutMontant;
+use App\Models\Cfa;
 use Illuminate\Support\Facades\Auth;
 
 class DetailProjet extends Component
@@ -84,6 +85,8 @@ class DetailProjet extends Component
         }
 
         $wallet = Wallet::where('user_id', Auth::id())->first();
+        // Récupérer le wallet de l'utilisateur demandeur
+        $walletDemandeur = Wallet::where('user_id', $this->projet->id_user)->first();
 
         // Vérifier que l'utilisateur possède un wallet
         if (!$wallet) {
@@ -97,6 +100,9 @@ class DetailProjet extends Component
             return;
         }
 
+        // Utilisation d'une transaction pour garantir la cohérence des données
+        DB::beginTransaction();
+
         // Sauvegarder le montant dans la table `ajout_montant`
         try {
             $ajoumontant = AjoutMontant::create([
@@ -105,16 +111,44 @@ class DetailProjet extends Component
                 'id_emp' => $projet->demandeur->id, // Vérifiez que cela n'est pas nul
                 'id_projet' => $projet->id,
             ]);
+
+            // // Mettre à jour le solde du wallet de l'investisseur
+            // $wallet->balance -= $montant;
+            // $wallet->save();
+
+            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
+            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+            if ($coi) {
+                $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                $coi->save();
+            }
+
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+            if ($cfa) {
+                // Si le compte CFA existe, on additionne le montant
+                $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
+                $cfa->save();
+            }
+
+            $reference_id = $this->generateIntegerReference();
+
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué');
+
+            // Committer la transaction
+            DB::commit();
         } catch (\Exception $e) {
             session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
             return;
         }
 
         // Mettre à jour le solde de l'utilisateur (investisseur)
-        $wallet->balance -= $montant; // Utilisez la valeur float
-        $wallet->save();
+        // $wallet->balance -= $montant; // Utilisez la valeur float
+        // $wallet->save();
 
-        $this->createTransaction(Auth::id(), $projet->demandeur->id, 'Envoie', $montant);
+        // $this->createTransaction(Auth::id(), $projet->demandeur->id, 'Envoie', $montant);
 
         // Message de succès
         session()->flash('success', 'Le montant a été ajouté avec succès.');
@@ -134,19 +168,27 @@ class DetailProjet extends Component
             ->count('id_invest');
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
         $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = $status;
         $transaction->save();
     }
 
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
 
-
-
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
+    }
 
     public function joursRestants()
     {

@@ -6,6 +6,7 @@ use App\Models\DemandeCredi;
 use App\Models\Investisseur;
 use App\Models\User;
 use App\Notifications\DemandeCreditNotification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
@@ -141,7 +142,7 @@ class Demandecredit extends Component
                     'duree' => $this->duration,
                     'type_financement' => $this->financementType,
                     'bailleur' => $this->bailleur,
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'id_investisseur' => $investorId,
                 ];
 
@@ -159,13 +160,20 @@ class Demandecredit extends Component
                 // Reset des champs après soumission
                 $this->reset();
             } else if ($this->bailleur) {
+                // Récupérer l'ID de l'investisseur qui soumet
+                $submitterId = Auth::id(); // ou $this->investisseur_id selon ton contexte
+
+                // Récupérer les investisseurs en excluant celui qui soumet
                 $investisseurs = Investisseur::where('invest_type', $this->bailleur)
                     ->with('user') // Assure-toi que la relation "user" est définie dans le modèle Investisseur
+                    ->where('user_id', '!=', $submitterId) // Exclure l'investisseur qui soumet
                     ->get();
 
                 // Vérifie s'il y a des investisseurs trouvés
                 if ($investisseurs->isEmpty()) {
                     // Gérer le cas où aucun investisseur n'est trouvé
+                    $this->dispatch('formSubmitted', 'Aucun investeur avec ce type trouver');
+
                     Log::warning('Investors not found for bailleur type.', [
                         'bailleur' => $this->bailleur,
                         'user_id' => auth()->id(),
@@ -185,7 +193,7 @@ class Demandecredit extends Component
                             'date_debut' => $this->startDate,
                             'heure_debut' => $this->startTime,
                             'date_fin' => $this->endDate,
-                       details     'heure_fin' => $this->endTime,
+                            'heure_fin' => $this->endTime,
                             'taux' => $this->roi, // Le taux de retour sur investissement
                         ]);
                     }

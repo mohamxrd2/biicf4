@@ -19,7 +19,7 @@ class Walletclient extends Component
     public $userWallet;
     public $user;
     public $coi;
-    public $coa;
+    public $cfa;
     public $cedd;
     public $cefd;
 
@@ -61,12 +61,13 @@ class Walletclient extends Component
         Log::info('User Wallet:', ['wallet' => $this->userWallet]);
 
         // Récupérer l'enregistrement dans la table Coi en fonction de id_user
-        $this->coi = Coi::where('id_user', $userId)->first();
-        $this->coa = Cfa::where('id_user', $userId)->first();
-        $this->cedd = Cedd::where('id_user', $userId)->first();
-        $this->cefd = Cefp::where('id_user', $userId)->first();
+        $this->coi = Coi::where('id_wallet', $this->userWallet->id)->first();
+        $this->cfa = Cfa::where('id_wallet', $this->userWallet->id)->first();
+        $this->cedd = Cedd::where('id_wallet', $this->userWallet->id)->first();
+        $this->cefd = Cefp::where('id_wallet', $this->userWallet->id)->first();
 
     }
+
     #[On('refreshComponent')]
     public function render()
     {

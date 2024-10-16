@@ -222,55 +222,53 @@
                     <p class="text-gray-600 text-md mb-6">
                         Contribuez a la finalisation de l'achat d'un produit.
                     </p>
-                    @if (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe')
-                        <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
-                        <div class="flex space-x-4">
-                            @if ($pourcentageInvesti < 100)
-                                <!-- Bouton Approuver -->
-                                <button id="approveButton" wire:click="approuver({{ $notification->data['montant'] }})"
-                                    class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
-                                    wire:loading.attr="disabled">
-                                    <span wire:loading.remove>Approuver</span>
-                                    <span wire:loading>
-                                        <svg class="animate-spin h-5 w-5 text-white inline-block"
-                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor"
-                                                d="M4 12a8 8 0 018-8v8h8a8 8 0 11-8 8v-8H4z"></path>
-                                        </svg>
-                                    </span>
-                                </button>
 
-                                <!-- Bouton Refuser -->
-                                <button id="rejectButton" wire:click="refuser"
-                                    class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
-                                    Refuser
+                    <!-- Afficher un message si l'objet du financement est 'demande-directe' -->
+                    <div class="flex space-x-4">
+                        @if ($notification->reponse == 'approved')
+                            <div class="text-green-600 font-bold">
+                                Demande de crédit approuvée.
+                            </div>
+                        @elseif ($notification->reponse == 'refuser')
+                            <div class="text-red-600 font-bold">
+                                Demande de crédit refusée.
+                            </div>
+                        @elseif (isset($demandeCredit) && $demandeCredit->type_financement === 'demande-directe')
+                            <!-- Bouton Approuver -->
+                            <button id="approveButton" wire:click="approuver({{ $montantDeBase }})"
+                                class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
+                                wire:loading.attr="disabled">
+                                <span wire:loading.remove>Approuver</span>
+                                <span wire:loading>
+                                    <svg class="animate-spin h-5 w-5 text-white inline-block"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v8h8a8 8 0 11-8 8v-8H4z"></path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <!-- Bouton Refuser -->
+                            <button id="rejectButton" wire:click="refuser"
+                                class="w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-md text-white font-medium">
+                                Refuser
+                            </button>
+                        @elseif (isset($demandeCredit) && $demandeCredit->type_financement === 'offre-composite')
+                            @if ($pourcentageInvesti < 100)
+                                <button id="showInputButton"
+                                    class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                                    Ajouter un montant
                                 </button>
                             @else
                                 <div class="text-green-600 font-bold">
-                                    Demande de crédit approuvée.
+                                    Demande de crédit terminé.
                                 </div>
                             @endif
-
-                        </div>
-                    @elseif ($notification->reponse == 'refuser')
-                        <div class="text-red-600 font-bold">
-                            Demande de crédit refusée.
-                        </div>
-                    @else
-                        @if ($pourcentageInvesti < 100)
-                            <button id="showInputButton"
-                                class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
-                                Ajouter un montant
-                            </button>
-                        @else
-                            <div class="text-green-600 font-bold">
-                                Demande de crédit terminé.
-                            </div>
                         @endif
-                    @endif
+                    </div>
 
                 </div>
                 <div id="inputDiv" class="mt-6 hidden">
@@ -294,7 +292,8 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10"
                                     stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v8h8a8 8 0 11-8 8v-8H4z"></path>
+                                    d="M4 12a8 8 0 018-8v8h8a8 8 0 11-8 8v-8H4z">
+                                </path>
                             </svg>
                         </span>
                     </button>

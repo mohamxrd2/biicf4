@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transactions', function (Blueprint $table) {
-            $table->unsignedBigInteger('reference_id')->after('amount');
-            $table->string('description')->after('reference_id');
-            $table->string('status')->after('description');
+        Schema::table('wallets', function (Blueprint $table) {
+            $table->string('Numero_compte')->after('balance'); // Ajout du type de compte
         });
     }
 
@@ -23,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('transactions', function (Blueprint $table) {
+        Schema::table('wallets', function (Blueprint $table) {
             //
         });
     }
