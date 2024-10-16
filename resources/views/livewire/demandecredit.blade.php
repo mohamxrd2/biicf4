@@ -37,13 +37,13 @@
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
-                        Procedure
+                        Crédit
                     </span>
                 </li>
             </ol>
 
-            <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit
-            </h2>
+            {{-- <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit
+            </h2> --}}
             <form wire:submit.prevent="submit">
                 @if ($messages && count($messages) > 0)
                     <div class="m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
@@ -62,7 +62,7 @@
                         @if ($showSection)
                             <label for="name"
                                 class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">
-                                Demande ID (Demande): {{ $referenceCode }}</label>
+                                ID Demande : {{ $referenceCode }}</label>
                             <label for="brand"
                                 class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">
                                 Objet du financement: Demande de crédit pour Achat du produit
@@ -79,10 +79,11 @@
                     <!-- Montant recherché -->
                     <div class="w-full">
                         <label for="quantitInput" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Entrez la quantité (déterminera la somme dont vous avez besoin)
+                            Entrez la quantité que vous voulez acheté?
                         </label>
-                        <input type="number" id="quantitInput" placeholder="quantité" wire:model="quantite"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        <input type="number" id="quantitInput" placeholder="Déterminera la somme dont vous avez besoin"
+                            wire:model="quantite"
+                            class="bg-gray-50 lg:col-span-2 sm:col-span-2 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             data-min="{{ $quantiteMin }}" data-max="{{ $quantiteMax }}"
                             data-price="{{ $montantmax }}" oninput="updateMontantTotalCredit()" required>
                         @error('quantite')
@@ -197,33 +198,13 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Dates et Heures alignées -->
+                    <div class="sm:col-span-2">
+                        <label for="duration"
+                            class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Date
+                            limite d'attente</label>
+                    </div>
                     <!-- Dates et Heures alignées -->
                     <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                            <label for="start-date"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
-                                début</label>
-                            <input type="date" wire:model="startDate" id="start-date"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                required>
-                            @error('startDate')
-                                <span class="text-red-600 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="start-time"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
-                                début</label>
-                            <input type="time" wire:model="startTime" id="start-time"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                required>
-                            @error('startTime')
-                                <span class="text-red-600 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
 
                         <div>
                             <label for="end-date"
@@ -253,8 +234,8 @@
                     <!-- Durée du crédit -->
                     <div class="sm:col-span-2">
                         <label for="duration"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Durée
-                            du crédit (mois)</label>
+                            class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Durée
+                            du crédit (Delais de rembourcement)</label>
                         <input type="number" wire:model="duration" id="duration"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             placeholder="12" required>

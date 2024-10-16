@@ -85,23 +85,23 @@ class AchatDirectGroupe extends Component
     public function AchatDirectForm()
     {
         $validated = $this->validate([
-            'nameProd' => 'required|string',
             'quantité' => 'required|integer',
-            'prix' => 'required|numeric',
+            'localite' => 'required|string|max:255',
             'selectedOption' => 'required|string',
             'dateTot' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
             'dateTard' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
             'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
-            'localite' => 'required|string|max:255',
             'userTrader' => 'required|exists:users,id',
+            'nameProd' => 'required|string',
             'userSender' => 'required|exists:users,id',
             'photoProd' => 'required|string',
             'idProd' => 'required|exists:produit_services,id',
+            'prix' => 'required|numeric',
         ]);
 
-
+        dd($validated);
 
         Log::info('Validation réussie.', $validated);
 

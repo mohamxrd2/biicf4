@@ -96,8 +96,6 @@ class Demandecredit extends Component
                 'financementType' => 'required|string',
                 'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
                 'bailleur' => 'nullable|string',
-                'startDate' => 'required|date',
-                'startTime' => 'required|date_format:H:i',
                 'endDate' => 'required|date',
                 'endTime' => 'required|date_format:H:i',
                 'duration' => 'required|numeric',
@@ -128,8 +126,8 @@ class Demandecredit extends Component
                     'bailleur' => $this->bailleur,
                     'id_user' => auth()->id(), // Utilisateur connecté
                     'id_investisseur' => $investorId, // Utiliser l'id récupéré
-                    'date_debut' => $this->startDate,
-                    'heure_debut' => $this->startTime,
+                    'date_debut' => now()->format('Y-m-d'),
+                    'heure_debut' => now()->format('H:i:s'),
                     'date_fin' => $this->endDate,
                     'heure_fin' => $this->endTime,
                     'taux' => $this->roi, // Le taux de retour sur investissement
@@ -190,8 +188,8 @@ class Demandecredit extends Component
                             'bailleur' => $this->bailleur,
                             'id_user' => auth()->id(), // Utilisateur connecté
                             'id_investisseur' => $investisseur->id, // Utilise l'id de l'investisseur actuel
-                            'date_debut' => $this->startDate,
-                            'heure_debut' => $this->startTime,
+                            'date_debut' => now()->format('Y-m-d'),
+                            'heure_debut' => now()->format('H:i:s'),
                             'date_fin' => $this->endDate,
                             'heure_fin' => $this->endTime,
                             'taux' => $this->roi, // Le taux de retour sur investissement
