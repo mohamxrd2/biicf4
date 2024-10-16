@@ -231,11 +231,15 @@ class AddProjetFinance extends Component
 
                 Notification::send($owner, new DemandeCreditProjetNotification($data));
 
+                $this->successMessage = 'Demande de financement envoyée avec succès.';
+
                 $this->dispatch(
                     'formSubmitted',
                     'Demande de financement envoyé avec success'
                 );
             }
+
+            $this->successMessage = 'Demande de financement envoyée avec succès.';
         } catch (\Exception $e) {
             // Si une erreur survient, réinitialiser l'indicateur de soumission
             $this->addError('submitError', 'Une erreur est survenue lors de la soumission : ' . $e->getMessage());

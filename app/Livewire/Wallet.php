@@ -43,11 +43,11 @@ class Wallet extends Component
         $adminId = Auth::guard('admin')->id();
 
         // Créer une nouvelle transaction
-        $transaction = new Transaction();
-        $transaction->receiver_admin_id = $adminId;
-        $transaction->type = 'Depot';
-        $transaction->amount = $this->amount;
-        $transaction->save();
+        // $transaction = new Transaction();
+        // $transaction->receiver_admin_id = $adminId;
+        // $transaction->type = 'Depot';
+        // $transaction->amount = $this->amount;
+        // $transaction->save();
 
         // Mettre à jour le solde du portefeuille de l'administrateur
         $adminWallet = AdminWallet::where('admin_id', $adminId)->first();

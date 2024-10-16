@@ -36,6 +36,7 @@ class DetailProjet extends Component
         ]);
 
         $userId = Auth::id();
+        
         $wallet = Wallet::where('user_id', $userId)->first();
 
         $this->solde = $wallet ? $wallet->balance : 0;

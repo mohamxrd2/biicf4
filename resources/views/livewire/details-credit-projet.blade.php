@@ -54,17 +54,22 @@
                         </div>
                     </div>
 
-                    <div class="flex py-2 mt-2 items-center">
-                        <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                            <img class="h-full w-full border-2 border-white rounded-full dark:border-gray-800 object-cover"
-                                src="{{ asset($userDetails->photo) }}" alt="">
+                    <div class="flex flex-col py-2 mt-2 items-center">
+                        <div class="flex ">
+
+                            <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                                <img class="h-full w-full border-2 border-white rounded-full dark:border-gray-800 object-cover"
+                                    src="{{ asset($userDetails->photo) }}" alt="">
+                            </div>
+                            <div class="ml-2 text-sm font-semibold">
+                                <span class="text-gray-500 font-medium mr-2">De</span>{{ $userDetails->name }}
+                            </div>
+
                         </div>
-                        <div class="ml-2 text-sm font-semibold">
-                            <span class="text-gray-500 font-medium mr-2">De</span>{{ $userDetails->name }}
-                        </div>
+                       
                         <!-- Bouton de déclenchement du modal -->
                         <button data-modal-target="static-modal" data-modal-toggle="static-modal"
-                            class="block bg-gray-200 hover:bg-blue-800 text-blue-800 hover:text-white font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            class="block bg-gray-200 mt-2 hover:bg-blue-800 text-blue-800 hover:text-white font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                             type="button">
                             Plus d'informations
                         </button>

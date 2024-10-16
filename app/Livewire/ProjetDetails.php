@@ -10,6 +10,8 @@ class ProjetDetails extends Component
 {
     public $projet;
 
+    
+
   
 
 

@@ -179,6 +179,17 @@ class ProduitServiceController extends Controller
                 AchatGrouper::where('idProd', $produit->id)->delete();
             }
 
+            $images = [];
+
+            $images = array_filter([
+                $produit->photoProd1,
+                $produit->photoProd2,
+                $produit->photoProd3,
+                $produit->photoProd4,
+              
+            ]);
+
+
             // Retourner la vue avec les données récupérées
             return view('biicf.postdetail', compact(
                 'produit',
@@ -194,6 +205,7 @@ class ProduitServiceController extends Controller
                 'nombreProprietaires',
                 'nomFournisseur',
                 'nomFournisseurCount',
+                'images'
             ));
         } catch (\Exception $e) {
             // Gérer les exceptions et rediriger avec un message d'erreur

@@ -185,7 +185,7 @@ class Demandecredit extends Component
                             'date_debut' => $this->startDate,
                             'heure_debut' => $this->startTime,
                             'date_fin' => $this->endDate,
-                       details     'heure_fin' => $this->endTime,
+                            'heure_fin' => $this->endTime,
                             'taux' => $this->roi, // Le taux de retour sur investissement
                         ]);
                     }

@@ -77,6 +77,9 @@
 
                     <!-- Thumbnail Images -->
                     <div class="flex space-x-4">
+                        <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd1) }}')"
+                        class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
+                        src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Thumbnail 1">
                         <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd2) }}')"
                             class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
                             src="{{ asset('post/all/' . $produit->photoProd2) }}" alt="Thumbnail 2">
@@ -156,7 +159,7 @@
                                         class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         id="options-menu" aria-haspopup="true" aria-expanded="true"
                                         onclick="toggleDropdown()">
-                                        Filter Options
+                                        Fonctionnalité
                                         <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                             <path fill-rule="evenodd"
@@ -171,7 +174,7 @@
                                     <div class="py-1" role="menu" aria-orientation="vertical"
                                         aria-labelledby="options-menu">
                                         <div class="px-4 py-2">
-                                            <span class="font-bold">Filter by Properties</span>
+                                            <span class="font-bold">Liste des fonctionnalitées</span>
                                         </div>
                                         <div class="px-4 py-2">
                                             <div class="flex items-center">
@@ -196,13 +199,7 @@
                                             data-hs-overlay="#hs-offreGrpNeg-{{ $produit->id }}">faire une offre Groupé negocié</button>
                                     </div> --}}
                                         </div>
-                                        <div class="border-t border-gray-200"></div>
-                                        <div class="px-4 py-2">
-                                            <button
-                                                class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none">
-                                                Apply Filters
-                                            </button>
-                                        </div>
+                                      
                                     </div>
                                 </div>
                             </div>
