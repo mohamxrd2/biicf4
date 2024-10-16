@@ -13,7 +13,7 @@
                     class="w-full object-cover transition duration-300 ease-in-out transform hover:scale-105"
                     src="{{ asset($images[0]) }}" alt="Main Product Image" />
             </div>
-
+        
             <!-- Thumbnail Images -->
             <div class="flex justify-center space-x-4">
                 @foreach ($images as $image)
@@ -26,6 +26,7 @@
                 @endforeach
             </div>
         </div>
+        
    
     
     

@@ -94,9 +94,26 @@ class AccueilFinance extends Component
         $this->nombreProjets += 6;
 
         // Chargez les nouveaux projets
-        $this->projets = Projet::with('demandeur')->take($this->nombreProjets)->get()->map(function ($projet) {
+        $this->projets = Projet::with('demandeur')
+        ->where('type_financement', 'groupé') // Ajouter la condition pour le type de financement
+        ->where('statut', 'approuvé') // Ajouter la condition pour le statut
+        ->take($this->nombreProjets)
+        ->get()
+        ->map(function ($projet) {
             // Calculer les valeurs pour chaque projet
-            $this->calculerValeursProjet($projet);
+            $sommeInvestie = AjoutMontant::where('id_projet', $projet->id)->sum('montant');
+            $sommeRestante = $projet->montant - $sommeInvestie;
+            $pourcentageInvesti = ($projet->montant > 0) ? ($sommeInvestie / $projet->montant) * 100 : 0;
+            $nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $projet->id)
+                ->distinct()
+                ->count('id_invest');
+
+            // Ajouter les valeurs calculées au projet
+            $projet->sommeInvestie = $sommeInvestie;
+            $projet->sommeRestante = $sommeRestante;
+            $projet->pourcentageInvesti = $pourcentageInvesti;
+            $projet->nombreInvestisseursDistinct = $nombreInvestisseursDistinct;
+
             return $projet;
         });
 
