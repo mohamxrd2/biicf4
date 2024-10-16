@@ -11,7 +11,7 @@ class Countdown extends Model
 
     protected $fillable = ['user_id', 'start_time', 'notified', 'code_unique', 'userSender', 'nsender', 'difference'];
 
-    
+
 
     public function user()
     {

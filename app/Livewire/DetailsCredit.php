@@ -19,6 +19,7 @@ class DetailsCredit extends Component
 {
     public $id;
     public $notification;
+    public $userId;
     public $userDetails;
     public $demandeCredit;
     public $insuffisant = false;
@@ -37,9 +38,9 @@ class DetailsCredit extends Component
     {
         $this->notification = DatabaseNotification::findOrFail($id);
         // Récupérer l'ID de l'utilisateur qui a demnder le credit depuis les données de la notification
-        $userId = $this->notification->data['user_id'];
+        $this->userId = $this->notification->data['user_id'];
         // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
-        $this->userDetails = User::find($userId);
+        $this->userDetails = User::find($this->userId);
         $userNumber = $this->userDetails->phone;
 
         // Récupérer l'ID de l'utilisateur connecté
@@ -106,6 +107,8 @@ class DetailsCredit extends Component
         }
 
         $wallet = Wallet::where('user_id', Auth::id())->first();
+        // Récupérer le wallet de l'utilisateur demandeur
+        $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
 
         // Vérifier que l'utilisateur possède un wallet
         if (!$wallet) {
@@ -131,21 +134,31 @@ class DetailsCredit extends Component
                 'id_demnd_credit' => $this->demandeCredit->id,
             ]);
 
-            // Mettre à jour le solde du wallet de l'investisseur
-            $wallet->balance -= $montant;
-            $wallet->save();
+            // // Mettre à jour le solde du wallet de l'investisseur
+            // $wallet->balance -= $montant;
+            // $wallet->save();
+
+            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
+            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+            if ($coi) {
+                $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                $coi->save();
+            }
 
             // Mettre à jour ou créer un enregistrement dans la table CFA
-            Cfa::updateOrCreate(
-                ['id_user' => $this->userDetails->id], // Assurez-vous de mettre à jour par l'ID de l'utilisateur
-                [
-                    'Solde' => $montant, // Ajout du montant à la somme existante
-                    'Date_Creation' => now(),
-                ]
-            );
+            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            // Mettre à jour ou créer un enregistrement dans la table CFA
 
-            // Mettre à jour l'état de la notification en approuvé
-            $this->notification->update(['reponse' => 'approved']);
+            if ($cfa) {
+                // Si le compte CFA existe, on additionne le montant
+                $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
+                $cfa->save();
+            }
+
+            $reference_id = $this->generateIntegerReference();
+
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué');
 
             // Committer la transaction
             DB::commit();
@@ -198,6 +211,8 @@ class DetailsCredit extends Component
 
         // Récupérer le wallet de l'utilisateur connecté
         $wallet = Wallet::where('user_id', Auth::id())->first();
+        // Récupérer le wallet de l'utilisateur demandeur
+        $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
 
         // Vérifier que l'utilisateur possède un wallet
         if (!$wallet) {
@@ -215,28 +230,33 @@ class DetailsCredit extends Component
         DB::beginTransaction();
 
         try {
-            // Sauvegarder le montant dans la table `ajout_montant`
-            $ajoumontant = AjoutMontant::create([
-                'montant' => $montant,
-                'id_invest' => Auth::id(),
-                'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
-                'id_demnd_credit' => $this->demandeCredit->id,
-            ]);
 
-            // Mettre à jour le solde du wallet de l'investisseur
-            $wallet->balance -= $montant;
-            $wallet->save();
+            // // Mettre à jour le solde du wallet de l'investisseur
+            // $wallet->balance -= $montant;
+            // $wallet->save();
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant);
+            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
+            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+            if ($coi) {
+                $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                $coi->save();
+            }
 
             // Mettre à jour ou créer un enregistrement dans la table CFA
-            Cfa::updateOrCreate(
-                ['id_user' => $this->userDetails->id], // Assurez-vous de mettre à jour par l'ID de l'utilisateur
-                [
-                    'Solde' => $montant, // Ajout du montant à la somme existante
-                    'Date_Creation' => now(),
-                ]
-            );
+            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+
+            if ($cfa) {
+                // Si le compte CFA existe, on additionne le montant
+                $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
+                $cfa->save();
+            }
+
+            $reference_id = $this->generateIntegerReference();
+
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué');
+
 
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);
@@ -253,37 +273,35 @@ class DetailsCredit extends Component
             return;
         }
 
-        // Rafraîchir les propriétés du composant
-        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
-        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie;
-
-        // Assurez-vous que la division n'est pas par zéro
-        if ($this->demandeCredit->montant > 0) {
-            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100;
-        } else {
-            $this->pourcentageInvesti = 0;
-        }
-
-        // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->distinct()
-            ->count('id_invest');
-
         // Réinitialiser le montant saisi et le drapeau de solde insuffisant
         $this->montant = '';
         $this->insuffisant = false;
     }
 
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
         $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = $status;
         $transaction->save();
     }
+
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
+    }
+
+
 
 
     public function refuser()

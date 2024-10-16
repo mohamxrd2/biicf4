@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('ajout_montant', function (Blueprint $table) {
-            $table->foreignId('id_demnd_credit')->nullable()->constrained('demande_credi')->onDelete('cascade');
+        Schema::table('wallets', function (Blueprint $table) {
+            $table->string('Numero_compte')->after('balance'); // Ajout du type de compte
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('ajout_montant', function (Blueprint $table) {
-
+        Schema::table('wallets', function (Blueprint $table) {
+            //
         });
     }
 };

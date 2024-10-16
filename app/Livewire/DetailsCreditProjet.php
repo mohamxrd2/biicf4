@@ -8,8 +8,6 @@ use App\Models\Projet;
 use App\Models\Wallet;
 use App\Models\CrediScore;
 use App\Models\UserPromir;
-use App\Models\AjoutMontant;
-use App\Models\DemandeCredi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Transaction;
@@ -20,6 +18,7 @@ class DetailsCreditProjet extends Component
 {
     public $id;
     public $notification;
+    public $userId;
     public $userDetails;
     public $demandeCredit;
     public $insuffisant = false;
@@ -39,10 +38,10 @@ class DetailsCreditProjet extends Component
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $userId = $this->notification->data['user_id'];
+        $this->userId = $this->notification->data['user_id'];
 
         // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
-        $this->userDetails = User::find($userId);
+        $this->userDetails = User::find($this->userId);
         $userNumber = $this->userDetails->phone;
 
         // Récupérer l'ID de l'utilisateur connecté
@@ -87,17 +86,10 @@ class DetailsCreditProjet extends Component
             return;
         }
 
-        // Récupérer la demande de crédit et le wallet de l'utilisateur (investisseur)
-        // $demandeCredit = $this->demandeCredit;
-
-        // // Vérifiez si la demande de crédit et l'ID de la demande existent
-        // if (!$demandeCredit || !$this->notification->data['demande_id']) {
-        //     session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
-        //     return;
-        // }
-
         // Récupérer le wallet de l'utilisateur connecté
         $wallet = Wallet::where('user_id', Auth::id())->first();
+        // Récupérer le wallet de l'utilisateur demandeur
+        $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
 
         // Vérifier que l'utilisateur possède un wallet
         if (!$wallet) {
@@ -106,7 +98,7 @@ class DetailsCreditProjet extends Component
         }
 
         // Vérifier que le solde du wallet est suffisant
-        if ($wallet->balance < $montant) {
+        if ($wallet->coi->Solde < $montant) {
             session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
             return;
         }
@@ -115,13 +107,30 @@ class DetailsCreditProjet extends Component
         DB::beginTransaction();
 
         try {
+            // // Mettre à jour le solde du wallet de l'investisseur
+            // $wallet->balance -= $montant;
+            // $wallet->save();
 
+            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
+            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+            if ($coi) {
+                $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                $coi->save();
+            }
 
-            // Mettre à jour le solde du wallet de l'investisseur
-            $wallet->balance -= $montant;
-            $wallet->save();
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+            if ($cfa) {
+                // Si le compte CFA existe, on additionne le montant
+                $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
+                $cfa->save();
+            }
 
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant);
+            $reference_id = $this->generateIntegerReference();
+
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué');
 
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);
@@ -131,7 +140,6 @@ class DetailsCreditProjet extends Component
 
             // Message de succès
             session()->flash('success', 'Le montant a été ajouté avec succès.');
-
         } catch (\Exception $e) {
             // Annuler la transaction en cas d'erreur
             DB::rollBack();
@@ -145,16 +153,27 @@ class DetailsCreditProjet extends Component
     }
 
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
         $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = $status;
         $transaction->save();
     }
 
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
+    }
 
     public function refuser()
     {

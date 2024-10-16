@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('ajout_montant', function (Blueprint $table) {
-            $table->foreignId('id_demnd_credit')->nullable()->constrained('demande_credi')->onDelete('cascade');
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->unsignedBigInteger('reference_id')->after('amount');
+            $table->string('description')->after('reference_id');
+            $table->string('status')->after('description');
         });
     }
 
@@ -21,8 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('ajout_montant', function (Blueprint $table) {
-
+        Schema::table('transactions', function (Blueprint $table) {
+            //
         });
     }
 };
