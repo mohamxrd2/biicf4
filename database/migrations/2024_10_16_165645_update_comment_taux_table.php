@@ -17,7 +17,7 @@ return new class extends Migration
 
             // Ajouter la colonne 'id_projet' comme clé étrangère
             $table->unsignedBigInteger('id_projet')->nullable()->after('id_emp');
-            $table->foreign('id_projet')->references('id')->on('projets')->onDelete('cascade');
+            $table->foreign('id_projet')->references('id')->on('projet')->onDelete('cascade');
         });
     }
 

@@ -42,7 +42,7 @@ class DetailProjet extends Component
         ]);
 
         $userId = Auth::id();
-        
+
         $wallet = Wallet::where('user_id', $userId)->first();
 
         $this->solde = $wallet ? $wallet->balance : 0;
@@ -65,14 +65,12 @@ class DetailProjet extends Component
         $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Montant total - Somme investie
 
         $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
-        ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
-        ->exists(); // Renvoie true si le montant existe
+            ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
+            ->exists(); // Renvoie true si le montant existe
 
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-        ->where('id_projet', $this->projet->id)
-        ->get();
-
-
+            ->where('id_projet', $this->projet->id)
+            ->get();
     }
 
     public function updatedMontant()
@@ -182,50 +180,50 @@ class DetailProjet extends Component
         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
             ->distinct()
             ->count('id_invest');
-        
-            $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
-        ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
-        ->exists(); // Renvoie true si le montant existe
+
+        $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
+            ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
+            ->exists(); // Renvoie true si le montant existe
 
     }
 
     public function commentForm()
-{
-    // Validation du champ tauxTrade
-    $this->validate([
-        'tauxTrade' => 'required|numeric|min:0',
-    ]);
-
-    // Vérification de l'objet projet
-    if (!$this->projet || !$this->projet->id) {
-        session()->flash('error', 'Le projet est introuvable.');
-        return;
-    }
-
-    // Insérer dans la table commentTaux
-    try {
-        CommentTaux::create([
-            'taux' => $this->tauxTrade,
-            'id_invest' => auth()->id(),
-            'id_emp' => $this->projet->id_user,
-            'id_projet' => $this->projet->id,
+    {
+        // Validation du champ tauxTrade
+        $this->validate([
+            'tauxTrade' => 'required|numeric|min:0',
         ]);
 
-        // Réinitialiser le champ tauxTrade après l'insertion
-        $this->tauxTrade = '';
+        // Vérification de l'objet projet
+        if (!$this->projet || !$this->projet->id) {
+            session()->flash('error', 'Le projet est introuvable.');
+            return;
+        }
 
-        // Optionnel: Ajouter une notification ou un message de succès
-        session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
-    } catch (\Exception $e) {
-        session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+        // Insérer dans la table commentTaux
+        try {
+            CommentTaux::create([
+                'taux' => $this->tauxTrade,
+                'id_invest' => auth()->id(),
+                'id_emp' => $this->projet->id_user,
+                'id_projet' => $this->projet->id,
+            ]);
+
+            // Réinitialiser le champ tauxTrade après l'insertion
+            $this->tauxTrade = '';
+
+            // Optionnel: Ajouter une notification ou un message de succès
+            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+        }
+
+        // Commenter cette ligne une fois que vous avez vérifié
+
+        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
+            ->where('id_projet', $this->projet->id)
+            ->get();
     }
-
-// Commenter cette ligne une fois que vous avez vérifié
-
-    $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-        ->where('id_projet', $this->projet->id)
-        ->get();
-}
 
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void

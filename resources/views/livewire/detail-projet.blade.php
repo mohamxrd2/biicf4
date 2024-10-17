@@ -345,7 +345,7 @@
 
 
         const dateLimite = new Date("{{ $projet->durer }}")
-        .getTime(); // Assurez-vous que la date est au format acceptable pour JavaScript
+            .getTime(); // Assurez-vous que la date est au format acceptable pour JavaScript
 
         // Mettre à jour le compte à rebours toutes les secondes
         const interval = setInterval(function() {
