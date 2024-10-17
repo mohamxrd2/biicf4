@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\AjoutMontant;
 use App\Models\Cfa;
+use App\Models\Countdown;
 use App\Models\CrediScore;
 use App\Models\DemandeCredi;
 use App\Models\Transaction;
@@ -32,6 +33,8 @@ class DetailsCredit extends Component
     public $montant = ''; // Stocke le montant saisi
 
     public $pourcentageInvesti = 0;
+    public $montantVerifie = false;
+
 
 
     public function mount($id)
@@ -80,7 +83,11 @@ class DetailsCredit extends Component
 
         // Calculer la somme restante à investir
         $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
-        // Mettre à jour la notification et valider
+
+        $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
+            ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
+            ->exists(); // Renvoie true si le montant existe
+
     }
     public function updatedMontant()
     {
@@ -188,6 +195,19 @@ class DetailsCredit extends Component
         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
             ->distinct()
             ->count('id_invest');
+
+        $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
+            ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
+            ->exists(); // Renvoie true si le montant existe
+        if ($this->montantVerifie) {
+            Countdown::create([
+                'user_id' => Auth::id(), // Utilisez la valeur float
+                'userSender' => $this->projet->demandeur->id,
+                'start_time' => now(), // Vérifiez que cela n'est pas nul
+                'code_unique' => $this->projet->id,
+                'difference' => 'taux_projet',
+            ]);
+        }
     }
     public function approuver($montant)
     {

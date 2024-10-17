@@ -9,6 +9,7 @@ use Livewire\Component;
 use App\Models\CommentTaux;
 use App\Models\Transaction;
 use App\Models\AjoutMontant;
+use App\Models\Countdown;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,8 +69,11 @@ class DetailProjet extends Component
             ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
             ->exists(); // Renvoie true si le montant existe
 
+
+
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
+            ->orderBy('taux', 'asc') // Trier du plus petit au plus grand (ordre croissant)
             ->get();
     }
 
@@ -184,7 +188,15 @@ class DetailProjet extends Component
         $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
             ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
             ->exists(); // Renvoie true si le montant existe
-
+        if ($this->montantVerifie) {
+            Countdown::create([
+                'user_id' => Auth::id(), // Utilisez la valeur float
+                'userSender' => $this->projet->demandeur->id,
+                'start_time' => now(), // Vérifiez que cela n'est pas nul
+                'code_unique' => $this->projet->id,
+                'difference' => 'taux_projet',
+            ]);
+        }
     }
 
     public function commentForm()
@@ -222,9 +234,9 @@ class DetailProjet extends Component
 
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
+            ->orderBy('taux', 'asc') // Trier du plus petit au plus grand (ordre croissant)
             ->get();
     }
-
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
     {
