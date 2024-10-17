@@ -16,7 +16,11 @@ class CommentTaux extends Model
         'code_unique',
         'id_invest',
         'id_emp',
+<<<<<<< HEAD
         'id_projet',
+=======
+        'id_projet'
+>>>>>>> 2835338f26257b82903a50f2f99891230fd73d43
     ];
 
     /**

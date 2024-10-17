@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Cfa;
+use App\Models\Coi;
 use App\Models\Projet;
 use App\Models\Wallet;
 use Livewire\Component;
@@ -73,7 +74,7 @@ class DetailProjet extends Component
 
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
-            ->orderBy('taux', 'asc') // Trier du plus petit au plus grand (ordre croissant)
+            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
     }
 
@@ -185,18 +186,10 @@ class DetailProjet extends Component
             ->distinct()
             ->count('id_invest');
 
-        $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
-            ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
-            ->exists(); // Renvoie true si le montant existe
-        if ($this->montantVerifie) {
-            Countdown::create([
-                'user_id' => Auth::id(), // Utilisez la valeur float
-                'userSender' => $this->projet->demandeur->id,
-                'start_time' => now(), // Vérifiez que cela n'est pas nul
-                'code_unique' => $this->projet->id,
-                'difference' => 'taux_projet',
-            ]);
-        }
+            $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
+        ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
+        ->exists(); // Renvoie true si le montant existe
+
     }
 
     public function commentForm()
@@ -209,6 +202,15 @@ class DetailProjet extends Component
         // Vérification de l'objet projet
         if (!$this->projet || !$this->projet->id) {
             session()->flash('error', 'Le projet est introuvable.');
+            return;
+        }
+
+        $user = auth()->user();
+
+        $userWallet = Wallet::where('user_id', $user->id)->first();
+        $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
+        if (!$coiWallet  || $coiWallet->Solde < $this->projet->montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
             return;
         }
 
@@ -234,9 +236,12 @@ class DetailProjet extends Component
 
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
-            ->orderBy('taux', 'asc') // Trier du plus petit au plus grand (ordre croissant)
+            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
+
+
     }
+
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
     {
