@@ -215,7 +215,86 @@
             <p class="text-gray-500">
                 {{ $projet->description }}
             </p>
+
+            <div class="w-full mt-3">
+                <div class="  md:h-auto flex flex-col space-y-6">
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-3">
+                        <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
+                            sur le client</h2>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-gray-600 font-medium">Nom du client:</p>
+                                <p class="text-gray-800">{{ $projet->demandeur->name }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 font-medium">Email:</p>
+                                <p class="text-gray-800">{{ $projet->demandeur->email }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 font-medium">Numéro de
+                                    téléphone:</p>
+                                <p class="text-gray-800">{{ $projet->demandeur->phone }}</p>
+                            </div>
+                            {{-- <div>
+                                <p class="text-gray-600 font-medium">Cote de Crédit</p>
+                                <p class="text-gray-800">{{ $crediScore->ccc }}</p>
+                            </div> --}}
+                            <div>
+                                <p class="text-gray-600 font-medium">Adresse:</p>
+                                <p class="text-gray-800">
+                                    {{ $projet->demandeur->country }},{{ $projet->demandeur->ville }},{{ $projet->demandeur->departe }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="bg-white rounded-lg shadow-lg p-6 ">
+                        <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
+                            sur la demande de crédit</h2>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-gray-600 font-medium">Montant demandé:
+                                </p>
+                                <p class="text-gray-800">
+                                    {{ $projet->montant }} FCFA</p>
+                            </div>
+                            {{-- <div>
+                                <p class="text-gray-600 font-medium">Durée du crédit:
+                                </p>
+                                <p class="text-gray-800">{{ $demandeCredit->duree }}
+                                    mois</p>
+                            </div> --}}
+                            <div>
+                                <p class="text-gray-600 font-medium">Taux du crédit:
+                                </p>
+                                <p class="text-gray-800">{{ $projet->taux }} %
+                                </p>
+                            </div>
+                          
+                            <div>
+                                <p class="text-gray-600 font-medium">Date fin:
+                                </p>
+                                <p class="text-gray-800">{{ $projet->durer }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 font-medium">Type de crédit:
+                                </p>
+                                <p class="text-gray-800">
+                                    {{ $projet->type_financement }}</p>
+                            </div>
+                          
+                           
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+           
+    
         </div>
+        
         <div class="w-full md:w-1/2 mt-4 px-6">
 
            
