@@ -67,6 +67,20 @@ class Walletclient extends Component
         $this->cefd = Cefp::where('id_wallet', $this->userWallet->id)->first();
 
     }
+    public function formatAccountNumber($accountNumber)
+    {
+        // Séparer les 8 premiers chiffres et masquer les 8 derniers
+        $visiblePart = substr($accountNumber, 0, 8);  // Garde les 8 premiers chiffres
+        $maskedPart = '**** ****'; // Masque les 8 derniers chiffres
+    
+        // Ajouter un espace tous les 4 chiffres pour la partie visible
+        $formattedVisiblePart = trim(chunk_split($visiblePart, 4, ' '));
+    
+        // Retourner le numéro de compte formaté
+        return $formattedVisiblePart . ' ' . $maskedPart;
+    }
+    
+
 
     #[On('refreshComponent')]
     public function render()

@@ -1,5 +1,5 @@
 <a href="{{ route('biicf.notif') }}"
-    class="flex flex-col items-center @if (request()->route()->getName() == 'biicf.notif') text-purple-600 font-semibold @else text-gray-500 @endif dark:text-gray-400">
+    class="flex items-center gap-x-3.5 py-3 px-2.5  @if (request()->route()->getName() == 'biicf.notif') text-purple-600 font-semibold  @endif text-md rounded-lg hover:bg-gray-100 dark:bg-gray-900 dark:text-white">
     <span class="relative inline-block">
         @if (request()->route()->getName() == 'biicf.notif')
             <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
@@ -27,5 +27,7 @@
             @endif
         </span>
     </span>
-    <span class="text-xs">Notifs</span>
+
+    <span class="nav-title"> Notifications</span>
+   
 </a>
