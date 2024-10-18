@@ -32,6 +32,7 @@ class DetailProjet extends Component
     public $tauxTrade;
     public $commentTauxList = [];
 
+    protected $listeners = ['compteReboursFini'];
     public function mount($id)
     {
         $this->projet = Projet::with('demandeur')->find($id);
@@ -76,6 +77,21 @@ class DetailProjet extends Component
             ->where('id_projet', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
+
+            $this->projet = $projet;
+
+    }
+
+    // Méthode déclenchée lorsque le compte à rebours est terminé
+    public function compteReboursFini()
+    {
+        // Mettre à jour l'attribut 'finish' du projet
+        dd($this->projet->update([
+            'count' => true,
+        ]));
+
+        // Optionnel : Vous pouvez également émettre un événement pour informer l'utilisateur
+        dd($this->dispatch('projetFini', ['message' => 'Le projet est terminé.']));
     }
 
     public function updatedMontant()

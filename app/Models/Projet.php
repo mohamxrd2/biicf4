@@ -12,7 +12,7 @@ class Projet extends Model
     protected $table = 'projet';
 
     protected $fillable = [
-        
+
         'montant',
         'taux',
         'description',
@@ -27,6 +27,7 @@ class Projet extends Model
         'photo5',
         'durer',
         'name',
+        'count',
     ];
 
 
