@@ -15,8 +15,7 @@
             </div>
         @endif
 
-        <div class="flex gap-4 mb-6">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-lg w-96 shadow-lg">
+        {{-- <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-lg w-96 shadow-lg">
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-lg font-semibold tracking-wider">{{ strtoupper($user->name) }}</h2>
@@ -29,8 +28,11 @@
                     </div>
                 </div>
                 <div class="flex justify-between items-center">
-                    <div class="text-lg font-mono tracking-widest">{{ $userWallet->Numero_compte }}</div>
+                    <div class="text-lg font-mono tracking-widest">
+                        {{ $this->formatAccountNumber($userWallet->Numero_compte) }}
+                    </div>
                 </div>
+                
                 <div class="flex justify-between items-center">
                     <div>
                         <h1 class="text-xl font-bold">{{ number_format($userWallet->balance, 2, ',', ' ') }}<span
@@ -66,107 +68,334 @@
                         </button>
                     </div>
                 </div>
+            </div> --}}
+
+        <div class="grid gap-y-4 mb-6 w-full grid-cols-1 md:grid-cols-2">
+
+
+            <div class="flex flex-col bg-gray-100 col-span-1">
+                <!-- Card Container -->
+                <div
+                    class="bg-gradient-to-br from-black to-blue-500 rounded-lg shadow-lg p-6 w-full md:w-96 h-56 text-white relative">
+                    <!-- Card Chip Icon -->
+                    <div class=" top-4 flex justify-between ">
+
+                        <img src="https://as1.ftcdn.net/v2/jpg/00/76/54/60/1000_F_76546001_fEMIgXIZEYF5HiNXwXzP0gI83FFCQSqv.jpg"
+                            alt="Cart sim" class="h-10 rounded-md">
+
+
+
+                    </div>
+
+                    <!-- Card Number -->
+                    <div class="mt-8 text-2xl font-mono font-semibold tracking-widest"
+                        style="font-family: 'Montserrat', sans-serif;">
+                        {{ $this->formatAccountNumber($userWallet->Numero_compte) }}
+                    </div>
+
+                    <!-- Card Holder Info -->
+                    <div class="flex justify-between items-center mt-6">
+                        <div>
+                            <p class="text-sm">{{ strtoupper($user->name) }}</p>
+                            <p class="text-sm">12/24</p>
+                        </div>
+
+                        <!-- Card Logo Icon -->
+                        <div class="">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/800px-Mastercard-logo.svg.png"
+                                alt="Card Logo" class="h-10">
+                        </div>
+                    </div>
+                </div>
+
+
+                <h2 class="text-xl text-slate-800 font-semibold mt-4 font-mono">Actions rapide</h2>
+
+                <div class="w-full md:w-96 border border-gray-300 rounded-lg p-3 bg-white mt-4 flex justify-around">
+                    <button wire:click="transfert" >
+                        <div class="flex flex-col justify-center items-center">
+                            <div class=" bg-blue-500 p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                                data-tooltip-target="tooltip-A">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                                </svg>
+
+                            </div>
+                            <div id="tooltip-A" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                Envoie d'argent <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                            <p class="text-md font-normal text-gray-600">Envoyer</p>
+
+                        </div>
+                    </button>
+                    <button wire:click="retrait" >
+
+                    <div class="flex flex-col justify-center items-center">
+                        <div class="bg-black p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                            data-tooltip-target="tooltip-B">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+                            </svg>
+
+
+                        </div>
+                        <div id="tooltip-B" role="tooltip"
+                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                            Retrait d'argent <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+
+                        <p class="text-md font-normal text-gray-600">Retirer</p>
+
+                    </div>
+                </button>
+                    
+
+                    <div class="flex flex-col justify-center items-center">
+                        <div class="bg-black p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                            data-tooltip-target="tooltip-C">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                            </svg>
+
+                        </div>
+                        <div id="tooltip-C" role="tooltip"
+                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                            Transfert entre compte <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+
+                        <p class="text-md font-normal text-gray-600">Transfert</p>
+
+                    </div>
+
+
+
+
+                </div>
+
+
             </div>
 
 
-            <div class="bg-gray-100 p-3 rounded-lg shadow-lg max-w-xl">
 
-                <div class="relative slider-container">
-                    <div class="slider">
+            <div class="flex-1 col-span-1 ">
 
-                        <!-- COI -->
-                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
 
-                            <div class="flex items-center space-x-2">
-                                {{-- <div id="tooltip-2" role="tooltip"
+                <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1 md:col-span-2">
+                        <!-- Contenu du premier élément ici -->
+                        <div class="flex flex-col ">
+                            <div class="w-full flex justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
+                                        data-tooltip-target="tooltip-D">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                        </svg>
+
+
+
+                                    </div>
+                                    <h2 class="ml-3 font-bold text-md text-gray-800">Compte courant</h2>
+
+                                </div>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" data-tooltip-target="tooltip-coc"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                    class="size-6 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                </svg>
+
+                                <div id="tooltip-coc" role="tooltip"
                                     class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                    Compte des Opérations d’Investissement
-                                    <div class="tooltip-arrow" data-popper-arrow></div>
-                                </div> --}}
-                                <button data-tooltip-target="tooltip-2"
-                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                                    </svg>
-                                    COI
-                                </button>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800 mt-4">{{ $coi->Solde }}</p>
-                        </div>
-                        <!-- CFA -->
-                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
+                                    Compte d'operation courante <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
 
-                            <div class="flex items-center space-x-2">
-                                {{-- <div id="tooltip-3" role="tooltip"
-                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                    Compte des Opérations en Attente
-                                    <div class="tooltip-arrow" data-popper-arrow></div>
-                                </div> --}}
-                                <button data-tooltip-target="tooltip-3"
-                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                                    </svg>
-                                    COA
-                                </button>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800 mt-4">{{ $cfa->Solde }}</p>
-                        </div>
-                        <!-- CEDD -->
-                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
 
-                            <div class="flex items-center space-x-2">
-                                {{-- <div id="tooltip-4" role="tooltip"
-                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                    Compte d’Epargne à Durée Déterminée
-                                    <div class="tooltip-arrow" data-popper-arrow></div>
-                                </div> --}}
-                                <button data-tooltip-target="tooltip-4"
-                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                                    </svg>
-                                    CEDD
-                                </button>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800 mt-4">{{ $cedd->Solde }}</p>
-                        </div>
-                        <!-- CEFP -->
-                        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col slide">
 
-                            <div class="flex items-center space-x-2">
-                                {{-- <div id="tooltip-5" role="tooltip"
-                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                    Compte d’Epargne des Fonds Propres
-                                    <div class="tooltip-arrow" data-popper-arrow></div>
-                                </div> --}}
-                                <button data-tooltip-target="tooltip-5"
-                                    class="bg-white text-black font-semibold py-2 px-4 rounded-lg flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6 w-10 h-8 rounded-full">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                                    </svg>
-                                    CEFP
-                                </button>
-                            </div>
-                            <p class="text-2xl font-bold text-gray-800 mt-4">{{ $cefd->Solde }}</p>
-                        </div>
 
+                            </div>
+
+
+                            <p class="text-md font-meduim text-gray-800 mt-4">
+                                {{ number_format($userWallet->balance, 2, ',', ' ') }} FCFA</p>
+
+
+                        </div>
                     </div>
-                    <button class="prev">←</button>
-                    <button class="next">→</button>
+                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                        <!-- Contenu du premier élément ici -->
+                        <div class="flex flex-col ">
+                            <div class="w-full flex justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
+                                        data-tooltip-target="tooltip-D">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+
+
+                                    </div>
+                                    <h2 class="ml-3 font-bold text-md text-gray-800">COI</h2>
+
+                                </div>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    data-tooltip-target="tooltip-coi" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                </svg>
+                                <div id="tooltip-coi" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte des Opérations d’Investissement<div class="tooltip-arrow" data-popper-arrow>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <p class="text-md font-meduim text-gray-800 mt-4">
+                                {{ number_format($coi->Solde, 2, ',', ' ') }} FCFA</p>
+
+
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                        <!-- Contenu du deuxième élément ici -->
+                        <div class="flex flex-col ">
+                            <div class="w-full flex justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
+                                        data-tooltip-target="tooltip-D">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="m9 7.5 3 4.5m0 0 3-4.5M12 12v5.25M15 12H9m6 3H9m12-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+
+
+
+                                    </div>
+                                    <h2 class="ml-3 font-bold text-md text-gray-800">CEDD</h2>
+
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    data-tooltip-target="tooltip-cedd" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                </svg>
+                                <div id="tooltip-cedd" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte d’Epargne à Durée Déterminée <div class="tooltip-arrow" data-popper-arrow>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <p class="text-md font-meduim text-gray-800 mt-4">
+                                {{ number_format($cedd->Solde, 2, ',', ' ') }} FCFA</p>
+
+
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                        <!-- Contenu du troisième élément ici -->
+                        <div class="flex flex-col ">
+                            <div class="w-full flex justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
+                                        data-tooltip-target="tooltip-D">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M14.121 7.629A3 3 0 0 0 9.017 9.43c-.023.212-.002.425.028.636l.506 3.541a4.5 4.5 0 0 1-.43 2.65L9 16.5l1.539-.513a2.25 2.25 0 0 1 1.422 0l.655.218a2.25 2.25 0 0 0 1.718-.122L15 15.75M8.25 12H12m9 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+
+
+
+                                    </div>
+                                    <h2 class="ml-3 font-bold text-md text-gray-800">CFA</h2>
+
+                                </div>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    data-tooltip-target="tooltip-cfa" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                </svg>
+                                <div id="tooltip-cfa" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Collecte des Financements Accordés<div class="tooltip-arrow" data-popper-arrow>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <p class="text-md font-meduim text-gray-800 mt-4">
+                                {{ number_format($cfa->Solde, 2, ',', ' ') }} FCFA</p>
+
+
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                        <!-- Contenu du quatrième élément ici -->
+                        <div class="flex flex-col ">
+                            <div class="w-full flex justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
+                                        data-tooltip-target="tooltip-D">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M14.121 7.629A3 3 0 0 0 9.017 9.43c-.023.212-.002.425.028.636l.506 3.541a4.5 4.5 0 0 1-.43 2.65L9 16.5l1.539-.513a2.25 2.25 0 0 1 1.422 0l.655.218a2.25 2.25 0 0 0 1.718-.122L15 15.75M8.25 12H12m9 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+
+
+
+                                    </div>
+                                    <h2 class="ml-3 font-bold text-md text-gray-800">CEFP</h2>
+
+                                </div>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    data-tooltip-target="tooltip-cefp" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                </svg>
+                                <div id="tooltip-cefp" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Compte d’Epargne des Fonds Propres <div class="tooltip-arrow" data-popper-arrow>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <p class="text-md font-meduim text-gray-800 mt-4">
+                                {{ number_format($cefd->Solde, 2, ',', ' ') }} FCFA</p>
+
+
+                        </div>
+                    </div>
                 </div>
-                <div class="slider-indicators mt-4 flex justify-center space-x-2">
-                    <span class="indicator"></span>
-                    <span class="indicator"></span>
-                </div>
+
+
+
+
             </div>
         </div>
 
@@ -319,15 +548,15 @@
                                             </div>
                                         @elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId)
                                             <div class="text-sm font-medium text-blue-600 text-end">
-                                                {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
+                                                - {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
                                             </div>
                                         @elseif ($transaction->type == 'Envoie' && $transaction->sender_user_id == $userId)
                                             <div class="text-sm font-medium text-red-500">
-                                                {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
+                                                - {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
                                             </div>
                                         @elseif ($transaction->type == 'withdrawal' && $transaction->sender_user_id == $userId)
                                             <div class="text-sm font-medium text-red-500">
-                                                {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
+                                                - {{ number_format($transaction->amount, 2, ',', ' ') }} FCFA
                                             </div>
                                         @endif
                                     </div>
