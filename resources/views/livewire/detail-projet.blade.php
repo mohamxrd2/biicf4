@@ -682,41 +682,38 @@
                 hours: '--',
                 minutes: '--',
                 seconds: '--',
-                startDate: null,
                 interval: null,
-                isCountdownActive: false, // Variable pour suivre l'état du compte à rebours
-                isFinished: false, // Nouvelle variable pour indiquer si le compte à rebours est terminé
+                isCountdownActive: false,
+                isFinished: false,
+                hasSubmitted: false, // Variable pour éviter la soumission multiple
 
                 init() {
-                    console.log('Initialisation du compteur', this.projetDurer);
-
                     if (this.projetDurer) {
                         this.startDate = new Date(this.projetDurer);
-                        this.startDate.setMinutes(this.startDate.getMinutes());
                         this.startCountdown();
                     }
                 },
 
                 startCountdown() {
-                    if (this.isCountdownActive) {
-                        console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
-                        return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
-                    }
+                    if (this.isCountdownActive) return; // Empêche le redémarrage si déjà actif
 
+                    this.clearExistingInterval();
+                    this.updateCountdown();
+                    this.interval = setInterval(this.updateCountdown.bind(this), 1000);
+                    this.isCountdownActive = true;
+                },
+
+                clearExistingInterval() {
                     if (this.interval) {
                         clearInterval(this.interval);
                     }
-                    this.updateCountdown();
-                    this.interval = setInterval(this.updateCountdown.bind(this), 1000);
-                    this.isCountdownActive = true; // Marque le compte à rebours comme actif
                 },
 
                 updateCountdown() {
                     const currentDate = new Date();
-                    const difference = this.startDate.getTime() - currentDate.getTime();
+                    const difference = this.projetDurer - currentDate;
 
                     if (difference <= 0) {
-                        clearInterval(this.interval);
                         this.endCountdown();
                         return;
                     }
@@ -728,19 +725,26 @@
                 },
 
                 endCountdown() {
-                    this.jours = 0;
-                    this.hours = 0;
-                    this.minutes = 0;
-                    this.seconds = 0;
-                    this.isFinished = true; // Indique que le compte à rebours est terminé
+                    this.clearExistingInterval();
+                    this.jours = this.hours = this.minutes = this.seconds = 0;
+                    this.isFinished = true;
+
+                    // Soumettre l'événement seulement une fois
+                    if (!this.hasSubmitted) {
+                        setTimeout(() => {
+                            Livewire.dispatch('compteReboursFini');
+                            this.hasSubmitted = true; // Empêcher la soumission multiple
+                        }, 100); // Petit délai pour laisser le temps à l'affichage de se mettre à jour
+                    }
+
+                    // Mettre à jour l'interface
                     document.getElementById('countdown').innerText = "Temps écoulé !";
 
-                    // Appeler une méthode Livewire pour soumettre l'attribut 'finish'
-                    Livewire.dispatch('compteReboursFini'); // Émettre un événement Livewire
                 },
             }));
         });
     </script>
+
 
 
 </div>
