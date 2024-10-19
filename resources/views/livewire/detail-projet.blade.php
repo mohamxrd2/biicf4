@@ -570,72 +570,72 @@
         function changeImage(src) {
             document.getElementById('mainImage').src = src;
         }
-        // document.getElementById('showInputButton').addEventListener('click', function() {
-        //     var inputDiv = document.getElementById('inputDiv');
-        //     inputDiv.classList.toggle('hidden'); // Basculer l'affichage
-        // });
-        // const solde = @json($solde);
-        // const sommeRestante = @json($sommeRestante); // Récupérer sommeRestante depuis le composant Livewire
+        document.getElementById('showInputButton').addEventListener('click', function() {
+            var inputDiv = document.getElementById('inputDiv');
+            inputDiv.classList.toggle('hidden'); // Basculer l'affichage
+        });
+        const solde = @json($solde);
+        const sommeRestante = @json($sommeRestante); // Récupérer sommeRestante depuis le composant Livewire
 
-        // function verifierSolde() {
-        //     const montantInput = document.getElementById('montantInput');
-        //     const messageSolde = document.getElementById('messageSolde');
-        //     const messageSommeRestante = document.getElementById('messageSommeRestante');
-        //     const confirmerButton = document.getElementById('confirmerButton');
+        function verifierSolde() {
+            const montantInput = document.getElementById('montantInput');
+            const messageSolde = document.getElementById('messageSolde');
+            const messageSommeRestante = document.getElementById('messageSommeRestante');
+            const confirmerButton = document.getElementById('confirmerButton');
 
-        //     // Désactive le bouton de confirmation si sommeRestante est égale à 0
-        //     if (sommeRestante === 0) {
-        //         messageSommeRestante.classList.remove('hidden');
-        //         messageSommeRestante.innerText = 'La somme demandé est totalement collecté';
-        //         confirmerButton.disabled = true;
-        //         return;
-        //     }
+            // Désactive le bouton de confirmation si sommeRestante est égale à 0
+            if (sommeRestante === 0) {
+                messageSommeRestante.classList.remove('hidden');
+                messageSommeRestante.innerText = 'La somme demandé est totalement collecté';
+                confirmerButton.disabled = true;
+                return;
+            }
 
-        //     // Récupérer la valeur directement sans modifications
-        //     const montant = montantInput.value;
+            // Récupérer la valeur directement sans modifications
+            const montant = montantInput.value;
 
-        //     // Vérifie si la valeur est vide
-        //     if (montant.trim() === '') {
-        //         messageSolde.classList.add('hidden');
-        //         messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-        //         confirmerButton.disabled = true; // Désactiver le bouton si le montant est vide
-        //         return;
-        //     }
+            // Vérifie si la valeur est vide
+            if (montant.trim() === '') {
+                messageSolde.classList.add('hidden');
+                messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                confirmerButton.disabled = true; // Désactiver le bouton si le montant est vide
+                return;
+            }
 
-        //     // Convertir en nombre flottant
-        //     const montantFloat = parseFloat(montant);
+            // Convertir en nombre flottant
+            const montantFloat = parseFloat(montant);
 
-        //     // Vérifiez si la conversion a fonctionné (montant est NaN si non valide)
-        //     if (isNaN(montantFloat)) {
-        //         messageSolde.classList.remove('hidden');
-        //         messageSolde.innerText = 'Le montant saisi n\'est pas valide';
-        //         messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-        //         confirmerButton.disabled = true;
-        //         return;
-        //     }
+            // Vérifiez si la conversion a fonctionné (montant est NaN si non valide)
+            if (isNaN(montantFloat)) {
+                messageSolde.classList.remove('hidden');
+                messageSolde.innerText = 'Le montant saisi n\'est pas valide';
+                messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                confirmerButton.disabled = true;
+                return;
+            }
 
-        //     // Vérifie si le montant saisi dépasse le solde
-        //     if (montantFloat > solde) {
-        //         messageSolde.classList.remove('hidden');
-        //         messageSolde.innerText = 'Votre solde est insuffisant';
-        //         messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-        //         confirmerButton.disabled = true; // Désactive le bouton si le solde est insuffisant
-        //     } else {
-        //         messageSolde.classList.add('hidden');
+            // Vérifie si le montant saisi dépasse le solde
+            if (montantFloat > solde) {
+                messageSolde.classList.remove('hidden');
+                messageSolde.innerText = 'Votre solde est insuffisant';
+                messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                confirmerButton.disabled = true; // Désactive le bouton si le solde est insuffisant
+            } else {
+                messageSolde.classList.add('hidden');
 
-        //         // Vérifie si le montant est supérieur à la somme restante
-        //         if (montantFloat > sommeRestante) {
-        //             messageSommeRestante.classList.remove('hidden');
-        //             messageSommeRestante.innerText = 'Le montant doit être inférieur ou égal à la somme restante';
-        //             confirmerButton.disabled = true; // Désactive le bouton si le montant est supérieur à la somme restante
-        //         } else {
-        //             messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+                // Vérifie si le montant est supérieur à la somme restante
+                if (montantFloat > sommeRestante) {
+                    messageSommeRestante.classList.remove('hidden');
+                    messageSommeRestante.innerText = 'Le montant doit être inférieur ou égal à la somme restante';
+                    confirmerButton.disabled = true; // Désactive le bouton si le montant est supérieur à la somme restante
+                } else {
+                    messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
 
-        //             // Vérifie si le montant est supérieur à zéro pour activer le bouton
-        //             confirmerButton.disabled = montantFloat <= 0; // Désactive le bouton si le montant est négatif ou zéro
-        //         }
-        //     }
-        // }
+                    // Vérifie si le montant est supérieur à zéro pour activer le bouton
+                    confirmerButton.disabled = montantFloat <= 0; // Désactive le bouton si le montant est négatif ou zéro
+                }
+            }
+        }
 
 
         // const dateLimite = new Date("{{ $projet->durer }}")
