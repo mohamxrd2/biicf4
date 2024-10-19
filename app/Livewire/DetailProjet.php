@@ -2,10 +2,13 @@
 
 namespace App\Livewire;
 
+use App\Events\CommentSubmittedTaux;
+use App\Events\OldestCommentUpdated;
 use App\Models\Cfa;
 use App\Models\Coi;
 use App\Models\Projet;
 use App\Models\Wallet;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use App\Models\CommentTaux;
 use App\Models\Transaction;
@@ -31,6 +34,7 @@ class DetailProjet extends Component
 
     public $tauxTrade;
     public $commentTauxList = [];
+    public $dateFin;
 
     protected $listeners = ['compteReboursFini'];
     public function mount($id)
@@ -71,29 +75,44 @@ class DetailProjet extends Component
             ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
             ->exists(); // Renvoie true si le montant existe
 
+        $this->dateFin = \Carbon\Carbon::parse($this->projet->durer);
 
-
-        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-            ->where('id_projet', $this->projet->id)
-            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
-            ->get();
-
-            $this->projet = $projet;
-
+        $this->listenTaux();
     }
 
     // Méthode déclenchée lorsque le compte à rebours est terminé
     public function compteReboursFini()
     {
         // Mettre à jour l'attribut 'finish' du projet
-        dd($this->projet->update([
+        $this->projet->update([
             'count' => true,
-        ]));
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Négociation terminé.'
+            )
+        ]);
 
         // Optionnel : Vous pouvez également émettre un événement pour informer l'utilisateur
-        dd($this->dispatch('projetFini', ['message' => 'Le projet est terminé.']));
+        $this->dispatch(
+            'formSubmitted',
+            'Temps écoule, Négociation terminé.'
+        );
+        // $close = true; // Votre logique d'éligibilité ici
+
+        // if ($close) {
+        //     $this->dispatch('submittion', $close,);
+        // }
+
     }
 
+    #[On('echo:comments,CommentSubmittedTaux')]
+    public function listenTaux()
+    {
+        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
+            ->where('id_projet', $this->projet->id)
+            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->get();
+    }
     public function updatedMontant()
     {
         // Vérifier si le montant saisi dépasse le solde
@@ -202,9 +221,9 @@ class DetailProjet extends Component
             ->distinct()
             ->count('id_invest');
 
-            $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
-        ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
-        ->exists(); // Renvoie true si le montant existe
+        $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
+            ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
+            ->exists(); // Renvoie true si le montant existe
 
     }
 
@@ -232,7 +251,7 @@ class DetailProjet extends Component
 
         // Insérer dans la table commentTaux
         try {
-            CommentTaux::create([
+            $commentTaux = CommentTaux::create([
                 'taux' => $this->tauxTrade,
                 'id_invest' => auth()->id(),
                 'id_emp' => $this->projet->id_user,
@@ -241,6 +260,8 @@ class DetailProjet extends Component
 
             // Réinitialiser le champ tauxTrade après l'insertion
             $this->tauxTrade = '';
+            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+
 
             // Optionnel: Ajouter une notification ou un message de succès
             session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
@@ -255,7 +276,23 @@ class DetailProjet extends Component
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
 
+        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+        $existingCountdown = Countdown::where('code_unique',  $this->projet->id)
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
 
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $this->projet->demandeur->id,
+                // 'start_time' => $this->dateFin,
+                'start_time' => now(),
+                'difference' => 'projet_taux',
+                'code_unique' =>  $this->projet->id,
+            ]);
+        }
     }
 
 
@@ -283,9 +320,8 @@ class DetailProjet extends Component
 
     public function joursRestants()
     {
-        $dateFin = \Carbon\Carbon::parse($this->projet->durer);
         $dateActuelle = now();
-        $joursRestants = $dateActuelle->diffInDays($dateFin);
+        $joursRestants = $dateActuelle->diffInDays($this->dateFin);
         return max(0, $joursRestants); // Retournez 0 si le projet est déjà terminé
     }
 

@@ -5,7 +5,7 @@
         @foreach ($notifications as $notification)
             @php
                 // Récupérer l'ID de l'utilisateur depuis les données de la notification
-                $userId = $notification->data['user_id'];
+                $userId = $notification->data['user_id'] ?? $notification->data['id_emp'];
 
                 // Vérifier si l'utilisateur existe dans la table "users"
 $userDetails = App\Models\User::find($userId);

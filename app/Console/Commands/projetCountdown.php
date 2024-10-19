@@ -2,13 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Comment;
 use App\Models\CommentTaux;
 use App\Models\Countdown;
-use App\Models\groupagefact;
+use App\Models\Projet;
 use App\Models\User;
-use App\Models\userquantites;
-use App\Notifications\GrouperFactureNotifications;
+use App\Notifications\GagnantProjetNotifications;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -21,52 +19,80 @@ class projetCountdown extends Command
     public function handle()
     {
         $countdowns = Countdown::where('notified', false)
-            ->where('start_time', '<=', now()->subMinutes(2))
-            ->with('sender') // Charger la relation userSender
+            // ->where('start_time', '<=', now())
+            ->where('start_time', '<=', now()->subMinutes(1))
             ->get();
 
+        // Log pour vérifier le nombre de countdowns récupérés
+        Log::info('Nombre de countdowns récupérés : ', ['countdown_count' => $countdowns->count()]);
 
         foreach ($countdowns as $countdown) {
             // Récupérer le code unique
             $code_unique = $countdown->code_unique;
-            // Log::info('Traitement du countdown.', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
 
-            // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
+            // Log pour le traitement d'un countdown spécifique
+            Log::info('Traitement du countdown', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
+
+            // Retrouver l'enregistrement avec le taux le plus bas, et en cas d'égalité, prendre le plus ancien
             $lowestTauxComment = CommentTaux::with('investisseur')
-                ->where('code_unique', $code_unique)
-                ->orderBy('taux', 'asc')
-                ->first();
-            // Log::info('Commentaire avec le prix le plus bas récupéré.', ['lowestPriceComment_id' => $lowestPriceComment->id ?? null]);
+                ->where('id_projet', $code_unique) // Filtrer par le code unique du projet
+                ->orderBy('taux', 'asc')           // Trier par le taux le plus bas en premier
+                ->orderBy('created_at', 'asc')     // En cas d'égalité, trier par la date de création (le plus ancien en premier)
+                ->first();                         // Récupérer le premier résultat
+
+            // Vérifier si un commentaire avec le taux le plus bas a été trouvé
             if ($lowestTauxComment) {
-                $countdown->difference === 'taux_projet';
-                if ($countdown) {
-                    // Extraire les détails pour la notification
+                Log::info('Commentaire avec le taux le plus bas récupéré.', [
+                    'comment_taux_id' => $lowestTauxComment->id,
+                    'taux' => $lowestTauxComment->taux
+                ]);
+
+                // Assurez-vous que cette condition est correcte et qu'elle n'est pas juste une expression inutile
+                if ($countdown->difference === 'projet_taux') {
+                    // Log pour signaler que le countdown est prêt pour une notification
                     Log::info('Préparation des détails de la notification.', ['countdown' => $countdown->id]);
 
-                    $taux = $countdown->prixTrade;
-                    $code_unique = $countdown->code_unique;
-                    $id_invest = $countdown->id_invest;
-                    $id_emp = $countdown->id_emp;
-                    $id_projet = $countdown->id_projet;
+                    $taux = $lowestTauxComment->taux;
+                    $id_invest = $lowestTauxComment->id_invest;
+                    $id_emp = $lowestTauxComment->id_emp;
+                    $id_projet = $lowestTauxComment->id_projet;
+                    $id_projet = $lowestTauxComment->id_projet; // ID du projet que vous avez récupéré
+                    $projet = Projet::find($id_projet); // Recherche du projet correspondant dans la table 'projets'
+
 
                     // Définir les détails de la notification
                     $details = [
-                        'taux' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
-                        'code_unique' => $countdown->code_unique,
+                        'taux' => $taux ?? null,
                         'id_invest' => $id_invest,
                         'id_emp' => $id_emp,
-                        'id_projet' => $id_projet,
-
+                        'projet_id' => $id_projet,
+                        'duree' => $projet->durer,
+                        'montant' => $projet->montant,
+                        'type_financement' => $projet->type_financement,
                     ];
-                    // Vérifier le type de notification à envoyer
-                    if ($countdown->difference === 'taux_projet') {
-                        // $notification = $countdown->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
-                        // if ($notification) {
-                        //     Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-                        //     $notification->update(['type_achat' => 'taux']);
-                        // }
+
+                    // Log avant d'envoyer la notification
+                    Log::info('Envoi de la notification pour le projet.', ['id_invest' => $id_invest]);
+
+                    // Récupérer l'utilisateur (investisseur)
+                    $owner = User::find($id_invest);
+
+                    // Vérifier que l'utilisateur existe avant d'envoyer la notification
+                    if ($owner) {
+                        Notification::send($owner, new GagnantProjetNotifications($details));
+
+                        // Log après l'envoi de la notification
+                        Log::info('Notification envoyée.', ['notification_details' => $details]);
+
+                        // Mettre à jour l'état du countdown après la notification
+                        $countdown->update(['notified' => true]);
+                    } else {
+                        Log::warning('Aucun utilisateur trouvé avec cet ID.', ['id_invest' => $id_invest]);
                     }
                 }
+            } else {
+                // Log si aucun commentaire avec le taux le plus bas n'a été trouvé
+                Log::warning('Aucun commentaire avec le taux le plus bas trouvé pour ce countdown.', ['countdown_id' => $countdown->id]);
             }
         }
     }

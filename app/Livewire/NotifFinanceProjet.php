@@ -11,9 +11,14 @@ class NotifFinanceProjet extends Component
     {
         // Récupérer les notifications de l'utilisateur connecté
         $this->notifications = auth()->user()->notifications->filter(function ($notification) {
-            return $notification->type === \App\Notifications\DemandeCreditProjetNotification::class;
+            // Filtrer les notifications par plusieurs types
+            return in_array($notification->type, [
+                \App\Notifications\DemandeCreditProjetNotification::class,
+                \App\Notifications\GagnantProjetNotifications::class, // Ajouter un autre type de notification ici
+            ]);
         });
     }
+
     public function render()
     {
         return view('livewire.notif-finance-projet');

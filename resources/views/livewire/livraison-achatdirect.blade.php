@@ -309,7 +309,7 @@
 
                 updateCountdown() {
                     const currentDate = new Date();
-                    const difference = this.startDate.getTime() - currentDate.getTime();
+                    const difference = 0;
 
                     if (difference <= 0) {
                         clearInterval(this.interval);
@@ -325,28 +325,6 @@
                 endCountdown() {
                     document.getElementById('countdown').innerText = "Temps écoulé !";
 
-                    const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtnAppel');
-                    const prixTradeError = document.getElementById('prixTradeError');
-
-                    if (prixTradeInput) prixTradeInput.disabled = true;
-                    if (submitBtn) submitBtn.classList.add('hidden');
-
-                    const highestPricedComment = this.comments.reduce((max, comment) => comment.prix >
-                        max.prix ? comment : max, {
-                            prix: -Infinity
-                        });
-
-                    if (highestPricedComment && highestPricedComment.nameUser) {
-                        alert(
-                            `Le livreur avec le meilleur prix est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`
-                        );
-                    } else {
-                        alert("Aucun commentaire avec un prix trouvé.");
-                    }
-                    prixTradeError.classList.remove('hidden');
-                    this.isCountdownActive =
-                        false; // Marque le compte à rebours comme inactif lorsque terminé
                 },
             }));
         });

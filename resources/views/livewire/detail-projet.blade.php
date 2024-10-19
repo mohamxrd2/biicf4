@@ -28,7 +28,7 @@
 
 
         <!-- Contenu du projet -->
-        <div class="md:px-4 flex flex-col w-full md:w-1/2 py-4">
+        <div class="md:px-4 flex flex-col w-full md:w-1/2 ">
             @if (!$montantVerifie)
                 <!-- Catégorie du projet -->
                 <div class="flex items-center mb-2">
@@ -262,16 +262,19 @@
 
             @if ($montantVerifie)
 
-                <p class="text-md text-center text-gray-600 mb-3">Ceci est la negociation du taux d'interet</p>
-                <div class="flex flex-col">
+                {{-- <p class="text-md text-center text-gray-600 mb-3">Ceci est la negociation du taux d'interet</p> --}}
+                <div x-data="countdownTimer({{ json_encode($projet->durer) }})" class="flex flex-col">
                     <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
-                        <div class="text-xl font-medium">Temps restant</div>
-                        <div id="countdown"
-                            class="flex items-center justify-center gap-2 text-md font-semibold text-red-500 bg-red-100 p-3 rounded-xl w-auto">
-                            <div id="days">-</div> j :
-                            <div id="hours">-</div> h :
-                            <div id="minutes">-</div> m :
-                            <div id="seconds">-</div> s
+                        <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
+                        <div id="countdown" x-show="projetDurer"
+                            class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
+                            <div x-text="jours">--</div>j
+                            <span>:</span>
+                            <div x-text="hours">--</div>h
+                            <span>:</span>
+                            <div x-text="minutes">--</div> m
+                            <span>:</span>
+                            <div x-text="seconds">--</div>s
                         </div>
                     </div>
 
@@ -338,7 +341,7 @@
                                     @error('tauxTrade')
                                         <span class="text-red-500">{{ $message }}</span>
                                     @enderror
-                                    @if (!$projet->count)
+                                    @if (!$projet->count == true)
                                         <button type="submit" id="submitBtnAppel"
                                             class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
                                             <span wire:loading.remove>
@@ -635,38 +638,109 @@
         // }
 
 
-        const dateLimite = new Date("{{ $projet->durer }}")
-            .getTime(); // Assurez-vous que la date est au format acceptable pour JavaScript
+        // const dateLimite = new Date("{{ $projet->durer }}")
+        //     .getTime(); // Assurez-vous que la date est au format acceptable pour JavaScript
 
-        // Mettre à jour le compte à rebours toutes les secondes
-        const interval = setInterval(function() {
-            // Obtenir la date et l'heure actuelles
-            const maintenant = new Date().getTime();
+        // // Mettre à jour le compte à rebours toutes les secondes
+        // const interval = setInterval(function() {
+        //     // Obtenir la date et l'heure actuelles
+        //     const maintenant = new Date().getTime();
 
-            // Calculer la distance entre la date limite et maintenant
-            // const distance = dateLimite - maintenant;
-            const distance = 0;
+        //     // Calculer la distance entre la date limite et maintenant
+        //     const distance = dateLimite - maintenant;
 
-            // Calculer le temps restant en jours, heures, minutes et secondes
-            const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+        //     // Si tu veux simuler une minute, tu peux directement définir une distance de 1 minute (60 000 millisecondes)
+        //     // const distance = 60 * 1000; // 1 minute en millisecondes
 
-            // Afficher les résultats
-            document.getElementById("days").innerText = jours;
-            document.getElementById("hours").innerText = heures;
-            document.getElementById("minutes").innerText = minutes;
-            document.getElementById("seconds").innerText = secondes;
+        //     // Calculer le temps restant en jours, heures, minutes et secondes
+        //     const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
+        //     const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        //     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        //     const secondes = Math.floor((distance % (1000 * 60)) / 1000);
 
-            // Si le compte à rebours est terminé, afficher un message
-            if (distance <= 0) {
-                clearInterval(interval);
-                document.getElementById("countdown").innerText = "Temps écoulé";
+        //     // Afficher les résultats
+        //     document.getElementById("days").innerText = jours;
+        //     document.getElementById("hours").innerText = heures;
+        //     document.getElementById("minutes").innerText = minutes;
+        //     document.getElementById("seconds").innerText = secondes;
 
-                // Appeler une méthode Livewire pour soumettre l'attribut 'finish'
-                Livewire.dispatch('compteReboursFini'); // Émettre un événement Livewire
-            }
-        }, 1000);
+        //     // Si le compte à rebours est terminé, afficher un message
+        //     if (distance <= 0) {
+        //         clearInterval(interval);
+        //         document.getElementById("countdown").innerText = "Temps écoulé";
+
+        //         // Appeler une méthode Livewire pour soumettre l'attribut 'finish'
+        //         Livewire.dispatch('compteReboursFini'); // Émettre un événement Livewire
+        //     }
+        // }, 1000);
     </script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('countdownTimer', (projetDurer) => ({
+                projetDurer: projetDurer ? new Date(projetDurer) : null,
+                jours: '--',
+                hours: '--',
+                minutes: '--',
+                seconds: '--',
+                startDate: null,
+                interval: null,
+                isCountdownActive: false, // Variable pour suivre l'état du compte à rebours
+                isFinished: false, // Nouvelle variable pour indiquer si le compte à rebours est terminé
+
+                init() {
+                    console.log('Initialisation du compteur', this.projetDurer);
+
+                    if (this.projetDurer) {
+                        this.startDate = new Date(this.projetDurer);
+                        this.startDate.setMinutes(this.startDate.getMinutes());
+                        this.startCountdown();
+                    }
+                },
+
+                startCountdown() {
+                    if (this.isCountdownActive) {
+                        console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
+                        return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
+                    }
+
+                    if (this.interval) {
+                        clearInterval(this.interval);
+                    }
+                    this.updateCountdown();
+                    this.interval = setInterval(this.updateCountdown.bind(this), 1000);
+                    this.isCountdownActive = true; // Marque le compte à rebours comme actif
+                },
+
+                updateCountdown() {
+                    const currentDate = new Date();
+                    const difference = this.startDate.getTime() - currentDate.getTime();
+
+                    if (difference <= 0) {
+                        clearInterval(this.interval);
+                        this.endCountdown();
+                        return;
+                    }
+
+                    this.jours = Math.floor(difference / (1000 * 60 * 60 * 24));
+                    this.hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    this.minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    this.seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                },
+
+                endCountdown() {
+                    this.jours = 0;
+                    this.hours = 0;
+                    this.minutes = 0;
+                    this.seconds = 0;
+                    this.isFinished = true; // Indique que le compte à rebours est terminé
+                    document.getElementById('countdown').innerText = "Temps écoulé !";
+
+                    // Appeler une méthode Livewire pour soumettre l'attribut 'finish'
+                    Livewire.dispatch('compteReboursFini'); // Émettre un événement Livewire
+                },
+            }));
+        });
+    </script>
+
+
 </div>

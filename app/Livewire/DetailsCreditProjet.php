@@ -38,7 +38,7 @@ class DetailsCreditProjet extends Component
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $this->userId = $this->notification->data['user_id'];
+        $this->userId = $this->notification->data['user_id'] ?? $this->notification->data['id_emp'];
 
         // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
         $this->userDetails = User::find($this->userId);
