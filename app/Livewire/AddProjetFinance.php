@@ -27,6 +27,8 @@ class AddProjetFinance extends Component
     public $description;
     public $categorie;
     public $type_financement;
+    public $portionActions;
+    public $portionObligations;
     public $statut = 'en attente'; // Statut par défaut
     public $durer; // Nouvel attribut pour la date limite
 
@@ -55,6 +57,8 @@ class AddProjetFinance extends Component
         'taux' => 'required|numeric',
         'description' => 'required|string',
         'categorie' => 'required|string|max:100',
+        'portionActions' => 'required|numeric',
+        'portionObligations' => 'required|numeric',
         'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
         'type_financement' => 'required|string|max:100',
         'photo1' => 'required|image|max:2048', // Photo 1 obligatoire

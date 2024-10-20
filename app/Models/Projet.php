@@ -28,6 +28,8 @@ class Projet extends Model
         'durer',
         'name',
         'count',
+        'Portion_action',
+        'Portion_obligt',
     ];
 
 

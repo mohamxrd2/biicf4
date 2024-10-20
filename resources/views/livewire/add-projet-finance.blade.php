@@ -1,8 +1,5 @@
 <div>
-    {{-- In work, do what you enjoy. --}}
-
-
-    <div class="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-lg mb-4">
+    {{-- <div class="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-lg mb-4">
         <!-- Bouton pour vérifier l'utilisateur -->
         <button id="requestCreditButton" wire:click="verifyUser" wire:loading.attr="disabled"
             class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700">
@@ -16,12 +13,13 @@
                 <p class="text-sm text-gray-700">{{ $message }}</p>
             </div>
         @endif
-    </div>
+    </div> --}}
 
 
-    @if ($isEligible)
 
-        <div class="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-lg">
+    {{-- @if ($isEligible) --}}
+    <form wire:submit.prevent="submit" class="">
+        <div class="mx-auto p-6 bg-white shadow-lg rounded-lg space-y-6">
             @if ($successMessage)
                 <div class="bg-green-500 text-white p-4 rounded-md mt-2 mb-6">
                     {{ $successMessage }}
@@ -36,8 +34,14 @@
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Ajouter un projet</h2>
 
 
-            <form wire:submit.prevent="submit" class="space-y-6">
-                <div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-3">
+                <div class="col-span-2">
+
+                    <p class="text-xl font-bold text-gray-800 underline">INFORMATION SUR LE PROJET</p>
+                </div>
+
+                <div class="w-full">
                     <label for="name" class="block text-sm font-medium text-gray-700">Nom du projet</label>
                     <input type="text" wire:model="name" id="name"
                         class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
@@ -47,7 +51,7 @@
                     @enderror
                 </div>
                 <!-- Montant -->
-                <div class="relative">
+                <div class="w-full">
                     <label for="montant" class="block text-sm font-medium text-gray-700">Montant</label>
                     <input wire:model="montant" type="number" id="montant"
                         class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
@@ -58,7 +62,7 @@
                 </div>
 
                 <!-- Taux -->
-                <div class="relative">
+                <div class="w-full">
                     <label for="taux" class="block text-sm font-medium text-gray-700">Taux(%)</label>
                     <input wire:model="taux" type="number" id="taux"
                         class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
@@ -68,20 +72,9 @@
                     @enderror
                 </div>
 
-                <!-- Description -->
-                <div class="relative">
-                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea wire:model="description" id="description"
-                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
-                        placeholder="Entrez la description"></textarea>
-                    @error('description')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
+
 
                 <!-- Catégorie -->
-
-
                 <div>
                     <label for="categorie" class="block text-sm font-medium text-gray-700">Catégorie</label>
                     <select id="categorie" wire:model="categorie" required
@@ -228,6 +221,141 @@
 
                     </select>
                     @error('categorie')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="relative">
+                    <label for="durer" class="block text-sm font-medium text-gray-700">Date limite</label>
+                    <input wire:model="durer" type="date" id="durer"
+                        min="{{ now()->addDay()->toDateString() }}"
+                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    @error('durer')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+
+
+
+
+                <div x-data="{ typeFinancement: '' }" class="relative">
+                    <label for="type_financement" class="block text-sm font-medium text-gray-700">Type de
+                        financement</label>
+                    <select wire:model="type_financement" id="type_financement" x-model="typeFinancement"
+                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200">
+                        <option value="" disabled>Sélectionnez le type de financement</option>
+                        <option value="direct">Direct</option>
+                        <option value="groupé">Groupé</option>
+                    </select>
+                    @error('type_financement')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+
+                    <!-- Conteneur pour afficher les options dynamiquement -->
+                    <div class="flex space-x-4 mt-4" x-show="typeFinancement">
+                        <!-- Champ de saisie pour le financement direct -->
+                        <div x-show="typeFinancement === 'direct'" class="flex flex-col flex-1">
+                            <label for="username_direct"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Entrez le username pour le financement direct
+                            </label>
+
+                            <!-- Champ de saisie avec recherche d'utilisateur en direct -->
+                            <input wire:model.live="search"
+                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                                type="text" placeholder="Entrez le nom de l'utilisateur">
+
+                            <!-- Affichage des résultats de la recherche -->
+                            @if (!empty($search))
+
+                                @foreach ($users as $user)
+                                    <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg"
+                                        wire:click="selectUser('{{ $user->id }}', '{{ $user->username }}')">
+                                        <div class="flex">
+                                            <img class="w-5 h-5 mr-2 rounded-full" src="{{ asset($user->photo) }}"
+                                                alt="">
+                                            <div class="flex justify-between items-center w-full">
+                                                <span>{{ $user->username }} ({{ $user->name }})</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+
+
+                        <!-- Champ de saisie pour le financement groupé -->
+                        <div x-show="typeFinancement === 'groupé'" class="flex flex-col flex-1 ">
+                            <label for="bailleur_groupé"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un type
+                                bailleur pour le financement groupé</label>
+                            <select wire:model="bailleur_groupé" id="bailleur_groupé"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="" disabled>Sélectionnez un bailleur</option>
+                                <option value="bank">Bank/IFD</option>
+                                <option value="pgm">Pgm Public/Para-Public</option>
+                                <option value="fonds">Fonds d’investissement</option>
+                                <option value="particulier">Particulier</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div x-data="{ mode_recouvre: '' }" class="relative">
+                    <label for="mode_recouvre"
+                        class="block text-sm font-medium text-gray-700">choissisez le mode de recouvrement
+                    </label>
+                    <select wire:model="mode_recouvre" id="mode_recouvre" x-model="mode_recouvre"
+                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200">
+                        <option value="" disabled>Sélectionnez un mode de recouvrement</option>
+                        <option value="ftO">Financement par total Obligations</option>
+                        <option value="faO">Financement par Actions  &  Obligations </option>
+                    </select>
+
+                    <!-- Conteneur pour afficher les options dynamiquement -->
+                    <div class="flex space-x-4 mt-4" x-show="mode_recouvre">
+
+                        <!-- Champ de saisie pour le financement groupé -->
+                        <div x-show="mode_recouvre === 'faO'" class="flex flex-col flex-1 ">
+                            <div class="space-y-4">
+                                <!-- Portion du financement par Actions -->
+                                <div class="relative">
+                                    <label for="portionActions" class="block text-sm font-medium text-gray-700">Portion du Financement par Actions (%)</label>
+                                    <input type="number" wire:model="portionActions" id="portionActions"
+                                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
+                                        placeholder="Entrez la portion en %" min="0" max="100" step="0.01">
+                                    @error('portionActions')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <!-- Portion du financement par Obligations -->
+                                <div class="relative">
+                                    <label for="portionObligations" class="block text-sm font-medium text-gray-700">Portion du Financement par Obligations (FCFA)</label>
+                                    <input type="number" wire:model="portionObligations" id="portionObligations"
+                                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
+                                        placeholder="Entrez la portion en FCFA" min="0" max="100" step="0.01">
+                                    @error('portionObligations')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{--  --}}
+                <div class="col-span-2">
+
+                    <p class="text-xl font-bold text-gray-800 underline">DESCRIPTION DU PROJET</p>
+                </div>
+
+                <!-- Description -->
+                <div class="relative">
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea wire:model="description" id="description"
+                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
+                        placeholder="Entrez la description" rows="5" style="min-height: 600px;"></textarea>
+                    @error('description')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
@@ -423,81 +551,6 @@
                     </div>
                 </div>
 
-                <div class="relative">
-                    <label for="durer" class="block text-sm font-medium text-gray-700">Date limite</label>
-                    <input wire:model="durer" type="date" id="durer"
-                        min="{{ now()->addDay()->toDateString() }}"
-                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
-                    @error('durer')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-
-
-
-                <div x-data="{ typeFinancement: '' }" class="relative">
-                    <label for="type_financement" class="block text-sm font-medium text-gray-700">Type de
-                        financement</label>
-                    <select wire:model="type_financement" id="type_financement" x-model="typeFinancement"
-                        class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200">
-                        <option value="" disabled>Sélectionnez le type de financement</option>
-                        <option value="direct">Direct</option>
-                        <option value="groupé">Groupé</option>
-                    </select>
-                    @error('type_financement')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-
-                    <!-- Conteneur pour afficher les options dynamiquement -->
-                    <div class="flex space-x-4 mt-4" x-show="typeFinancement">
-                        <!-- Champ de saisie pour le financement direct -->
-                        <div x-show="typeFinancement === 'direct'" class="flex flex-col flex-1">
-                            <label for="username_direct"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Entrez le username pour le financement direct
-                            </label>
-
-                            <!-- Champ de saisie avec recherche d'utilisateur en direct -->
-                            <input wire:model.live="search"
-                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                                type="text" placeholder="Entrez le nom de l'utilisateur">
-
-                            <!-- Affichage des résultats de la recherche -->
-                            @if (!empty($search))
-
-                                @foreach ($users as $user)
-                                    <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg"
-                                        wire:click="selectUser('{{ $user->id }}', '{{ $user->username }}')">
-                                        <div class="flex">
-                                            <img class="w-5 h-5 mr-2 rounded-full" src="{{ asset($user->photo) }}"
-                                                alt="">
-                                            <div class="flex justify-between items-center w-full">
-                                                <span>{{ $user->username }} ({{ $user->name }})</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
-
-
-                        <!-- Champ de saisie pour le financement groupé -->
-                        <div x-show="typeFinancement === 'groupé'" class="flex flex-col flex-1 ">
-                            <label for="bailleur_groupé"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un type
-                                bailleur pour le financement groupé</label>
-                            <select wire:model="bailleur_groupé" id="bailleur_groupé"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                <option value="" disabled>Sélectionnez un bailleur</option>
-                                <option value="bank">Bank/IFD</option>
-                                <option value="pgm">Pgm Public/Para-Public</option>
-                                <option value="fonds">Fonds d’investissement</option>
-                                <option value="particulier">Particulier</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
 
 
                 <!-- Submit Button with Loading -->
@@ -518,10 +571,12 @@
                         Annuler
                     </button>
                 </div>
-            </form>
-        </div>
+            </div>
 
-    @endif
+        </div>
+    </form>
+
+    {{-- @endif --}}
 
 
 

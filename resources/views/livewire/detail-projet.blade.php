@@ -224,12 +224,6 @@
                                                 <p class="text-gray-800">
                                                     {{ $projet->montant }} FCFA</p>
                                             </div>
-                                            {{-- <div>
-                                            <p class="text-gray-600 font-medium">Durée du crédit:
-                                            </p>
-                                            <p class="text-gray-800">{{ $demandeCredit->duree }}
-                                                mois</p>
-                                        </div> --}}
                                             <div>
                                                 <p class="text-gray-600 font-medium">Taux du crédit:
                                                 </p>
@@ -263,7 +257,7 @@
             @if ($montantVerifie)
 
                 {{-- <p class="text-md text-center text-gray-600 mb-3">Ceci est la negociation du taux d'interet</p> --}}
-                <div x-data="countdownTimer({{ json_encode($projet->durer) }})" class="flex flex-col">
+                <div x-data="countdownTimer({{ json_encode($projet->created_at) }})" class="flex flex-col">
                     <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
                         <div id="countdown" x-show="projetDurer"
@@ -272,7 +266,7 @@
                             <span>:</span>
                             <div x-text="hours">--</div>h
                             <span>:</span>
-                            <div x-text="minutes">--</div> m
+                            <div x-text="minutes">--</div>m
                             <span>:</span>
                             <div x-text="seconds">--</div>s
                         </div>
@@ -690,6 +684,10 @@
                 init() {
                     if (this.projetDurer) {
                         this.startDate = new Date(this.projetDurer);
+
+                        // Ajouter 5 minutes à la startDate
+                        this.startDate.setMinutes(this.startDate.getMinutes() + 5);
+
                         this.startCountdown();
                     }
                 },
@@ -711,7 +709,7 @@
 
                 updateCountdown() {
                     const currentDate = new Date();
-                    const difference = this.projetDurer - currentDate;
+                    const difference = this.startDate - currentDate;
 
                     if (difference <= 0) {
                         this.endCountdown();
@@ -739,11 +737,11 @@
 
                     // Mettre à jour l'interface
                     document.getElementById('countdown').innerText = "Temps écoulé !";
-
                 },
             }));
         });
     </script>
+
 
 
 
