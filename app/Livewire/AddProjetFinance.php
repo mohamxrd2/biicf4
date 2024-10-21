@@ -288,7 +288,6 @@ class AddProjetFinance extends Component
 
 
         if ($userInPromir) {
-            $userPromir =  UserPromir::where('numero', $userNumber)->first();
             // Vérifier si un score de crédit existe pour cet utilisateur
             $crediScore = CrediScore::where('id_user', $userInPromir->id)->first();
 
@@ -297,19 +296,22 @@ class AddProjetFinance extends Component
                 if (in_array($crediScore->ccc, ['A+', 'A', 'A-'])) {
 
                     $this->message = 'Votre numéro existe dans Promir et votre score de crédit est ' . $crediScore->ccc . ', alors vous êtes éligible au crédit.';
-
+                    $this->dispatch(
+                        'formSubmitted',
+                        'Votre numéro existe dans Promir et votre score de crédit est ' . $crediScore->ccc . ', Alors vous etes éligible au credit'
+                    );
                     $this->isEligible = true;
                 } else {
 
-                    $this->message = 'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.';
+                    $this->dispatch('Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.');
                 }
             } else {
 
-                $this->message = 'Votre numéro existe dans Promir, mais aucun score de crédit n\'a été trouvé.';
+                $this->dispatch('Votre numéro existe dans Promir, mais aucun score de crédit n\'a été trouvé.');
             }
         } else {
             // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
-            $this->message = 'Votre numéro n\'existe pas dans la base de données Promir. Vous n\'êtes pas éligible.';
+            $this->dispatch('Votre numéro n\'existe pas dans la base de données Promir. Vous n\'êtes pas éligible.');
         }
     }
 
