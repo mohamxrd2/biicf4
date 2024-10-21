@@ -30,6 +30,7 @@ class Projet extends Model
         'count',
         'Portion_action',
         'Portion_obligt',
+        'nombreActions',
     ];
 
 

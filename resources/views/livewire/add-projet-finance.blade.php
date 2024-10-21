@@ -750,50 +750,50 @@
             </div>
 
         </form>
-        <script>
-            function calculerTotal() {
-                // Récupérer les valeurs des champs "Montant" et "Taux"
-                let montant = parseFloat(document.getElementById('montant').value) || 0;
-                let taux = parseFloat(document.getElementById('taux').value) || 0;
-                let obligations = parseFloat(document.getElementById('portionObligations').value) || 0;
-
-                // Récupérer le prix d'une action
-                let prixAction = parseFloat(document.getElementById('prixAction').value) || 0;
-
-                // Calcul du retour sur investissement (montant * taux / 100)
-                let tauxInteret = (montant * taux) / 100;
-
-                // Montant total du projet (montant recherché + taux d'intérêt)
-                let montantTotal = montant + tauxInteret;
-
-                // Calcul de la somme allouée aux actions (montant - obligations)
-                let actions = montant - obligations;
-
-
-                // Calculer le nombre d'actions
-                let nombreActions = prixAction > 0 ? Math.floor(actions / prixAction) : 0;
-
-                // Mettre à jour l'affichage du nombre d'actions
-                document.getElementById('nombreActions').textContent = nombreActions;
-
-                // Mettre à jour le champ caché pour le nombre d'actions
-                document.getElementById('actions_total').value = nombreActions;
-
-                // Mettre à jour l'affichage des montants
-                document.getElementById('montantMax').textContent = montant.toLocaleString() + " FCFA";
-                document.getElementById('tauxInteret').textContent = tauxInteret.toLocaleString() + " FCFA";
-                document.getElementById('creditotal').textContent = montantTotal.toLocaleString() + " FCFA";
-                document.getElementById('sommeaction').textContent = actions.toLocaleString() + " FCFA";
-
-                // Mettre à jour les champs cachés
-                document.getElementById('montant_total').value = montant;
-                document.getElementById('taux_interet').value = tauxInteret;
-                document.getElementById('credi_total').value = montantTotal;
-                document.getElementById('somme_action').value = actions;
-
-            }
-        </script>
     @endif
+    <script>
+        function calculerTotal() {
+            // Récupérer les valeurs des champs "Montant" et "Taux"
+            let montant = parseFloat(document.getElementById('montant').value) || 0;
+            let taux = parseFloat(document.getElementById('taux').value) || 0;
+            let obligations = parseFloat(document.getElementById('portionObligations').value) || 0;
+
+            // Récupérer le prix d'une action
+            let prixAction = parseFloat(document.getElementById('prixAction').value) || 0;
+
+            // Calcul du retour sur investissement (montant * taux / 100)
+            let tauxInteret = (montant * taux) / 100;
+
+            // Montant total du projet (montant recherché + taux d'intérêt)
+            let montantTotal = montant + tauxInteret;
+
+            // Calcul de la somme allouée aux actions (montant - obligations)
+            let actions = montant - obligations;
+
+
+            // Calculer le nombre d'actions
+            let nombreActions = prixAction > 0 ? Math.floor(actions / prixAction) : 0;
+
+            // Mettre à jour l'affichage du nombre d'actions
+            document.getElementById('nombreActions').textContent = nombreActions;
+
+            // Mettre à jour le champ caché pour le nombre d'actions
+            document.getElementById('actions_total').value = nombreActions;
+
+            // Mettre à jour l'affichage des montants
+            document.getElementById('montantMax').textContent = montant.toLocaleString() + " FCFA";
+            document.getElementById('tauxInteret').textContent = tauxInteret.toLocaleString() + " FCFA";
+            document.getElementById('creditotal').textContent = montantTotal.toLocaleString() + " FCFA";
+            document.getElementById('sommeaction').textContent = actions.toLocaleString() + " FCFA";
+
+            // Mettre à jour les champs cachés
+            document.getElementById('montant_total').value = montant;
+            document.getElementById('taux_interet').value = tauxInteret;
+            document.getElementById('credi_total').value = montantTotal;
+            document.getElementById('somme_action').value = actions;
+
+        }
+    </script>
 
 
 

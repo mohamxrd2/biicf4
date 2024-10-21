@@ -30,6 +30,7 @@ class AddProjetFinance extends Component
     public $portionActions;
     public $portionObligations;
     public $mode_recouvre;
+    public $nombreActions;
     public $statut = 'en attente'; // Statut par défaut
     public $durer; // Nouvel attribut pour la date limite
 
@@ -58,8 +59,9 @@ class AddProjetFinance extends Component
         'taux' => 'required|numeric',
         'description' => 'required|string',
         'categorie' => 'required|string|max:100',
-        'portionActions' => 'required|numeric',
-        'portionObligations' => 'required|numeric',
+        'portionActions' => 'nullable|numeric',
+        'portionObligations' => 'nullable|numeric',
+        'nombreActions' => 'nullable|numeric',
         'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
         'type_financement' => 'required|string|max:100',
         'photo1' => 'required|image|max:2048', // Photo 1 obligatoire
@@ -182,6 +184,18 @@ class AddProjetFinance extends Component
         // Validation des champs
         $this->validate();
 
+        // Calcul du retour sur investissement (montant * taux / 100)
+        $tauxInteret = ($this->montant * $this->taux) / 100;
+
+        // Montant total du projet (montant recherché + taux d'intérêt)
+        $montantTotal = $this->montant + $tauxInteret;
+
+        // Calcul de la somme allouée aux actions (montant - obligations)
+        $actions = $this->montant - $this->portionObligations;
+
+        // Calculer le nombre d'actions
+        $this->nombreActions = $this->portionActions > 0 ? floor($actions / $this->portionActions) : 0;
+
         // Indicateur de soumission en cours
         $this->isSubmitting = true;
 
@@ -199,8 +213,9 @@ class AddProjetFinance extends Component
                 'id_user' => auth()->id(), // ID de l'utilisateur connecté
                 'Portion_action' => $this->portionActions,
                 'Portion_obligt' => $this->portionObligations,
+                'nombreActions' => $this->nombreActions,
             ]);
-
+            
             // Gestion des photos en appelant la méthode handlePhotoUpload
             $this->handlePhotoUpload($projet, 'photo1');
             $this->handlePhotoUpload($projet, 'photo2');
@@ -210,6 +225,10 @@ class AddProjetFinance extends Component
 
             // Sauvegarder les chemins des photos dans le projet
             $projet->save();
+            $this->dispatch(
+                'formSubmitted',
+                'Demande de financement envoyé avec success'
+            );
 
             // Réinitialiser le formulaire et les erreurs
             $this->resetForm();

@@ -55,7 +55,6 @@
 
                         <div class="mt-4">
 
-
                             <div
                                 class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
                                 <!-- Montant Reçu -->
@@ -92,7 +91,7 @@
                     {{-- pour les obligation & actions --}}
                     @if ($projet->Portion_action & $projet->Portion_obligt)
 
-                        <p>Actions</p>
+                        <p>Actions / prix par Action est de {{ number_format($projet->Portion_action, 0, ',', ' ') }} FCFA</p>
 
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
                             <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%">
@@ -106,10 +105,10 @@
                                 <!-- Montant Reçu -->
                                 <div class="flex flex-col text-center">
                                     <span class="font-semibold text-lg">
-                                        {{ number_format($sommeInvestie, 0, ',', ' ') }}
-                                        FCFA</span>
-                                    <span class="text-gray-500 text-sm">Reçu de
-                                        {{ number_format($projet->Portion_action, 0, ',', ' ') }} FCFA </span>
+                                        {{ number_format($sommeInvestieActions, 0, ',', ' ') }}
+                                    </span>
+                                    <span class="text-gray-500 text-sm">Reçu sur
+                                        {{ number_format($projet->nombreActions, 0, ',', ' ') }}</span>
                                 </div>
 
                                 <!-- Nombre d'Investisseurs -->
@@ -141,7 +140,6 @@
                         </div>
 
                         <div class="mt-4">
-
 
                             <div
                                 class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
