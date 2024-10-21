@@ -29,6 +29,7 @@ class AddProjetFinance extends Component
     public $type_financement;
     public $portionActions;
     public $portionObligations;
+    public $mode_recouvre;
     public $statut = 'en attente'; // Statut par défaut
     public $durer; // Nouvel attribut pour la date limite
 
@@ -197,7 +198,7 @@ class AddProjetFinance extends Component
                 'durer' => $this->durer,
                 'id_user' => auth()->id(), // ID de l'utilisateur connecté
                 'Portion_action' => $this->portionActions,
-                'Portion_obligt' => $this->portionObligations, 
+                'Portion_obligt' => $this->portionObligations,
             ]);
 
             // Gestion des photos en appelant la méthode handlePhotoUpload
