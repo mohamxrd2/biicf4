@@ -196,6 +196,8 @@ class AddProjetFinance extends Component
                 'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
                 'durer' => $this->durer,
                 'id_user' => auth()->id(), // ID de l'utilisateur connecté
+                'Portion_action' => $this->portionActions,
+                'Portion_obligt' => $this->portionObligations, 
             ]);
 
             // Gestion des photos en appelant la méthode handlePhotoUpload

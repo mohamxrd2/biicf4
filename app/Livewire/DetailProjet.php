@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Events\CommentSubmittedTaux;
 use App\Events\OldestCommentUpdated;
+use App\Models\AjoutAction;
 use App\Models\Cfa;
 use App\Models\Coi;
 use App\Models\Projet;
@@ -31,6 +32,7 @@ class DetailProjet extends Component
     public $pourcentageInvesti = 0;
 
     public $sommeInvestie = 0;
+    public $sommeInvestieActions = 0;
     public $montantVerifie = false;
 
     public $tauxTrade;
@@ -62,6 +64,10 @@ class DetailProjet extends Component
 
         $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)
             ->sum('montant'); // Somme des montants investis
+
+        //somme investit pour les actions
+        $this->sommeInvestieActions = AjoutAction::where('id_projet', $this->projet->id)
+            ->sum('montant');
 
         // Calculer le pourcentage investi
         if ($this->projet->montant > 0) {
