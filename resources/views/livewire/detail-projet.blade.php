@@ -94,7 +94,7 @@
                         <p>Actions / prix par Action est de {{ number_format($projet->Portion_action, 0, ',', ' ') }} FCFA</p>
 
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvestiAction }}%">
                             </div>
                         </div>
 
@@ -113,7 +113,7 @@
 
                                 <!-- Nombre d'Investisseurs -->
                                 <div class="flex flex-col text-center">
-                                    <span class="font-semibold text-lg">{{ $nombreInvestisseursDistinct }}</span>
+                                    <span class="font-semibold text-lg">{{ $nombreInvestisseursDistinctAction }}</span>
                                     <span class="text-gray-500 text-sm">Actionnaires</span>
                                 </div>
 
@@ -126,7 +126,7 @@
                                 <!-- Progression -->
                                 <div class="flex flex-col text-center">
                                     <span
-                                        class="font-semibold text-lg">{{ number_format($pourcentageInvesti, 2) }}%</span>
+                                        class="font-semibold text-lg">{{ number_format($pourcentageInvestiAction, 2) }}%</span>
                                     <span class="text-gray-500 text-sm">Progression</span>
                                 </div>
                             </div>

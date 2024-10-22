@@ -9,9 +9,10 @@ class AjoutAction extends Model
 {
     use HasFactory;
 
-    protected $table = 'ajout_montant';
+    protected $table = 'ajout_action';
 
     protected $fillable = [
+        'nombreActions',
         'montant',
         'id_invest',
         'id_emp',

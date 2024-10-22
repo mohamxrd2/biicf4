@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('ajout_action', function (Blueprint $table) {
             $table->id();
             $table->decimal('montant', 15, 2); // Montant à ajouter
-            $table->string('code_unique'); // Code unique
             $table->foreignId('id_invest')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (investisseur)
             $table->foreignId('id_emp')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (emprunteur)
             $table->foreignId('id_projet')->constrained('projet')->onDelete('cascade');

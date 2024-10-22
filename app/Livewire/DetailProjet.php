@@ -28,10 +28,12 @@ class DetailProjet extends Component
     public $solde; // Stocke le solde de l'utilisateur
     public $insuffisant = false; // Pour vérifier si le solde est insuffisant
     public $nombreInvestisseursDistinct = 0;
+    public $nombreInvestisseursDistinctAction = 0;
     public $sommeRestante = 0;
     public $sommeRestanteAction = 0;
 
     public $pourcentageInvesti = 0;
+    public $pourcentageInvestiAction = 0;
 
     public $sommeInvestie = 0;
     public $sommeInvestieActions = 0;
@@ -66,18 +68,28 @@ class DetailProjet extends Component
             ->distinct()
             ->count('id_invest');
 
+        // Mettre à jour le nombre d'investisseurs distincts
+        $this->nombreInvestisseursDistinctAction = AjoutAction::where('id_projet', $this->projet->id)
+            ->distinct()
+            ->count('id_invest');
+
         $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)
             ->sum('montant'); // Somme des montants investis
 
-        //somme investit pour les actions
+        //nbre d'action investit
         $this->sommeInvestieActions = AjoutAction::where('id_projet', $this->projet->id)
-            ->sum('montant');
+            ->sum('nombreActions');
 
         // Calculer le pourcentage investi
         if ($this->projet->montant > 0) {
             $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Calculer le pourcentage investi
         } else {
             $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
+        }
+        if ($this->projet->nombreActions > 0) {
+            $this->pourcentageInvestiAction = ($this->sommeInvestieActions / $this->projet->nombreActions) * 100; // Calculer le pourcentage investi
+        } else {
+            $this->pourcentageInvestiAction = 0; // Si le montant est 0, le pourcentage est 0
         }
 
         // Calculer la somme restante à investir
@@ -90,9 +102,9 @@ class DetailProjet extends Component
             ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
             ->exists(); // Renvoie true si le montant existe
 
-        // Vérifier si le montant du projet est atteint
+        // Vérifier si le nombre d'action du projet est atteint
         $this->montantVerifieAction = AjoutAction::where('id_projet', $this->projet->id)
-            ->where('montant', $this->projet->nombreActions)
+            ->where('nombreActions', $this->projet->nombreActions)
             ->exists();
 
         $this->dateFin = \Carbon\Carbon::parse($this->projet->durer);
@@ -275,18 +287,22 @@ class DetailProjet extends Component
         // Log du début de la méthode
         Log::info('Démarrage de la méthode confirmer pour l\'utilisateur ID: ' . Auth::id());
 
-        // Convertir l'action en float pour s'assurer que c'est un nombre valide
+        // Récupérer le nombre d'actions saisies et convertir en float
         $actions = floatval($this->action);
-        $montant = floatval($this->action * $this->projet->Portion_action);
 
+        // Récupérer le prix unitaire de l'action (Portion_action)
+        $prixUnitaire = floatval($this->projet->Portion_action);
+
+        // Calculer le montant total (nombre d'actions * prix unitaire)
+        $montant = $actions * $prixUnitaire;
         // Vérifier que le nombre d'actions est supérieur à zéro
         if ($actions <= 0) {
             Log::error('Le nombre d\'actions doit être supérieur à zéro. Valeur reçue : ' . $actions);
             return;
         }
 
-        if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
-            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $this->montant);
+        if (empty($montant) || !is_numeric($montant) || $montant <= 0) {
+            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $montant);
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
@@ -332,6 +348,7 @@ class DetailProjet extends Component
 
             // Sauvegarder le montant dans la table `ajout_montant`
             $ajoumontant = AjoutAction::create([
+                'nombreActions' => $actions,
                 'montant' => $montant,
                 'id_invest' => Auth::id(),
                 'id_emp' => $projet->demandeur->id,
@@ -385,11 +402,11 @@ class DetailProjet extends Component
         $this->insuffisant = false;
 
         // Rafraîchir les propriétés du composant
-        //somme investit pour les actions
+        //nbre d'aqction investit
         $this->sommeInvestieActions = AjoutAction::where('id_projet', $this->projet->id)
-            ->sum('montant');
+            ->sum('nombreActions');
         $this->sommeRestanteAction = $this->projet->nombreActions - $this->sommeInvestieActions;
-        $this->pourcentageInvesti = ($this->sommeInvestieActions / $this->projet->nombreActions) * 100;
+        $this->pourcentageInvestiAction  = ($this->sommeInvestieActions / $this->projet->nombreActions) * 100;
 
         // Log de mise à jour des sommes investies
         Log::info('Somme investie mise à jour pour le projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
@@ -399,9 +416,9 @@ class DetailProjet extends Component
             ->distinct()
             ->count('id_invest');
 
-        // Vérifier si le montant du projet est atteint
+        // Vérifier si le nombre d'action du projet est atteint
         $this->montantVerifieAction = AjoutAction::where('id_projet', $this->projet->id)
-            ->where('montant', $this->projet->nombreActions)
+            ->where('nombreActions', $this->projet->nombreActions)
             ->exists();
 
         // Log final
