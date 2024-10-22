@@ -594,10 +594,16 @@ class UserController extends Controller
         return view('admin.detaill-psap', compact('id'));
     }
 
-    public function detailprojet($id)
+    public function detailprojetGroupe($id)
     {
-        return view('finance.detailprojet', compact('id'));
+        return view('finance.detailprojet', ['id' => $id, 'id_projet' => null]);
     }
+    public function detailprojetNegocie($id)
+    {
+        return view('finance.detailprojet', ['id' => null, 'id_projet' => $id]);
+    }
+
+
     public function detailcredit($id)
     {
         return view('finance.detailcredit', ['id' => $id, 'id_projet' => null]); // Si vous n'avez pas d'ID de projet

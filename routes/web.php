@@ -236,7 +236,8 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
         return view('finance.addproject');
     })->name('finance.addproject');
 
-    Route::get('finance/detail-projet/{id}', [UserController::class, 'detailprojet'])->name('detailprojet');
+    Route::get('finance/detail-projet/{id}', [UserController::class, 'detailprojetGroupe'])->name('detailprojetGroupe');
+    Route::get('finance/detail-projet-negocie/{id}', [UserController::class, 'detailprojetNegocie'])->name('detailprojetNegocie');
     Route::get('finance/detail-credit/{id}', [UserController::class, 'detailcredit'])->name('detailcredit');
     Route::get('finance/detail-credit-projet/{id}', [UserController::class, 'detailcreditprojet'])->name('detailcreditprojet');
 });

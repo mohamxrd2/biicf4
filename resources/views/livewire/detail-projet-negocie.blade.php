@@ -1,6 +1,6 @@
 <div>
     @if (isset($projet->montant) && !isset($projet->Portion_action) && !isset($projet->Portion_obligt))
-        <h1>projet groupe avec obligation</h1>
+        <h1>projet negocie avec obligation</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->
@@ -460,7 +460,7 @@
 
         </div>
     @elseif (isset($projet->Portion_action) && isset($projet->Portion_obligt))
-    <h1>projet groupe avec obligation & obigation</h1>
+    <h1>projet negocie avec obligation & obigation</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->

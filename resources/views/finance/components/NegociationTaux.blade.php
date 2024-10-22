@@ -72,13 +72,14 @@
             <form wire:submit.prevent="commentForm">
                 <div
                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                    <input type="number" name="tauxTrade" id="tauxTrade" wire:model="tauxTrade"
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                        placeholder="Faire une offre..." required>
-                    @error('tauxTrade')
-                        <span class="text-red-500">{{ $message }}</span>
-                    @enderror
                     @if (!$projet->count == true)
+                        <input type="number" name="tauxTrade" id="tauxTrade" wire:model="tauxTrade"
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Faire une offre..." required>
+                        @error('tauxTrade')
+                            <span class="text-red-500">{{ $message }}</span>
+                        @enderror
+
                         <button type="submit" id="submitBtnAppel"
                             class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
                             <span wire:loading.remove>

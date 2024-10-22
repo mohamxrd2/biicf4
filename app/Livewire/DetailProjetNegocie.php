@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Livewire\Component;
 use App\Events\CommentSubmittedTaux;
 use App\Events\OldestCommentUpdated;
 use App\Models\AjoutAction;
@@ -10,7 +11,6 @@ use App\Models\Coi;
 use App\Models\Projet;
 use App\Models\Wallet;
 use Livewire\Attributes\On;
-use Livewire\Component;
 use App\Models\CommentTaux;
 use App\Models\Transaction;
 use App\Models\AjoutMontant;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class DetailProjet extends Component
+class DetailProjetNegocie extends Component
 {
     public $projet;
     public $images = [];
@@ -530,7 +530,7 @@ class DetailProjet extends Component
             ->where('id_invest', Auth::id())
             ->exists();
 
-        return view('livewire.detail-projet', [
+        return view('livewire.detail-projet-negocie', [
             'aDejaContribue' => $aDejaContribue,
             'joursRestants' => $this->joursRestants(),
             'images' => $this->images,

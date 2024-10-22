@@ -28,12 +28,20 @@
                             <span class="ml-2 text-sm capitalize text-gray-500">{{ $projetRecent->categorie }}</span>
                         </div>
 
-                        <!-- Titre du projet -->
-                        <a href="{{ route('detailprojet', $projetRecent->id) }}">
-                            <h3 class="text-xl font-semibold text-gray-800 mt-2">
-                                {{ $projetRecent->name }}
-                            </h3>
-                        </a>
+
+                        @if ($projetRecent->type_financement == 'groupé')
+                            <a href="{{ route('detailprojetGroupe', $projetRecent->id) }}">
+                                <h3 class="text-xl font-semibold text-gray-800 mt-2">
+                                    {{ $projetRecent->name }}
+                                </h3>
+                            </a>
+                        @elseif ($projetRecent->type_financement == 'négocié')
+                            <a href="{{ route('detailprojetNegocie', $projetRecent->id) }}">
+                                <h3 class="text-xl font-semibold text-gray-800 mt-2">
+                                    {{ $projetRecent->name }}
+                                </h3>
+                            </a>
+                        @endif
 
                         <!-- Description courte -->
                         <p class="text-gray-500 mt-2 text-sm">
@@ -95,10 +103,17 @@
                                 <span class="ml-2 text-sm text-gray-500">{{ $projet->categorie }}</span>
                                 <!-- Catégorie -->
                             </div>
-                            <a href="{{ route('detailprojet', $projet->id) }}">
-                                <h3 class="text-lg font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3>
-                                <!-- Nom du projet -->
-                            </a>
+                            @if ($projet->type_financement == 'groupé')
+                                <a href="{{ route('detailprojetGroupe', $projet->id) }}">
+                                    <h3 class="text-lg font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3>
+                                    <!-- Nom du projet -->
+                                </a>
+                            @elseif ($projet->type_financement == 'négocié')
+                                <a href="{{ route('detailprojetNegocie', $projet->id) }}">
+                                    <h3 class="text-lg font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3>
+                                    <!-- Nom du projet -->
+                                </a>
+                            @endif
 
                             <p class="text-gray-600 mt-2">
                                 {{ \Illuminate\Support\Str::words($projet->description, 15, '...') }}
