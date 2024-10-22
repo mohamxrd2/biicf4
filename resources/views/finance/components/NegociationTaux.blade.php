@@ -1,5 +1,5 @@
 {{-- <p class="text-md text-center text-gray-600 mb-3">Ceci est la negociation du taux d'interet</p> --}}
-<div x-data="countdownTimer({{ json_encode($projet->created_at) }})" class="flex flex-col">
+<div x-data="countdownTimer({{ json_encode($projet->durer) }})" class="flex flex-col">
     <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
         <div id="countdown" x-show="projetDurer" class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg">

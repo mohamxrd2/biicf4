@@ -1,6 +1,6 @@
 <div>
     @if (isset($projet->montant) && !isset($projet->Portion_action) && !isset($projet->Portion_obligt))
-        <h1>projet negocie avec obligation</h1>
+        <h1>projet negocie avec obligation..</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->
@@ -27,9 +27,10 @@
 
             <!-- Contenu du projet -->
             <div class="md:px-4 flex flex-col w-full md:w-1/2 ">
-                @if ($projet->id_user == Auth::id() || $projet->id_user != Auth::id())
+                @if ($projet->id_user == Auth::id())
                     <!-- Vérification si l'utilisateur a déjà contribué -->
-                    @if (!$aDejaContribue) {{-- $aDejaContribue est une variable passée par le contrôleur indiquant si l'utilisateur a déjà contribué --}}
+                    {{-- @if (!$aDejaContribue) --}}
+                        {{-- $aDejaContribue est une variable passée par le contrôleur indiquant si l'utilisateur a déjà contribué --}}
                         <!-- Partie permettant d'ajouter un montant -->
                         <!-- Catégorie du projet -->
                         <div class="flex items-center mb-2">
@@ -265,10 +266,10 @@
                                 </div>
                             </div>
                         </div>
-                    @endif
+                    {{-- @endif --}}
                 @endif
                 {{-- cette partie est dedié a la partie de negociation --}}
-                @if ($projet->id_user != Auth::id() && $montantVerifie)
+                @if ($projet->id_user != Auth::id() )
                     @include('finance.components.NegociationTaux')
                 @endif
             </div>
@@ -282,7 +283,7 @@
                     {{ $projet->description }}
                 </p>
             </div>
-            @if ($projet->id_user != Auth::id() && $montantVerifie)
+            @if ($projet->id_user != Auth::id() )
                 <div class="w-full md:w-1/2 mt-4 px-6">
                     <!-- Catégorie du projet -->
                     <div class="flex items-center mb-2">
@@ -460,7 +461,7 @@
 
         </div>
     @elseif (isset($projet->Portion_action) && isset($projet->Portion_obligt))
-    <h1>projet negocie avec obligation & obigation</h1>
+        <h1>projet negocie avec obligation & obigation</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->
@@ -502,7 +503,6 @@
             </div>
         </div>
         @include('finance.components.Action&Obligation_bas')
-    @elseif ($projet->type_financement == 'négocié' && isset($projet->montant) && !isset($projet->Portion_action) && !isset($projet->Portion_obligt))
 
     @endif
 
