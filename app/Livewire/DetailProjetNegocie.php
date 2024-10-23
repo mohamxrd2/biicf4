@@ -143,6 +143,7 @@ class DetailProjetNegocie extends Component
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->orderBy('created_at', 'asc')
             ->get();
     }
     public function updatedMontant()
@@ -158,10 +159,10 @@ class DetailProjetNegocie extends Component
         Log::info('Démarrage de la méthode confirmer pour l\'utilisateur ID: ' . Auth::id());
 
         // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-        $montant = floatval($this->montant);
+        $montant = floatval($this->projet->montant);
 
-        if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
-            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $this->montant);
+        if (empty($this->projet->montant) || !is_numeric($montant) || $montant <= 0) {
+            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $this->projet->montant);
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
@@ -448,24 +449,35 @@ class DetailProjetNegocie extends Component
             return;
         }
 
-        // Insérer dans la table commentTaux
-        try {
-            $commentTaux = CommentTaux::create([
-                'taux' => $this->tauxTrade,
-                'id_invest' => auth()->id(),
-                'id_emp' => $this->projet->id_user,
-                'id_projet' => $this->projet->id,
-            ]);
+        // Vérifier si c'est la première soumission
+        $ajoutMontant = AjoutMontant::where('id_invest', $user->id)
+            ->where('id_projet', $this->projet->id)
+            ->first();
 
-            // Réinitialiser le champ tauxTrade après l'insertion
-            $this->tauxTrade = '';
-            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+        if (!$ajoutMontant) {
+            // Appeler la fonction confirmer si c'est la première soumission
+            $this->confirmer();
+        } else {
+
+            // Insérer dans la table commentTaux
+            try {
+                $commentTaux = CommentTaux::create([
+                    'taux' => $this->tauxTrade,
+                    'id_invest' => auth()->id(),
+                    'id_emp' => $this->projet->id_user,
+                    'id_projet' => $this->projet->id,
+                ]);
+
+                // Réinitialiser le champ tauxTrade après l'insertion
+                $this->tauxTrade = '';
+                broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
 
 
-            // Optionnel: Ajouter une notification ou un message de succès
-            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+                // Optionnel: Ajouter une notification ou un message de succès
+                session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+            } catch (\Exception $e) {
+                session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+            }
         }
 
         // Commenter cette ligne une fois que vous avez vérifié
@@ -473,6 +485,7 @@ class DetailProjetNegocie extends Component
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->orderBy('created_at', 'asc')
             ->get();
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique

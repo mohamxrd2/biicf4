@@ -40,7 +40,6 @@
                             </svg>
                             <span class="ml-2 text-sm text-gray-500">{{ $projet->categorie }}</span>
                         </div>
-
                         <!-- Titre du projet -->
                         <a href="details.html">
                             <h3 class="text-xl font-semibold text-gray-800 mt-2">
@@ -460,7 +459,7 @@
 
         </div>
     @elseif (isset($projet->Portion_action) && isset($projet->Portion_obligt))
-    <h1>projet groupe avec obligation & obigation</h1>
+        <h1>projet groupe avec obligation & obigation</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->
@@ -501,8 +500,22 @@
                 @endif
             </div>
         </div>
-        @include('finance.components.Action&Obligation_bas')
-    @elseif ($projet->type_financement == 'négocié' && isset($projet->montant) && !isset($projet->Portion_action) && !isset($projet->Portion_obligt))
+        <div class="flex flex-col md:flex-row">
+            <div class="flex flex-col w-full md:w-1/2">
+                <h3 class="text-xl font-semibold text-gray-600 mt-2 mb-6">
+                    Description du projet
+                </h3>
+                <p class="text-gray-500">
+                    {{ $projet->description }}
+                </p>
+            </div>
+            @if ($projet->id_user != Auth::id() && $montantVerifie)
+                <div class="w-full md:w-1/2 mt-4 px-6">
+                    @include('finance.components.Action&Obligation')
+                </div>
+            @endif
+
+        </div>
 
     @endif
 

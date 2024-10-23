@@ -35,6 +35,9 @@
                 @php
                     // Trouver le plus petit taux dans la liste des commentaires
                     $minTaux = $commentTauxList->min('taux');
+
+                    // Trouver le commentaire le plus ancien avec le taux minimal
+                    $oldestMinTauxComment = $commentTauxList->where('taux', $minTaux)->sortBy('created_at')->first();
                 @endphp
                 @if ($commentTauxList->isNotEmpty())
                     <div class="flex flex-col space-y-2">
@@ -49,8 +52,8 @@
                                     </p>
                                     <p class="text-sm mt-0.5">
                                         {{ $comment->taux }} % <!-- Afficher le taux -->
-                                        @if ($comment->taux == $minTaux)
-                                            <!-- Afficher une étoile jaune si le taux est le plus petit -->
+                                        @if ($comment->id == $oldestMinTauxComment->id)
+                                            <!-- Afficher une étoile jaune pour le commentaire avec le plus ancien taux minimal -->
                                             <span class="text-yellow-500">★</span>
                                         @endif
                                     </p>
