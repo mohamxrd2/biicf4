@@ -331,7 +331,7 @@
                                     <option value="" disabled>Sélectionnez le type de financement</option>
                                     <option value="direct">Direct</option>
                                     <option value="groupé">Groupé</option>
-                                    <option value="groupé">Negocier</option>
+                                    <option value="négocié">Negocier</option>
                                 </select>
                                 @error('type_financement')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
