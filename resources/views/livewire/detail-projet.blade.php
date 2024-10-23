@@ -233,7 +233,7 @@
 
         </div>
     @elseif (isset($projet->Portion_action) && isset($projet->Portion_obligt))
-        <h1>projet groupe avec obligation & obigation</h1>
+        <h1>projet groupe avec obligation & action</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->
@@ -259,19 +259,26 @@
             </div>
             <!-- Contenu du projet -->
             <div class="md:px-4 flex flex-col w-full md:w-1/2 ">
-                @if ($projet->id_user == Auth::id() || $projet->id_user != Auth::id())
-                    <!-- Vérification si l'utilisateur a déjà contribué -->
-                    @if (!$aDejaContribue)
-                        {{-- $aDejaContribue est une variable passée par le contrôleur indiquant si l'utilisateur a déjà contribué --}}
-                        <!-- Partie permettant d'ajouter un montant -->
+                    @if ($pourcentageInvesti < 100)
+                        <!-- Le projet n'est pas encore entièrement financé -->
                         @include('finance.components.Action&Obligation')
-                    @endif
-                @endif
+                    @else
+                        <!-- Si le projet est entièrement financé -->
+                        @if ($investisseurQuiAPayeTout)
+                            <!-- Vérifier si un investisseur a payé tout le montant -->
+                            @if ($projet->id_user == Auth::id())
+                                <!-- Le propriétaire voit Obligation -->
+                                @include('finance.components.Action&Obligation')
+                            @else
+                                <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
+                                @include('finance.components.NegociationTaux')
+                            @endif
+                        @else
+                            <!-- Si aucun investisseur n'a payé la totalité, tous les utilisateurs voient Obligation -->
+                            @include('finance.components.Action&Obligation')
+                        @endif
 
-                {{-- cette partie est dedié a la partie de negociation --}}
-                @if ($projet->id_user != Auth::id() && $montantVerifie)
-                    @include('finance.components.NegociationTaux')
-                @endif
+                    @endif
             </div>
         </div>
         <div class="flex flex-col md:flex-row">

@@ -1,7 +1,7 @@
 <div x-data="countdownTimer({{ json_encode($projet->durer) }})" x-init="init" class="flex flex-col">
     <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
-        <div  class="text-xl font-medium">Temps restant</div>
-        <div id="countdown"  class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg">
+        <div class="text-xl font-medium">Temps restant</div>
+        <div id="countdown" class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg">
             @if (!$projet->count)
                 <div class="flex items-center" x-show="!isFinished">
                     <div x-text="jours"></div>j
@@ -33,13 +33,15 @@
 
 
                 @php
+                    $tauxPresent = $projet->taux; // Récupérer le taux présent pour la comparaison
+
                     // Trouver le plus petit taux dans la liste des commentaires
                     $minTaux = $commentTauxList->min('taux');
 
                     // Trouver le commentaire le plus ancien avec le taux minimal
                     $oldestMinTauxComment = $commentTauxList->where('taux', $minTaux)->sortBy('created_at')->first();
                 @endphp
-                
+
                 @if ($commentTauxList->isNotEmpty())
                     <div class="flex flex-col space-y-2">
                         @foreach ($commentTauxList as $comment)
@@ -73,10 +75,11 @@
 
 
             </div>
-            <form wire:submit.prevent="commentForm">
+
+            <form wire:submit.prevent="commentForm" onsubmit="return validateTaux();">
                 <div
                     class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                    @if (!$projet->count == true)
+                    @if (!$projet->count)
                         <input type="number" name="tauxTrade" id="tauxTrade" wire:model="tauxTrade"
                             class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                             placeholder="Faire une offre..." required>
@@ -101,6 +104,8 @@
                                 </svg>
                             </span>
                         </button>
+
+                        <div id="errorMessage" class="text-red-500 mt-2 hidden"></div> <!-- Message d'erreur -->
                     @endif
                 </div>
             </form>
@@ -115,6 +120,29 @@
     </div>
 </div>
 <script>
+    // Ajoutez un écouteur d'événements pour valider le taux lors de la saisie
+    document.getElementById('tauxTrade').addEventListener('input', validateTaux);
+
+    function validateTaux() {
+        const tauxPresent = @json($tauxPresent); // Le taux déjà présent
+        const tauxTradeInput = document.getElementById('tauxTrade');
+        const submitBtn = document.getElementById('submitBtnAppel');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Vérifiez si le taux saisi est supérieur au taux présent
+        if (parseFloat(tauxTradeInput.value) > parseFloat(tauxPresent)) {
+            errorMessage.innerText = `Le taux ne peut pas être supérieur à ${tauxPresent}%.`;
+            errorMessage.classList.remove('hidden');
+            submitBtn.disabled = true; // Désactivez le bouton
+            return false; // Empêche la soumission du formulaire
+        } else {
+            errorMessage.classList.add('hidden'); // Cachez le message d'erreur
+            submitBtn.disabled = false; // Réactivez le bouton
+            return true; // Permettre la soumission du formulaire
+        }
+    }
+
+
 
     document.addEventListener('alpine:init', () => {
         Alpine.data('countdownTimer', (projetDurer) => ({

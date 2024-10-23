@@ -101,15 +101,23 @@
             Contribuez au financement du projet pour l'aider à atteindre la somme souhaitée.
         </p>
         @if ($projet->id_user != Auth::id())
+            @php
+                // Déterminez si le bouton "Ajouter un montant" est affiché
+                $isSingleButton = $montantVerifie;
+            @endphp
+
             <div class="flex">
                 <!-- Bouton pour ajouter un montant -->
-                <button id="showMontantInputButton"
-                    class="w-1/2 py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
-                    Ajouter un montant
-                </button>
+                @if (!$montantVerifie)
+                    <button id="showMontantInputButton"
+                        class="w-1/2 py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                        Ajouter un montant
+                    </button>
+                @endif
+
                 <!-- Bouton pour ajouter une action -->
                 <button id="showActionInputButton"
-                    class="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 transition-colors rounded-md text-white font-medium">
+                    class="{{ $isSingleButton ? 'w-full' : 'w-1/2' }} py-3 bg-blue-600 hover:bg-blue-700 transition-colors rounded-md text-white font-medium">
                     Ajouter une action
                 </button>
             </div>
