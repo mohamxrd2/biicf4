@@ -68,65 +68,59 @@
                 Plus d'informations
             </button>
         </div>
-        
-        @if ($projet->id_user == Auth::id())
 
-            <div class="mt-4">
-                <div class="border border-gray-300 rounded-lg p-6 shadow-md">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                        Participer au financement du projet
-                    </h3>
-                    <p class="text-gray-600 text-md mb-6">
-                        Contribuez au financement du projet pour l'aider à atteindre la somme
-                        souhaitée.
-                    </p>
-                    @if ($projet->id_user != Auth::id())
-                        <button id="showMontantInputButton"
-                            class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
-                            Ajouter un montant
-                        </button>
-                    @else
-                        <button
-                            class="w-full py-3 bg-gray-200 hover:bg-gray-300 transition-colors rounded-md text-black font-medium"
-                            disabled>
-                            Ceci est votre projet
-                        </button>
-                    @endif
-                </div>
 
-                <div id="montantInputDiv" class="mt-6 hidden">
-
-                    <p class="text-md mb-3 text-gray-700">Le montant restant est de : <span class="font-bold">
-                            {{ number_format($sommeRestante, 0, ',', ' ') }} FCFA</span></p>
-
-                    <input type="number" id="montantInput"
-                        class="w-full py-3 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Entrez le montant" wire:model="montant" oninput="verifierSolde()">
-
-                    <p id="messageSolde" class="text-red-500 text-center mt-2 hidden">Votre
-                        solde est
-                        insuffisant
-                    </p>
-                    <p id="messageSommeRestante" class="text-red-500 text-center mt-2 hidden">Le
-                        montant
-                        doit
-                        être
-                        supérieur
-                        ou égal à la somme restante</p>
-
-                    <button id="confirmer"
-                        class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
-                        wire:click="confirmer" wire:loading.attr="disabled">
-                        <span wire:loading.remove>
-                            Confirmer le montant
-                        </span>
-                        <span wire:loading>
-                            Chargement...
-                        </span>
+        <div class="mt-4">
+            <div class="border border-gray-300 rounded-lg p-6 shadow-md">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    Participer au financement du projet
+                </h3>
+                <p class="text-gray-600 text-md mb-6">
+                    Contribuez au financement du projet pour l'aider à atteindre la somme
+                    souhaitée.
+                </p>
+                @if ($projet->id_user != Auth::id())
+                    <button id="showMontantInputButton"
+                        class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                        Ajouter un montant
                     </button>
-                </div>
+                @else
+                    <button
+                        class="w-full py-3 bg-gray-200 hover:bg-gray-300 transition-colors rounded-md text-black font-medium"
+                        disabled>
+                        Ceci est votre projet
+                    </button>
+                @endif
             </div>
-        @endif
+
+            <div id="montantInputDiv" class="mt-6 hidden">
+
+                <p class="text-md mb-3 text-gray-700">Le montant restant est de : <span class="font-bold">
+                        {{ number_format($sommeRestante, 0, ',', ' ') }} FCFA</span></p>
+
+                <input type="number" id="montantInput"
+                    class="w-full py-3 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Entrez le montant" wire:model="montant" oninput="verifierSolde()">
+
+                <p id="messageSolde" class="text-red-500 text-center mt-2 hidden">Votre
+                    solde est
+                    insuffisant
+                </p>
+                <p id="messageSommeRestante" class="text-red-500 text-center mt-2 hidden">Le
+                    montant doit être supérieur ou égal à la somme restante</p>
+
+                <button id="confirmerButton"
+                    class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
+                    wire:click="confirmer" wire:loading.attr="disabled">
+                    <span wire:loading.remove>
+                        Confirmer le montant
+                    </span>
+                    <span wire:loading>
+                        Chargement...
+                    </span>
+                </button>
+            </div>
+        </div>
         <!-- Main modal -->
         <div id="static-modal" data-modal-backdrop="static" tabindex="-1" aria-hidden="true"
             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">

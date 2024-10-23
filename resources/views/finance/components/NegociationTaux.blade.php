@@ -1,18 +1,18 @@
-{{-- <p class="text-md text-center text-gray-600 mb-3">Ceci est la negociation du taux d'interet</p> --}}
-<div x-data="countdownTimer({{ json_encode($projet->durer) }})" class="flex flex-col">
+<div x-data="countdownTimer({{ json_encode($projet->durer) }})" x-init="init" class="flex flex-col">
     <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
-        <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
-        <div id="countdown" x-show="projetDurer" class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg">
-            @if (!$projet->count == true)
-                <div class=" flex items-center">
-                    <div x-text="jours">--</div>j
+        <div  class="text-xl font-medium">Temps restant</div>
+        <div id="countdown"  class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg">
+            @if (!$projet->count)
+                <div class="flex items-center" x-show="!isFinished">
+                    <div x-text="jours"></div>j
                     <span>:</span>
-                    <div x-text="hours">--</div>h
+                    <div x-text="hours"></div>h
                     <span>:</span>
-                    <div x-text="minutes">--</div>m
+                    <div x-text="minutes"></div>m
                     <span>:</span>
-                    <div x-text="seconds">--</div>s
+                    <div x-text="seconds"></div>s
                 </div>
+                <div x-show="isFinished" class="text-red-600 font-bold">Temps écoulé !</div>
             @endif
         </div>
     </div>
@@ -39,6 +39,7 @@
                     // Trouver le commentaire le plus ancien avec le taux minimal
                     $oldestMinTauxComment = $commentTauxList->where('taux', $minTaux)->sortBy('created_at')->first();
                 @endphp
+                
                 @if ($commentTauxList->isNotEmpty())
                     <div class="flex flex-col space-y-2">
                         @foreach ($commentTauxList as $comment)
@@ -112,7 +113,78 @@
             <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
         </div>
     </div>
-
-
-
 </div>
+<script>
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('countdownTimer', (projetDurer) => ({
+            projetDurer: projetDurer ? new Date(projetDurer) : null,
+            jours: '--',
+            hours: '--',
+            minutes: '--',
+            seconds: '--',
+            interval: null,
+            isCountdownActive: false,
+            isFinished: false,
+            hasSubmitted: false, // Variable pour éviter la soumission multiple
+
+            init() {
+                if (this.projetDurer) {
+                    this.startDate = new Date(this.projetDurer);
+
+                    // Ajouter 5 minutes à la startDate
+                    this.startDate.setMinutes(this.startDate.getMinutes() + 5);
+
+                    this.startCountdown();
+                }
+            },
+
+            startCountdown() {
+                if (this.isCountdownActive) return; // Empêche le redémarrage si déjà actif
+
+                this.clearExistingInterval();
+                this.updateCountdown();
+                this.interval = setInterval(this.updateCountdown.bind(this), 1000);
+                this.isCountdownActive = true;
+            },
+
+            clearExistingInterval() {
+                if (this.interval) {
+                    clearInterval(this.interval);
+                }
+            },
+
+            updateCountdown() {
+                const currentDate = new Date();
+                const difference = this.startDate - currentDate;
+
+                if (difference <= 0) {
+                    this.endCountdown();
+                    return;
+                }
+
+                this.jours = Math.floor(difference / (1000 * 60 * 60 * 24));
+                this.hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                this.minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                this.seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            },
+
+            endCountdown() {
+                this.clearExistingInterval();
+                this.jours = this.hours = this.minutes = this.seconds = 0;
+                this.isFinished = true;
+
+                // Soumettre l'événement seulement une fois
+                if (!this.hasSubmitted) {
+                    setTimeout(() => {
+                        Livewire.dispatch('compteReboursFini');
+                        this.hasSubmitted = true; // Empêcher la soumission multiple
+                    }, 100); // Petit délai pour laisser le temps à l'affichage de se mettre à jour
+                }
+
+                // Mettre à jour l'interface
+                document.getElementById('countdown').innerText = "Temps écoulé !";
+            },
+        }));
+    });
+</script>
