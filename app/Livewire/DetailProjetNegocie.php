@@ -34,6 +34,7 @@ class DetailProjetNegocie extends Component
 
     public $pourcentageInvesti = 0;
     public $pourcentageInvestiAction = 0;
+    public $investisseurQuiAPayeTout;
 
     public $sommeInvestie = 0;
     public $sommeInvestieActions = 0;
@@ -97,6 +98,22 @@ class DetailProjetNegocie extends Component
 
         $this->sommeRestanteAction = $this->projet->nombreActions - $this->sommeInvestieActions;
 
+
+        // Récupérer la somme totale de tous les montants ajoutés pour ce projet par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
+
+        // Vérifier si la somme totale atteint ou dépasse le montant du projet
+        $this->montantVerifie = $totalAjoute >= $this->projet->montant;
+
+        // Vérifier si un investisseur a payé la totalité du projet
+        $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
+            ->select('id_invest')
+            ->groupBy('id_invest')
+            ->havingRaw('SUM(montant) >= ?', [$this->projet->montant])
+            ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
+
+        // Log de l'investisseur qui a payé tout
+        Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
 
         $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
             ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
@@ -279,8 +296,15 @@ class DetailProjetNegocie extends Component
             ->where('montant', $this->projet->montant)
             ->exists();
 
-        // Log final
-        Log::info('Montant vérifié pour le projet ID: ' . $this->projet->id . ', Montant atteint: ' . ($this->montantVerifie ? 'Oui' : 'Non'));
+        // Vérifier si un investisseur a payé la totalité du projet
+        $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
+            ->select('id_invest')
+            ->groupBy('id_invest')
+            ->havingRaw('SUM(montant) >= ?', [$this->projet->montant])
+            ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
+
+        // Log de l'investisseur qui a payé tout
+        Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
     }
 
     public function confirmerAction()

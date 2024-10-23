@@ -259,26 +259,26 @@
             </div>
             <!-- Contenu du projet -->
             <div class="md:px-4 flex flex-col w-full md:w-1/2 ">
-                    @if ($pourcentageInvesti < 100)
-                        <!-- Le projet n'est pas encore entièrement financé -->
-                        @include('finance.components.Action&Obligation')
-                    @else
-                        <!-- Si le projet est entièrement financé -->
-                        @if ($investisseurQuiAPayeTout)
-                            <!-- Vérifier si un investisseur a payé tout le montant -->
-                            @if ($projet->id_user == Auth::id())
-                                <!-- Le propriétaire voit Obligation -->
-                                @include('finance.components.Action&Obligation')
-                            @else
-                                <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
-                                @include('finance.components.NegociationTaux')
-                            @endif
-                        @else
-                            <!-- Si aucun investisseur n'a payé la totalité, tous les utilisateurs voient Obligation -->
+                @if ($pourcentageInvesti < 100)
+                    <!-- Le projet n'est pas encore entièrement financé -->
+                    @include('finance.components.Action&Obligation')
+                @else
+                    <!-- Si le projet est entièrement financé -->
+                    @if ($investisseurQuiAPayeTout)
+                        <!-- Vérifier si un investisseur a payé tout le montant -->
+                        @if ($projet->id_user == Auth::id())
+                            <!-- Le propriétaire voit Obligation -->
                             @include('finance.components.Action&Obligation')
+                        @else
+                            <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
+                            @include('finance.components.NegociationTaux')
                         @endif
-
+                    @else
+                        <!-- Si aucun investisseur n'a payé la totalité, tous les utilisateurs voient Obligation -->
+                        @include('finance.components.Action&Obligation')
                     @endif
+
+                @endif
             </div>
         </div>
         <div class="flex flex-col md:flex-row">
