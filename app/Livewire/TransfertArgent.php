@@ -9,54 +9,35 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
-class TransfertClient extends Component
+class TransfertArgent extends Component
 {
     public $search = '';
+    public $users = [];
     public $user_id;
     public $amount;
 
-
-
-    public $users = [];
-
-    public $selectedUsername = '';
-
+    // Méthode appelée lors de la mise à jour de la recherche
     public function mount()
     {
-        $this->users = [];
-        Log::info('TransfertClient component mounted.');
+        $this->users = User::all();
     }
-
     public function updatedSearch()
     {
-        if (strlen($this->search) > 2) { // Recherche après avoir tapé 3 caractères ou plus
-            $this->users = User::where('username', 'like', '%' . $this->search . '%')
-                ->orWhere('name', 'like', '%' . $this->search . '%')
-                ->limit(5)
-                ->get();
-        } else {
-            $this->users = [];
-        }
+        $this->users = User::where('username', 'like', '%' . $this->search . '%')->get();
     }
 
-    public function selectUser($id, $username)
+    public function selectUser($userId, $userName)
     {
-        $this->user_id = $id;
-        $this->selectedUsername = $username; // Mettre à jour l'input avec le nom d'utilisateur sélectionné
-        $this->search = $username; // Afficher le nom dans l'input de recherche
-        $this->users = []; // Masquer la liste des résultats après la sélection
+        $this->user_id = $userId;
+        $this->search = $userName;
+        $this->users = [];
     }
 
-
-    public function recharge()
+    public function submit()
     {
-        Log::info('Tentative de recharge initiée.', [
-            'user_id' => $this->user_id,
-            'amount' => $this->amount,
-            'sender_id' => Auth::id()
-        ]);
 
-        $validatedData = $this->validate([
+
+        $this->validate([
             'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:1',
         ], [
@@ -98,7 +79,7 @@ class TransfertClient extends Component
             $this->processTransaction($senderWallet, $receiverWallet);
 
             // Générer une référence pour la transaction
-            $referenceId = $this->generateReferenceId();
+            $referenceId = $this->generateIntegerReference();
 
             // Enregistrer la transaction
             $this->createTransaction($senderId, $receiver->id, 'Envoie', $this->amount, $referenceId, 'Envoie d\'argent');
@@ -113,9 +94,9 @@ class TransfertClient extends Component
                 'receiver_balance' => $receiverWallet->balance + $this->amount
             ]);
 
-            session()->flash('success', 'Transfert effectué avec succès.');
-            $this->reset(['search', 'amount', 'user_id']);
-
+            $this->dispatch('formSubmitted', 'Transfert effectué avec succès.');
+            // Reset des champs après soumission
+            $this->reset();
         } catch (\Exception $e) {
             Log::error('Erreur lors du transfert.', [
                 'exception' => $e->getMessage(),
@@ -127,42 +108,38 @@ class TransfertClient extends Component
         }
     }
 
-
     protected function processTransaction($senderWallet, $receiverWallet)
     {
         $senderWallet->decrement('balance', $this->amount);
         $receiverWallet->increment('balance', $this->amount);
     }
 
-    protected function createTransaction($senderId, $receiverId, $type, $amount, $referenceId, $description)
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description)
     {
-        Transaction::create([
-            'sender_user_id' => $senderId,
-            'receiver_user_id' => $receiverId,
-            'type' => $type,
-            'amount' => $amount,
-            'reference_id' => $referenceId,
-            'description' => $description,
-            'status' => 'effectué',
-        ]);
+
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = 'effectué';
+        $transaction->save();
     }
 
-    protected function generateReferenceId()
+    protected function generateIntegerReference(): int
     {
-        return now()->getTimestamp() * 1000 + now()->micro;
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
 
-    protected function handleError($message)
-    {
-        Log::error($message);
-        session()->flash('error', $message);
-        return redirect()->refresh();
-    }
 
     public function render()
     {
-        return view('livewire.transfert-client', [
-            'users' => $this->users,
-        ]);
+        return view('livewire.transfert-argent');
     }
 }

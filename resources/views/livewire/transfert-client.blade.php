@@ -15,27 +15,26 @@
                 <div class="w-full mb-3">
                     <div class="relative">
                         <input wire:model.live="search"
-                               class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" 
-                               type="text" 
-                               placeholder="Entrez le nom de l'utilisateur">
-                    
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                            type="text" placeholder="Entrez le nom de l'utilisateur">
+
                         @if (!empty($search) && count($users) > 0)
                             <div class="absolute z-10 bg-white border border-gray-200 rounded-lg shadow-md w-full mt-1">
                                 @foreach ($users as $user)
                                     <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg"
                                         wire:click="selectUser('{{ $user->id }}', '{{ $user->username }}')">
                                         <div class="flex items-center">
-                                            <img class="w-5 h-5 mr-2 rounded-full" src="{{ asset($user->photo) }}" alt="">
-                                            <div class="flex justify-between items-center w-full">
-                                                <span>{{ $user->username }} ({{ $user->name }})</span>
-                                            </div>
+                                            <img class="w-5 h-5 mr-2 rounded-full" src="{{ asset($user->photo) }}"
+                                                alt="Photo de l'utilisateur">
+                                            <div>{{ $user->username }} ({{ $user->name }})</div>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         @endif
+
                     </div>
-                    
+
                 </div>
                 <div class="space-y-3 w-full mb-3">
                     <input wire:model="amount" type="number" name="amount" id="floating_prix"

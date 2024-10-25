@@ -88,7 +88,7 @@ class RechargeClient extends Component
         // session()->flash('success', 'Le compte de l\'agent a été rechargé avec succès.');
 
         // Notification de succès
-        $this->dispatch('swal:toast');
+        $this->dispatch(event: 'swal:toast');
 
         $this->reset(['user_id', 'amount', 'search']);
 

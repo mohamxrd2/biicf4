@@ -220,9 +220,10 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
         return view('finance.notif');
     })->name('finance.notif');
 
-    Route::get('finance/Porte-feuille', function () {
+    Route::post('finance/Porte-feuille', function () {
         return view('finance.wallet');
     })->name('finance.wallet');
+
 
     Route::get('finance/projet', function () {
         return view('finance.projet');
