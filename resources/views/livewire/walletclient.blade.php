@@ -15,60 +15,7 @@
             </div>
         @endif
 
-        {{-- <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-lg w-96 shadow-lg">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-lg font-semibold tracking-wider">{{ strtoupper($user->name) }}</h2>
-                        <p class="text-sm">{{ $user->created_at->format('d/m/Y H:i') }}</p>
-                    </div>
-                    <div>
-                        <!-- Add any logo or card image -->
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/800px-Mastercard-logo.svg.png"
-                            alt="Card Logo" class="h-10">
-                    </div>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div class="text-lg font-mono tracking-widest">
-                        {{ $this->formatAccountNumber($userWallet->Numero_compte) }}
-                    </div>
-                </div>
-                
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-xl font-bold">{{ number_format($userWallet->balance, 2, ',', ' ') }}<span
-                                class="text-white text-xl ml-1">FCFA</span>
-                        </h1>
-                    </div>
-                    <div class="flex space-x-4 mt-6">
-                        <button wire:click="transfert" data-tooltip-target="tooltip-A"
-                            class="bg-black text-white font-semibold py-2 px-4 rounded-lg flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 10h1v4h1m6 0v6h1.293l3.293-3.293A1 1 0 0015 16V8a1 1 0 00-1.707-.707L10 10H6v4m8-4v6m6 2a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h8m4 0h.5a1.5 1.5 0 011.5 1.5v.5">
-                                </path>
-                            </svg>
-                            <div id="tooltip-A" role="tooltip"
-                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                Transfert d'argent <div class="tooltip-arrow" data-popper-arrow></div>
-                            </div>
-                        </button>
-                        <button wire:click="retrait" data-tooltip-target="tooltip-B"
-                            class="bg-yellow-400 text-black font-semibold py-2 px-4 rounded-lg flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6M9 8h6M9 16h6m-7 4h8a1 1 0 001-1V4a1 1 0 00-1-1h-8a1 1 0 00-1 1v15a1 1 0 001 1zm-3 0h-.01">
-                                </path>
-                            </svg>
-                            <div id="tooltip-B" role="tooltip"
-                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                Retrait d'argent <div class="tooltip-arrow" data-popper-arrow></div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div> --}}
+
 
         <div class="grid gap-y-4 mb-6 w-full grid-cols-1 md:grid-cols-2">
 
@@ -112,7 +59,26 @@
                 <h2 class="text-xl text-slate-800 font-semibold mt-4 font-mono">Actions rapide</h2>
 
                 <div class="w-full md:w-96 border border-gray-300 rounded-lg p-3 bg-white mt-4 flex justify-around">
-                    <button wire:click="transfert" >
+                    <button wire:click="deposit">
+                        <div class="flex flex-col justify-center items-center">
+                            <div class="bg-green-500 p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                                 data-tooltip-target="tooltip-w">
+                               
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m-6 3.75 3 3m0 0 3-3m-3 3V1.5m6 9h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+                                  </svg>
+                                  
+                            </div>
+                           
+                            <div id="tooltip-w" role="tooltip"
+                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                            Recharger son compte  <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+                            <p class="text-md font-normal text-gray-600">Déposer</p>
+                        </div>
+                    </button>
+                    
+                    <button wire:click="envoie">
                         <div class="flex flex-col justify-center items-center">
                             <div class=" bg-blue-500 p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
                                 data-tooltip-target="tooltip-A">
@@ -131,58 +97,50 @@
 
                         </div>
                     </button>
-                    <button wire:click="retrait" >
+                    <button wire:click="retrait">
+                        <div class="flex flex-col justify-center items-center">
+                            <div class="bg-purple-500 p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                                data-tooltip-target="tooltip-B">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15m0-3-3-3m0 0-3 3m3-3V15" />
+                                  </svg>
+                                  
+                            </div>
+                            <div id="tooltip-B" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                Retrait d'argent <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
 
-                    <div class="flex flex-col justify-center items-center">
-                        <div class="bg-black p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
-                            data-tooltip-target="tooltip-B">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
-                            </svg>
-
+                            <p class="text-md font-normal text-gray-600">Retirer</p>
 
                         </div>
-                        <div id="tooltip-B" role="tooltip"
-                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                            Retrait d'argent <div class="tooltip-arrow" data-popper-arrow></div>
+                    </button>
+                    <button wire:click="transfert">
+                        <div class="flex flex-col justify-center items-center">
+                            <div class="bg-black p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                                data-tooltip-target="tooltip-C">
+                               
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
+                                  </svg>
+                                  
+                                  
+    
+                            </div>
+                            <div id="tooltip-C" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                Transfert entre compte <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+    
+                            <p class="text-md font-normal text-gray-600">Transfert</p>
+    
                         </div>
 
-                        <p class="text-md font-normal text-gray-600">Retirer</p>
-
-                    </div>
-                </button>
+                    </button>
                     
 
-                    <div class="flex flex-col justify-center items-center">
-                        <div class="bg-black p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
-                            data-tooltip-target="tooltip-C">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                            </svg>
-
-                        </div>
-                        <div id="tooltip-C" role="tooltip"
-                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                            Transfert entre compte <div class="tooltip-arrow" data-popper-arrow></div>
-                        </div>
-
-                        <p class="text-md font-normal text-gray-600">Transfert</p>
-
-                    </div>
-
-
-
-
                 </div>
-
-
             </div>
-
-
 
             <div class="flex-1 col-span-1 ">
 
@@ -208,9 +166,9 @@
 
                                 </div>
 
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" data-tooltip-target="tooltip-coc"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="size-6 text-gray-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    data-tooltip-target="tooltip-coc" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-6 text-gray-600">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                                 </svg>
@@ -568,10 +526,15 @@
                     <!-- More transactions... -->
                 </div>
             </div>
-        @elseif ($currentPage === 'transfert')
+        @elseif ($currentPage === 'envoie')
             @livewire('transfert-client')
         @elseif ($currentPage === 'retrait')
             @livewire('withdrawal-component')
+        @elseif ($currentPage === 'deposit')
+            @livewire('deposit-client')
+        @elseif ($currentPage === 'transfert')
+        @livewire('transfert-account')
+
         @endif
 
     </div>

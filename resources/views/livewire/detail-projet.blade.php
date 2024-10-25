@@ -47,7 +47,7 @@
                 </a>
                 <!-- Informations de progression -->
                 <div class="mt-4">
-                    @if (!$projet->Portion_action & $projet->Portion_obligt)
+                    @if (!$projet->Portion_action & !$projet->Portion_obligt)
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
                             <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%">
                             </div>
@@ -85,6 +85,56 @@
                                         class="font-semibold text-lg">{{ number_format($pourcentageInvesti, 2) }}%</span>
                                     <span class="text-gray-500 text-sm">Progression</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="border border-gray-300 rounded-lg p-6 shadow-md">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                                    Participer au financement du projet
+                                </h3>
+                                <p class="text-gray-600 text-md mb-6">
+                                    Contribuez au financement du projet pour l'aider à atteindre la somme souhaitée.
+                                </p>
+                                @if ($projet->id_user != Auth::id())
+                                    <button id="showMontantInputButton"
+                                        class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                                        Ajouter un montant
+                                    </button>
+                                @else
+                                    <button
+                                        class="w-full py-3 bg-gray-200 hover:bg-gray-300 transition-colors rounded-md text-black font-medium"
+                                        disabled>
+                                        Ceci est votre projet
+                                    </button>
+                                @endif
+                            </div>
+
+                            <div id="montantInputDiv" class="mt-6 hidden">
+                                <p class="text-md mb-3 text-gray-700">Le montant restant est de : <span
+                                        class="font-bold">
+                                        {{ number_format($sommeRestante, 0, ',', ' ') }} FCFA</span></p>
+
+                                <input type="number" id="montantInput"
+                                    class="w-full py-3 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Entrez le montant" wire:model="montant" oninput="verifierSolde()">
+
+                                <p id="messageSolde" class="text-red-500 text-center mt-2 hidden">Votre solde est
+                                    insuffisant</p>
+                                <p id="messageSommeRestante" class="text-red-500 text-center mt-2 hidden">Le montant
+                                    doit être supérieur ou égal à la
+                                    somme restante</p>
+
+                                <button id="confirmer" 
+                                    class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
+                                    wire:click="confirmer" wire:loading.attr="disabled">
+                                    <span wire:loading.remove>
+                                        Confirmer le montant
+                                    </span>
+                                    <span wire:loading>
+                                        Chargement...
+                                    </span>
+                                </button>
                             </div>
                         </div>
                     @endif
@@ -207,7 +257,7 @@
                                         </button>
                                         <!-- Bouton pour ajouter une action -->
                                         <button id="showActionInputButton"
-                                            class="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 transition-colors rounded-md text-white font-medium">
+                                            class="w-1/2 py-3 ml-3 bg-blue-600 hover:bg-blue-700 transition-colors rounded-md text-white font-medium">
                                             Ajouter une action
                                         </button>
                                     </div>
@@ -299,7 +349,7 @@
                                     Contribuez au financement du projet pour l'aider à atteindre la somme souhaitée.
                                 </p>
                                 @if ($projet->id_user != Auth::id())
-                                    <button id="showInputButton"
+                                    <button id="showMontantInputButton"
                                         class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
                                         Ajouter un montant
                                     </button>
@@ -312,8 +362,7 @@
                                 @endif
                             </div>
 
-                            <div id="inputDiv" class="mt-6 hidden">
-
+                            <div id="montantInputDiv" class="mt-6 hidden">
                                 <p class="text-md mb-3 text-gray-700">Le montant restant est de : <span
                                         class="font-bold">
                                         {{ number_format($sommeRestante, 0, ',', ' ') }} FCFA</span></p>
@@ -323,16 +372,12 @@
                                     placeholder="Entrez le montant" wire:model="montant" oninput="verifierSolde()">
 
                                 <p id="messageSolde" class="text-red-500 text-center mt-2 hidden">Votre solde est
-                                    insuffisant
-                                </p>
-                                <p id="messageSommeRestante" class="text-red-500 text-center mt-2 hidden">Le
-                                    montant
-                                    doit
-                                    être
-                                    supérieur
-                                    ou égal à la somme restante</p>
+                                    insuffisant</p>
+                                <p id="messageSommeRestante" class="text-red-500 text-center mt-2 hidden">Le montant
+                                    doit être supérieur ou égal à la
+                                    somme restante</p>
 
-                                <button id="confirmerButton" disabled
+                                <button id="confirmer" 
                                     class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
                                     wire:click="confirmer" wire:loading.attr="disabled">
                                     <span wire:loading.remove>
@@ -342,11 +387,6 @@
                                         Chargement...
                                     </span>
                                 </button>
-
-
-
-
-
                             </div>
                         </div>
                     @endif
@@ -768,67 +808,67 @@
             actionInputDiv.classList.toggle('hidden'); // Basculer l'affichage de la section action
         });
         const solde = @json($solde);
-        const sommeRestante = @json($sommeRestante); // Récupérer sommeRestante depuis le composant Livewire
+const sommeRestante = @json($sommeRestante); // Récupérer sommeRestante depuis le composant Livewire
 
-        function verifierSolde() {
-            const montantInput = document.getElementById('montantInput');
-            const messageSolde = document.getElementById('messageSolde');
-            const messageSommeRestante = document.getElementById('messageSommeRestante');
-            const confirmerButton = document.getElementById('confirmerButton');
+function verifierSolde() {
+    const montantInput = document.getElementById('montantInput');
+    const messageSolde = document.getElementById('messageSolde');
+    const messageSommeRestante = document.getElementById('messageSommeRestante');
+    const confirmerButton = document.getElementById('confirmer'); // Correction ici
 
-            // Désactive le bouton de confirmation si sommeRestante est égale à 0
-            if (sommeRestante === 0) {
-                messageSommeRestante.classList.remove('hidden');
-                messageSommeRestante.innerText = 'La somme demandé est totalement collecté';
-                confirmerButton.disabled = true;
-                return;
-            }
+    // Désactive le bouton de confirmation si sommeRestante est égale à 0
+    if (sommeRestante === 0) {
+        messageSommeRestante.classList.remove('hidden');
+        messageSommeRestante.innerText = 'La somme demandée est totalement collectée';
+        confirmerButton.disabled = true;
+        return;
+    }
 
-            // Récupérer la valeur directement sans modifications
-            const montant = montantInput.value;
+    // Récupérer la valeur directement sans modifications
+    const montant = montantInput.value;
 
-            // Vérifie si la valeur est vide
-            if (montant.trim() === '') {
-                messageSolde.classList.add('hidden');
-                messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-                confirmerButton.disabled = true; // Désactiver le bouton si le montant est vide
-                return;
-            }
+    // Vérifie si la valeur est vide
+    if (montant.trim() === '') {
+        messageSolde.classList.add('hidden');
+        messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+        confirmerButton.disabled = true; // Désactiver le bouton si le montant est vide
+        return;
+    }
 
-            // Convertir en nombre flottant
-            const montantFloat = parseFloat(montant);
+    // Convertir en nombre flottant
+    const montantFloat = parseFloat(montant);
 
-            // Vérifiez si la conversion a fonctionné (montant est NaN si non valide)
-            if (isNaN(montantFloat)) {
-                messageSolde.classList.remove('hidden');
-                messageSolde.innerText = 'Le montant saisi n\'est pas valide';
-                messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-                confirmerButton.disabled = true;
-                return;
-            }
+    // Vérifiez si la conversion a fonctionné (montant est NaN si non valide)
+    if (isNaN(montantFloat)) {
+        messageSolde.classList.remove('hidden');
+        messageSolde.innerText = 'Le montant saisi n\'est pas valide';
+        messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+        confirmerButton.disabled = true;
+        return;
+    }
 
-            // Vérifie si le montant saisi dépasse le solde
-            if (montantFloat > solde) {
-                messageSolde.classList.remove('hidden');
-                messageSolde.innerText = 'Votre solde est insuffisant';
-                messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
-                confirmerButton.disabled = true; // Désactive le bouton si le solde est insuffisant
-            } else {
-                messageSolde.classList.add('hidden');
+    // Vérifie si le montant saisi dépasse le solde
+    if (montantFloat > solde) {
+        messageSolde.classList.remove('hidden');
+        messageSolde.innerText = 'Votre solde est insuffisant';
+        messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+        confirmerButton.disabled = true; // Désactive le bouton si le solde est insuffisant
+    } else {
+        messageSolde.classList.add('hidden');
 
-                // Vérifie si le montant est supérieur à la somme restante
-                if (montantFloat > sommeRestante) {
-                    messageSommeRestante.classList.remove('hidden');
-                    messageSommeRestante.innerText = 'Le montant doit être inférieur ou égal à la somme restante';
-                    confirmerButton.disabled = true; // Désactive le bouton si le montant est supérieur à la somme restante
-                } else {
-                    messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
+        // Vérifie si le montant est supérieur à la somme restante
+        if (montantFloat > sommeRestante) {
+            messageSommeRestante.classList.remove('hidden');
+            messageSommeRestante.innerText = 'Le montant doit être inférieur ou égal à la somme restante';
+            confirmerButton.disabled = true; // Désactive le bouton si le montant est supérieur à la somme restante
+        } else {
+            messageSommeRestante.classList.add('hidden'); // Cacher le message de somme restante
 
-                    // Vérifie si le montant est supérieur à zéro pour activer le bouton
-                    confirmerButton.disabled = montantFloat <= 0; // Désactive le bouton si le montant est négatif ou zéro
-                }
-            }
+            // Vérifie si le montant est supérieur à zéro pour activer le bouton
+            confirmerButton.disabled = montantFloat <= 0; // Désactive le bouton si le montant est négatif ou zéro
         }
+    }
+}
 
 
         // const dateLimite = new Date("{{ $projet->durer }}")

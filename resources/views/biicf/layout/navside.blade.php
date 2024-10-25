@@ -18,6 +18,7 @@
 
     @livewireStyles
 
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
 
 
@@ -510,6 +511,9 @@
     <!-- End Content -->
 
     @livewireScripts
+
+    <livewire:scripts />
+
 
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
