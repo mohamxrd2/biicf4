@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Livewire\Component;
 use App\Events\CommentSubmittedTaux;
 use App\Events\OldestCommentUpdated;
 use App\Models\AjoutAction;
@@ -10,7 +11,6 @@ use App\Models\Coi;
 use App\Models\Projet;
 use App\Models\Wallet;
 use Livewire\Attributes\On;
-use Livewire\Component;
 use App\Models\CommentTaux;
 use App\Models\Transaction;
 use App\Models\AjoutMontant;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class DetailProjet extends Component
+class DetailProjetNegocie extends Component
 {
     public $projet;
     public $images = [];
@@ -34,10 +34,10 @@ class DetailProjet extends Component
 
     public $pourcentageInvesti = 0;
     public $pourcentageInvestiAction = 0;
+    public $investisseurQuiAPayeTout;
 
     public $sommeInvestie = 0;
     public $sommeInvestieActions = 0;
-    public $investisseurQuiAPayeTout;
     public $montantVerifie = false;
     public $montantVerifieAction = false;
 
@@ -99,7 +99,6 @@ class DetailProjet extends Component
         $this->sommeRestanteAction = $this->projet->nombreActions - $this->sommeInvestieActions;
 
 
-
         // Récupérer la somme totale de tous les montants ajoutés pour ce projet par tous les utilisateurs
         $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
 
@@ -116,7 +115,9 @@ class DetailProjet extends Component
         // Log de l'investisseur qui a payé tout
         Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
 
-
+        $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
+            ->where('montant', $this->projet->montant) // Assurez-vous que le champ 'montant' existe dans votre modèle
+            ->exists(); // Renvoie true si le montant existe
 
         // Vérifier si le nombre d'action du projet est atteint
         $this->montantVerifieAction = AjoutAction::where('id_projet', $this->projet->id)
@@ -159,6 +160,7 @@ class DetailProjet extends Component
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->orderBy('created_at', 'asc')
             ->get();
     }
     public function updatedMontant()
@@ -174,10 +176,10 @@ class DetailProjet extends Component
         Log::info('Démarrage de la méthode confirmer pour l\'utilisateur ID: ' . Auth::id());
 
         // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-        $montant = floatval($this->montant);
+        $montant = floatval($this->projet->montant);
 
-        if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
-            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $this->montant);
+        if (empty($this->projet->montant) || !is_numeric($montant) || $montant <= 0) {
+            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $this->projet->montant);
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
@@ -289,11 +291,10 @@ class DetailProjet extends Component
             ->distinct()
             ->count('id_invest');
 
-        // Récupérer la somme totale de tous les montants ajoutés pour ce projet par tous les utilisateurs
-        $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
-
-        // Vérifier si la somme totale atteint ou dépasse le montant du projet
-        $this->montantVerifie = $totalAjoute >= $this->projet->montant;
+        // Vérifier si le montant du projet est atteint
+        $this->montantVerifie = AjoutMontant::where('id_projet', $this->projet->id)
+            ->where('montant', $this->projet->montant)
+            ->exists();
 
         // Vérifier si un investisseur a payé la totalité du projet
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
@@ -472,24 +473,35 @@ class DetailProjet extends Component
             return;
         }
 
-        // Insérer dans la table commentTaux
-        try {
-            $commentTaux = CommentTaux::create([
-                'taux' => $this->tauxTrade,
-                'id_invest' => auth()->id(),
-                'id_emp' => $this->projet->id_user,
-                'id_projet' => $this->projet->id,
-            ]);
+        // Vérifier si c'est la première soumission
+        $ajoutMontant = AjoutMontant::where('id_invest', $user->id)
+            ->where('id_projet', $this->projet->id)
+            ->first();
 
-            // Réinitialiser le champ tauxTrade après l'insertion
-            $this->tauxTrade = '';
-            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+        if (!$ajoutMontant) {
+            // Appeler la fonction confirmer si c'est la première soumission
+            $this->confirmer();
+        } else {
+
+            // Insérer dans la table commentTaux
+            try {
+                $commentTaux = CommentTaux::create([
+                    'taux' => $this->tauxTrade,
+                    'id_invest' => auth()->id(),
+                    'id_emp' => $this->projet->id_user,
+                    'id_projet' => $this->projet->id,
+                ]);
+
+                // Réinitialiser le champ tauxTrade après l'insertion
+                $this->tauxTrade = '';
+                broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
 
 
-            // Optionnel: Ajouter une notification ou un message de succès
-            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+                // Optionnel: Ajouter une notification ou un message de succès
+                session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+            } catch (\Exception $e) {
+                session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+            }
         }
 
         // Commenter cette ligne une fois que vous avez vérifié
@@ -497,6 +509,7 @@ class DetailProjet extends Component
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->orderBy('created_at', 'asc')
             ->get();
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -554,7 +567,7 @@ class DetailProjet extends Component
             ->where('id_invest', Auth::id())
             ->exists();
 
-        return view('livewire.detail-projet', [
+        return view('livewire.detail-projet-negocie', [
             'aDejaContribue' => $aDejaContribue,
             'joursRestants' => $this->joursRestants(),
             'images' => $this->images,

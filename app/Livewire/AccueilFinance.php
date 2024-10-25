@@ -17,9 +17,10 @@ class AccueilFinance extends Component
 
     public function mount()
     {
+
         // Charger tous les projets avec leurs demandeurs et calculer les valeurs
         $this->projets = Projet::with('demandeur')
-            ->where('type_financement', 'groupé') // Ajouter la condition pour le type de financement
+            ->whereIn('type_financement', ['groupé', 'négocié']) // Utiliser whereIn pour les deux types de financement
             ->where('statut', 'approuvé') // Ajouter la condition pour le statut
             ->take($this->nombreProjets)
             ->get()
@@ -43,7 +44,7 @@ class AccueilFinance extends Component
         $this->projetCount = $this->projets->count();
 
         // Récupérer le projet le plus récent
-        $this->projetRecent = Projet::with('demandeur')->where('type_financement', 'groupé') // Ajouter la condition pour le type de financement
+        $this->projetRecent = Projet::with('demandeur')->whereIn('type_financement', ['groupé', 'négocié']) // Utiliser whereIn pour les deux types de financement
             ->where('statut', 'approuvé')->orderBy('created_at', 'desc')->first();
 
         // Calculer les valeurs pour le projet le plus récent
@@ -95,30 +96,31 @@ class AccueilFinance extends Component
 
         // Chargez les nouveaux projets
         $this->projets = Projet::with('demandeur')
-        ->where('type_financement', 'groupé') // Ajouter la condition pour le type de financement
-        ->where('statut', 'approuvé') // Ajouter la condition pour le statut
-        ->take($this->nombreProjets)
-        ->get()
-        ->map(function ($projet) {
-            // Calculer les valeurs pour chaque projet
-            $sommeInvestie = AjoutMontant::where('id_projet', $projet->id)->sum('montant');
-            $sommeRestante = $projet->montant - $sommeInvestie;
-            $pourcentageInvesti = ($projet->montant > 0) ? ($sommeInvestie / $projet->montant) * 100 : 0;
-            $nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $projet->id)
-                ->distinct()
-                ->count('id_invest');
+            ->whereIn('type_financement', ['groupé', 'négocié']) // Utiliser whereIn pour les deux types de financement
+            ->where('statut', 'approuvé') // Ajouter la condition pour le statut
+            ->take($this->nombreProjets)
+            ->get()
+            ->map(function ($projet) {
+                // Calculer les valeurs pour chaque projet
+                $sommeInvestie = AjoutMontant::where('id_projet', $projet->id)->sum('montant');
+                $sommeRestante = $projet->montant - $sommeInvestie;
+                $pourcentageInvesti = ($projet->montant > 0) ? ($sommeInvestie / $projet->montant) * 100 : 0;
+                $nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $projet->id)
+                    ->distinct()
+                    ->count('id_invest');
 
-            // Ajouter les valeurs calculées au projet
-            $projet->sommeInvestie = $sommeInvestie;
-            $projet->sommeRestante = $sommeRestante;
-            $projet->pourcentageInvesti = $pourcentageInvesti;
-            $projet->nombreInvestisseursDistinct = $nombreInvestisseursDistinct;
+                // Ajouter les valeurs calculées au projet
+                $projet->sommeInvestie = $sommeInvestie;
+                $projet->sommeRestante = $sommeRestante;
+                $projet->pourcentageInvesti = $pourcentageInvesti;
+                $projet->nombreInvestisseursDistinct = $nombreInvestisseursDistinct;
 
-            return $projet;
-        });
+                return $projet;
+            });
 
         // Récupérer le projet le plus récent
-        $this->projetRecent = Projet::with('demandeur')->orderBy('created_at', 'desc')->first();
+        $this->projetRecent = Projet::with('demandeur')->whereIn('type_financement', ['groupé', 'négocié']) // Utiliser whereIn pour les deux types de financement
+            ->where('statut', 'approuvé')->orderBy('created_at', 'desc')->first();
 
         // Calculer les valeurs pour le projet le plus récent
         if ($this->projetRecent) {
