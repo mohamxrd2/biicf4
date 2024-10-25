@@ -15,116 +15,148 @@ class TransfertClient extends Component
     public $user_id;
     public $amount;
 
+
+
     public $users = [];
 
-
+    public $selectedUsername = '';
 
     public function mount()
     {
-        $this->users = User::all();
-        Log::info('RechargeClient component mounted.');
+        $this->users = [];
+        Log::info('TransfertClient component mounted.');
     }
 
     public function updatedSearch()
     {
-        $this->users = User::where('username', 'like', '%' . $this->search . '%')->get();
-        Log::info('Search updated.', ['search' => $this->search]);
+        if (strlen($this->search) > 2) { // Recherche après avoir tapé 3 caractères ou plus
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')
+                ->orWhere('name', 'like', '%' . $this->search . '%')
+                ->limit(5)
+                ->get();
+        } else {
+            $this->users = [];
+        }
     }
 
-    public function selectUser($userId, $userName)
+    public function selectUser($id, $username)
     {
-        $this->user_id = $userId;
-        $this->search = $userName;
-        $this->users = [];
-        Log::info('User selected.', ['user_id' => $userId, 'user_name' => $userName]);
+        $this->user_id = $id;
+        $this->selectedUsername = $username; // Mettre à jour l'input avec le nom d'utilisateur sélectionné
+        $this->search = $username; // Afficher le nom dans l'input de recherche
+        $this->users = []; // Masquer la liste des résultats après la sélection
     }
+
 
     public function recharge()
     {
+        Log::info('Tentative de recharge initiée.', [
+            'user_id' => $this->user_id,
+            'amount' => $this->amount,
+            'sender_id' => Auth::id()
+        ]);
+    
+        $validatedData = $this->validate([
+            'user_id' => 'required|exists:users,id',
+            'amount' => 'required|numeric|min:1',
+        ], [
+            'user_id.required' => 'Veuillez sélectionner un utilisateur.',
+            'amount.required' => 'Veuillez entrer un montant.',
+            'amount.numeric' => 'Le montant doit être numérique.',
+            'amount.min' => 'Le montant doit être supérieur à 0.',
+        ]);
+    
+        $senderId = Auth::id();
+        $receiver = User::find($this->user_id);
+    
+        if (!$receiver) {
+            Log::error('Utilisateur spécifié introuvable.', ['user_id' => $this->user_id]);
+            return $this->handleError('L\'utilisateur spécifié n\'existe pas.');
+        }
+    
+        $senderWallet = Wallet::where('user_id', $senderId)->first();
+        $receiverWallet = Wallet::where('user_id', $receiver->id)->first();
+    
+        if (!$senderWallet || !$receiverWallet) {
+            Log::error('Erreur lors de la récupération des portefeuilles.', [
+                'sender_id' => $senderId,
+                'receiver_id' => $receiver->id
+            ]);
+            return $this->handleError('Erreur lors de la récupération des portefeuilles.');
+        }
+    
+        if ($senderWallet->balance < $this->amount) {
+            Log::warning('Solde insuffisant.', [
+                'sender_balance' => $senderWallet->balance,
+                'requested_amount' => $this->amount
+            ]);
+            return $this->handleError('Solde insuffisant pour effectuer la recharge.');
+        }
+    
         try {
-            // Validate request data
-            $validatedData = $this->validate(
-                [
-                    'user_id' => 'required',
-                    'amount' => 'required|numeric',
-                ],
-                [
-                    'user_id.required' => 'Veuillez sélectionner un agent.',
-                    'amount.required' => 'Veuillez entrer le montant.',
-                    'amount.numeric' => 'Le montant doit être numérique.',
-                ]
-            );
-            Log::info('Recharge data validated.', $validatedData);
-
-            $user = User::find($this->user_id);
-
-            if (!$user) {
-                Log::error('User not found.', ['user_id' => $this->user_id]);
-                session()->flash('error', 'L\'utilisateur spécifié n\'existe pas.');
-                return;
-            }
-
-            $UserId = Auth::id();
-            Log::info('User ID.', ['user_id' => $UserId]);
-
-            $userWallet = Wallet::where('user_id', $user->id)->first();
-            $UserIdWallet = Wallet::where('user_id', $UserId)->first();
-
-            if (!$userWallet || !$UserIdWallet) {
-                Log::error('Wallet not found.', ['user_wallet' => $userWallet, 'userconnecte_wallet' => $UserIdWallet]);
-                session()->flash('error', 'Erreur lors de la récupération des portefeuilles.');
-                return;
-            }
-
-            if ($UserIdWallet->balance < $this->amount) {
-                Log::error('Insufficient balance.', ['admin_wallet_balance' => $UserIdWallet->balance, 'amount' => $this->amount]);
-                session()->flash('error', 'Solde insuffisant pour effectuer la recharge.');
-                return;
-            }
-
-            // Effectuer la recharge
-            $userWallet->increment('balance', $this->amount);
-            $UserIdWallet->decrement('balance', $this->amount);
-
-            Log::info('Balances updated.', [
-                'user_wallet_balance' => $userWallet->balance,
-                'admin_wallet_balance' => $UserIdWallet->balance,
+            // Effectuer la transaction
+            $this->processTransaction($senderWallet, $receiverWallet);
+    
+            // Générer une référence pour la transaction
+            $referenceId = $this->generateReferenceId();
+    
+            // Enregistrer la transaction
+            $this->createTransaction($senderId, $receiver->id, 'Envoie', $this->amount, $referenceId, 'Envoie d\'argent');
+            $this->createTransaction($receiver->id, $senderId, 'Réception', $this->amount, $referenceId, 'Réception d\'argent');
+    
+            Log::info('Recharge réussie.', [
+                'sender_id' => $senderId,
+                'receiver_id' => $receiver->id,
+                'amount' => $this->amount,
+                'reference_id' => $referenceId,
+                'sender_balance' => $senderWallet->balance - $this->amount,
+                'receiver_balance' => $receiverWallet->balance + $this->amount
+            ]);
+    
+            session()->flash('success', 'Transfert effectué avec succès.');
+            $this->reset(['search', 'amount', 'user_id']);
+           
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du transfert.', [
+                'exception' => $e->getMessage(),
+                'sender_id' => $senderId,
+                'receiver_id' => $receiver->id,
                 'amount' => $this->amount
             ]);
-
-            // Enregistrer les transactions
-            $transaction1 = new Transaction();
-            $transaction1->sender_user_id = $UserId;
-            $transaction1->receiver_user_id = $user->id;
-            $transaction1->type = 'Reception';
-            $transaction1->amount = $this->amount;
-            $transaction1->save();
-
-            $transaction2 = new Transaction();
-            $transaction2->sender_user_id = $UserId;
-            $transaction2->receiver_user_id = $user->id;
-            $transaction2->type = 'Envoie';
-            $transaction2->amount = $this->amount;
-            $transaction2->save();
-
-            Log::info('Transactions created.', [
-                'transaction1' => $transaction1->id,
-                'transaction2' => $transaction2->id
-            ]);
-
-            Log::info('Recharge successful.');
-
-            // Notification de succès
-            $this->dispatch('formSubmitted', 'transfert effectué avec succes');
-
-            // Réinitialiser les valeurs
-            $this->reset(['user_id', 'amount', 'search']);
-            $this->dispatch('refreshComponent');
-        } catch (\Exception $e) {
-            // Log the exception with the error message
-            Log::error('An error occurred during recharge.', ['error' => $e->getMessage()]);
-            session()->flash('error', 'Une erreur est survenue lors du processus de recharge.');
+            return $this->handleError('Une erreur est survenue lors du transfert.');
         }
+    }
+    
+
+    protected function processTransaction($senderWallet, $receiverWallet)
+    {
+        $senderWallet->decrement('balance', $this->amount);
+        $receiverWallet->increment('balance', $this->amount);
+    }
+
+    protected function createTransaction($senderId, $receiverId, $type, $amount, $referenceId, $description)
+    {
+        Transaction::create([
+            'sender_user_id' => $senderId,
+            'receiver_user_id' => $receiverId,
+            'type' => $type,
+            'amount' => $amount,
+            'reference_id' => $referenceId,
+            'description' => $description,
+            'status' => 'effectué',
+        ]);
+    }
+
+    protected function generateReferenceId()
+    {
+        return now()->getTimestamp() * 1000 + now()->micro;
+    }
+
+    protected function handleError($message)
+    {
+        Log::error($message);
+        session()->flash('error', $message);
+        return redirect()->refresh();
     }
 
     public function render()

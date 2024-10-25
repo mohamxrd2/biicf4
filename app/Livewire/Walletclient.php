@@ -33,13 +33,21 @@ class Walletclient extends Component
     }
 
     #[On('refreshComponent')]
-    public function transfert()
+    public function envoie()
     {
-        $this->dispatch('navigate', 'transfert');
+        $this->dispatch('navigate', 'envoie');
     }
     public function retrait()
     {
         $this->dispatch('navigate', 'retrait');
+    }
+    public function deposit()
+    {
+        $this->dispatch('navigate', 'deposit');
+    }
+    public function transfert()
+    {
+        $this->dispatch('navigate', 'transfert');
     }
     public function mount()
     {

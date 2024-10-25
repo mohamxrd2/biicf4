@@ -515,6 +515,9 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <!-- Photo 1 -->
 
+
+
+
                                 <div class="relative">
                                     <label for="photo1" class="block text-sm font-medium text-gray-700">Image
                                         1</label>
