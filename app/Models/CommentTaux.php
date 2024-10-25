@@ -17,6 +17,7 @@ class CommentTaux extends Model
         'id_invest',
         'id_emp',
         'id_projet',
+        'id_demande_credit',
     ];
 
     /**

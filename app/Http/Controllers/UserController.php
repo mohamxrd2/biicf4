@@ -12,6 +12,7 @@ use App\Models\Coi;
 use App\Models\Wallet;
 use App\Models\Transaction;
 use App\Models\Consommation;
+use App\Models\Crp;
 use Illuminate\Http\Request;
 use App\Models\ProduitService;
 use Illuminate\Support\Facades\Auth;
@@ -292,17 +293,28 @@ class UserController extends Controller
 
 
         ], [
-            'email.unique' => 'Email deja utlisé',
             'name.required' => 'Le champ nom est requis.',
+            'last-name.required' => 'Le champ prénom est requis.',
             'username.required' => 'Le champ nom d\'utilisateur est requis.',
             'username.unique' => 'Ce nom d\'utilisateur est déjà utilisé.',
+            'email.required' => 'Le champ email est requis.',
+            'email.email' => 'L\'adresse email doit être valide.',
+            'email.unique' => 'Cet email est déjà utilisé.',
             'password.required' => 'Le champ mot de passe est requis.',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
             'repeat-password.required' => 'Le champ confirmation du mot de passe est requis.',
             'repeat-password.same' => 'Les mots de passe ne correspondent pas.',
-            'email.required' => 'Le champ email est requis.',
-            'email.email' => 'L\'adresse email doit être valide.',
+            'user_type.required' => 'Le type d\'utilisateur est requis.',
+            'invest_type.required' => 'Le type d\'investissement est requis.',
+            'investisement.required' => 'Le champ investissement est requis.',
             'phone.required' => 'Le champ téléphone est requis.',
+            'phone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
+            'continent.required' => 'Le champ continent est requis.',
+            'sous_region.required' => 'Le champ sous-région est requis.',
+            'country.required' => 'Le champ pays est requis.',
+            'departement.required' => 'Le champ département est requis.',
+            'ville.required' => 'Le champ ville est requis.',
+            'commune.required' => 'Le champ commune est requis.',
         ]);
         // dd($validatedData);
         try {
@@ -323,19 +335,11 @@ class UserController extends Controller
             $user->ville = $request->input('ville');
             $user->commune = $request->input('commune');
             $user->parrain = $request->input('parrain');
-            $user->save();
 
-
-
-
-            // Création du portefeuille
-            // $wallet = new Wallet();
-            // $wallet->user_id = $user->id;
-            // $wallet->balance = 0; // Solde initial
-            // $wallet->save();
 
             // Après la création de l'utilisateur, on envoie le SMS de vérification
-            $this->sendSmsVerification($user->phone);
+            // $this->sendSmsVerification($user->phone);
+            $user->save();
 
             //envoi du couriel au nouveau client
             // $user->sendEmailVerificationNotification();
@@ -345,8 +349,9 @@ class UserController extends Controller
             // return redirect()->route('biicf.login')->with('success', 'Création du compte avec succès, Connectez-vous!');
             // Récupérer les informations Twilio depuis le fichier .env
             return redirect()->route('verify.phone', ['phone' => $user->phone])->with('success', 'Code de vérification envoyé par SMS. Veuillez vérifier votre numéro.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->validator->errors())->withInput();
         } catch (\Exception $e) {
-            // dd($e->getMessage());
             return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
         }
     }
@@ -452,32 +457,45 @@ class UserController extends Controller
 
     private function createUserWallets($userId)
     {
-        // Création d'un portefeuille principal et des sous-comptes
+        // Création d'un portefeuille principal
         $wallet = new Wallet();
         $wallet->user_id = $userId;
         $wallet->balance = 0; // Solde initial
+        $wallet->Numero_compte = $this->generateIban($userId); // Ajout d'un numéro de compte
         $wallet->save();
 
-        $this->createWallet($userId, new Coi(), 'Numero_compte', $this->generateIban($userId));
-        $this->createWallet($userId, new Cfa(), 'Numero_compte', $this->generateIban($userId));
-        $this->createWallet($userId, new Cefp(), 'Numero_compte', $this->generateIban($userId));
-        $this->createWallet($userId, new Cedd(), 'Numero_compte', $this->generateIban($userId));
+        // Création des sous-comptes associés
+        $this->createWallet($wallet->id, new Coi(), 'type_compte', 'COI');
+        $this->createWallet($wallet->id, new Cfa(), 'type_compte', 'CFA');
+        $this->createWallet($wallet->id, new Cefp(), 'type_compte', 'CEFP');
+        $this->createWallet($wallet->id, new Cedd(), 'type_compte', 'CEDD');
+        $this->createWallet($wallet->id, new Crp(), 'type_compte', 'CRP');
     }
 
-    private function createWallet($userId, $walletInstance, $field, $value)
+    private function createWallet($walletId, $walletInstance, $field, $value)
     {
-        $walletInstance->id_user = $userId;
+        $walletInstance->id_wallet = $walletId;
         $walletInstance->Date_Creation = now();
-        $walletInstance->Solde = 0;
-        $walletInstance->$field = $value;
+        $walletInstance->$field = $value; // Assigner la valeur au champ spécifié
+        $walletInstance->Solde = 0; // Solde initial
         $walletInstance->save();
     }
 
     private function generateIban($userId)
     {
-        $countryCode = 'CI';  // Exemple : Code de la Côte d'Ivoire
-        $accountNumber = str_pad($userId, 12, '0', STR_PAD_LEFT);  // Numéro de compte basé sur l'ID utilisateur
-        return $countryCode . $accountNumber;
+        $countryCode = 'CI'; // Exemple : Code de la Côte d'Ivoire
+
+        do {
+            // Générer un numéro de compte basé sur l'ID utilisateur et un composant aléatoire pour garantir l'unicité
+            $randomComponent = rand(1000, 9999); // Générer une partie aléatoire
+            $accountNumber = str_pad($userId, 12, '0', STR_PAD_LEFT) . $randomComponent;  // Numéro de compte unique
+            $iban = $countryCode . $accountNumber;
+
+            // Vérifier si l'IBAN existe déjà dans la base de données
+            $existingWallet = Wallet::where('Numero_compte', $iban)->first();
+        } while ($existingWallet); // Recommencer jusqu'à ce que l'IBAN soit unique
+
+        return $iban;
     }
     public function showProfile()
     {

@@ -2,8 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Events\CommentSubmittedTaux;
 use App\Models\AjoutMontant;
 use App\Models\Cfa;
+use App\Models\Coi;
+use App\Models\CommentTaux;
+use App\Models\Countdown;
 use App\Models\CrediScore;
 use App\Models\DemandeCredi;
 use App\Models\Transaction;
@@ -13,6 +17,8 @@ use App\Models\Wallet;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class DetailsCredit extends Component
@@ -28,10 +34,16 @@ class DetailsCredit extends Component
     public $solde;
     public $nombreInvestisseursDistinct = 0;
     public $sommeInvestie = 0;
+    public $investisseurQuiAPayeTout;
+    public $montantVerifie = false;
     public $sommeRestante = 0;
     public $montant = ''; // Stocke le montant saisi
 
     public $pourcentageInvesti = 0;
+    public $commentTauxList = [];
+    public $tauxTrade;
+
+
 
 
     public function mount($id)
@@ -80,7 +92,58 @@ class DetailsCredit extends Component
 
         // Calculer la somme restante à investir
         $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
-        // Mettre à jour la notification et valider
+
+        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
+
+        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
+        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
+
+        // Vérifier si un investisseur a payé la totalité du demandeCredit
+        $this->investisseurQuiAPayeTout = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->select('id_invest')
+            ->groupBy('id_invest')
+            ->havingRaw('SUM(montant) >= ?', [$this->demandeCredit->montant])
+            ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
+
+        // Log de l'investisseur qui a payé tout
+        Log::info('Investisseur qui a payé tout pour le demandeCredit ID: ' . $this->demandeCredit->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
+
+        $this->listenTaux();
+    }
+
+    // Méthode déclenchée lorsque le compte à rebours est terminé
+    public function compteReboursFini()
+    {
+        // Mettre à jour l'attribut 'finish' du projet
+        $this->demandeCredit->update([
+            'count' => true,
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Négociation terminé.'
+            )
+        ]);
+
+        // Optionnel : Vous pouvez également émettre un événement pour informer l'utilisateur
+        $this->dispatch(
+            'formSubmitted',
+            'Temps écoule, Négociation terminé.'
+        );
+        // $close = true; // Votre logique d'éligibilité ici
+
+        // if ($close) {
+        //     $this->dispatch('submittion', $close,);
+        // }
+
+    }
+
+    #[On('echo:comments,CommentSubmittedTaux')]
+    public function listenTaux()
+    {
+        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
+            ->where('id_demande_credit', $this->demandeCredit->id)
+            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->get();
     }
     public function updatedMontant()
     {
@@ -92,15 +155,15 @@ class DetailsCredit extends Component
         // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
         $montant = floatval($this->montant); // Convertir le montant en float
 
-        // if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
-        //     session()->flash('error', 'Veuillez saisir un montant valide.');
-        //     return;
-        // }
+        if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
+            session()->flash('error', 'Veuillez saisir un montant valide.');
+            return;
+        }
 
-        // Récupérer le projet et le wallet de l'utilisateur (investisseur)
+        // Récupérer le demandeCredit et le wallet de l'utilisateur (investisseur)
         $demandeCredit = $this->demandeCredit;
 
-        // Vérifiez si le projet et le demandeur existent
+        // Vérifiez si le demandeCredit et le demandeur existent
         if (!$demandeCredit || !$this->notification->data['demande_id']) {
             session()->flash('error', 'La demande de credit ou le demandeur est introuvable.');
             return;
@@ -134,9 +197,9 @@ class DetailsCredit extends Component
                 'id_demnd_credit' => $this->demandeCredit->id,
             ]);
 
-            // // Mettre à jour le solde du wallet de l'investisseur
-            // $wallet->balance -= $montant;
-            // $wallet->save();
+            // Log après l'ajout du montant
+            Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
+
 
             // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
             $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
@@ -188,8 +251,21 @@ class DetailsCredit extends Component
         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
             ->distinct()
             ->count('id_invest');
+        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
 
-            
+        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
+        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
+
+        // Vérifier si un investisseur a payé la totalité du demandeCredit
+        $this->investisseurQuiAPayeTout = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->select('id_invest')
+            ->groupBy('id_invest')
+            ->havingRaw('SUM(montant) >= ?', [$this->demandeCredit->montant])
+            ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
+
+        // Log de l'investisseur qui a payé tout
+        Log::info('Investisseur qui a payé tout pour le demandeCredit ID: ' . $this->demandeCredit->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
     }
     public function approuver($montant)
     {
@@ -280,7 +356,73 @@ class DetailsCredit extends Component
         $this->insuffisant = false;
     }
 
+    public function commentForm()
+    {
+        // Validation du champ tauxTrade
+        $this->validate([
+            'tauxTrade' => 'required|numeric|min:0',
+        ]);
 
+        // Vérification de l'objet projet
+        if (!$this->projet || !$this->projet->id) {
+            session()->flash('error', 'Le projet est introuvable.');
+            return;
+        }
+
+        $user = auth()->user();
+
+        $userWallet = Wallet::where('user_id', $user->id)->first();
+        $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
+        if (!$coiWallet  || $coiWallet->Solde < $this->projet->montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
+            return;
+        }
+
+        // Insérer dans la table commentTaux
+        try {
+            $commentTaux = CommentTaux::create([
+                'taux' => $this->tauxTrade,
+                'id_invest' => auth()->id(),
+                'id_emp' => $this->projet->id_user,
+                'id_projet' => $this->projet->id,
+            ]);
+
+            // Réinitialiser le champ tauxTrade après l'insertion
+            $this->tauxTrade = '';
+            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+
+
+            // Optionnel: Ajouter une notification ou un message de succès
+            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+        }
+
+        // Commenter cette ligne une fois que vous avez vérifié
+
+        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
+            ->where('id_projet', $this->projet->id)
+            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->get();
+
+        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+        $existingCountdown = Countdown::where('code_unique',  $this->projet->id)
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $this->projet->demandeur->id,
+                // 'start_time' => $this->dateFin,
+                'start_time' => now(),
+                'difference' => 'projet_taux',
+                'code_unique' =>  $this->projet->id,
+            ]);
+        }
+    }
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
     {
         $transaction = new Transaction();
@@ -316,7 +458,7 @@ class DetailsCredit extends Component
         $dateFin = \Carbon\Carbon::parse($this->demandeCredit->date_fin);
         $dateActuelle = now();
         $joursRestants = $dateActuelle->diffInDays($dateFin);
-        return max(0, $joursRestants); // Retournez 0 si le projet est déjà terminé
+        return max(0, $joursRestants); // Retournez 0 si le demandeCredit est déjà terminé
     }
     public function render()
     {

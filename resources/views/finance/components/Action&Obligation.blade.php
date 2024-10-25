@@ -103,12 +103,12 @@
         @if ($projet->id_user != Auth::id())
             @php
                 // Déterminez si le bouton "Ajouter un montant" est affiché
-                $isSingleButton = $montantVerifie;
+                $isSingleButton = $montantVerifie === true || $projet->type_financement === 'négocié';
             @endphp
 
             <div class="flex">
                 <!-- Bouton pour ajouter un montant -->
-                @if (!$montantVerifie)
+                @if (!$isSingleButton)
                     <button id="showMontantInputButton"
                         class="w-1/2 py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
                         Ajouter un montant

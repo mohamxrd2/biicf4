@@ -144,6 +144,7 @@
                             <option selected>Choisir un type</option>
                             <option value="demande-directe">Demande Directe</option>
                             <option value="offre-composite">Offre composite (groupée)</option>
+                            <option value="négocié">Offre négocié</option>
                         </select>
                         @error('financementType')
                             <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -180,7 +181,7 @@
                             </div>
 
                             <!-- Ciblage du bailleur -->
-                            <div x-show="typeFinancement === 'offre-composite'" class="flex flex-col flex-1">
+                            <div x-show="typeFinancement === 'offre-composite' || typeFinancement === 'négocié'" class="flex flex-col flex-1">
                                 <label for="bailleur"
                                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un
                                     bailleur ou entrez son username</label>
@@ -206,16 +207,14 @@
                     <!-- Dates et Heures alignées -->
                     <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
 
+
                         <div>
                             <label for="end-date"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
                                 fin</label>
-                            <input type="date" wire:model="endDate" id="end-date"
+                            <input type="date" wire:model="endDate" id="Datefin"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                required>
-                            @error('endDate')
-                                <span class="text-red-600 text-sm">{{ $message }}</span>
-                            @enderror
+                                oninput="updateDate()" required>
                         </div>
 
                         <div>
@@ -225,23 +224,19 @@
                             <input type="time" wire:model="endTime" id="end-time"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required>
-                            @error('endTime')
-                                <span class="text-red-600 text-sm">{{ $message }}</span>
-                            @enderror
+
                         </div>
                     </div>
 
                     <!-- Durée du crédit -->
+
                     <div class="sm:col-span-2">
                         <label for="duration"
                             class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Durée
-                            du crédit (Delais de rembourcement)</label>
-                        <input type="number" wire:model="duration" id="duration"
+                            du crédit (Délais de remboursement)</label>
+                        <input type="date" wire:model="duration" id="Periode"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                            placeholder="12" required>
-                        @error('duration')
-                            <span class="text-red-600 text-sm">{{ $message }}</span>
-                        @enderror
+                            oninput="updateDate()" required>
                     </div>
 
 
@@ -258,6 +253,35 @@
 
         </div>
     @endif
+
+
+
+
+
+    <script>
+        function updateDate() {
+            // Sélectionner les éléments de date
+            const durationInput = document.getElementById("Periode");
+            const Datefin = document.getElementById("Datefin");
+
+            // Récupérer les valeurs de l'input (les dates sélectionnées)
+            const selectedDate = new Date(durationInput.value);
+            const selectedDatefin = new Date(Datefin.value);
+
+            // Afficher les dates sélectionnées dans la console
+            console.log("Date de durée sélectionnée :", durationInput.value);
+            console.log("Date de fin sélectionnée :", Datefin.value);
+
+            // Vérification si la date de fin est supérieure à la durée
+            if (selectedDatefin && selectedDate && selectedDatefin > selectedDate) {
+                alert('La date de fin ne doit pas dépasser la durée.');
+                Datefin.value = ''; // Réinitialiser la date de fin si la condition est remplie
+                console.log("Condition échouée : la date de fin est supérieure à la durée.");
+            } else {
+                console.log("Condition réussie : la date de fin est inférieure ou égale à la durée.");
+            }
+        }
+    </script>
 
     <script>
         // Fonction pour mettre à jour le montant total en fonction de la quantité
@@ -279,7 +303,7 @@
             const tauxInteret = document.getElementById('taux_interet');
             const crediTotal = document.getElementById('credi_total');
             const error_Message = document.getElementById('error_Message');
-            const submitButton = document.getElementById('submitCredit');
+            // const submitButton = document.getElementById('submitCredit');
 
 
 
@@ -295,7 +319,7 @@
                 montantTotalElement.innerText = '0 FCFA';
                 interestElement.innerText = '0 FCFA';
                 creditotal.innerText = '0 FCFA';
-                submitButton.disabled = true;
+                // submitButton.disabled = true;
                 montantTotalInput.value = 0;
                 tauxInteret.value = 0;
                 crediTotal.value = 0;
@@ -308,7 +332,7 @@
                 montantTotalInput.value = montantMax;
                 tauxInteret.value = interet;
                 crediTotal.value = creditTotal;
-                submitButton.disabled = false;
+                // submitButton.disabled = false;
             }
         }
     </script>

@@ -21,13 +21,6 @@
 
             <p class="text-center my-5 text-2xl">Creer un compte</p>
 
-
-
-            @if (session('success'))
-                <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
-                    {{ session('success') }}
-                </div>
-            @endif
             <!-- Stepper -->
             <div data-hs-stepper="" class="">
                 <!-- Stepper Nav -->
@@ -78,6 +71,16 @@
                     </li>
                     <!-- End Item -->
                 </ul>
+                @if ($errors->any())
+                    <div class="m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
+                        <strong class="font-bold">Attention!</strong>
+                        <ul class="mt-2">
+                            @foreach ($errors->all() as $error)
+                                <li class="list-disc list-inside">{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <!-- End Stepper Nav -->
                 <form action="{{ route('biicf.signup') }}" method="POST">
                     @csrf
@@ -159,12 +162,10 @@
                                     ])
                                 </div>
 
-                                <div>
-                                    <label for="investisement">Proportion à investir (la somme minimale)</label>
-                                </div>
+
                                 @include('admin.components.select', [
                                     'name' => 'investisement',
-                                    'title' => 'Choisissez une tranche(FCFA)',
+                                    'title' => 'Proportion à investir / Choisissez une tranche(FCFA)',
                                     'options' => [
                                         '1-500.000',
                                         '500.001-1.000.000',
@@ -335,7 +336,7 @@
                         <!-- End Final Contnet -->
 
                         <!-- Button Group -->
-                        <div class="mt-5 flex justify-between items-center gap-x-2">
+                        <div class="mt-3 flex justify-between items-center gap-x-2">
                             <button type="button"
                                 class="py-2 px-3 inline-flex items-center gap-x-1 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
                                 data-hs-stepper-back-btn="">
@@ -372,7 +373,7 @@
                     <!-- End Stepper Content -->
 
                 </form>
-                <div class="w-full mt-8 text-center">
+                <div class="w-full mt-3 text-center">
                     <p class="mt-2 text-sm text-gray-600">
                         Vous avez déjà un compte?
                         <a class="text-blue-600 decoration-2  font-medium" href="{{ route('biicf.login') }}">

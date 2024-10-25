@@ -13,6 +13,7 @@ class Wallet extends Model
         'user_id', // Modifier id_user en user_id
         'admin_id', // Modifier id_admin en admin_id
         'balance',
+        'Numero_compte',
     ];
 
     public function user()

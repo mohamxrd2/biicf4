@@ -98,7 +98,7 @@ class Demandecredit extends Component
                 'bailleur' => 'nullable|string',
                 'endDate' => 'required|date',
                 'endTime' => 'required|date_format:H:i',
-                'duration' => 'required|numeric',
+                'duration' => 'required|date',
             ]);
 
 
