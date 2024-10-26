@@ -363,20 +363,20 @@ class DetailsCredit extends Component
             'tauxTrade' => 'required|numeric|min:0',
         ]);
 
-        // Vérification de l'objet projet
-        if (!$this->projet || !$this->projet->id) {
-            session()->flash('error', 'Le projet est introuvable.');
-            return;
-        }
+        // // Vérification de l'objet projet
+        // if (!$this->projet || !$this->projet->id) {
+        //     session()->flash('error', 'Le projet est introuvable.');
+        //     return;
+        // }
 
         $user = auth()->user();
 
         $userWallet = Wallet::where('user_id', $user->id)->first();
         $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
-        if (!$coiWallet  || $coiWallet->Solde < $this->projet->montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
-            return;
-        }
+        // if (!$coiWallet  || $coiWallet->Solde < $this->projet->montant) {
+        //     session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
+        //     return;
+        // }
 
         // Insérer dans la table commentTaux
         try {

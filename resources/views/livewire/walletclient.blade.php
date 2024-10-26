@@ -533,7 +533,6 @@
                 </div>
             </div>
         @elseif ($currentPage === 'envoie')
-            {{-- @livewire('transfert-client') --}}
             @livewire('transfert-argent')
         @elseif ($currentPage === 'retrait')
             @livewire('withdrawal-component')
