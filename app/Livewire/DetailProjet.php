@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Events\CommentSubmittedTaux;
+use App\Events\DebutDeNegociation;
 use App\Events\OldestCommentUpdated;
 use App\Models\AjoutAction;
 use App\Models\Cfa;
@@ -170,6 +171,13 @@ class DetailProjet extends Component
         $this->insuffisant = !empty($this->montant) && $this->montant > $this->solde;
     }
 
+    #[On('echo:debut-negociation,DebutDeNegociation')]
+    public function actualisation()
+    {
+        dd('good');
+
+    }
+
 
     public function confirmer()
     {
@@ -304,7 +312,12 @@ class DetailProjet extends Component
             ->groupBy('id_invest')
             ->havingRaw('SUM(montant) >= ?', [$this->projet->montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
-
+        // Si un investisseur a payé le montant total, déclencher l'événement
+        if ($this->investisseurQuiAPayeTout) {
+            // Déclencher l'événement `DebutDeNegociation`
+            broadcast(new DebutDeNegociation($this->projet, $this->investisseurQuiAPayeTout));
+            $this->dispatch('DebutDeNegociation', $this->projet, $this->investisseurQuiAPayeTout);
+        }
         // Log de l'investisseur qui a payé tout
         Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
     }
