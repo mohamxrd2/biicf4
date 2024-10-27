@@ -12,9 +12,10 @@
                     <span>:</span>
                     <div x-text="seconds"></div>s
                 </div>
-                <div x-show="isFinished" class="text-red-600 font-bold">Temps écoulé !</div>
             @endif
+            <div x-show="isFinished" class="text-red-600 font-bold">Temps écoulé !</div>
         </div>
+
     </div>
 
     <!-- Afficher les messages d'erreur -->
@@ -120,9 +121,6 @@
     </div>
 </div>
 <script>
-    // Ajoutez un écouteur d'événements pour valider le taux lors de la saisie
-    document.getElementById('tauxTrade').addEventListener('input', validateTaux);
-
     function validateTaux() {
         const tauxPresent = @json($tauxPresent); // Le taux déjà présent
         const tauxTradeInput = document.getElementById('tauxTrade');
@@ -130,8 +128,8 @@
         const errorMessage = document.getElementById('errorMessage');
 
         // Vérifiez si le taux saisi est supérieur au taux présent
-        if (parseFloat(tauxTradeInput.value) > parseFloat(tauxPresent)) {
-            errorMessage.innerText = `Le taux ne peut pas être supérieur à ${tauxPresent}%.`;
+        if (parseFloat(tauxTradeInput.value) >= parseFloat(tauxPresent)) {
+            errorMessage.innerText = `Le taux ne peut pas être supérieur à ${tauxPresent}.`;
             errorMessage.classList.remove('hidden');
             submitBtn.disabled = true; // Désactivez le bouton
             return false; // Empêche la soumission du formulaire
@@ -142,7 +140,8 @@
         }
     }
 
-
+    // Ajoutez un écouteur d'événements pour valider le taux lors de la saisie
+    document.getElementById('tauxTrade').addEventListener('input', validateTaux);
 
     document.addEventListener('alpine:init', () => {
         Alpine.data('countdownTimer', (projetDurer) => ({
@@ -157,6 +156,9 @@
             hasSubmitted: false, // Variable pour éviter la soumission multiple
 
             init() {
+
+                console.log('Initialisation du compteur', this.projetDurer);
+
                 if (this.projetDurer) {
                     this.startDate = new Date(this.projetDurer);
 
@@ -165,6 +167,14 @@
 
                     this.startCountdown();
                 }
+
+                Echo.channel('oldest-comment')
+                    .listen('OldestCommentUpdated', (e) => {
+                        console.log('Événement OldestCommentUpdated reçu', e);
+                        if (e.oldestCommentDate) {
+                            location.reload(); // Recharge toute la page
+                        }
+                    });
             },
 
             startCountdown() {

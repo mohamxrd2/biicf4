@@ -44,11 +44,13 @@ class DetailProjet extends Component
     public $tauxTrade;
     public $commentTauxList = [];
     public $dateFin;
+    public $timer;
 
     protected $listeners = ['compteReboursFini'];
     public function mount($id)
     {
         $this->projet = Projet::with('demandeur')->find($id);
+        $this->timer = $this->projet->durer;
         $this->images = array_filter([
             $this->projet->photo1,
             $this->projet->photo2,
@@ -404,8 +406,8 @@ class DetailProjet extends Component
             Log::info('Référence de transaction générée: ' . $reference_id);
 
             // Créer deux transactions
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'achat', 'effectué');
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de financement de crédit d\'achat', 'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de fond', 'effectué');
             Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
@@ -437,7 +439,7 @@ class DetailProjet extends Component
         Log::info('Somme investie mise à jour pour le projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
 
         // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutAction::where('id_projet', $this->projet->id)
+        $this->nombreInvestisseursDistinctAction = AjoutAction::where('id_projet', $this->projet->id)
             ->distinct()
             ->count('id_invest');
 
@@ -516,6 +518,10 @@ class DetailProjet extends Component
                 'difference' => 'projet_taux',
                 'code_unique' =>  $this->projet->id,
             ]);
+
+            // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
+            // broadcast(new OldestCommentUpdated(now()->toIso8601String()));
+            // $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
         }
     }
 

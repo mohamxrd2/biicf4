@@ -160,23 +160,28 @@
     <!-- Section pour entrer une action (à ajouter selon vos besoins) -->
     <div id="actionInputDiv" class="mt-6 hidden">
         <!-- Contenu du formulaire pour ajouter une action -->
-        <p class="text-md mb-3 text-gray-700">Entrez le nombre d'actions que vous souhaitez
-            acheter.</p>
+        <p class="text-md  text-gray-700">Entrez le nombre d'actions que vous souhaitez
+            acheter. </p>
+        <p>Nombre d'action restant ({{ number_format($sommeRestanteAction, 0, ',', ' ') }})</p>
+        @if ($sommeRestanteAction == 0)
+            <p  class="text-red-500 text-center mt-2">Pas d'Action disponible</p>
+        @else
+            <input type="number" id="actionInput"
+                class="w-full py-3 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Nombre d'actions" wire:model="action">
 
-        <input type="number" id="actionInput"
-            class="w-full py-3 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Nombre d'actions" wire:model="action">
 
-        <button id="confirmerActionButton"
-            class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
-            wire:click="confirmerAction" wire:loading.attr="disabled">
-            <span wire:loading.remove>
-                Confirmer l'action
-            </span>
-            <span wire:loading>
-                Chargement...
-            </span>
-        </button>
+            <button id="confirmerActionButton"
+                class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
+                wire:click="confirmerAction" wire:loading.attr="disabled">
+                <span wire:loading.remove>
+                    Confirmer l'action
+                </span>
+                <span wire:loading>
+                    Chargement...
+                </span>
+            </button>
+        @endif
     </div>
 </div>
 <!-- Main modal -->

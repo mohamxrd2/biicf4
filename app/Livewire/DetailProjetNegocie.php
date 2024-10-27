@@ -74,6 +74,8 @@ class DetailProjetNegocie extends Component
             ->distinct()
             ->count('id_invest');
 
+
+
         $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)
             ->sum('montant'); // Somme des montants investis
 
@@ -404,8 +406,8 @@ class DetailProjetNegocie extends Component
             Log::info('Référence de transaction générée: ' . $reference_id);
 
             // Créer deux transactions
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'achat', 'effectué');
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de financement de crédit d\'achat', 'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de fond', 'effectué');
             Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
@@ -441,10 +443,10 @@ class DetailProjetNegocie extends Component
             ->distinct()
             ->count('id_invest');
 
-        // Vérifier si le nombre d'action du projet est atteint
-        $this->montantVerifieAction = AjoutAction::where('id_projet', $this->projet->id)
-            ->where('nombreActions', $this->projet->nombreActions)
-            ->exists();
+        // Mettre à jour le nombre d'investisseurs distincts
+        $this->nombreInvestisseursDistinctAction = AjoutAction::where('id_projet', $this->projet->id)
+            ->distinct()
+            ->count('id_invest');
 
         // Log final
         Log::info('Montant vérifié pour le projet ID: ' . $this->projet->id . ', Montant atteint: ' . ($this->montantVerifie ? 'Oui' : 'Non'));
