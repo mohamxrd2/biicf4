@@ -174,7 +174,7 @@ class DetailProjet extends Component
     #[On('echo:debut-negociation,DebutDeNegociation')]
     public function actualisation()
     {
-        dd('good');
+        $this->dispatch('refreshPage'); // Émission d'un événement Livewire
 
     }
 

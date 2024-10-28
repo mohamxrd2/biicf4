@@ -115,7 +115,7 @@ class DetailsCredit extends Component
     // Méthode déclenchée lorsque le compte à rebours est terminé
     public function compteReboursFini()
     {
-        // Mettre à jour l'attribut 'finish' du projet
+        // Mettre à jour l'attribut 'finish' du demandeCredit
         $this->demandeCredit->update([
             'count' => true,
             $this->dispatch(
@@ -363,64 +363,74 @@ class DetailsCredit extends Component
             'tauxTrade' => 'required|numeric|min:0',
         ]);
 
-        // // Vérification de l'objet projet
-        // if (!$this->projet || !$this->projet->id) {
-        //     session()->flash('error', 'Le projet est introuvable.');
-        //     return;
-        // }
+        // Vérification de l'objet demandeCredit
+        if (!$this->demandeCredit || !$this->demandeCredit->id) {
+            session()->flash('error', 'Le demandeCredit est introuvable.');
+            return;
+        }
 
         $user = auth()->user();
 
         $userWallet = Wallet::where('user_id', $user->id)->first();
         $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
-        // if (!$coiWallet  || $coiWallet->Solde < $this->projet->montant) {
-        //     session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
-        //     return;
-        // }
-
-        // Insérer dans la table commentTaux
-        try {
-            $commentTaux = CommentTaux::create([
-                'taux' => $this->tauxTrade,
-                'id_invest' => auth()->id(),
-                'id_emp' => $this->projet->id_user,
-                'id_projet' => $this->projet->id,
-            ]);
-
-            // Réinitialiser le champ tauxTrade après l'insertion
-            $this->tauxTrade = '';
-            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
-
-
-            // Optionnel: Ajouter une notification ou un message de succès
-            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+        if (!$coiWallet  || $coiWallet->Solde < $this->demandeCredit->montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->demandeCredit->montant . ' CFA.');
+            return;
         }
 
-        // Commenter cette ligne une fois que vous avez vérifié
-
-        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-            ->where('id_projet', $this->projet->id)
-            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
-            ->get();
-
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique',  $this->projet->id)
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
+        // Vérifier si c'est la première soumission
+        $ajoutMontant = AjoutMontant::where('id_invest', $user->id)
+            ->where('id_demnd_credit', $this->demandeCredit->id)
             ->first();
 
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $this->projet->demandeur->id,
-                // 'start_time' => $this->dateFin,
-                'start_time' => now(),
-                'difference' => 'projet_taux',
-                'code_unique' =>  $this->projet->id,
-            ]);
+        if (!$ajoutMontant) {
+            // Appeler la fonction confirmer si c'est la première soumission
+            $this->confirmer();
+        } else {
+            // Insérer dans la table commentTaux
+            try {
+                $commentTaux = CommentTaux::create([
+                    'taux' => $this->tauxTrade,
+                    'id_invest' => auth()->id(),
+                    'id_emp' => $this->demandeCredit->id_user,
+                    'id_demande_credit' => $this->demandeCredit->id,
+                ]);
+
+                // Réinitialiser le champ tauxTrade après l'insertion
+                $this->tauxTrade = '';
+                broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+
+
+                // Optionnel: Ajouter une notification ou un message de succès
+                session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+            } catch (\Exception $e) {
+                session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+            }
+
+            // Commenter cette ligne une fois que vous avez vérifié
+
+            $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
+                ->where('id_demande_credit', $this->demandeCredit->id)
+                ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+                ->get();
+
+            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+            $existingCountdown = Countdown::where('code_unique',  $this->demandeCredit->id)
+                ->where('notified', false)
+                ->orderBy('start_time', 'desc')
+                ->first();
+
+            if (!$existingCountdown) {
+                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+                Countdown::create([
+                    'user_id' => Auth::id(),
+                    'userSender' => $this->userId,
+                    // 'start_time' => $this->dateFin,
+                    'start_time' => now(),
+                    'difference' => 'projet_taux',
+                    'code_unique' =>  $this->demandeCredit->id,
+                ]);
+            }
         }
     }
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void

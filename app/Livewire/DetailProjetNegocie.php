@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Events\CommentSubmittedTaux;
+use App\Events\DebutDeNegociation;
 use App\Events\OldestCommentUpdated;
 use App\Models\AjoutAction;
 use App\Models\Cfa;
@@ -298,6 +299,14 @@ class DetailProjetNegocie extends Component
             ->where('montant', $this->projet->montant)
             ->exists();
 
+
+        // Récupérer la somme totale de tous les montants ajoutés pour ce projet par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
+
+        // Vérifier si la somme totale atteint ou dépasse le montant du projet
+        $this->montantVerifie = $totalAjoute >= $this->projet->montant;
+
+
         // Vérifier si un investisseur a payé la totalité du projet
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
             ->select('id_invest')
@@ -305,6 +314,12 @@ class DetailProjetNegocie extends Component
             ->havingRaw('SUM(montant) >= ?', [$this->projet->montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
 
+        // Si un investisseur a payé le montant total, déclencher l'événement
+        if ($this->investisseurQuiAPayeTout) {
+            // Déclencher l'événement `DebutDeNegociation`
+            broadcast(new DebutDeNegociation($this->projet, $this->investisseurQuiAPayeTout));
+            $this->dispatch('DebutDeNegociation', $this->projet, $this->investisseurQuiAPayeTout);
+        }
         // Log de l'investisseur qui a payé tout
         Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
     }
@@ -439,14 +454,15 @@ class DetailProjetNegocie extends Component
         Log::info('Somme investie mise à jour pour le projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
 
         // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutAction::where('id_projet', $this->projet->id)
-            ->distinct()
-            ->count('id_invest');
-
-        // Mettre à jour le nombre d'investisseurs distincts
         $this->nombreInvestisseursDistinctAction = AjoutAction::where('id_projet', $this->projet->id)
             ->distinct()
             ->count('id_invest');
+
+
+        // Vérifier si le nombre d'action du projet est atteint
+        $this->montantVerifieAction = AjoutAction::where('id_projet', $this->projet->id)
+            ->where('nombreActions', $this->projet->nombreActions)
+            ->exists();
 
         // Log final
         Log::info('Montant vérifié pour le projet ID: ' . $this->projet->id . ', Montant atteint: ' . ($this->montantVerifie ? 'Oui' : 'Non'));
