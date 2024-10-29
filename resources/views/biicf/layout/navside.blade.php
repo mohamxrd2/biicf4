@@ -44,7 +44,7 @@
             <ul class="space-y-1.5 ">
                 <li x-data="{ open: false }">
                     <button @click="open = !open"
-                        class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                        class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 border shadow-md"
                         aria-haspopup="menu" :aria-expanded="open" aria-label="Dropdown">
 
                         <svg :class="{ 'rotate-180': open }" class="transform transition-transform size-4"

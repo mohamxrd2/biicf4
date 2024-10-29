@@ -1,6 +1,6 @@
 @extends('admin.layout.navside')
 
-@section('title', 'Dashboard')
+@section('title', 'Demande Livraison')
 
 @section('content')
 
