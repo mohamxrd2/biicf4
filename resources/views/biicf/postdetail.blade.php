@@ -66,31 +66,30 @@
         <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0 ">
             <div class="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
                 <!-- Images Section -->
-                <div class="flex flex-col space-y-4">
+                <div class="flex flex-col items-center space-y-4">
                     <!-- Main Image -->
                     <div class="shrink-0 max-w-md lg:max-w-lg mx-auto">
-                        <img id="mainImage" class="w-full dark:hidden rounded-lg"
-                            src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Main Product Image" />
-                        <img id="mainImage" class="w-full hidden dark:block"
+                        <img id="mainImage" class="w-full dark:hidden rounded-lg shadow-md"
                             src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Main Product Image" />
                     </div>
-
+                
                     <!-- Thumbnail Images -->
-                    <div class="flex space-x-4">
+                    <div class="flex justify-center space-x-4">
                         <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd1) }}')"
-                        class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
-                        src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Thumbnail 1">
+                            class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
+                            src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Thumbnail 1">
                         <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd2) }}')"
-                            class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
+                            class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
                             src="{{ asset('post/all/' . $produit->photoProd2) }}" alt="Thumbnail 2">
                         <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd3) }}')"
-                            class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
+                            class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
                             src="{{ asset('post/all/' . $produit->photoProd3) }}" alt="Thumbnail 3">
                         <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd4) }}')"
-                            class="w-20 h-20 object-cover cursor-pointer border rounded-lg"
+                            class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
                             src="{{ asset('post/all/' . $produit->photoProd4) }}" alt="Thumbnail 4">
                     </div>
                 </div>
+                
 
                 <!-- Product Info Section -->
                 <div class="mt-6   sm:mt-8 lg:mt-0 sm:p-6">

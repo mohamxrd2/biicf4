@@ -1,16 +1,21 @@
 <div>
     <form wire:submit.prevent="submit">
+        <div class="flex items-center justify-center">
+            <div class="w-full md:w-1/2 bg-white rounded-lg shadow-md p-6">
+                @if($errorMessage)
+                <div class="alert alert-danger mb-3" style="color: red; border: 1px solid red; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    {{ $errorMessage }}
+                </div>
+            @endif
+            
 
-        <div class="bg-gray-100 flex items-center justify-center min-h-screen">
-            <div class="w-full max-w-md bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-xl font-bold text-center mb-6 text-gray-700">Transférer de l'Argent</h2>
 
                 <!-- Champ de recherche utilisateur -->
                 <div class="mb-4">
                     <label for="recipient" class="block text-sm font-medium text-gray-600 mb-1">Destinataire</label>
                     <input type="text" wire:model.live="search" id="recipient" placeholder="Recherchez un utilisateur"
-                           class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
-                           autocomplete="off">
+                           class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
 
                     @if (!empty($search))
                         @foreach ($users as $user)
@@ -26,7 +31,6 @@
                         @endforeach
                     @endif
                 </div>
-
 
                 <!-- Champ de saisie du montant -->
                 <div class="mb-4">

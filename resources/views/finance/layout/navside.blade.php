@@ -67,8 +67,8 @@
                                                         </svg>',
                 ])
                 @include('admin.components.navfin', [
-                    'routeSelf' => 'biicf.wallet',
-                    'route' => route('biicf.wallet'),
+                    'routeSelf' => 'finance.wallet',
+                    'route' => route('finance.wallet'),
                     'iconSvg' => '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"
                                                             class="size-6">
                                                             <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />

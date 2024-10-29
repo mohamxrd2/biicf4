@@ -16,15 +16,35 @@ class TransfertArgent extends Component
     public $user_id;
     public $amount;
 
+
+    public $errorMessage;
+
     // Méthode appelée lors de la mise à jour de la recherche
     public function mount()
     {
         $this->users = User::all();
+
+        $this->resetForm(); // Réinitialiser les champs du formulaire par défaut
     }
     public function updatedSearch()
     {
-        $this->users = User::where('username', 'like', '%' . $this->search . '%')->get();
+        if (!empty($this->search)) {
+            // Récupérer l'ID de l'utilisateur connecté
+            $currentUserId = auth()->id();
+
+            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie,
+            // mais exclure l'utilisateur connecté
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')
+                ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
+                ->get();
+
+            Log::info('Search updated.', ['search' => $this->search]);
+        } else {
+            // Si la barre de recherche est vide, ne rien afficher
+            $this->users = [];
+        }
     }
+    
 
     public function selectUser($userId, $userName)
     {
@@ -34,78 +54,89 @@ class TransfertArgent extends Component
     }
 
     public function submit()
-    {
+{
+    // Réinitialiser le message d'erreur au début de la soumission
+    $this->errorMessage = '';
 
+    $this->validate([
+        'user_id' => 'required|exists:users,id',
+        'amount' => 'required|numeric|min:1',
+    ], [
+        'user_id.required' => 'Veuillez sélectionner un utilisateur.',
+        'amount.required' => 'Veuillez entrer un montant.',
+        'amount.numeric' => 'Le montant doit être numérique.',
+        'amount.min' => 'Le montant doit être supérieur à 0.',
+    ]);
 
-        $this->validate([
-            'user_id' => 'required|exists:users,id',
-            'amount' => 'required|numeric|min:1',
-        ], [
-            'user_id.required' => 'Veuillez sélectionner un utilisateur.',
-            'amount.required' => 'Veuillez entrer un montant.',
-            'amount.numeric' => 'Le montant doit être numérique.',
-            'amount.min' => 'Le montant doit être supérieur à 0.',
+    $senderId = Auth::id();
+    $receiver = User::find($this->user_id);
+
+    if (!$receiver) {
+        Log::error('Utilisateur spécifié introuvable.', ['user_id' => $this->user_id]);
+        $this->errorMessage = 'L\'utilisateur spécifié n\'existe pas.';
+        return; // Arrêtez l'exécution de la méthode
+    }
+
+    $senderWallet = Wallet::where('user_id', $senderId)->first();
+    $receiverWallet = Wallet::where('user_id', $receiver->id)->first();
+
+    if (!$senderWallet || !$receiverWallet) {
+        Log::error('Erreur lors de la récupération des portefeuilles.', [
+            'sender_id' => $senderId,
+            'receiver_id' => $receiver->id
+        ]);
+        $this->errorMessage = 'Erreur lors de la récupération des portefeuilles.';
+        return;
+    }
+
+    if ($senderWallet->balance < $this->amount) {
+        Log::warning('Solde insuffisant.', [
+            'sender_balance' => $senderWallet->balance,
+            'requested_amount' => $this->amount
+        ]);
+        $this->errorMessage = 'Solde insuffisant pour effectuer la recharge.';
+        return;
+    }
+
+    try {
+        // Effectuer la transaction
+        $this->processTransaction($senderWallet, $receiverWallet);
+
+        // Générer une référence pour la transaction
+        $referenceId = $this->generateIntegerReference();
+
+        // Enregistrer la transaction
+        $this->createTransaction($senderId, $receiver->id, 'Envoie', $this->amount, $referenceId, 'Envoie d\'argent');
+        $this->createTransaction($senderId, $receiver->id, 'Réception', $this->amount, $referenceId, 'Réception d\'argent');
+
+        Log::info('Recharge réussie.', [
+            'sender_id' => $senderId,
+            'receiver_id' => $receiver->id,
+            'amount' => $this->amount,
+            'reference_id' => $referenceId,
+            'sender_balance' => $senderWallet->balance - $this->amount,
+            'receiver_balance' => $receiverWallet->balance + $this->amount
         ]);
 
-        $senderId = Auth::id();
-        $receiver = User::find($this->user_id);
-
-        if (!$receiver) {
-            Log::error('Utilisateur spécifié introuvable.', ['user_id' => $this->user_id]);
-            return $this->handleError('L\'utilisateur spécifié n\'existe pas.');
-        }
-
-        $senderWallet = Wallet::where('user_id', $senderId)->first();
-        $receiverWallet = Wallet::where('user_id', $receiver->id)->first();
-
-        if (!$senderWallet || !$receiverWallet) {
-            Log::error('Erreur lors de la récupération des portefeuilles.', [
-                'sender_id' => $senderId,
-                'receiver_id' => $receiver->id
-            ]);
-            return $this->handleError('Erreur lors de la récupération des portefeuilles.');
-        }
-
-        if ($senderWallet->balance < $this->amount) {
-            Log::warning('Solde insuffisant.', [
-                'sender_balance' => $senderWallet->balance,
-                'requested_amount' => $this->amount
-            ]);
-            return $this->handleError('Solde insuffisant pour effectuer la recharge.');
-        }
-
-        try {
-            // Effectuer la transaction
-            $this->processTransaction($senderWallet, $receiverWallet);
-
-            // Générer une référence pour la transaction
-            $referenceId = $this->generateIntegerReference();
-
-            // Enregistrer la transaction
-            $this->createTransaction($senderId, $receiver->id, 'Envoie', $this->amount, $referenceId, 'Envoie d\'argent');
-            $this->createTransaction($receiver->id, $senderId, 'Réception', $this->amount, $referenceId, 'Réception d\'argent');
-
-            Log::info('Recharge réussie.', [
-                'sender_id' => $senderId,
-                'receiver_id' => $receiver->id,
-                'amount' => $this->amount,
-                'reference_id' => $referenceId,
-                'sender_balance' => $senderWallet->balance - $this->amount,
-                'receiver_balance' => $receiverWallet->balance + $this->amount
-            ]);
-
-            $this->dispatch('formSubmitted', 'Transfert effectué avec succès.');
-            // Reset des champs après soumission
-            $this->reset();
-        } catch (\Exception $e) {
-            Log::error('Erreur lors du transfert.', [
-                'exception' => $e->getMessage(),
-                'sender_id' => $senderId,
-                'receiver_id' => $receiver->id,
-                'amount' => $this->amount
-            ]);
-            return $this->handleError('Une erreur est survenue lors du transfert.');
-        }
+        $this->dispatch('formSubmitted', 'Transfert effectué avec succès.');
+        // Reset des champs après soumission
+        $this->resetForm(); // Réinitialiser les champs du formulaire par défaut
+        return redirect()->to(request()->header('Referer'));
+    } catch (\Exception $e) {
+        Log::error('Erreur lors du transfert.', [
+            'exception' => $e->getMessage(),
+            'sender_id' => $senderId,
+            'receiver_id' => $receiver->id,
+            'amount' => $this->amount
+        ]);
+        $this->errorMessage = 'Une erreur est survenue lors du transfert.';
+    }
+}
+    public function resetForm()
+    {
+         $this->search = '';
+         $this->user_id = '';
+         $this->amount = '';
     }
 
     protected function processTransaction($senderWallet, $receiverWallet)

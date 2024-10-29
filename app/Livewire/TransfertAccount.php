@@ -86,10 +86,6 @@ class TransfertAccount extends Component
         }
         $accountTo->save();
 
-        
-        
-        
-       
 
         // Message de succès
         session()->flash('successMessage', 'Transfert effectué avec succès.');

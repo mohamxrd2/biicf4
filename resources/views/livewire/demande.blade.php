@@ -140,6 +140,66 @@
 
     <h2 class="text-xl font-semibold mb-4">Liste des demandes d'approvisionnement</h2>
 
+    <div class="flex flex-col border border-gray-200 rounded-xl mb-8">
+        <div class="-m-1.5 overflow-x-auto">
+            <div class="p-1.5 min-w-full inline-block align-middle">
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Nom de l'utilisateur</th>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Montant</th>
+                              
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">État</th>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Date de Notification</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @if ($deposits->isEmpty())
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-sm text-center text-gray-800">Aucune notification trouvée</td>
+                                </tr>
+                            @else
+                                @foreach ($deposits as $deposit)
+                                    <tr class="hover:bg-gray-100">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 ">
+                                            <a href="{{ route('deposits.show', $deposit->id)  }}" class="hover:underline">
+                                                {{ $deposit->user_name ?? 'Utilisateur inconnu' }}
+                                            </a>
+                                           
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                            {{ $deposit->data['montant'] }} FCFA
+                                        </td>
+
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if ($deposit->reponse === 'Accepté')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-green-800 bg-green-100">Accepté</span>
+                                            @elseif ($deposit->reponse === 'Refuser')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-red-800 bg-red-100">Refusé</span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-yellow-800 bg-yellow-100">En attente</span>
+                                            @endif
+                                        </td>
+                                        
+                                        
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                            {{ $deposit->created_at->diffForHumans() }}
+                                        </td>
+                                        
+                                        
+                                    </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+
     
 
 

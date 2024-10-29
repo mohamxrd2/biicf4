@@ -111,6 +111,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/demande', [UserController::class, 'livraisonliste'])->name('admin.demande');
     Route::get('demande-livraison/{id}', [UserController::class, 'detaillivraison'])->name('livraison.show');
     Route::get('demande-psap{id}', [UserController::class, 'detailpsap'])->name('psap.show');
+    Route::get('demande-deposits/{id}', [UserController::class, 'detaildeposit'])->name('deposits.show');
 
     Route::get('projet', function () {
         return view('admin.projetlist');
@@ -130,7 +131,7 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 //////   ////// PLATEFORME //////   ///////////
 
 Route::middleware('user.auth')->prefix('biicf')->group(function () {
-    Route::get('acceuil', [ProduitServiceController::class,  'homeBiicf'])->name('biicf.acceuil');
+    Route::get('acceuil', [ProduitServiceController::class, 'homeBiicf'])->name('biicf.acceuil');
     Route::get('recheche', [ProduitServiceController::class, 'search'])->name('biicf.search');
 
 
@@ -164,7 +165,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 
 
 
-    Route::get('porte-feuille', [AdminWalletController::class, 'indexBiicf'])->name('biicf.wallet');
+    Route::match(['get', 'post'], 'porte-feuille', [AdminWalletController::class, 'indexBiicf'])->name('biicf.wallet');
     Route::get('retrait', [AdminWalletController::class, 'retrait'])->name('biicf.retrait');
 
 
@@ -220,9 +221,10 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
         return view('finance.notif');
     })->name('finance.notif');
 
-    Route::post('finance/Porte-feuille', function () {
+    Route::match(['get', 'post'], 'finance/Porte-feuille', function () {
         return view('finance.wallet');
     })->name('finance.wallet');
+
 
 
     Route::get('finance/projet', function () {
