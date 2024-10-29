@@ -491,28 +491,17 @@
 
 
     <!-- Content -->
-    <div id="content-container" class="transition-all duration-300 w-full pt-10 px-6 md:px-8 lg:ps-72"
+    <div id="content-container" class="transition-all duration-300 w-full pt-10 px-2 md:px-8 lg:ps-72"
         style="margin-bottom: 6rem;">
+
 
         @yield('content')
 
-        {{-- <div class="flex justify-between items-center mb-6">
-            <input id="search-input" type="text" placeholder="Rechercher..." class="border p-2 rounded w-1/2">
-
-            <div class="flex items-center">
-                <img src="https://via.placeholder.com/40" class="rounded-full mr-3" alt="User Image">
-                <div>
-                    <h4 class="text-lg font-bold">Ahondojo oku</h4>
-                    <p>oku12</p>
-                </div>
-            </div>
-        </div> --}}
     </div>
     <!-- End Content -->
 
     @livewireScripts
 
-    <livewire:scripts />
 
 
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>

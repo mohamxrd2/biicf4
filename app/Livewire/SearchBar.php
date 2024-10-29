@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use App\Models\ProduitService;
+use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Log;
 
 class SearchBar extends Component
 {
@@ -15,6 +17,7 @@ class SearchBar extends Component
     public $type;
     public $qte;
     public $prix;
+    public $searchResults;
 
     protected $updatesQueryString = [
         'keyword' => ['except' => ''],
@@ -29,39 +32,91 @@ class SearchBar extends Component
         $this->fill(request()->only('keyword', 'zone_economique', 'type', 'qte', 'prix'));
     }
 
+    public $modalOpen;
+
+    public function accepter()
+    {
+        $this->modalOpen = false;
+    }
+
+    public function search()
+    {
+        // Cette méthode est appelée lors de la soumission du formulaire
+        Log::info('Recherche déclenchée', [
+            'keyword' => $this->keyword,
+            'zone_economique' => $this->zone_economique,
+            'type' => $this->type,
+            'qte' => $this->qte,
+            'prix' => $this->prix,
+        ]);
+
+        // Stocker les informations de recherche
+        $this->searchResults = [
+            'keyword' => $this->keyword,
+            'zone_economique' => $this->zone_economique,
+            'type' => $this->type,
+            'qte' => $this->qte,
+            'prix' => $this->prix,
+        ];
+        // La méthode `render` sera automatiquement exécutée après pour rafraîchir les résultats
+
+        // Émettre un événement pour fermer le modal
+        // $this->dispatch('closePage');
+    }
+
     public function render()
     {
+        // Initialiser la requête
         $produits = ProduitService::with('user')
             ->where('statuts', 'Accepté')
             ->orderBy('created_at', 'desc');
 
+
+        // Filtrage par mot-clé
         if ($this->keyword) {
             $keyword = strtolower(addslashes($this->keyword));
             $produits->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%']);
         }
 
-        if ($this->zone_economique) {
-            $zone_economique = strtolower(addslashes($this->zone_economique));
-            $produits->where(function ($query) use ($zone_economique) {
-                $query->whereRaw('LOWER(zonecoServ) LIKE ?', ['%' . $zone_economique . '%'])
-                    ->orWhereRaw('LOWER(villeServ) LIKE ?', ['%' . $zone_economique . '%'])
-                    ->orWhereRaw('LOWER(continent) LIKE ?', ['%' . $zone_economique . '%'])
-                    ->orWhereRaw('LOWER(sous_region) LIKE ?', ['%' . $zone_economique . '%'])
-                    ->orWhereRaw('LOWER(pays) LIKE ?', ['%' . $zone_economique . '%'])
-                    ->orWhereRaw('LOWER(comnServ) LIKE ?', ['%' . $zone_economique . '%']);
-            });
+        // Charger les informations de l'utilisateur
+        $user = User::find(auth()->id());
+        if ($user && $this->zone_economique) {
+            $normalizedZoneEconomique = strtolower($this->zone_economique);
+
+            // Normaliser les informations de localisation de l'utilisateur
+            $userLocation = [
+                'zone' => strtolower($user->commune),
+                'ville' => strtolower($user->ville),
+                'departement' => strtolower($user->departe),
+                'pays' => strtolower($user->country),
+                'sous_region' => strtolower($user->sous_region),
+                'continent' => strtolower($user->continent),
+            ];
+
+
+            // Appliquer le filtre en fonction de la zone choisie
+            match ($normalizedZoneEconomique) {
+                'proximite' => $produits->whereRaw('LOWER(comnServ) = ?', [$userLocation['zone']]),
+                'locale' => $produits->whereRaw('LOWER(villeServ) = ?', [$userLocation['ville']]),
+                'departementale' => $produits->whereRaw('LOWER(zonecoServ) = ?', [$userLocation['departement']]),
+                'nationale' => $produits->whereRaw('LOWER(pays) = ?', [$userLocation['pays']]),
+                'sous_regionale' => $produits->whereRaw('LOWER(sous_region) = ?', [$userLocation['sous_region']]),
+                'continentale' => $produits->whereRaw('LOWER(continent) = ?', [$userLocation['continent']]),
+                default => Log::warning('Zone économique non reconnue', ['zone_economique' => $this->zone_economique]),
+            };
         }
 
-
-
+        // Filtrage par type
         if ($this->type) {
             $produits->where('type', $this->type);
         }
 
+        // Filtrage par prix
         if ($this->prix) {
             $produits->where('prix', $this->prix);
         }
 
+        // Filtrage par quantité
         if ($this->qte) {
             $produits->where(function ($query) {
                 $query->where('qteProd_min', '<=', $this->qte)
@@ -69,10 +124,10 @@ class SearchBar extends Component
             });
         }
 
-
-
-
+        // Pagination des résultats
         $results = $produits->paginate(10);
+
+        Log::info('Résultats paginés récupérés', ['results_count' => $results->count()]);
 
         return view('livewire.search-bar', [
             'produits' => $results,
