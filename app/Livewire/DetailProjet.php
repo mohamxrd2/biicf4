@@ -84,12 +84,15 @@ class DetailProjet extends Component
         $this->sommeInvestieActions = AjoutAction::where('id_projet', $this->projet->id)
             ->sum('nombreActions');
 
-        // Calculer le pourcentage investi
-        if ($this->projet->montant > 0) {
-            $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100; // Calculer le pourcentage investi
+        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon projet->montant
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
+
+        if ($montant > 0) {
+            $this->pourcentageInvesti = ($this->sommeInvestie / $montant) * 100; // Calculer le pourcentage investi
         } else {
             $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
         }
+
         // Calculer le pourcentage d'actions investies
         if ($this->projet->nombreActions > 0) {
             $this->pourcentageInvestiAction = ($this->sommeInvestieActions / $this->projet->nombreActions) * 100; // Calculer le pourcentage investi
@@ -98,7 +101,7 @@ class DetailProjet extends Component
         }
 
         // Calculer la somme restante à investir
-        $this->sommeRestante = $this->projet->montant - $this->sommeInvestie; // Montant total - Somme investie
+        $this->sommeRestante = $montant - $this->sommeInvestie; // Montant total - Somme investie
 
         $this->sommeRestanteAction = $this->projet->nombreActions - $this->sommeInvestieActions;
 
@@ -108,13 +111,13 @@ class DetailProjet extends Component
         $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
 
         // Vérifier si la somme totale atteint ou dépasse le montant du projet
-        $this->montantVerifie = $totalAjoute >= $this->projet->montant;
+        $this->montantVerifie = $totalAjoute >= $montant;
 
         // Vérifier si un investisseur a payé la totalité du projet
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
             ->select('id_invest')
             ->groupBy('id_invest')
-            ->havingRaw('SUM(montant) >= ?', [$this->projet->montant])
+            ->havingRaw('SUM(montant) >= ?', [$montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
 
         // Log de l'investisseur qui a payé tout
@@ -287,10 +290,13 @@ class DetailProjet extends Component
         $this->montant = '';
         $this->insuffisant = false;
 
+        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon projet->montant
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
+
         // Rafraîchir les propriétés du composant
         $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
-        $this->sommeRestante = $this->projet->montant - $this->sommeInvestie;
-        $this->pourcentageInvesti = ($this->sommeInvestie / $this->projet->montant) * 100;
+        $this->sommeRestante = $montant - $this->sommeInvestie;
+        $this->pourcentageInvesti = ($this->sommeInvestie / $montant) * 100;
 
         // Log de mise à jour des sommes investies
         Log::info('Somme investie mise à jour pour le projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
@@ -304,13 +310,13 @@ class DetailProjet extends Component
         $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
 
         // Vérifier si la somme totale atteint ou dépasse le montant du projet
-        $this->montantVerifie = $totalAjoute >= $this->projet->montant;
+        $this->montantVerifie = $totalAjoute >= $montant;
 
         // Vérifier si un investisseur a payé la totalité du projet
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
             ->select('id_invest')
             ->groupBy('id_invest')
-            ->havingRaw('SUM(montant) >= ?', [$this->projet->montant])
+            ->havingRaw('SUM(montant) >= ?', [$montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
         // Si un investisseur a payé le montant total, déclencher l'événement
         if ($this->investisseurQuiAPayeTout) {
@@ -481,10 +487,13 @@ class DetailProjet extends Component
 
         $user = auth()->user();
 
+        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon projet->montant
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
+
         $userWallet = Wallet::where('user_id', $user->id)->first();
         $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
-        if (!$coiWallet  || $coiWallet->Solde < $this->projet->montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
+        if (!$coiWallet  || $coiWallet->Solde < $montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $montant . ' CFA.');
             return;
         }
 

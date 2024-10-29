@@ -53,7 +53,7 @@
                 {{ number_format($sommeInvestie, 0, ',', ' ') }}
                 FCFA</span>
             <span class="text-gray-500 text-sm">Reçu de
-                {{ number_format($projet->montant, 0, ',', ' ') }} FCFA </span>
+                {{ number_format($projet->Portion_obligt, 0, ',', ' ') }} FCFA </span>
         </div>
 
         <!-- Nombre d'Investisseurs -->
