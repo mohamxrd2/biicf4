@@ -459,7 +459,8 @@
                                             </svg>
                                         </div>
 
-                                        <div data-modal-target="static-modal" data-modal-toggle="static-modal">
+                                        <div data-modal-target="static-modal-{{ $transaction->id }}"
+                                            data-modal-toggle="static-modal-{{ $transaction->id }}">
                                             <h3 class="text-sm font-medium">{{ $transactionLabel }}</h3>
                                             <p class="text-sm text-gray-500">
                                                 @if ($transaction->type == 'Envoie')
@@ -507,7 +508,8 @@
                                 </div>
 
                                 <!-- Main modal -->
-                                <div id="static-modal" data-modal-backdrop="static-modal" tabindex="-1"
+                                <div id="static-modal-{{ $transaction->id }}"
+                                    data-modal-backdrop="static-modal-{{ $transaction->id }}" tabindex="-1"
                                     aria-hidden="true"
                                     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
                                     <div class="bg-white w-full max-w-lg mx-4 rounded-lg shadow-lg p-6">
@@ -519,7 +521,7 @@
                                             </h2>
                                             <button type="button"
                                                 class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                data-modal-hide="static-modal">
+                                                data-modal-hide="static-modal-{{ $transaction->id }}">
                                                 <svg class="w-3 h-3" aria-hidden="true"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none"
                                                     viewBox="0 0 14 14">
@@ -535,11 +537,14 @@
                                         <div class="space-y-4">
                                             <div class="flex justify-between">
                                                 <span class="text-gray-600">Type :</span>
-                                                <span class="font-semibold text-gray-900">{{ $transaction->type }} </span>
+                                                <span class="font-semibold text-gray-900">{{ $transaction->type }}
+                                                </span>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span class="text-gray-600">Description :</span>
-                                                <span class="font-semibold text-gray-900">{{ $transaction->description }} </span>
+                                                <span
+                                                    class="font-semibold text-gray-900">{{ $transaction->description }}
+                                                </span>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span class="text-gray-600">Montant :</span>
@@ -550,13 +555,14 @@
                                             <div class="flex justify-between">
                                                 <span class="text-gray-600">Destinataire :</span>
                                                 <span
-                                                    class="font-semibold text-gray-900">{{ $transaction->receiverUser->name }}</span>
+                                                    class="font-semibold text-gray-900">{{ strtoupper($transaction->receiverUser->name) }}</span>
                                             </div>
                                             <div class="flex justify-between">
                                                 <span class="text-gray-600">Expéditeur :</span>
                                                 <span
-                                                    class="font-semibold text-gray-900">{{ $transaction->senderUser->name }}</span>
+                                                    class="font-semibold text-gray-900">{{ strtoupper($transaction->senderUser->name) }}</span>
                                             </div>
+
                                             <div class="flex justify-between">
                                                 <span class="text-gray-600">Date :</span>
                                                 <span class="font-semibold text-gray-900">29 Octobre 2024</span>
