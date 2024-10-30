@@ -428,7 +428,7 @@
                                                 <input type="number" wire:model="portionActions" id="prixAction"
                                                     oninput="calculerTotal()"
                                                     class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm transition ease-in-out duration-200"
-                                                    placeholder="Entrez le prix en FCFA">
+                                                    placeholder="Entrez le prix en FCFA" required>
                                                 @error('portionActions')
                                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                                 @enderror

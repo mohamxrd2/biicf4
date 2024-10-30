@@ -358,7 +358,7 @@
             @endif
 
         </div>
-    @elseif ($projet->type_financement == 'négocié' && isset($projet->Portion_action) && isset($projet->Portion_obligt))
+    @elseif ($projet->type_financement == 'négocié' && isset($projet->Portion_action) || isset($projet->Portion_action) && isset($projet->Portion_obligt))
         <h1>projet negocie avec obligation & action</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">

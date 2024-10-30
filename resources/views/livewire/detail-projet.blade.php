@@ -374,7 +374,7 @@
             @endif
 
         </div>
-    @elseif (isset($projet->Portion_action) && isset($projet->Portion_obligt))
+    @elseif (isset($projet->Portion_action) || (isset($projet->Portion_action) && isset($projet->Portion_obligt)))
         <h1>projet groupe avec obligation & action</h1>
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
@@ -671,8 +671,61 @@
             }
         }
 
+        const sommeRestanteAction = @json($sommeRestanteAction);
+        const prixAction = @json($projet->Portion_action);
+
+        function verifierActions() {
+            const actionInput = document.getElementById('actionInput');
+            const messageActionRestante = document.getElementById('messageActionRestante');
+            const confirmerActionButton = document.getElementById('confirmerActionButton');
+
+            if (sommeRestanteAction === 0) {
+                messageActionRestante.classList.remove('hidden');
+                messageActionRestante.innerText = 'Pas d\'actions disponibles';
+                confirmerActionButton.disabled = true;
+                return;
+            }
+
+            const action = actionInput.value;
+
+            if (action.trim() === '') {
+                messageActionRestante.classList.add('hidden');
+                confirmerActionButton.disabled = true;
+                return;
+            }
+
+            const actionInt = parseInt(action);
+
+            if (isNaN(actionInt) || actionInt <= 0) {
+                messageActionRestante.classList.remove('hidden');
+                messageActionRestante.innerText = 'Le nombre d\'actions n\'est pas valide';
+                confirmerActionButton.disabled = true;
+                return;
+            }
+
+            if (actionInt > sommeRestanteAction) {
+                messageActionRestante.classList.remove('hidden');
+                messageActionRestante.innerText = 'Le nombre d\'actions doit être inférieur ou égal au nombre restant';
+                confirmerActionButton.disabled = true;
+                return;
+            }
+
+            // Calculer le coût total des actions
+            const totalCost = actionInt * prixAction;
+
+            if (totalCost > solde) {
+                messageActionRestante.classList.remove('hidden');
+                messageActionRestante.innerText = 'Solde insuffisant pour acheter ce nombre d\'actions';
+                confirmerActionButton.disabled = true;
+            } else {
+                messageActionRestante.classList.add('hidden');
+                confirmerActionButton.disabled = false;
+            }
+        }
+
+
         ///////////
-        
+
         const tauxPresent = @json($projet->taux); // Le taux déjà présent
         const tauxTradeInput = document.getElementById('tauxTrade');
         const submitBtn = document.getElementById('submitBtnAppel');

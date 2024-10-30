@@ -24,9 +24,9 @@
 
 
 
-        @livewire('notification-show');
+        {{-- @livewire('notification-show'); --}}
 
-        {{-- <livewire:notification-show :id="$id" :lazy="true"/> --}}
+        <livewire:notification-show :id="$id" :lazy="true"/>
 
     </div>
 

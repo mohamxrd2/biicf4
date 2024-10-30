@@ -269,7 +269,7 @@ class DetailProjet extends Component
 
             // Créer deux transactions
             $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué');
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de financement d\'un projet', 'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'réception de financement d\'un projet', 'effectué');
             Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
@@ -426,7 +426,7 @@ class DetailProjet extends Component
 
             // Créer deux transactions
             $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué');
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de fond', 'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'réception de fond', 'effectué');
             Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
@@ -440,8 +440,10 @@ class DetailProjet extends Component
             return;
         }
 
-        // Message de succès
-        session()->flash('success', 'Le montant a été ajouté avec succès.');
+        $this->dispatch(
+            'formSubmitted',
+            'Achat effectué avec succ.'
+        );
 
         // Réinitialiser le montant saisi et les indicateurs
         $this->montant = '';

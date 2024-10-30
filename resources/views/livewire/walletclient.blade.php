@@ -385,7 +385,7 @@
                 </div>
 
                 <!-- Transaction List -->
-                
+
 
                 <div>
                     @if ($transacCount == 0)
@@ -403,55 +403,68 @@
                     @else
                         @foreach ($transactions as $transaction)
                             @php
-                                $isRelevantTransaction = (
+                                $isRelevantTransaction =
                                     ($transaction->type == 'Réception' && $transaction->receiver_user_id == $userId) ||
                                     ($transaction->type == 'Envoie' && $transaction->sender_user_id == $userId) ||
                                     ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId) ||
                                     ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId) ||
-                                    ($transaction->type == 'withdrawal' && $transaction->sender_user_id == $userId)
-                                );
+                                    ($transaction->type == 'withdrawal' && $transaction->sender_user_id == $userId);
                             @endphp
-                
+
                             @if ($isRelevantTransaction)
-                                <div class="flex justify-between items-center hover:bg-gray-100 p-4 rounded-xl cursor-pointer">
+                                <div
+                                    class="flex justify-between items-center hover:bg-gray-100 p-4 rounded-xl cursor-pointer">
                                     <div class="flex items-center">
                                         @php
                                             $iconSvg = '';
                                             $transactionLabel = '';
-                                            if ($transaction->type == 'Depot' || ($transaction->type == 'Commission' && $transaction->receiver_user_id == $userId)) {
-                                                $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25"/>';
+                                            if (
+                                                $transaction->type == 'Depot' ||
+                                                ($transaction->type == 'Commission' &&
+                                                    $transaction->receiver_user_id == $userId)
+                                            ) {
+                                                $iconSvg =
+                                                    '<path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25"/>';
                                                 $transactionLabel = 'Rechargement';
                                             } elseif ($transaction->type == 'Réception') {
-                                                $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 4.5-15 15m0 0h11.25m-11.25 0V8.25"/>';
-                                                $transactionLabel = optional($transaction->senderAdmin)->name ?? optional($transaction->senderUser)->name ?? '';
+                                                $iconSvg =
+                                                    '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 4.5-15 15m0 0h11.25m-11.25 0V8.25"/>';
+                                                $transactionLabel =
+                                                    optional($transaction->senderAdmin)->name ??
+                                                    ($transaction->description ?? '');
                                             } elseif ($transaction->type == 'Envoie') {
-                                                $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25"/>';
+                                                $iconSvg =
+                                                    '<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25"/>';
                                                 $transactionLabel = optional($transaction->receiverUser)->name ?? '';
                                             } elseif ($transaction->type == 'Commission') {
-                                                $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 4.5L4.5 19.5M19.5 4.5H12M19.5 4.5v11.25"/>';
+                                                $iconSvg =
+                                                    '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 4.5L4.5 19.5M19.5 4.5H12M19.5 4.5v11.25"/>';
                                                 $transactionLabel = 'Commission';
                                             } elseif ($transaction->type == 'Gele') {
-                                                $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>';
+                                                $iconSvg =
+                                                    '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>';
                                                 $transactionLabel = 'Gele';
                                             } elseif ($transaction->type == 'withdrawal') {
-                                                $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 4.5L4.5 19.5M19.5 4.5H12M19.5 4.5v11.25"/>';
+                                                $iconSvg =
+                                                    '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 4.5L4.5 19.5M19.5 4.5H12M19.5 4.5v11.25"/>';
                                                 $transactionLabel = 'Retrait';
                                             }
                                         @endphp
-                                        <div class="bg-gray-200 lg:flex hidden justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4">
-                                            <svg class="w-4 h-4 text-black font-bold" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <div
+                                            class="bg-gray-200 lg:flex hidden justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4">
+                                            <svg class="w-4 h-4 text-black font-bold"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor">
                                                 {!! $iconSvg !!}
                                             </svg>
                                         </div>
-                
-                                        <div>
+
+                                        <div data-modal-target="static-modal" data-modal-toggle="static-modal">
                                             <h3 class="text-sm font-medium">{{ $transactionLabel }}</h3>
                                             <p class="text-sm text-gray-500">
                                                 @if ($transaction->type == 'Envoie')
                                                     Envoie
-                                                @elseif (
-                                                    ($transaction->type == 'Réception' || $transaction->type == 'Depot' || $transaction->type == 'Commission')
-                                                )
+                                                @elseif ($transaction->type == 'Réception' || $transaction->type == 'Depot' || $transaction->type == 'Commission')
                                                     Reception
                                                 @elseif ($transaction->type == 'Gele')
                                                     Gele pour achat
@@ -466,24 +479,113 @@
                                         @php
                                             $amountDisplay = '';
                                             $amountClass = '';
-                                            if (($transaction->type == 'Depot' || $transaction->type == 'Réception' || $transaction->type == 'Commission') && $transaction->receiver_user_id == $userId) {
-                                                $amountDisplay = '+' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
+                                            if (
+                                                ($transaction->type == 'Depot' ||
+                                                    $transaction->type == 'Réception' ||
+                                                    $transaction->type == 'Commission') &&
+                                                $transaction->receiver_user_id == $userId
+                                            ) {
+                                                $amountDisplay =
+                                                    '+' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
                                                 $amountClass = 'text-green-500';
-                                            } elseif (($transaction->type == 'Gele' || $transaction->type == 'Envoie' || $transaction->type == 'withdrawal') && $transaction->sender_user_id == $userId) {
-                                                $amountDisplay = '-' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
+                                            } elseif (
+                                                ($transaction->type == 'Gele' ||
+                                                    $transaction->type == 'Envoie' ||
+                                                    $transaction->type == 'withdrawal') &&
+                                                $transaction->sender_user_id == $userId
+                                            ) {
+                                                $amountDisplay =
+                                                    '-' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
                                                 $amountClass = 'text-red-500';
                                             }
                                         @endphp
                                         @if ($amountDisplay)
-                                            <div class="{{ $amountClass }} font-bold text-lg">{{ $amountDisplay }}</div>
+                                            <div class="{{ $amountClass }} font-bold text-lg">{{ $amountDisplay }}
+                                            </div>
                                         @endif
                                     </div>
+                                </div>
+
+                                <!-- Main modal -->
+                                <div id="static-modal" data-modal-backdrop="static-modal" tabindex="-1"
+                                    aria-hidden="true"
+                                    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                                    <div class="bg-white w-full max-w-lg mx-4 rounded-lg shadow-lg p-6">
+
+                                        <div class="flex items-center justify-between ">
+
+                                            <h2 class="text-xl font-semibold text-gray-800 mb-4">Détails de la
+                                                Transaction
+                                            </h2>
+                                            <button type="button"
+                                                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                                data-modal-hide="static-modal">
+                                                <svg class="w-3 h-3" aria-hidden="true"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 14 14">
+                                                    <path stroke="currentColor" stroke-linecap="round"
+                                                        stroke-linejoin="round" stroke-width="2"
+                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                                </svg>
+                                                <span class="sr-only">Close modal</span>
+                                            </button>
+                                        </div>
+
+                                        <!-- Informations de transaction -->
+                                        <div class="space-y-4">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Type :</span>
+                                                <span class="font-semibold text-gray-900">{{ $transaction->type }} </span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Description :</span>
+                                                <span class="font-semibold text-gray-900">{{ $transaction->description }} </span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Montant :</span>
+                                                <span
+                                                    class="font-semibold text-gray-900">{{ number_format($transaction->amount, 2, ',', ' ') }}
+                                                    FCFA</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Destinataire :</span>
+                                                <span
+                                                    class="font-semibold text-gray-900">{{ $transaction->receiverUser->name }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Expéditeur :</span>
+                                                <span
+                                                    class="font-semibold text-gray-900">{{ $transaction->senderUser->name }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Date :</span>
+                                                <span class="font-semibold text-gray-900">29 Octobre 2024</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Référence de transaction :</span>
+                                                <span
+                                                    class="font-semibold text-gray-900">{{ $transaction->reference_id }}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Statut :</span>
+                                                <span
+                                                    class="font-semibold text-green-600">{{ $transaction->status }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             @endif
                         @endforeach
                     @endif
                 </div>
-                
+
+
+
+
+
+
+
             </div>
         @elseif ($currentPage === 'envoie')
             @livewire('transfert-argent')
@@ -620,5 +722,11 @@
         });
 
         updateSliderPosition();
+    </script>
+    <script>
+        function toggleModal(visible) {
+            const modal = document.getElementById('transactionModal');
+            modal.classList.toggle('hidden', !visible);
+        }
     </script>
 </div>
