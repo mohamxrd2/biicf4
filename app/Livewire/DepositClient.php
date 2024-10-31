@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Admin;
+use App\Models\Deposit;
 use App\Notifications\DepositClientNotification;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -38,24 +39,15 @@ class DepositClient extends Component
             $receiptPath = $this->handlePhotoUpload('receipt');
             Log::info("Image reçue téléchargée et stockée dans le chemin : {$receiptPath}");
 
-            // Préparer les données pour la notification
-            $data = [
+            // Créer un nouveau dépôt dans la table Deposit
+            $deposit = Deposit::create([
                 'montant' => $this->amount,
                 'recu' => $receiptPath,
                 'user_id' => $user_id,
-            ];
-            Log::info("Données pour la notification préparées : ", $data);
+                'statut' => 'en attente', // Initialiser le statut comme 'en attente'
+            ]);
 
-            // Récupérer les administrateurs pour la notification
-            $admins = Admin::where('admin_type', 'admin')->get();
-            if ($admins->isEmpty()) {
-                throw new \Exception("Aucun administrateur trouvé pour recevoir la notification.");
-            }
-            Log::info("Nombre d'administrateurs trouvés : " . $admins->count());
-
-            // Envoyer la notification
-            Notification::send($admins, new DepositClientNotification($data));
-            Log::info("Notification envoyée aux administrateurs.");
+            Log::info("Dépôt enregistré dans la base de données avec succès, ID du dépôt : {$deposit->id}");
 
             // Message de succès
             session()->flash('message', 'Votre dépôt a été soumis avec succès et est en attente de validation.');
@@ -80,7 +72,7 @@ class DepositClient extends Component
 
             // Définir le chemin où stocker l'image
             $path = public_path('post/'); // Chemin public/post/
-            
+
             // Vérifier si le dossier 'post' existe, sinon le créer
             if (!File::exists($path)) {
                 File::makeDirectory($path, 0755, true);

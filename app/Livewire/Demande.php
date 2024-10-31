@@ -4,9 +4,9 @@ namespace App\Livewire;
 
 use App\Models\Psap;
 use App\Models\User;
+use App\Models\Deposit; // Assurez-vous que le modèle Deposit est bien importé
 use Livewire\Component;
 use App\Models\Livraisons;
-use Illuminate\Notifications\DatabaseNotification;
 
 class Demande extends Component
 {
@@ -16,21 +16,19 @@ class Demande extends Component
 
     public function mount()
     {
+        // Récupération des livraisons et psaps avec les utilisateurs associés
         $this->livraisons = Livraisons::with('user')->get();
         $this->psaps = Psap::with('user')->get();
 
-        // Récupère les notifications de type DepositClientNotification
-        $this->deposits = DatabaseNotification::where('type', 'App\Notifications\DepositClientNotification')
-        ->with('notifiable')
-        ->latest() // Ajoute cette méthode pour trier par date de création décroissante
-        ->get()
-        ->map(function ($notification) {
-            // Ajoute les informations de l'utilisateur pour chaque notification
-            $user = User::find($notification->data['user_id']);
-            $notification->user_name = $user ? $user->name : 'Utilisateur inconnu';
-            return $notification;
-        });
-    
+        // Récupère les données des dépôts de la table Deposit avec l'utilisateur associé
+        $this->deposits = Deposit::with('user') // Assurez-vous que la relation 'user' est définie dans le modèle Deposit
+            ->latest() // Trie les résultats par date de création décroissante
+            ->get()
+            ->map(function ($deposit) {
+                // Ajoute les informations de l'utilisateur pour chaque dépôt
+                $deposit->user->name = $deposit->user ? $deposit->user->name : 'Utilisateur inconnu';
+                return $deposit;
+            });
     }
 
     public function render()

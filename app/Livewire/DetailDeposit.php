@@ -2,11 +2,12 @@
 
 namespace App\Livewire;
 
-use App\Models\NotificationEd;
+use App\Models\Deposit;
 use Livewire\Component;
+use App\Models\Transaction;
+use App\Models\NotificationEd;
 use App\Models\User; // Importez le modèle User
 use Illuminate\Notifications\DatabaseNotification;
-use App\Models\Transaction;
 use App\Models\Wallet; // Assurez-vous d'importer le modèle Wallet
 
 class DetailDeposit extends Component
@@ -19,14 +20,14 @@ class DetailDeposit extends Component
     {
         $this->id = $id;
 
-        // Récupération de la notification en fonction de l'ID
-        $this->deposit = DatabaseNotification::find($this->id);
+        // Récupération du dépôt en fonction de l'ID
+        $this->deposit = Deposit::with('user')->find($this->id);
 
-        // Récupération du nom de l'utilisateur à partir de user_id
+        // Vérification de l'existence du dépôt et récupération du nom de l'utilisateur
         if ($this->deposit) {
-            $userId = $this->deposit->data['user_id'];
-            $user = User::find($userId);
-            $this->userName = $user ? $user->name : 'Utilisateur inconnu';
+            $this->userName = $this->deposit->user ? $this->deposit->user->name : 'Utilisateur inconnu';
+        } else {
+            $this->userName = 'Utilisateur inconnu';
         }
     }
 
@@ -39,13 +40,14 @@ class DetailDeposit extends Component
         }
 
         // Mettre à jour la réponse de la notification
-        $this->deposit->reponse = 'Accepté'; // Mettez à jour directement l'attribut 'reponse'
+        $this->deposit->statut = 'Accepté'; 
         $this->deposit->save();
 
         // Récupérer le montant et l'ID de l'utilisateur du dépôt
-        $amount = $this->deposit->data['montant']; // Assurez-vous que le nom du champ est correct
-        $userId = $this->deposit->data['user_id'];
-        $adminId = 1;
+        $amount = $this->deposit->montant; // Assurez-vous que le nom du champ est correct
+        $userId = $this->deposit->user_id;
+        $adminId = auth()->guard('admin')->id();
+
 
         // Vérifier si l'administrateur existe
         if (!$adminId) {
@@ -86,13 +88,13 @@ class DetailDeposit extends Component
         }
 
         // Mettre à jour la réponse de la notification
-        $this->deposit->reponse = 'Refusé'; // Mettez à jour directement l'attribut 'reponse'
+        $this->deposit->statut = 'Refusé';
         $this->deposit->save();
     }
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description)
-{
-    try {
+    {
+
         $transaction = new Transaction();
         $transaction->sender_admin_id = $senderId; // Assurez-vous que cela correspond au bon modèle
         $transaction->receiver_user_id = $receiverId;
@@ -102,14 +104,10 @@ class DetailDeposit extends Component
         $transaction->description = $description;
         $transaction->status = 'effectué';
         $transaction->save();
-        
-        // Optionnel : Retour de succès
-        session()->flash('message', 'Transaction créée avec succès.');
-    } catch (\Exception $e) {
-        // Capture l'erreur et l'affiche
-        session()->flash('error', 'Erreur lors de la création de la transaction : ' . $e->getMessage());
+
+       
+
     }
-}
 
 
     protected function generateIntegerReference(): int

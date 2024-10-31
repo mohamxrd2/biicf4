@@ -27,20 +27,13 @@
             </div>
         </div>
         
-   
-    
-    
-
         <p class="mt-2 text-gray-600">Montant : {{ number_format($projet->montant, 0, ',', ' ') }} CFA</p>
         <p class="mt-2 text-gray-600">Type de Financement : {{ $projet->type_financement }}</p>
         <p class="mt-2 text-gray-600">Utilisateur : {{ $projet->demandeur->name }}</p>
         <p class="mt-2 text-gray-600">Statut : {{ $projet->statut }}</p>
         <p class="mt-2 text-gray-600">Description : {{ $projet->description }}</p>
 
-        <a href="{{ route('admin.projetlist') }}" class="mt-4 inline-block text-blue-600 hover:text-blue-800">
-            Retour à la liste des projets
-        </a>
-
+       
         <div class="flex justify-center space-x-4 mt-10">
             @if ($projet->statut == 'approuvé')
                 <div class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-gray-300 cursor-not-allowed">Accepté</div>

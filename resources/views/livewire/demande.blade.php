@@ -149,45 +149,38 @@
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Nom de l'utilisateur</th>
                                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Montant</th>
-                              
                                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">État</th>
-                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Date de Notification</th>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Date de dépôt</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             @if ($deposits->isEmpty())
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-sm text-center text-gray-800">Aucune notification trouvée</td>
+                                    <td colspan="4" class="px-6 py-4 text-sm text-center text-gray-800">Aucun dépôt trouvé</td>
                                 </tr>
                             @else
                                 @foreach ($deposits as $deposit)
                                     <tr class="hover:bg-gray-100">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 ">
-                                            <a href="{{ route('deposits.show', $deposit->id)  }}" class="hover:underline">
-                                                {{ $deposit->user_name ?? 'Utilisateur inconnu' }}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                                            <a href="{{ route('deposits.show', $deposit->id) }}" class="hover:underline">
+                                                {{ $deposit->user->name ?? 'Utilisateur inconnu' }}
                                             </a>
-                                           
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                            {{ $deposit->data['montant'] }} FCFA
+                                            {{ number_format($deposit->montant, 0, ',', ' ') }} FCFA
                                         </td>
-
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            @if ($deposit->reponse === 'Accepté')
+                                            @if ($deposit->statut === 'Accepté')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-green-800 bg-green-100">Accepté</span>
-                                            @elseif ($deposit->reponse === 'Refuser')
+                                            @elseif ($deposit->statut === 'Refusé')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-red-800 bg-red-100">Refusé</span>
                                             @else
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-yellow-800 bg-yellow-100">En attente</span>
                                             @endif
                                         </td>
-                                        
-                                        
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                             {{ $deposit->created_at->diffForHumans() }}
                                         </td>
-                                        
-                                        
                                     </tr>
                                 @endforeach
                             @endif
