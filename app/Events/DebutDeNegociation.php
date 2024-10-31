@@ -18,7 +18,7 @@ class DebutDeNegociation implements ShouldBroadcast
 
     public $projet;
     public $investisseurId;
-    public function __construct(Projet $projet, $investisseurId)
+    public function __construct($projet, $investisseurId)
     {
         $this->projet = $projet;
         $this->investisseurId = $investisseurId;

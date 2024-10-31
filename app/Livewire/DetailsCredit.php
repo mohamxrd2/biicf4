@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Events\CommentSubmittedTaux;
+use App\Events\DebutDeNegociation;
 use App\Models\AjoutMontant;
 use App\Models\Cfa;
 use App\Models\Coi;
@@ -38,6 +39,7 @@ class DetailsCredit extends Component
     public $montantVerifie = false;
     public $sommeRestante = 0;
     public $montant = ''; // Stocke le montant saisi
+    protected $listeners = ['compteReboursFini'];
 
     public $pourcentageInvesti = 0;
     public $commentTauxList = [];
@@ -150,24 +152,26 @@ class DetailsCredit extends Component
         // Vérifier si le montant saisi dépasse le solde
         $this->insuffisant = !empty($this->montant) && $this->montant > $this->solde;
     }
+
+    #[On('echo:debut-negociation,DebutDeNegociation')]
+    public function actualisation()
+    {
+        $this->dispatch('refreshPage'); // Émission d'un événement Livewire
+
+    }
+
     public function confirmer()
     {
-        // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-        $montant = floatval($this->montant); // Convertir le montant en float
 
-        if (empty($this->montant) || !is_numeric($montant) || $montant <= 0) {
+        // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
+        $montant = !empty($this->montant) ? floatval($this->montant) : floatval($this->demandeCredit->montant);
+        // dd($montant);
+        if ($montant <= 0) {
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
+        $user = auth()->user();
 
-        // Récupérer le demandeCredit et le wallet de l'utilisateur (investisseur)
-        $demandeCredit = $this->demandeCredit;
-
-        // Vérifiez si le demandeCredit et le demandeur existent
-        if (!$demandeCredit || !$this->notification->data['demande_id']) {
-            session()->flash('error', 'La demande de credit ou le demandeur est introuvable.');
-            return;
-        }
 
         $wallet = Wallet::where('user_id', Auth::id())->first();
         // Récupérer le wallet de l'utilisateur demandeur
@@ -189,9 +193,15 @@ class DetailsCredit extends Component
         DB::beginTransaction();
 
         try {
+            // Vérifier si c'est la première soumission
+            $ajoutMontant = AjoutMontant::where('id_demnd_credit', $user->id)
+                ->where('id_demnd_credit', $this->demandeCredit->id)
+                ->first();
+
+
             // Sauvegarder le montant dans la table `ajout_montant`
             $ajoumontant = AjoutMontant::create([
-                'montant' => $montant,
+                'montant' => isset($ajoutMontant) ? 0 : $montant,
                 'id_invest' => Auth::id(),
                 'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
                 'id_demnd_credit' => $this->demandeCredit->id,
@@ -208,20 +218,22 @@ class DetailsCredit extends Component
                 $coi->save();
             }
 
-            // Mettre à jour ou créer un enregistrement dans la table CFA
-            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
-            // Mettre à jour ou créer un enregistrement dans la table CFA
+            // // Mettre à jour ou créer un enregistrement dans la table CFA
+            // $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            // // Mettre à jour ou créer un enregistrement dans la table CFA
 
-            if ($cfa) {
-                // Si le compte CFA existe, on additionne le montant
-                $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
-                $cfa->save();
-            }
+            // if ($cfa) {
+            //     // Si le compte CFA existe, on additionne le montant
+            //     $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
+            //     $cfa->save();
+            // }
 
-            $reference_id = $this->generateIntegerReference();
+            // if (!$ajoutMontant) {
+            //     $reference_id = $this->generateIntegerReference();
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué');
+            //     $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué', $coi->type_compte);
+            //     $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué', $cfa->type_compte);
+            // }
 
             // Committer la transaction
             DB::commit();
@@ -263,7 +275,12 @@ class DetailsCredit extends Component
             ->groupBy('id_invest')
             ->havingRaw('SUM(montant) >= ?', [$this->demandeCredit->montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
-
+        // Si un investisseur a payé le montant total, déclencher l'événement
+        if ($this->investisseurQuiAPayeTout) {
+            // Déclencher l'événement `DebutDeNegociation`
+            broadcast(new DebutDeNegociation($this->demandeCredit, $this->investisseurQuiAPayeTout));
+            $this->dispatch('DebutDeNegociation', $this->demandeCredit, $this->investisseurQuiAPayeTout);
+        }
         // Log de l'investisseur qui a payé tout
         Log::info('Investisseur qui a payé tout pour le demandeCredit ID: ' . $this->demandeCredit->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
     }
@@ -332,8 +349,8 @@ class DetailsCredit extends Component
 
             $reference_id = $this->generateIntegerReference();
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué');
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
 
             // Mettre à jour l'état de la notification en approuvé
@@ -378,62 +395,69 @@ class DetailsCredit extends Component
             return;
         }
 
-        // Vérifier si c'est la première soumission
-        $ajoutMontant = AjoutMontant::where('id_invest', $user->id)
-            ->where('id_demnd_credit', $this->demandeCredit->id)
+        // Vérifier si c'est la première soumission pour chaque utilisateur connecté
+        $ajoutMontant = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->where('id_invest', $user->id) // Corrected to check against user_id
             ->first();
 
         if (!$ajoutMontant) {
             // Appeler la fonction confirmer si c'est la première soumission
             $this->confirmer();
-        } else {
-            // Insérer dans la table commentTaux
-            try {
-                $commentTaux = CommentTaux::create([
-                    'taux' => $this->tauxTrade,
-                    'id_invest' => auth()->id(),
-                    'id_emp' => $this->demandeCredit->id_user,
-                    'id_demande_credit' => $this->demandeCredit->id,
-                ]);
+        }
 
-                // Réinitialiser le champ tauxTrade après l'insertion
-                $this->tauxTrade = '';
-                broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+        // Appeler la fonction pour afficher le formulaire de commentaire
+        $this->ElementcommentForm();
+    }
+
+    protected function ElementcommentForm()
+    {
+
+        // Insérer dans la table commentTaux
+        try {
+            $commentTaux = CommentTaux::create([
+                'taux' => $this->tauxTrade,
+                'id_invest' => auth()->id(),
+                'id_emp' => $this->demandeCredit->id_user,
+                'id_demande_credit' => $this->demandeCredit->id,
+            ]);
+
+            // Réinitialiser le champ tauxTrade après l'insertion
+            $this->tauxTrade = '';
+            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
 
 
-                // Optionnel: Ajouter une notification ou un message de succès
-                session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
-            } catch (\Exception $e) {
-                session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
-            }
+            // Optionnel: Ajouter une notification ou un message de succès
+            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+        }
 
-            // Commenter cette ligne une fois que vous avez vérifié
+        // Commenter cette ligne une fois que vous avez vérifié
 
-            $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-                ->where('id_demande_credit', $this->demandeCredit->id)
-                ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
-                ->get();
+        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
+            ->where('id_demande_credit', $this->demandeCredit->id)
+            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->get();
 
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique',  $this->demandeCredit->id)
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
+        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+        $existingCountdown = Countdown::where('code_unique',  $this->demandeCredit->id)
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
 
-            if (!$existingCountdown) {
-                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-                Countdown::create([
-                    'user_id' => Auth::id(),
-                    'userSender' => $this->userId,
-                    // 'start_time' => $this->dateFin,
-                    'start_time' => now(),
-                    'difference' => 'projet_taux',
-                    'code_unique' =>  $this->demandeCredit->id,
-                ]);
-            }
+        if (!$existingCountdown) {
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $this->userId,
+                // 'start_time' => $this->dateFin,
+                'start_time' => now(),
+                'difference' => 'projet_taux',
+                'code_unique' =>  $this->demandeCredit->id,
+            ]);
         }
     }
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
@@ -442,6 +466,7 @@ class DetailsCredit extends Component
         $transaction->amount = $amount;
         $transaction->reference_id = $reference_id;
         $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
         $transaction->status = $status;
         $transaction->save();
     }

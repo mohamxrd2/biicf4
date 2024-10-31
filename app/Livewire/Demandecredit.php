@@ -120,7 +120,7 @@ class Demandecredit extends Component
                 $demande = DemandeCredi::create([
                     'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
                     'objet_financement' => 'Demande de crédit pour Achat du produit ' . $this->nameProd,
-                    'montant' => $creditTotal,
+                    'montant' => $montantMax,
                     'duree' => $this->duration,
                     'type_financement' => $this->financementType,
                     'bailleur' => $this->bailleur,

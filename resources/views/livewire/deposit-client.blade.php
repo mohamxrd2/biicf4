@@ -16,10 +16,12 @@
                 {{ session('error') }}
             </div>
         @endif
-        <h2 class="text-center font-semibold text-xl">Vivement bancaire</h2>
-        <p class="text-center font-semibold italic text-sm text-gray-600 my-2">RIB: 20990019909</p>
-        <div class="mt-4">
 
+        <h2 class="text-center font-semibold text-xl">Virement Bancaire</h2>
+
+        <p class="text-center font-semibold italic text-sm text-gray-600 my-2">RIB: 20990019909</p>
+        
+        <div class="mt-4">
             <input type="number" id="amount" wire:model="amount"
                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder="Entrez le montant" required>
@@ -75,7 +77,7 @@
             wire:loading.attr="disabled">
             Soumettre
         </button>
-    
+
         <!-- Texte de chargement -->
         <div wire:loading wire:target="submitDeposit" class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75 rounded-md">
             <span class="text-gray-700 font-semibold">Traitement en cours...</span>

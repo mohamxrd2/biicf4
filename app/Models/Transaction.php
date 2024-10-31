@@ -15,6 +15,7 @@ class Transaction extends Model
         'receiver_user_id',
         'receiver_admin_id',
         'type',
+        'type_compte',
         'amount'
     ];
 

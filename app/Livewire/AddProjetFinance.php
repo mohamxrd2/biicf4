@@ -191,7 +191,7 @@ class AddProjetFinance extends Component
         $montantTotal = $this->montant + $tauxInteret;
 
         // Calcul de la somme allouée aux actions (montant - obligations)
-        $actions = $this->montant - $this->portionObligations;
+        $actions = (int)$this->montant - (int)$this->portionObligations ?? 0;
 
         // Calculer le nombre d'actions
         $this->nombreActions = $this->portionActions > 0 ? floor($actions / $this->portionActions) : 0;
@@ -212,10 +212,10 @@ class AddProjetFinance extends Component
                 'durer' => $this->durer,
                 'id_user' => auth()->id(), // ID de l'utilisateur connecté
                 'Portion_action' => $this->portionActions,
-                'Portion_obligt' => $this->portionObligations,
+                'Portion_obligt' => !empty($this->portionObligations) ? (int)$this->portionObligations : NULL,
                 'nombreActions' => $this->nombreActions,
             ]);
-            
+
             // Gestion des photos en appelant la méthode handlePhotoUpload
             $this->handlePhotoUpload($projet, 'photo1');
             $this->handlePhotoUpload($projet, 'photo2');

@@ -246,22 +246,22 @@ class DetailProjetNegocie extends Component
                 Log::info('Solde COI mis à jour pour l\'utilisateur ID: ' . Auth::id() . ', Nouveau solde COI: ' . $coi->Solde);
             }
 
-            // Mettre à jour ou créer un enregistrement dans la table CFA du demandeur
-            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
-            if ($cfa) {
-                $cfa->Solde += $montant;
-                $cfa->save();
-                Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
-            }
+            // // Mettre à jour ou créer un enregistrement dans la table CFA du demandeur
+            // $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            // if ($cfa) {
+            //     $cfa->Solde += $montant;
+            //     $cfa->save();
+            //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
+            // }
 
-            // Générer une référence de transaction
-            $reference_id = $this->generateIntegerReference();
-            Log::info('Référence de transaction générée: ' . $reference_id);
+            // // Générer une référence de transaction
+            // $reference_id = $this->generateIntegerReference();
+            // Log::info('Référence de transaction générée: ' . $reference_id);
 
-            // Créer deux transactions
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'achat', 'effectué');
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de financement de crédit d\'achat', 'effectué');
-            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+            // // Créer deux transactions
+            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
+            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'réception de financement d\'un projet', 'effectué', $cfa->type_compte);
+            // Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
             DB::commit();
@@ -408,22 +408,22 @@ class DetailProjetNegocie extends Component
                 Log::info('Solde COI mis à jour pour l\'utilisateur ID: ' . Auth::id() . ', Nouveau solde COI: ' . $coi->Solde);
             }
 
-            // Mettre à jour ou créer un enregistrement dans la table CFA du demandeur
-            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
-            if ($cfa) {
-                $cfa->Solde += $montant;
-                $cfa->save();
-                Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
-            }
+            // // Mettre à jour ou créer un enregistrement dans la table CFA du demandeur
+            // $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            // if ($cfa) {
+            //     $cfa->Solde += $montant;
+            //     $cfa->save();
+            //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
+            // }
 
-            // Générer une référence de transaction
-            $reference_id = $this->generateIntegerReference();
-            Log::info('Référence de transaction générée: ' . $reference_id);
+            // // Générer une référence de transaction
+            // $reference_id = $this->generateIntegerReference();
+            // Log::info('Référence de transaction générée: ' . $reference_id);
 
-            // Créer deux transactions
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué');
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'réception de fond', 'effectué');
-            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+            // // Créer deux transactions
+            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué', $coi->type_compte);
+            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'Réception de fond', 'effectué', $cfa->type_compte);
+            // Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
             DB::commit();
@@ -484,10 +484,13 @@ class DetailProjetNegocie extends Component
 
         $user = auth()->user();
 
+        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon projet->montant
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
+
         $userWallet = Wallet::where('user_id', $user->id)->first();
         $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
-        if (!$coiWallet  || $coiWallet->Solde < $this->projet->montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
+        if (!$coiWallet  || $coiWallet->Solde < $montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $montant . ' CFA.');
             return;
         }
 
@@ -499,27 +502,33 @@ class DetailProjetNegocie extends Component
         if (!$ajoutMontant) {
             // Appeler la fonction confirmer si c'est la première soumission
             $this->confirmer();
-        } else {
+        }
 
-            // Insérer dans la table commentTaux
-            try {
-                $commentTaux = CommentTaux::create([
-                    'taux' => $this->tauxTrade,
-                    'id_invest' => auth()->id(),
-                    'id_emp' => $this->projet->id_user,
-                    'id_projet' => $this->projet->id,
-                ]);
+        // Appeler la fonction pour afficher le formulaire de commentaire
+        $this->ElementcommentForm();
+    }
 
-                // Réinitialiser le champ tauxTrade après l'insertion
-                $this->tauxTrade = '';
-                broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+    protected function ElementcommentForm()
+    {
+
+        // Insérer dans la table commentTaux
+        try {
+            $commentTaux = CommentTaux::create([
+                'taux' => $this->tauxTrade,
+                'id_invest' => auth()->id(),
+                'id_emp' => $this->projet->id_user,
+                'id_projet' => $this->projet->id,
+            ]);
+
+            // Réinitialiser le champ tauxTrade après l'insertion
+            $this->tauxTrade = '';
+            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
 
 
-                // Optionnel: Ajouter une notification ou un message de succès
-                session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
-            } catch (\Exception $e) {
-                session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
-            }
+            // Optionnel: Ajouter une notification ou un message de succès
+            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
         }
 
         // Commenter cette ligne une fois que vous avez vérifié
@@ -527,7 +536,6 @@ class DetailProjetNegocie extends Component
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('id_projet', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
-            ->orderBy('created_at', 'asc')
             ->get();
 
         // Vérifier si un compte à rebours est déjà en cours pour cet code unique
@@ -546,11 +554,14 @@ class DetailProjetNegocie extends Component
                 'difference' => 'projet_taux',
                 'code_unique' =>  $this->projet->id,
             ]);
+
+            // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
+            // broadcast(new OldestCommentUpdated(now()->toIso8601String()));
+            // $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
         }
     }
 
-
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
@@ -559,6 +570,7 @@ class DetailProjetNegocie extends Component
         $transaction->amount = $amount;
         $transaction->reference_id = $reference_id;
         $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
         $transaction->status = $status;
         $transaction->save();
     }

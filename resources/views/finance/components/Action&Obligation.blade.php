@@ -7,7 +7,7 @@
 
 <div class="mt-4">
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-2 w-full justify-between">
         <!-- Montant Reçu -->
         <div class="flex flex-col text-center">
             <span class="font-semibold text-lg">
@@ -37,45 +37,47 @@
     </div>
 </div>
 
-<p>Obligation</p>
+@if ($projet->Portion_obligt && !$investisseurQuiAPayeTout)
+    <p>Obligation</p>
 
-<div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-    <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%">
-    </div>
-</div>
-
-<div class="mt-4">
-
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
-        <!-- Montant Reçu -->
-        <div class="flex flex-col text-center">
-            <span class="font-semibold text-lg">
-                {{ number_format($sommeInvestie, 0, ',', ' ') }}
-                FCFA</span>
-            <span class="text-gray-500 text-sm">Reçu de
-                {{ number_format($projet->Portion_obligt, 0, ',', ' ') }} FCFA </span>
-        </div>
-
-        <!-- Nombre d'Investisseurs -->
-        <div class="flex flex-col text-center">
-            <span class="font-semibold text-lg">{{ $nombreInvestisseursDistinct }}</span>
-            <span class="text-gray-500 text-sm">Investisseurs</span>
-        </div>
-
-        <!-- Jours Restants -->
-        <div class="flex flex-col text-center">
-            <span class="font-semibold text-lg">{{ $this->joursRestants() }} /
-                {{ $projet->taux }}%</span>
-            <span class="text-gray-500 text-sm">Jours restants/ taux de remboursement</span>
-        </div>
-
-        <!-- Progression -->
-        <div class="flex flex-col text-center">
-            <span class="font-semibold text-lg">{{ number_format($pourcentageInvesti, 2) }}%</span>
-            <span class="text-gray-500 text-sm">Progression</span>
+    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+        <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%">
         </div>
     </div>
-</div>
+
+    <div class="mt-4">
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
+            <!-- Montant Reçu -->
+            <div class="flex flex-col text-center">
+                <span class="font-semibold text-lg">
+                    {{ number_format($sommeInvestie, 0, ',', ' ') }}
+                    FCFA</span>
+                <span class="text-gray-500 text-sm">Reçu de
+                    {{ number_format($projet->Portion_obligt, 0, ',', ' ') }} FCFA </span>
+            </div>
+
+            <!-- Nombre d'Investisseurs -->
+            <div class="flex flex-col text-center">
+                <span class="font-semibold text-lg">{{ $nombreInvestisseursDistinct }}</span>
+                <span class="text-gray-500 text-sm">Investisseurs</span>
+            </div>
+
+            <!-- Jours Restants -->
+            <div class="flex flex-col text-center">
+                <span class="font-semibold text-lg">{{ $this->joursRestants() }} /
+                    {{ $projet->taux }}%</span>
+                <span class="text-gray-500 text-sm">Jours restants/ taux de remboursement</span>
+            </div>
+
+            <!-- Progression -->
+            <div class="flex flex-col text-center">
+                <span class="font-semibold text-lg">{{ number_format($pourcentageInvesti, 2) }}%</span>
+                <span class="text-gray-500 text-sm">Progression</span>
+            </div>
+        </div>
+    </div>
+@endif
 
 <div class="mt-4">
     <div class="flex py-2 mt-2 items-center">
@@ -103,7 +105,8 @@
         @if ($projet->id_user != Auth::id())
             @php
                 // Déterminez si le bouton "Ajouter un montant" est affiché
-                $isSingleButton = $montantVerifie === true || $projet->type_financement === 'négocié';
+                $isSingleButton =
+                    $montantVerifie === true || $projet->type_financement === 'négocié' || !$projet->Portion_obligt;
             @endphp
 
             <div class="flex">
@@ -161,15 +164,20 @@
     <div id="actionInputDiv" class="mt-6 hidden">
         <!-- Contenu du formulaire pour ajouter une action -->
         <p class="text-md  text-gray-700">Entrez le nombre d'actions que vous souhaitez
-            acheter. </p>
-        <p>Nombre d'action restant ({{ number_format($sommeRestanteAction, 0, ',', ' ') }})</p>
+            acheter, </p>
+        <p>Nombre disponible: ({{ number_format($sommeRestanteAction, 0, ',', ' ') }})</p>
         @if ($sommeRestanteAction == 0)
-            <p  class="text-red-500 text-center mt-2">Pas d'Action disponible</p>
+            <p class="text-red-500 text-center mt-2">Pas d'Action disponible</p>
         @else
             <input type="number" id="actionInput"
                 class="w-full py-3 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nombre d'actions" wire:model="action">
+                placeholder="Nombre d'actions" wire:model="action" oninput="verifierActions()">
 
+            <p id="messageSolde" class="text-red-500 text-center mt-2 hidden">Votre solde est
+                insuffisant</p>
+            <p id="messageActionRestante" class="text-red-500 text-center mt-2 hidden">Le montant
+                doit être supérieur ou égal à la
+                somme restante</p>
 
             <button id="confirmerActionButton"
                 class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
