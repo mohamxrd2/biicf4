@@ -7,7 +7,7 @@
 
 <div class="mt-4">
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-2 w-full justify-between">
         <!-- Montant Reçu -->
         <div class="flex flex-col text-center">
             <span class="font-semibold text-lg">
@@ -37,7 +37,7 @@
     </div>
 </div>
 
-@if ($projet->Portion_obligt)
+@if ($projet->Portion_obligt && !$investisseurQuiAPayeTout)
     <p>Obligation</p>
 
     <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -164,8 +164,8 @@
     <div id="actionInputDiv" class="mt-6 hidden">
         <!-- Contenu du formulaire pour ajouter une action -->
         <p class="text-md  text-gray-700">Entrez le nombre d'actions que vous souhaitez
-            acheter. </p>
-        <p>Nombre d'action restant ({{ number_format($sommeRestanteAction, 0, ',', ' ') }})</p>
+            acheter, </p>
+        <p>Nombre disponible: ({{ number_format($sommeRestanteAction, 0, ',', ' ') }})</p>
         @if ($sommeRestanteAction == 0)
             <p class="text-red-500 text-center mt-2">Pas d'Action disponible</p>
         @else

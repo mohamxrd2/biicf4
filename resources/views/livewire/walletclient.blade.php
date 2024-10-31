@@ -430,12 +430,11 @@
                                                 $iconSvg =
                                                     '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 4.5-15 15m0 0h11.25m-11.25 0V8.25"/>';
                                                 $transactionLabel =
-                                                    optional($transaction->senderAdmin)->name ??
-                                                    ($transaction->description ?? '');
+                                                    $transaction->description ?? ($transaction->description ?? '');
                                             } elseif ($transaction->type == 'Envoie') {
                                                 $iconSvg =
                                                     '<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25"/>';
-                                                $transactionLabel = optional($transaction->receiverUser)->name ?? '';
+                                                $transactionLabel = $transaction->description ?? '';
                                             } elseif ($transaction->type == 'Commission') {
                                                 $iconSvg =
                                                     '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 4.5L4.5 19.5M19.5 4.5H12M19.5 4.5v11.25"/>';
@@ -461,7 +460,12 @@
 
                                         <div data-modal-target="static-modal-{{ $transaction->id }}"
                                             data-modal-toggle="static-modal-{{ $transaction->id }}">
+                                            <div class="flex">
+
                                             <h3 class="text-sm font-medium">{{ $transactionLabel }}</h3>
+                                            <span
+                                                class="bg-blue-100 ml-2 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ $transaction->type_compte }}</span>
+                                            </div>
                                             <p class="text-sm text-gray-500">
                                                 @if ($transaction->type == 'Envoie')
                                                     Envoie
@@ -538,6 +542,12 @@
                                             <div class="flex justify-between">
                                                 <span class="text-gray-600">Type :</span>
                                                 <span class="font-semibold text-gray-900">{{ $transaction->type }}
+                                                </span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Type de compte :</span>
+                                                <span
+                                                    class="font-semibold text-gray-900">{{ $transaction->type_compte }}
                                                 </span>
                                             </div>
                                             <div class="flex justify-between">

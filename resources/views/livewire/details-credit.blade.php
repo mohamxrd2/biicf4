@@ -9,150 +9,14 @@
                 isset($demandeCredit) &&
                 $demandeCredit->type_financement === 'offre-composite') ||
             $demandeCredit->type_financement === 'négocié')
-        <div class="flex flex-col justify-center items-center text-center bg-white p-4 rounded-lg mb-6">
-            <div class="flex items-center mb-2">
-                <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                </svg>
-                <span class="ml-2 text-sm text-gray-500">{{ $demandeCredit->objet_financement }}</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div class="bg-green-500 h-2 rounded-full" style="width: {{ $pourcentageInvesti }}%"></div>
-            </div>
-
-            <div class="mt-4">
-
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mt-4 w-full justify-between">
-                    <!-- Montant Reçu -->
-                    <div class="flex flex-col text-center">
-                        <span class="font-semibold text-lg">
-                            {{ number_format($sommeInvestie, 0, ',', ' ') }}
-                            FCFA</span>
-                        <span class="text-gray-500 text-sm">Reçu de
-                            {{ number_format($demandeCredit->montant, 0, ',', ' ') }} FCFA </span>
-                    </div>
-
-                    <!-- Nombre d'Investisseurs -->
-                    <div class="flex flex-col text-center">
-                        <span class="font-semibold text-lg">{{ $nombreInvestisseursDistinct }}</span>
-                        <span class="text-gray-500 text-sm">Investisseurs</span>
-                    </div>
-
-                    <!-- Jours Restants -->
-                    <div class="flex flex-col text-center">
-                        <span class="font-semibold text-lg">{{ $this->joursRestants() }}</span>
-                        <span class="text-gray-500 text-sm">Jours restants</span>
-                    </div>
-
-                    <!-- Progression -->
-                    <div class="flex flex-col text-center">
-                        <span class="font-semibold text-lg">{{ number_format($pourcentageInvesti, 2) }}%</span>
-                        <span class="text-gray-500 text-sm">Progression</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @include('finance.components.entete')
     @endif
 
 
     <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
         <!-- information Section -->
-        <div class="w-full md:w-1/2 md:h-auto flex flex-col space-y-6">
-            <div class="bg-white rounded-lg shadow-lg p-6 ">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
-                    sur le client</h2>
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <p class="text-gray-600 font-medium">Nom du client:</p>
-                        <p class="text-gray-800">{{ $userDetails->name }}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Email:</p>
-                        <p class="text-gray-800">{{ $userDetails->email }}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Numéro de
-                            téléphone:</p>
-                        <p class="text-gray-800">{{ $userDetails->phone }}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Cote de Crédit</p>
-                        <p class="text-gray-800">{{ $crediScore->ccc }}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Adresse:</p>
-                        <p class="text-gray-800">
-                            {{ $userDetails->country }},{{ $userDetails->ville }},{{ $userDetails->departe }}
-                        </p>
-                    </div>
-                </div>
-            </div>
+        @include('finance.components.Informations')
 
-            <div class="bg-white rounded-lg shadow-lg p-6 ">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">Informations
-                    sur la demande de crédit</h2>
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <p class="text-gray-600 font-medium">Montant demandé:
-                        </p>
-                        <p class="text-gray-800">
-                            {{ $notification->data['montant'] }} FCFA</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Durée du crédit:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->duree }}
-                            mois</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Taux du crédit:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->taux }} %
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Date debut:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->date_debut }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Date fin:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->date_fin }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">Type de crédit:
-                        </p>
-                        <p class="text-gray-800">
-                            {{ $demandeCredit->type_financement }}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">heure debut:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->heure_debut }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 font-medium">heure fin:
-                        </p>
-                        <p class="text-gray-800">{{ $demandeCredit->heure_fin }}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p class="text-gray-600 font-medium">Motif du crédit:
-                        </p>
-                        <p class="text-gray-800">
-                            {{ $demandeCredit->objet_financement }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         @if ($demandeCredit->type_financement === 'offre-composite')
             <div class="md:px-4 flex flex-col w-full md:w-1/2 py-4">
@@ -248,8 +112,7 @@
                                     <div
                                         class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
                                         @if (!$demandeCredit->count)
-                                            <input type="number" id="tauxTrade" name="tauxTrade"
-                                                wire:model="tauxTrade"
+                                            <input type="number" id="tauxTrade" name="tauxTrade" wire:model="tauxTrade"
                                                 class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                                 placeholder="Faire une offre..." oninput="validateTaux()" required>
                                             @error('tauxTrade')
@@ -430,144 +293,136 @@
             </div>
         @elseif ($demandeCredit->type_financement === 'négocié')
             <div class="md:px-4 flex flex-col w-full md:w-1/2 py-4">
-                @if ($pourcentageInvesti <= 100)
-                    <!-- Vérifier si un investisseur a payé tout le montant -->
-                    <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
-                    @php
-                        $tauxPresent = $demandeCredit->taux; // Récupérer le taux présent pour la comparaison
+                <!-- Vérifier si un investisseur a payé tout le montant -->
+                <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
+                @php
+                    $tauxPresent = $demandeCredit->taux; // Récupérer le taux présent pour la comparaison
 
-                        // Trouver le plus petit taux dans la liste des commentaires
-                        $minTaux = $commentTauxList->min('taux');
+                    // Trouver le plus petit taux dans la liste des commentaires
+                    $minTaux = $commentTauxList->min('taux');
 
-                        // Trouver le commentaire le plus ancien avec le taux minimal
-                        $oldestMinTauxComment = $commentTauxList
-                            ->where('taux', $minTaux)
-                            ->sortBy('created_at')
-                            ->first();
-                    @endphp
+                    // Trouver le commentaire le plus ancien avec le taux minimal
+                    $oldestMinTauxComment = $commentTauxList->where('taux', $minTaux)->sortBy('created_at')->first();
+                @endphp
 
 
-                    <div x-data="countdownTimer({{ json_encode($demandeCredit->duree) }})" class="flex flex-col">
-                        <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
-                            <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
-                            <div id="countdown" x-show="projetDurer"
-                                class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
-                                @if (!$demandeCredit->count)
-                                    <div x-text="jours">--</div>j
-                                    <span>:</span>
-                                    <div x-text="hours">--</div>h
-                                    <span>:</span>
-                                    <div x-text="minutes">--</div> m
-                                    <span>:</span>
-                                    <div x-text="seconds">--</div>s
-                                @endif
-                            </div>
+                <div x-data="countdownTimer({{ json_encode($demandeCredit->duree) }})" class="flex flex-col">
+                    <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
+                        <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
+                        <div id="countdown" x-show="projetDurer"
+                            class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
+                            @if (!$demandeCredit->count)
+                                <div x-text="jours">--</div>j
+                                <span>:</span>
+                                <div x-text="hours">--</div>h
+                                <span>:</span>
+                                <div x-text="minutes">--</div> m
+                                <span>:</span>
+                                <div x-text="seconds">--</div>s
+                            @endif
                         </div>
-
-                        <!-- Afficher les messages d'erreur -->
-                        @if (session()->has('error'))
-                            <div class="bg-red-500 text-white p-2 mt-2 rounded-md">
-                                {{ session('error') }}
-                            </div>
-                        @endif
-
-                        <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                            uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-                            <div
-                                class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-                                <div
-                                    class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-
-
-
-                                    @if ($commentTauxList->isNotEmpty())
-                                        <div class="flex flex-col space-y-2">
-                                            @foreach ($commentTauxList as $comment)
-                                                <div
-                                                    class="flex items-center gap-3 relative rounded-xl bg-gray-200 p-2">
-                                                    <img src="{{ asset($comment->investisseur->photo) }}"
-                                                        alt="Profile Picture"
-                                                        class="w-9 h-9 mt-1 rounded-full overflow-hidden object-cover">
-                                                    <div class="flex-1">
-                                                        <p
-                                                            class="text-base text-black font-medium inline-block dark:text-white">
-                                                            {{ $comment->investisseur->name }}
-                                                            <!-- Afficher le nom de l'investisseur -->
-                                                        </p>
-                                                        <p class="text-sm mt-0.5">
-                                                            {{ $comment->taux }} %
-                                                            <!-- Afficher le taux -->
-                                                            @if ($comment->id == $oldestMinTauxComment->id)
-                                                                <!-- Afficher une étoile jaune pour le commentaire avec le plus ancien taux minimal -->
-                                                                <span class="text-yellow-500">★</span>
-                                                            @endif
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <div class="flex h-full justify-center items-center">
-                                            <p class="text-md text-center text-gray-600">Aucun commentaire
-                                                sur le taux
-                                                disponible.</p>
-                                        </div>
-
-                                    @endif
-
-
-
-                                </div>
-                                <form wire:submit.prevent="commentForm">
-                                    <div
-                                        class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                        @if (!$demandeCredit->count)
-                                            <input type="number" id="tauxTrade" name="tauxTrade"
-                                                wire:model="tauxTrade"
-                                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                                placeholder="Faire une offre..." oninput="validateTaux()" required>
-                                            @error('tauxTrade')
-                                                <span class="text-red-500">{{ $message }}</span>
-                                            @enderror
-                                            <button type="submit" id="submitBtnAppel"
-                                                class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
-                                                <span wire:loading.remove>
-                                                    <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
-                                                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                        fill="currentColor" viewBox="0 0 18 20">
-                                                        <path
-                                                            d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                                    </svg>
-                                                </span>
-                                                <span wire:loading>
-                                                    <svg class="w-5 h-5 animate-spin inline-block"
-                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                                    </svg>
-                                                </span>
-                                            </button>
-                                            <div id="errorMessage" class="text-red-500 mt-2 hidden"></div>
-                                        @endif
-                                    </div>
-                                </form>
-
-
-
-                            </div>
-
-                            <div class="w-full flex justify-center">
-                                <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
-                            </div>
-                        </div>
-
-
-
                     </div>
-                @endif
+
+                    <!-- Afficher les messages d'erreur -->
+                    @if (session()->has('error'))
+                        <div class="bg-red-500 text-white p-2 mt-2 rounded-md">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
+                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
+                        uk-sticky="media: 1024; end: #js-oversized; offset: 80">
+
+                        <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
+                            <div
+                                class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
+
+
+
+                                @if ($commentTauxList->isNotEmpty())
+                                    <div class="flex flex-col space-y-2">
+                                        @foreach ($commentTauxList as $comment)
+                                            <div class="flex items-center gap-3 relative rounded-xl bg-gray-200 p-2">
+                                                <img src="{{ asset($comment->investisseur->photo) }}"
+                                                    alt="Profile Picture"
+                                                    class="w-9 h-9 mt-1 rounded-full overflow-hidden object-cover">
+                                                <div class="flex-1">
+                                                    <p
+                                                        class="text-base text-black font-medium inline-block dark:text-white">
+                                                        {{ $comment->investisseur->name }}
+                                                        <!-- Afficher le nom de l'investisseur -->
+                                                    </p>
+                                                    <p class="text-sm mt-0.5">
+                                                        {{ $comment->taux }} %
+                                                        <!-- Afficher le taux -->
+                                                        @if ($comment->id == $oldestMinTauxComment->id)
+                                                            <!-- Afficher une étoile jaune pour le commentaire avec le plus ancien taux minimal -->
+                                                            <span class="text-yellow-500">★</span>
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="flex h-full justify-center items-center">
+                                        <p class="text-md text-center text-gray-600">Aucun commentaire
+                                            sur le taux
+                                            disponible.</p>
+                                    </div>
+
+                                @endif
+
+
+
+                            </div>
+                            <form wire:submit.prevent="commentForm">
+                                <div
+                                    class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                    @if (!$demandeCredit->count)
+                                        <input type="number" id="tauxTrade" name="tauxTrade" wire:model="tauxTrade"
+                                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                            placeholder="Faire une offre..." oninput="validateTaux()" required>
+                                        @error('tauxTrade')
+                                            <span class="text-red-500">{{ $message }}</span>
+                                        @enderror
+                                        <button type="submit" id="submitBtnAppel"
+                                            class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
+                                            <span wire:loading.remove>
+                                                <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
+                                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                    fill="currentColor" viewBox="0 0 18 20">
+                                                    <path
+                                                        d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                                </svg>
+                                            </span>
+                                            <span wire:loading>
+                                                <svg class="w-5 h-5 animate-spin inline-block"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                                </svg>
+                                            </span>
+                                        </button>
+                                        <div id="errorMessage" class="text-red-500 mt-2 hidden"></div>
+                                    @endif
+                                </div>
+                            </form>
+
+
+
+                        </div>
+
+                        <div class="w-full flex justify-center">
+                            <span id="prixTradeError" class="text-red-500 text-sm hidden text-center py-3"></span>
+                        </div>
+                    </div>
+
+
+
+                </div>
             </div>
         @else
             <div class="md:px-4 flex flex-col w-full md:w-1/2 py-4">
@@ -594,7 +449,7 @@
                     <div class="flex flex-col text-center">
                         <span class="font-semibold text-lg">{{ number_format($montantDeBase, 0, ',', ' ') }}
                             FCFA</span>
-                        <span class="text-gray-500 text-sm">Montant de base (sans intérêt)</span>
+                        <span class="text-gray-500 text-sm">Capital Demandé (sans intérêt)</span>
                     </div>
 
                     <!-- Taux -->
@@ -607,14 +462,23 @@
                     <div class="flex flex-col text-center">
                         <span class="font-semibold text-lg">{{ number_format($montantTotal, 0, ',', ' ') }}
                             FCFA</span>
-                        <span class="text-gray-500 text-sm">Montant Total</span>
+                        <span class="text-gray-500 text-sm">Capital Total (avec intérêt)</span>
                     </div>
                     <!-- Montant total (avec pourcentage) -->
                     <div class="flex flex-col text-center">
-                        <span class="font-semibold text-lg">{{ $demandeCredit->duree }}(mois)</span>
-                        <span class="text-gray-500 text-sm">Durée du crédit</span>
+                        <span class="font-semibold text-lg">{{ $demandeCredit->duree }}</span>
+                        <span class="text-gray-500 text-sm">Periode de remboursement</span>
                     </div>
+                    <div class="sm:col-span-2">
 
+                        <!-- Montant total (avec pourcentage) -->
+                        <div class="flex flex-col text-center text-red-500">
+                            <span
+                                class="font-semibold text-lg">{{ number_format($montantTotal - $montantDeBase, 0, ',', ' ') }}</span>
+                            <span class="text-red-500 text-sm">Retour sur Investissement (ROI)</span>
+                        </div>
+
+                    </div>
                 </div>
                 <div class="flex py-2 mt-2 items-center">
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">

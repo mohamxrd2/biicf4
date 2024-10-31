@@ -4,7 +4,8 @@
             isset($projet->montant) &&
             !isset($projet->Portion_action) &&
             !isset($projet->Portion_obligt))
-        <h1>projet negocie avec obligation..</h1>
+
+        @include('finance.components.entete2')
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->
@@ -358,8 +359,11 @@
             @endif
 
         </div>
-    @elseif ($projet->type_financement == 'négocié' && isset($projet->Portion_action) || isset($projet->Portion_action) && isset($projet->Portion_obligt))
-        <h1>projet negocie avec obligation & action</h1>
+    @elseif (
+        ($projet->type_financement == 'négocié' && isset($projet->Portion_action)) ||
+            (isset($projet->Portion_action) && isset($projet->Portion_obligt)))
+
+       @include('finance.components.entete2')
 
         <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
             <!-- Images Section -->
