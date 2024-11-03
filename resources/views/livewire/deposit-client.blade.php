@@ -3,7 +3,9 @@
 
 
     <div class="w-full md:w-1/2 bg-white border border-gray-300 rounded-xl p-4">
-        <div x-data="{ deposit_type: @entangle('deposit_type').defer }" x-init="deposit_type = 'Virement Bancaire'">
+        <div x-data="{ deposit_type: @entangle('deposit_type').defer , amount: 0, roi: 0 }"
+        x-init="deposit_type = 'Virement Bancaire'"
+        x-effect="roi = Math.round((amount * 1.10) / 5) * 5">
             <!-- Menus de type de financement -->
             <div class="flex space-x-4 mb-4">
                 <button type="button" @click="deposit_type = 'Virement Bancaire'"
@@ -114,7 +116,7 @@
                     <h2 class="text-center font-semibold text-xl mb-4">Rechargement SOS</h2>
 
                     <div class="mb-4">
-                        <input type="number" id="amount" wire:model="amount"
+                        <input type="number" id="amount" wire:model="amount" x-model="amount"
                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder="Entrez le montant">
                         @error('amount')
@@ -122,11 +124,10 @@
                         @enderror
                     </div>
 
-
                     <div class="mb-4">
-                        <input type="number" id="roi" wire:model="roi"
+                        <input type="number" id="roi" x-model="roi"
                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder="Montant à envoyer"  disabled>
+                            placeholder="Montant à envoyer" disabled>
                     </div>
 
                     <div class="mt-6 relative">
@@ -139,21 +140,6 @@
                     </div>
                 </form>
             </template>
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const amountInput = document.getElementById('amount');
-                    const roiInput = document.getElementById('roi');
-
-                    amountInput.addEventListener('input', function() {
-                        const amount = parseFloat(this.value) || 0;
-                        const roi = Math.round((amount * 1.10) / 5) *
-                            5; // Ajouter 10 % et arrondir au multiple de 5
-                        roiInput.value = roi; // Mettre à jour instantanément
-                    });
-                });
-            </script>
-
         </div>
     </div>
 

@@ -157,8 +157,8 @@
                         <div class="flex flex-col ">
                             <div class="w-full flex justify-between">
                                 <div class="flex items-center">
-                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
-                                        data-tooltip-target="tooltip-D">
+                                    <div
+                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -201,8 +201,8 @@
                         <div class="flex flex-col ">
                             <div class="w-full flex justify-between">
                                 <div class="flex items-center">
-                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
-                                        data-tooltip-target="tooltip-D">
+                                    <div
+                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -240,8 +240,8 @@
                         <div class="flex flex-col ">
                             <div class="w-full flex justify-between">
                                 <div class="flex items-center">
-                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
-                                        data-tooltip-target="tooltip-D">
+                                    <div
+                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -280,8 +280,8 @@
                         <div class="flex flex-col ">
                             <div class="w-full flex justify-between">
                                 <div class="flex items-center">
-                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
-                                        data-tooltip-target="tooltip-D">
+                                    <div
+                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -320,8 +320,8 @@
                         <div class="flex flex-col ">
                             <div class="w-full flex justify-between">
                                 <div class="flex items-center">
-                                    <div class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white"
-                                        data-tooltip-target="tooltip-D">
+                                    <div
+                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -713,33 +713,34 @@
     </style>
 
     <script>
-        const slider = document.querySelector('.slider');
-        const slides = document.querySelectorAll('.slide');
-        const prevButton = document.querySelector('.prev');
-        const nextButton = document.querySelector('.next');
-        const indicators = document.querySelectorAll('.indicator');
+        // const slider = document.querySelector('.slider');
+        // const slides = document.querySelectorAll('.slide');
+        // const prevButton = document.querySelector('.prev');
+        // const nextButton = document.querySelector('.next');
+        // const indicators = document.querySelectorAll('.indicator');
 
-        let currentIndex = 0;
+        // let currentIndex = 0;
 
-        function updateSliderPosition() {
-            slider.style.transform = `translateX(-${currentIndex * 100}%)`;
-            indicators.forEach((indicator, index) => {
-                indicator.classList.toggle('active', index === currentIndex);
-            });
-        }
+        // function updateSliderPosition() {
+        //     slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+        //     indicators.forEach((indicator, index) => {
+        //         indicator.classList.toggle('active', index === currentIndex);
+        //     });
+        // }
 
-        prevButton.addEventListener('click', () => {
-            currentIndex = (currentIndex > 0) ? currentIndex - 1 : slides.length - 1;
-            updateSliderPosition();
-        });
+        // prevButton.addEventListener('click', () => {
+        //     currentIndex = (currentIndex > 0) ? currentIndex - 1 : slides.length - 1;
+        //     updateSliderPosition();
+        // });
 
-        nextButton.addEventListener('click', () => {
-            currentIndex = (currentIndex < slides.length - 1) ? currentIndex + 1 : 0;
-            updateSliderPosition();
-        });
+        // nextButton.addEventListener('click', () => {
+        //     currentIndex = (currentIndex < slides.length - 1) ? currentIndex + 1 : 0;
+        //     updateSliderPosition();
+        // });
 
-        updateSliderPosition();
+        // updateSliderPosition();
     </script>
+
     <script>
         function toggleModal(visible) {
             const modal = document.getElementById('transactionModal');
