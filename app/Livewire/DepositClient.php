@@ -2,14 +2,15 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use App\Models\Admin;
 use App\Models\Deposit;
-use App\Notifications\DepositClientNotification;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\DepositClientNotification;
 
 class DepositClient extends Component
 {
@@ -18,10 +19,30 @@ class DepositClient extends Component
     public $amount;
     public $receipt;
 
+    public $deposit_type = '';
+
+
+    public $search = '';
+    public $users = [];
+    public $user_id;
+
+    public $roi;
+
     protected $rules = [
         'amount' => 'required|numeric|min:1',
         'receipt' => 'required|image|max:1024', // Limite la taille du fichier à 1MB
     ];
+
+    public function mount()
+    {
+        
+        $this->resetForm(); 
+    }
+    public function updatedAmount($value)
+    {
+        // Calculer le montant avec 10 % en plus, arrondi au multiple de 5 le plus proche
+        $this->roi = round(($value * 1.10) / 5) * 5;
+    }
 
     public function submitDeposit()
     {
@@ -53,7 +74,7 @@ class DepositClient extends Component
             session()->flash('message', 'Votre dépôt a été soumis avec succès et est en attente de validation.');
 
             // Réinitialiser les champs du formulaire
-            $this->reset(['amount', 'receipt']);
+            $this->resetForm(); 
             Log::info("Formulaire réinitialisé avec succès.");
         } catch (\Exception $e) {
             Log::error('Erreur lors de la soumission du dépôt : ' . $e->getMessage());
@@ -61,6 +82,34 @@ class DepositClient extends Component
         }
     }
 
+    public function resetForm()
+    {
+         $this->deposit_type = '';
+         $this->amount = '';
+         $this->user_id = '';
+         $this->receipt = null;
+        
+    }
+
+    public function updatedSearch()
+    {
+        if (!empty($this->search)) {
+            // Récupérer l'ID de l'utilisateur connecté
+            $currentUserId = auth()->id();
+
+            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie,
+            // mais exclure l'utilisateur connecté
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')
+                ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
+                ->get();
+
+            Log::info('Search updated.', ['search' => $this->search]);
+        } else {
+            // Si la barre de recherche est vide, ne rien afficher
+            $this->users = [];
+        }
+    }
+   
     protected function handlePhotoUpload($photoField)
     {
         if ($this->$photoField) {
@@ -95,6 +144,24 @@ class DepositClient extends Component
         Log::warning("Aucune photo trouvée pour le champ : {$photoField}");
         return null;
     }
+
+    public function submitSOSRecharge()
+    {
+        $this->validate([
+            'amount' => 'required|numeric|min:1',
+        ], [
+            'amount.required' => 'Veuillez entrer un montant.',
+            'amount.numeric' => 'Le montant doit être numérique.',
+            'amount.min' => 'Le montant doit être supérieur à 0.',
+        ]);
+
+        session()->flash('message', 'Votre demande a été soumis avec succès et est en attente de validation.');
+
+            // Réinitialiser les champs du formulaire
+        $this->resetForm(); 
+
+    }
+    
 
     public function render()
     {

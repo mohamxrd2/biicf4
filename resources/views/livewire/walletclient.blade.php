@@ -20,7 +20,7 @@
         <div class="grid gap-y-4 mb-6 w-full grid-cols-1 md:grid-cols-2">
 
 
-            <div class="flex flex-col bg-gray-100 col-span-1">
+            <div class="flex flex-col col-span-1">
                 <!-- Card Container -->
                 <div
                     class="bg-gradient-to-br from-black to-blue-500 rounded-lg shadow-lg p-6 w-full md:w-96 h-56 text-white relative">
@@ -412,8 +412,9 @@
                             @endphp
 
                             @if ($isRelevantTransaction)
-                                <div
-                                    class="flex justify-between items-center hover:bg-gray-100 p-4 rounded-xl cursor-pointer">
+                                <div class="flex justify-between items-center hover:bg-gray-100 p-4 rounded-xl cursor-pointer"
+                                    data-modal-target="static-modal-{{ $transaction->id }}"
+                                    data-modal-toggle="static-modal-{{ $transaction->id }}">
                                     <div class="flex items-center">
                                         @php
                                             $iconSvg = '';
@@ -462,9 +463,9 @@
                                             data-modal-toggle="static-modal-{{ $transaction->id }}">
                                             <div class="flex">
 
-                                            <h3 class="text-sm font-medium">{{ $transactionLabel }}</h3>
-                                            <span
-                                                class="bg-blue-100 ml-2 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ $transaction->type_compte }}</span>
+                                                <h3 class="text-sm font-medium">{{ $transactionLabel }}</h3>
+                                                <span
+                                                    class="bg-blue-100 ml-2 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ $transaction->type_compte }}</span>
                                             </div>
                                             <p class="text-sm text-gray-500">
                                                 @if ($transaction->type == 'Envoie')

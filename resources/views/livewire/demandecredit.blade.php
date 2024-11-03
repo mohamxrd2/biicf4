@@ -281,9 +281,7 @@
                 console.log("Condition réussie : la date de fin est inférieure ou égale à la durée.");
             }
         }
-    </script>
-
-    <script>
+    
         // Fonction pour mettre à jour le montant total en fonction de la quantité
         function updateMontantTotalCredit() {
             const quantitInput = document.getElementById('quantitInput');
