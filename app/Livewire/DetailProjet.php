@@ -263,14 +263,14 @@ class DetailProjet extends Component
             //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
             // }
 
-            // // Générer une référence de transaction
-            // $reference_id = $this->generateIntegerReference();
-            // Log::info('Référence de transaction générée: ' . $reference_id);
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
+            Log::info('Référence de transaction générée: ' . $reference_id);
 
-            // // Créer deux transactions
-            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
+            // Créer deux transactions
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
             // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'réception de financement d\'un projet', 'effectué', $cfa->type_compte);
-            // Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
             DB::commit();
@@ -323,6 +323,26 @@ class DetailProjet extends Component
             // Déclencher l'événement `DebutDeNegociation`
             broadcast(new DebutDeNegociation($this->projet, $this->investisseurQuiAPayeTout));
             $this->dispatch('DebutDeNegociation', $this->projet, $this->investisseurQuiAPayeTout);
+        } elseif (!$this->investisseurQuiAPayeTout) {
+            // Si l'investisseur a payé une partie, mais pas la totalité, effectuer une autre action
+            // Par exemple, envoyer une notification ou enregistrer une progression partielle
+            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
+            $existingCountdown = Countdown::where('code_unique',  $this->projet->id)
+                ->where('notified', false)
+                ->orderBy('start_time', 'desc')
+                ->first();
+
+            if (!$existingCountdown) {
+                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+                Countdown::create([
+                    'user_id' => Auth::id(),
+                    'userSender' => $this->projet->demandeur->id,
+                    // 'start_time' => $this->dateFin,
+                    'start_time' => now(),
+                    'difference' => 'projet_compo',
+                    'code_unique' =>  $this->projet->id,
+                ]);
+            }
         }
         // Log de l'investisseur qui a payé tout
         Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
@@ -420,14 +440,14 @@ class DetailProjet extends Component
             //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
             // }
 
-            // // Générer une référence de transaction
-            // $reference_id = $this->generateIntegerReference();
-            // Log::info('Référence de transaction générée: ' . $reference_id);
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
+            Log::info('Référence de transaction générée: ' . $reference_id);
 
-            // // Créer deux transactions
-            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué', $coi->type_compte);
+            // Créer deux transactions
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué', $coi->type_compte);
             // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'Réception de fond', 'effectué', $cfa->type_compte);
-            // Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
             DB::commit();
@@ -511,8 +531,6 @@ class DetailProjet extends Component
 
         // Appeler la fonction pour afficher le formulaire de commentaire
         $this->ElementcommentForm();
-
-
     }
 
     protected function ElementcommentForm()
@@ -593,7 +611,8 @@ class DetailProjet extends Component
     public function joursRestants()
     {
         $dateActuelle = now();
-        $joursRestants = $dateActuelle->diffInDays($this->dateFin);
+        // $joursRestants = $dateActuelle->diffInDays($this->dateFin);
+        $joursRestants = $dateActuelle->diffInDays($this->projet->created_at);
         return max(0, $joursRestants); // Retournez 0 si le projet est déjà terminé
     }
 

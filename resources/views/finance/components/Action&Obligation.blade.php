@@ -37,7 +37,8 @@
     </div>
 </div>
 
-@if ($projet->Portion_obligt && !$investisseurQuiAPayeTout)
+@if ($projet->type_financement == 'négocié')
+@elseif ($projet->Portion_obligt && !$investisseurQuiAPayeTout)
     <p>Obligation</p>
 
     <div class="w-full bg-gray-200 rounded-full h-2 mt-2">

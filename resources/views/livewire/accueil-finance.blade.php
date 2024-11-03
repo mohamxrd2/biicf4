@@ -1,6 +1,6 @@
 <div>
     {{-- Be like water. --}}
-
+    
     @if ($projetCount > 0)
 
         <div class="bg-gray-50">
@@ -13,8 +13,8 @@
             @if ($projetRecent)
                 <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
                     <!-- Image du projet -->
-                    <img class="w-full md:w-1/2  md:h-96 object-cover rounded-md" src="{{ asset($projetRecent->photo1) }}"
-                        alt="Image du projet" />
+                    <img class="w-full md:w-1/2  md:h-96 object-cover rounded-md"
+                        src="{{ asset($projetRecent->photo1) }}" alt="Image du projet" />
 
                     <!-- Contenu du projet -->
                     <div class="md:px-4 flex flex-col w-full md:w-1/2 py-4">
@@ -89,10 +89,12 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
                 @foreach ($projets as $projet)
-                    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                        <img class="w-full h-48 object-cover" src="{{ asset($projet->photo1) }}" alt="Projet image" />
+                    <div
+                        class="bg-white group shadow-md rounded-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <img class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                            src="{{ asset($projet->photo1) }}" alt="Projet image" />
                         <div class="p-4">
                             <div class="flex items-center mb-2">
                                 <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -100,19 +102,48 @@
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
                                 </svg>
-                                <span class="ml-2 text-sm text-gray-500">{{ $projet->categorie }}</span>
+                                <span class="ml-2 text-sm text-gray-500 ">{{ $projet->categorie }}</span>
                                 <!-- Catégorie -->
                             </div>
                             @if ($projet->type_financement == 'groupé')
                                 <a href="{{ route('detailprojetGroupe', $projet->id) }}">
-                                    <h3 class="text-lg font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3>
+                                    <h3 class="text-lg group-hover:text-blue-600 font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3>
                                     <!-- Nom du projet -->
                                 </a>
+                                <div class="flex flex-wrap gap-2">
+                                    <span
+                                        class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm transform transition hover:scale-105">{{ $projet->type_financement }}</span>
+                                    <span
+                                        class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm transform transition hover:scale-105">
+
+                                        @if (!empty($projet->Portion_action) && !empty($projet->Portion_obligt))
+                                            Action et Obligation
+                                        @elseif (!empty($projet->Portion_action) && empty($projet->Portion_obligt))
+                                            Action
+                                        @else
+                                            Obligation
+                                        @endif
+                                    </span>
+                                </div>
                             @elseif ($projet->type_financement == 'négocié')
                                 <a href="{{ route('detailprojetNegocie', $projet->id) }}">
-                                    <h3 class="text-lg font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3>
+                                    <h3 class="text-lg group-hover:text-purple-600 font-semibold text-gray-800 mt-1">{{ $projet->name }}</h3>
                                     <!-- Nom du projet -->
                                 </a>
+                                <div class="flex flex-wrap gap-2">
+                                    <span
+                                        class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm transform transition hover:scale-105">{{ $projet->type_financement }}</span>
+                                    <span
+                                        class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm transform transition hover:scale-105">
+                                        @if (!empty($projet->Portion_action) && !empty($projet->Portion_obligt))
+                                            Action et Obligation
+                                        @elseif (!empty($projet->Portion_action) && empty($projet->Portion_obligt))
+                                            Action
+                                        @else
+                                            Obligation
+                                        @endif
+                                    </span>
+                                </div>
                             @endif
 
                             <p class="text-gray-600 mt-2">
@@ -122,7 +153,8 @@
 
                             <div class="bg-gray-200 h-2 mt-2 rounded-full">
                                 <div class="bg-green-500 h-2 rounded-full"
-                                    style="width: {{ $projet->pourcentageInvesti }}%"></div> <!-- Taux d'avancement -->
+                                    style="width: {{ $projet->pourcentageInvesti }}%"></div>
+                                <!-- Taux d'avancement -->
                             </div>
                             <div class="flex justify-between items-center mt-4">
                                 <div class="flex flex-col">

@@ -57,8 +57,8 @@
                             @endphp
 
                             @if ($montantVerifie)
-
-                                <div x-data="countdownTimer({{ json_encode($projet->durer) }})" class="flex flex-col">
+                                {{-- duree --}}
+                                <div x-data="countdownTimer({{ json_encode($projet->created_at) }})" class="flex flex-col">
                                     <div
                                         class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
                                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
@@ -389,7 +389,7 @@
             </div>
         </div>
 
-        @if ( !$investisseurQuiAPayeTout)
+        @if (!$investisseurQuiAPayeTout)
             <h3 class="text-xl font-semibold text-gray-600 mt-2 mb-6">
                 Description du projet
             </h3>

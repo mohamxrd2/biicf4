@@ -46,7 +46,7 @@
                     @endif
                 </div>
                 <div class="flex items-center space-x-4">
-                    
+
                     <!-- Modal btn toggle -->
                     <button data-modal-target="static-modal" data-modal-toggle="static-modal"
                         class="flex w-full items-center justify-center  text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -355,8 +355,39 @@
                     </div>
                 </div>
             </div>
+            <main class="max-w-6xl mx-auto px-4 py-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Produits & Services</h1>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Projet 1 -->
+                    <div
+                        class="group bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <div class="relative overflow-hidden">
+                            <img src="https://picsum.photos/seed/1/400/300" alt="Projet 1"
+                                class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div
+                                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300">
+                            </div>
+                        </div>
+                        <div class="p-6 transform transition-all duration-300">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-600">Projet E-commerce
+                            </h3>
+                            <p class="text-gray-600 mb-4">Site e-commerce responsive avec panier d'achat et paiement en ligne.
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <span
+                                    class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm transform transition hover:scale-105">React</span>
+                                <span
+                                    class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm transform transition hover:scale-105">Node.js</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </main>
             <div class="mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-2 xl:grid-cols-4">
+
                 @foreach ($produits as $produit)
                     <div
                         class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">

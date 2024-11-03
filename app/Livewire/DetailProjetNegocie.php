@@ -254,14 +254,14 @@ class DetailProjetNegocie extends Component
             //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
             // }
 
-            // // Générer une référence de transaction
-            // $reference_id = $this->generateIntegerReference();
-            // Log::info('Référence de transaction générée: ' . $reference_id);
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
+            Log::info('Référence de transaction générée: ' . $reference_id);
 
-            // // Créer deux transactions
-            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
+            // Créer deux transactions
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
             // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'réception de financement d\'un projet', 'effectué', $cfa->type_compte);
-            // Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
             DB::commit();
@@ -416,14 +416,14 @@ class DetailProjetNegocie extends Component
             //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
             // }
 
-            // // Générer une référence de transaction
-            // $reference_id = $this->generateIntegerReference();
-            // Log::info('Référence de transaction générée: ' . $reference_id);
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
+            Log::info('Référence de transaction générée: ' . $reference_id);
 
-            // // Créer deux transactions
-            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué', $coi->type_compte);
+            // Créer deux transactions
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué', $coi->type_compte);
             // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'Réception de fond', 'effectué', $cfa->type_compte);
-            // Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
             DB::commit();
