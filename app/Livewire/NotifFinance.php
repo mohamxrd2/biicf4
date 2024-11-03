@@ -18,6 +18,7 @@ class NotifFinance extends Component
         $this->notifications = auth()->user()->notifications->filter(function ($notification) {
             return $notification->type === \App\Notifications\DemandeCreditNotification::class;
         });
+        
     }
 
 

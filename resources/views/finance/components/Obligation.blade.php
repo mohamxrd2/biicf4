@@ -71,7 +71,7 @@
 
         @php
 
-            $date_passee = now()->greaterThan($projet->created_at); // Si date_limite est la date de fin
+            $date_passee = now()->greaterThan($projet->durer); // Si date_limite est la date de fin
 
         @endphp
 
@@ -92,10 +92,17 @@
                         souhaitée.
                     </p>
                     @if ($projet->id_user != Auth::id())
-                        <button id="showMontantInputButton"
-                            class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
-                            Ajouter un montant
-                        </button>
+                        @if (!$this->investisseurQuiAPayeTout && $pourcentageInvesti == 100)
+                            <div class="p-4 mt-9 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
+                                role="alert">
+                                <span class="font-medium">Information :</span> L'investissement est atteint.
+                            </div>
+                        @else
+                            <button id="showMontantInputButton"
+                                class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium">
+                                Ajouter un montant
+                            </button>
+                        @endif
                     @else
                         <button
                             class="w-full py-3 bg-gray-200 hover:bg-gray-300 transition-colors rounded-md text-black font-medium"

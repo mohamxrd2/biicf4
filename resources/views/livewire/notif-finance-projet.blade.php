@@ -91,7 +91,6 @@ if ($userDetails) {
                         </dd>
                     @endif
                 </dl>
-
                 <div class="w-full grid sm:grid-cols-2 lg:flex lg:w-64 lg:items-center lg:justify-end gap-4">
                     <!-- Affichage conditionnel basé sur la réponse -->
 
@@ -101,6 +100,7 @@ if ($userDetails) {
                         Voir details
                     </a>
                 </div>
+
             </div>
         @endforeach
     </div>

@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:appeloffre')->everyMinute();
             $schedule->command('app:ajout-qoffre')->everyMinute();
             $schedule->command('app:projet-countdown')->everyMinute();
+            $schedule->command('app:projet-groupe')->everyMinute();
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');
@@ -29,6 +30,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:appeloffre')->cron('* * * * *');
             $schedule->command('app:ajout-qoffre')->cron('* * * * *');
             $schedule->command('app:projet-countdown')->cron('* * * * *');
+            $schedule->command('app:projet-groupe')->cron('* * * * *');
         }
     }
     /**
