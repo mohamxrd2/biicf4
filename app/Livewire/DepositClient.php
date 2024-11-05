@@ -2,12 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Models\Coi;
 use App\Models\User;
 use App\Models\Admin;
 use App\Models\Deposit;
 use Livewire\Component;
+use Illuminate\Support\Str;
+use App\Models\Investisseur;
 use Livewire\WithFileUploads;
+use App\Notifications\DepositSos;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\DepositClientNotification;
@@ -35,8 +40,8 @@ class DepositClient extends Component
 
     public function mount()
     {
-        
-        $this->resetForm(); 
+
+        $this->resetForm();
     }
     public function updatedAmount($value)
     {
@@ -74,7 +79,7 @@ class DepositClient extends Component
             session()->flash('message', 'Votre dépôt a été soumis avec succès et est en attente de validation.');
 
             // Réinitialiser les champs du formulaire
-            $this->resetForm(); 
+            $this->resetForm();
             Log::info("Formulaire réinitialisé avec succès.");
         } catch (\Exception $e) {
             Log::error('Erreur lors de la soumission du dépôt : ' . $e->getMessage());
@@ -84,10 +89,11 @@ class DepositClient extends Component
 
     public function resetForm()
     {
-         $this->deposit_type = '';
-         $this->amount = '';
-         $this->user_id = '';
-         $this->receipt = null;
+        $this->deposit_type = '';
+        $this->amount = '';
+        $this->user_id = '';
+        $this->receipt = null;
+        $this->roi = '';
         
     }
 
@@ -109,7 +115,7 @@ class DepositClient extends Component
             $this->users = [];
         }
     }
-   
+
     protected function handlePhotoUpload($photoField)
     {
         if ($this->$photoField) {
@@ -146,22 +152,62 @@ class DepositClient extends Component
     }
 
     public function submitSOSRecharge()
-    {
-        $this->validate([
-            'amount' => 'required|numeric|min:1',
-        ], [
-            'amount.required' => 'Veuillez entrer un montant.',
-            'amount.numeric' => 'Le montant doit être numérique.',
-            'amount.min' => 'Le montant doit être supérieur à 0.',
-        ]);
+{
+    $this->validate([
+        'amount' => 'required|numeric|min:1',
+        'roi' => 'required|numeric|min:1',
+    ], [
+        'amount.required' => 'Veuillez entrer un montant.',
+        'amount.numeric' => 'Le montant doit être numérique.',
+        'amount.min' => 'Le montant doit être supérieur à 0.',
+        'roi.required' => 'Veuillez entrer le ROI.',
+        'roi.numeric' => 'Le ROI doit être numérique.',
+        'roi.min' => 'Le ROI doit être supérieur à 0.',
+    ]);
 
-        session()->flash('message', 'Votre demande a été soumis avec succès et est en attente de validation.');
+    // Récupérer l'ID de l'investisseur qui soumet
+    $submitterId = Auth::id(); // ou $this->investisseur_id selon ton contexte
 
-            // Réinitialiser les champs du formulaire
-        $this->resetForm(); 
+    // Récupérer les investisseurs en excluant celui qui soumet
+    $cois = Coi::where('Solde', '>=', $this->amount)
+        ->with('wallet')
+        ->get();
 
+    if ($cois->isEmpty()) {
+        session()->flash('error', 'Aucun utilisateur avec un solde suffisant trouvé.');
+    } else {
+        // Générer un ID unique pour id_sos
+        $sosId = Str::uuid()->toString(); // Génère un UUID
+
+        // Récupérer chaque `user_id` associé aux wallets
+        foreach ($cois as $coi) {
+            $wallet = $coi->wallet;
+
+            // Vérifier que le wallet est associé à un utilisateur et que cet utilisateur est différent de l'utilisateur qui soumet
+            if ($wallet && $wallet->user_id && $wallet->user_id != $submitterId) {
+                $user = User::find($wallet->user_id);
+
+                if ($user) {
+                    // Envoyer la notification
+                    $data = [
+                        'user_id' => Auth::id(), // Utilisez l'ID de l'utilisateur connecté ici
+                        'amount' => $this->amount,
+                        'roi' => $this->roi,
+                        'id_sos' => $sosId, // Utilisez l'UUID généré ici
+                    ];
+
+                    Notification::send($user, new DepositSos($data));
+                }
+            }
+        }
+
+        session()->flash('message', 'Votre demande a été soumise avec succès et est en attente de validation.');
+
+        // Réinitialiser les champs du formulaire
+        $this->resetForm();
     }
-    
+}
+
 
     public function render()
     {

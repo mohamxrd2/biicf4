@@ -116,6 +116,7 @@
                     <h2 class="text-center font-semibold text-xl mb-4">Rechargement SOS</h2>
 
                     <div class="mb-4">
+                        <label for="amount">Entrez le montant</label>
                         <input type="number" id="amount" wire:model="amount" x-model="amount"
                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder="Entrez le montant">
@@ -125,7 +126,8 @@
                     </div>
 
                     <div class="mb-4">
-                        <input type="number" id="roi" x-model="roi"
+                        <label for="roi">Montant à envoyer</label>
+                        <input type="number" wire:model="roi" id="roi" x-model="roi"
                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder="Montant à envoyer" disabled>
                     </div>

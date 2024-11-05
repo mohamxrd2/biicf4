@@ -15,8 +15,8 @@
 
         {{-- Appel Offre Direct --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h1 class="text-center text-xl font-semibold mb-2">Negociation de l'offre sur
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h1 class="mb-2 text-xl font-semibold text-center">Negociation de l'offre sur
                 <span class="text-3xl">{{ $notification->data['productName'] }}</span>
             </h1>
         </div>
@@ -24,7 +24,7 @@
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
         @livewire('appeloffreterminer', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAppelOffre')
-        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs(Achat d'un client)</h1>
+        <h1 class="mb-2 text-3xl font-semibold text-center">Negociation Des Livreurs(Achat d'un client)</h1>
         @livewire('livraisonappeloffre', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\CountdownNotificationAp')
         @livewire('countdown-notification-ap', ['id' => $id])
@@ -38,12 +38,12 @@
     @elseif ($notification->type === 'App\Notifications\AOGrouper')
         @livewire('appeloffregrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
-        <h1 class="text-center text-3xl font-semibold mb-2 ">Negociations pour la quantitée groupée</h1>
+        <h1 class="mb-2 text-3xl font-semibold text-center ">Negociations pour la quantitée groupée</h1>
         @livewire('appeloffregroupernegociation', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
         @livewire('appeloffreterminergrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAppelOffregrouper')
-        <h1 class="text-center text-3xl font-semibold mb-2">Negociation Des Livreurs</h1>
+        <h1 class="mb-2 text-3xl font-semibold text-center">Negociation Des Livreurs</h1>
         @livewire('livraisonagrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\CountdownNotificationAg')
         @livewire('countdown-notification-ag', ['id' => $id])
@@ -53,7 +53,7 @@
 
         {{-- fournisseur offre negocier --}}
     @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
-        <h1 class="text-center text-3xl font-semibold mb-2">Enchere Sur {{ $notification->data['produit_name'] }}</h1>
+        <h1 class="mb-2 text-3xl font-semibold text-center">Enchere Sur {{ $notification->data['produit_name'] }}</h1>
 
         @livewire('enchere', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\NegosTerminer')
@@ -61,9 +61,9 @@
 
         {{-- fournisseur offre grouper --}}
     @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
-        <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
-            <h1 class="text-xl font-medium mb-4">Ajout de quantite</h1>
-            <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre du produit:
+        <div class="flex flex-col justify-center p-4 bg-white border rounded-xl">
+            <h1 class="mb-4 text-xl font-medium">Ajout de quantite</h1>
+            <h2 class="mb-4 text-xl font-medium"><span class="font-semibold">Titre du produit:
                     {{ $notification->data['produit_name'] }}</span></h2>
 
             <p class="mb-3"><strong>Quantité: </strong> {{ $sommeQuantites }}
@@ -73,7 +73,7 @@
             </p>
 
             <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
-                class="mb-3 text-blue-700 hover:underline flex">
+                class="flex mb-3 text-blue-700 hover:underline">
                 Voir le produit
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6">
@@ -85,7 +85,7 @@
                 @csrf
                 <div class="flex">
                     <input type="number"
-                        class="py-3 px-4 block w-full mr-3 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                        class="block w-full px-4 py-3 mr-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                         placeholder="Ajouter une quantité" name="quantitE" id="quantiteInput" wire:model="quantitE"
                         required>
                     <input type="hidden" name="name" wire:model="name">
@@ -93,21 +93,21 @@
 
                     <input type="hidden" name="code_unique" wire:model="code_unique">
 
-                    <button type="submit" class="bg-purple-500 text-white px-4 rounded-md"
+                    <button type="submit" class="px-4 text-white bg-purple-500 rounded-md"
                         id="submitBtn">Ajouter</button>
 
                 </div>
 
             </form>
 
-            <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
+            <div id="countdown-container" class="flex flex-col items-center justify-center mt-4">
 
 
 
-                <span class=" my-2">Temps restant pour vous ajouter</span>
+                <span class="my-2 ">Temps restant pour vous ajouter</span>
 
                 <div id="countdown"
-                    class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
+                    class="flex items-center w-auto gap-2 p-3 text-3xl font-semibold text-red-500 bg-red-100 rounded-xl">
 
                     <div>-</div>:
                     <div>-</div>:
@@ -165,9 +165,9 @@
 
         </div>
     @elseif ($notification->type === 'App\Notifications\OffreNegosDone')
-        <div class="flex flex-col bg-white p-4 rounded-xl border justify-center">
+        <div class="flex flex-col justify-center p-4 bg-white border rounded-xl">
 
-            <h2 class="text-xl font-medium mb-4"><span class="font-semibold">Titre:
+            <h2 class="mb-4 text-xl font-medium"><span class="font-semibold">Titre:
                 </span>{{ $produit->name }}</h2>
             <p class="mb-3"><strong>Quantité:</strong> {{ $notification->data['quantite'] }}</p>
             @php
@@ -188,7 +188,7 @@
 
 
             <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
-                class="mb-3 bg-blue-700 text-white justify-center rounded-xl py-1 flex">
+                class="flex justify-center py-1 mb-3 text-white bg-blue-700 rounded-xl">
                 Voir le produit de base
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6">
@@ -196,12 +196,12 @@
                 </svg>
             </a>
 
-            <div class=" w-full gap-2 ">
+            <div class="w-full gap-2 ">
 
 
                 @if ($notification->reponse)
-                    <div class="w-full bg-gray-300 border py-1 rounded-xl">
-                        <p class="text-md font-medium text-center">Réponse envoyée</p>
+                    <div class="w-full py-1 bg-gray-300 border rounded-xl">
+                        <p class="font-medium text-center text-md">Réponse envoyée</p>
                     </div>
                 @else
                     <input type="hidden" wire:model="prixArticleNegos" name="prixarticle">
@@ -214,60 +214,76 @@
 
                         <div class="flex items-center mb-3">
                             <!-- Date de début -->
-                            <div class="w-1/2 mr-2 relative">
-                                <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Au plus tôt</label>
+                            <div class="relative w-1/2 mr-2">
+                                <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Au plus
+                                    tôt</label>
                                 <input type="date" id="datePickerStart" name="dateTot" wire:model="dateTot"
-                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                @error('dateTot') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                    class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('dateTot')
+                                    <span class="text-sm text-red-500">{{ $message }}</span>
+                                @enderror
                             </div>
 
                             <!-- Date de fin -->
-                            <div class="w-1/2 mr-2 relative">
-                                <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus tard</label>
+                            <div class="relative w-1/2 mr-2">
+                                <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus
+                                    tard</label>
                                 <input type="date" id="datePickerEnd" name="dateTard" wire:model="dateTard"
-                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                @error('dateTard') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                    class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('dateTard')
+                                    <span class="text-sm text-red-500">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
 
                         <div class="flex items-center mb-3">
                             <!-- Heure de début -->
-                            <div class="w-1/2 mr-2 relative">
-                                <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure de début</label>
+                            <div class="relative w-1/2 mr-2">
+                                <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure de
+                                    début</label>
                                 <input type="time" id="timePickerStart" name="timeStart" wire:model="timeStart"
-                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                @error('timeStart') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                    class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('timeStart')
+                                    <span class="text-sm text-red-500">{{ $message }}</span>
+                                @enderror
                             </div>
 
                             <!-- Heure de fin -->
-                            <div class="w-1/2 mr-2 relative">
-                                <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de fin</label>
+                            <div class="relative w-1/2 mr-2">
+                                <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de
+                                    fin</label>
                                 <input type="time" id="timePickerEnd" name="timeEnd" wire:model="timeEnd"
-                                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                @error('timeEnd') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                    class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                @error('timeEnd')
+                                    <span class="text-sm text-red-500">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
 
                         <!-- Sélecteur de période de la journée -->
-                        <div class="mb-3 w-full">
-                            <label for="dayPeriod" class="block text-sm text-gray-700 dark:text-gray-300">Période de la journée</label>
+                        <div class="w-full mb-3">
+                            <label for="dayPeriod" class="block text-sm text-gray-700 dark:text-gray-300">Période de
+                                la journée</label>
                             <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
-                                class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                                class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg pe-9 disabled:opacity-50 disabled:pointer-events-none">
                                 <option value="" selected>Choisir la période</option>
                                 <option value="Matin">Matin</option>
                                 <option value="Après-midi">Après-midi</option>
                                 <option value="Soir">Soir</option>
                                 <option value="Nuit">Nuit</option>
                             </select>
-                            @error('dayPeriod') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            @error('dayPeriod')
+                                <span class="text-sm text-red-500">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <button type="submit" class="px-4 py-1 w-full text-white bg-green-500 rounded-xl hover:bg-green-700">
+                        <button type="submit"
+                            class="w-full px-4 py-1 text-white bg-green-500 rounded-xl hover:bg-green-700">
                             <span wire:loading.remove>
                                 Accepter
                             </span>
                             <span wire:loading>
-                                <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                                <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -278,13 +294,13 @@
                     </form>
 
                     <button wire:click='refusoffre'
-                        class="mt-4 px-4 py-1 w-full text-white bg-red-500 rounded-xl hover:bg-red-700">
+                        class="w-full px-4 py-1 mt-4 text-white bg-red-500 rounded-xl hover:bg-red-700">
                         <span wire:loading.remove>
                             refuser
                         </span>
 
                         <span wire:loading>
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -300,23 +316,23 @@
     @elseif ($notification->type === 'App\Notifications\CountdownNotification')
         {{-- Afficher les messages de succès --}}
         @if (session('success'))
-            <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
+            <div class="p-3 mb-3 font-bold text-white bg-green-500 border rounded-lg shadow-lg">
                 {{ session('success') }}
             </div>
         @endif
 
         <!-- Afficher les messages d'erreur -->
         @if (session('error'))
-            <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
+            <div class="p-3 mb-3 font-bold text-white bg-red-500 border rounded-lg shadow-lg">
                 {{ session('error') }}
             </div>
         @endif
 
 
 
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <div class="max-w-4xl p-6 mx-auto bg-white rounded-lg shadow-lg">
             <header class="mb-9">
-                <h1 class="text-3xl font-bold mb-4">Facture Proformat</h1>
+                <h1 class="mb-4 text-3xl font-bold">Facture Proformat</h1>
                 <div class="text-gray-600">
                     <p>Code la de Facture: <span
                             class="font-semibold">#{{ $notification->data['code_unique'] }}</span>
@@ -330,43 +346,43 @@
 
 
             <section class="mb-6 overflow-x-auto">
-                <h2 class="text-xl font-semibold mb-4">Détails de la Facture</h2>
+                <h2 class="mb-4 text-xl font-semibold">Détails de la Facture</h2>
                 <table class="min-w-full bg-white ">
                     <thead>
                         <tr class="w-full bg-gray-200">
-                            <th class="py-2 px-4 border-b">Elements</th>
-                            <th class="py-2 px-4 border-b">Quantité commandé</th>
-                            <th class="py-2 px-4 border-b">Prix Unitaire</th>
-                            <th class="py-2 px-4 border-b">Total</th>
+                            <th class="px-4 py-2 border-b">Elements</th>
+                            <th class="px-4 py-2 border-b">Quantité commandé</th>
+                            <th class="px-4 py-2 border-b">Prix Unitaire</th>
+                            <th class="px-4 py-2 border-b">Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="py-2 px-4 border-b">Produit commandé: {{ $produitfat->name }}</td>
-                            <td class="py-2 px-4 border-b">{{ $notification->data['quantiteC'] }}</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">Produit commandé: {{ $produitfat->name }}</td>
+                            <td class="px-4 py-2 border-b">{{ $notification->data['quantiteC'] }}</td>
+                            <td class="px-4 py-2 border-b">
                                 {{ number_format($this->notification->data['prixProd'], 0, ',', '.') }} FCFA</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">
                                 {{ number_format((int) ($notification->data['quantiteC'] * $this->notification->data['prixProd']), 0, ',', '.') }}
                                 FCFA</td>
                         </tr>
                         <tr>
-                            <td class="py-2 px-4 border-b">Livraiveur: {{ $userFour->name }}</td>
-                            <td class="py-2 px-4 border-b">1</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">Livraiveur: {{ $userFour->name }}</td>
+                            <td class="px-4 py-2 border-b">1</td>
+                            <td class="px-4 py-2 border-b">
                                 {{ number_format($notification->data['prixTrade'], 0, ',', '.') }} FCFA</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">
                                 {{ number_format($notification->data['prixTrade'], 0, ',', '.') }} FCFA</td>
                         </tr>
                     </tbody>
                 </table>
             </section>
 
-            <section class="mb-6 flex justify-between">
-                <div class="w-1/3  p-4 rounded-lg">
+            <section class="flex justify-between mb-6">
+                <div class="w-1/3 p-4 rounded-lg">
                     @if ($notification->reponse)
-                        <div class="flex space-x-2 mt-4">
-                            <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
+                        <div class="flex mt-4 space-x-2">
+                            <div class="relative px-4 py-2 text-white bg-gray-400 rounded-lg">
                                 <!-- Texte du bouton et icône -->
                                 Validé
 
@@ -374,16 +390,16 @@
 
                         </div>
                     @else
-                        <div class="flex space-x-2 mt-4">
+                        <div class="flex mt-4 space-x-2">
                             <button wire:click.prevent='valider'
-                                class="bg-green-800 text-white px-4 py-2 rounded-lg relative">
+                                class="relative px-4 py-2 text-white bg-green-800 rounded-lg">
                                 <!-- Texte du bouton et icône -->
                                 <span wire:loading.remove>
                                     Validez la commande
                                 </span>
                                 <span wire:loading>
                                     Chargement...
-                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                    <svg class="inline-block w-5 h-5 ml-2 animate-spin"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -392,14 +408,14 @@
                                 </span>
                             </button>
                             <button wire:click.prevent='refuserPro'
-                                class="bg-red-800 text-white px-4 py-2 rounded-lg relative">
+                                class="relative px-4 py-2 text-white bg-red-800 rounded-lg">
                                 <!-- Texte du bouton et icône -->
                                 <span wire:loading.remove>
                                     Refusez la commande
                                 </span>
                                 <span wire:loading>
                                     Chargement...
-                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                    <svg class="inline-block w-5 h-5 ml-2 animate-spin"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -417,8 +433,8 @@
                 {{-- Afficher les messages d'erreur --}}
 
 
-                <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
-                    <p class="text-xl  text-center font-bold">Total TTC: <span
+                <div class="flex items-center p-2 bg-gray-100 rounded-lg ">
+                    <p class="text-xl font-bold text-center">Total TTC: <span
                             class="font-bold">{{ number_format((int) ($notification->data['quantiteC'] * $notification->data['prixProd']) + $notification->data['prixTrade'], 0, ',', '.') }}
 
                             FCFA</span></p>
@@ -428,34 +444,34 @@
             </section>
 
             @if (session()->has('error'))
-                <div class="alert text-red-500">
+                <div class="text-red-500 alert">
                     {{ session('error') }}
                 </div>
             @endif
 
             <footer>
-                <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
+                <p class="text-center text-gray-600">Merci pour votre confiance.</p>
             </footer>
         </div>
     @elseif ($notification->type === 'App\Notifications\AllerChercher')
         @if (session('success'))
-            <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
+            <div class="p-3 mb-3 font-bold text-white bg-green-500 border rounded-lg shadow-lg">
                 {{ session('success') }}
             </div>
         @endif
 
         <!-- Afficher les messages d'erreur -->
         @if (session('error'))
-            <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
+            <div class="p-3 mb-3 font-bold text-white bg-red-500 border rounded-lg shadow-lg">
                 {{ session('error') }}
             </div>
         @endif
 
 
 
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <div class="max-w-4xl p-6 mx-auto bg-white rounded-lg shadow-lg">
             <header class="mb-9">
-                <h1 class="text-3xl font-bold mb-4">Facture Proformat</h1>
+                <h1 class="mb-4 text-3xl font-bold">Facture Proformat</h1>
                 <div class="text-gray-600">
                     <p>Code la de Facture: <span class="font-semibold">#{{ $notification->data['code_livr'] }}</span>
                     </p>
@@ -468,43 +484,43 @@
 
 
             <section class="mb-6 overflow-x-auto">
-                <h2 class="text-xl font-semibold mb-4">Détails de la Facture</h2>
+                <h2 class="mb-4 text-xl font-semibold">Détails de la Facture</h2>
                 <table class="min-w-full bg-white ">
                     <thead>
                         <tr class="w-full bg-gray-200">
-                            <th class="py-2 px-4 border-b">Elements</th>
-                            <th class="py-2 px-4 border-b">Quantité commandé</th>
-                            <th class="py-2 px-4 border-b">Prix Unitaire</th>
-                            <th class="py-2 px-4 border-b">Total</th>
+                            <th class="px-4 py-2 border-b">Elements</th>
+                            <th class="px-4 py-2 border-b">Quantité commandé</th>
+                            <th class="px-4 py-2 border-b">Prix Unitaire</th>
+                            <th class="px-4 py-2 border-b">Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="py-2 px-4 border-b">Produit commandé: {{ $produitfat->name }}</td>
-                            <td class="py-2 px-4 border-b">{{ $notification->data['quantite'] }}</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">Produit commandé: {{ $produitfat->name }}</td>
+                            <td class="px-4 py-2 border-b">{{ $notification->data['quantite'] }}</td>
+                            <td class="px-4 py-2 border-b">
                                 {{ number_format($this->notification->data['prixProd'], 0, ',', '.') }} FCFA</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">
                                 {{ number_format((int) ($notification->data['quantite'] * $this->notification->data['prixProd']), 0, ',', '.') }}
                                 FCFA</td>
                         </tr>
                         <tr>
-                            <td class="py-2 px-4 border-b">Fournisseur: {{ $userFour->name }}</td>
-                            <td class="py-2 px-4 border-b">N/A</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">Fournisseur: {{ $userFour->name }}</td>
+                            <td class="px-4 py-2 border-b">N/A</td>
+                            <td class="px-4 py-2 border-b">
                                 N/A
-                            <td class="py-2 px-4 border-b">
+                            <td class="px-4 py-2 border-b">
                                 N/A
                         </tr>
                     </tbody>
                 </table>
             </section>
 
-            <section class="mb-6 flex justify-between">
-                <div class="w-1/3  p-4 rounded-lg">
+            <section class="flex justify-between mb-6">
+                <div class="w-1/3 p-4 rounded-lg">
                     @if ($notification->reponse)
-                        <div class="flex space-x-2 mt-4">
-                            <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
+                        <div class="flex mt-4 space-x-2">
+                            <div class="relative px-4 py-2 text-white bg-gray-400 rounded-lg">
                                 <!-- Texte du bouton et icône -->
                                 Validé
 
@@ -512,16 +528,16 @@
 
                         </div>
                     @else
-                        <div class="flex space-x-2 mt-4">
+                        <div class="flex mt-4 space-x-2">
                             <button wire:click.prevent='valider'
-                                class="bg-green-800 text-white px-4 py-2 rounded-lg relative">
+                                class="relative px-4 py-2 text-white bg-green-800 rounded-lg">
                                 <!-- Texte du bouton et icône -->
                                 <span wire:loading.remove>
                                     Payez au paiement
                                 </span>
                                 <span wire:loading>
                                     Chargement...
-                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                    <svg class="inline-block w-5 h-5 ml-2 animate-spin"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -531,14 +547,14 @@
                             </button>
 
                             <button wire:click.prevent='refuserPro'
-                                class="bg-red-800 text-white px-4 py-2 rounded-lg relative">
+                                class="relative px-4 py-2 text-white bg-red-800 rounded-lg">
                                 <!-- Texte du bouton et icône -->
                                 <span wire:loading.remove>
                                     Refusez la commande
                                 </span>
                                 <span wire:loading>
                                     Chargement...
-                                    <svg class="w-5 h-5 animate-spin inline-block ml-2"
+                                    <svg class="inline-block w-5 h-5 ml-2 animate-spin"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -555,8 +571,8 @@
                 {{-- Afficher les messages d'erreur --}}
 
 
-                <div class=" bg-gray-100 flex items-center p-2 rounded-lg">
-                    <p class="text-xl  text-center font-bold">Total TTC: <span
+                <div class="flex items-center p-2 bg-gray-100 rounded-lg ">
+                    <p class="text-xl font-bold text-center">Total TTC: <span
                             class="font-bold">{{ number_format((int) ($notification->data['quantite'] * $notification->data['prixProd']), 0, ',', '.') }}
 
                             FCFA</span></p>
@@ -566,20 +582,19 @@
             </section>
 
             @if (session()->has('error'))
-                <div class="alert text-red-500">
+                <div class="text-red-500 alert">
                     {{ session('error') }}
                 </div>
             @endif
 
             <footer>
-                <p class="text-gray-600 text-center">Merci pour votre confiance.</p>
+                <p class="text-center text-gray-600">Merci pour votre confiance.</p>
             </footer>
         </div>
-
     @elseif ($notification->type === 'App\Notifications\commandVerif')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-xl font-semibold mb-2">Informations Sur Le Fournisseur</h2>
-            <div class="bg-gray-100 p-4 rounded-lg">
+        <div class="max-w-4xl p-6 mx-auto bg-white rounded-lg shadow-lg">
+            <h2 class="mb-2 text-xl font-semibold">Informations Sur Le Fournisseur</h2>
+            <div class="p-4 bg-gray-100 rounded-lg">
                 <p class="mb-2">Nom du fournisseur: <span
                         class="font-semibold">{{ $namefourlivr->user->name }}</span>
                 </p>
@@ -597,18 +612,18 @@
                 </p>
             </div>
         </div>
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mt-3">
-            <h2 class="text-xl font-semibold my-2">Avis de conformité</h2>
+        <div class="max-w-4xl p-6 mx-auto mt-3 bg-white rounded-lg shadow-lg">
+            <h2 class="my-2 text-xl font-semibold">Avis de conformité</h2>
 
             <div class="space-y-3">
                 <!-- Quantité -->
                 <div class="flex items-center mb-3">
                     <label class="mr-2 text-gray-600 dark:text-neutral-400">Quantité :</label>
                     <input type="radio" id="quantite-oui" name="quantite" value="oui"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="quantite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                     <input type="radio" id="quantite-non" name="quantite" value="non"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="quantite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                 </div>
 
@@ -616,10 +631,10 @@
                 <div class="flex items-center mb-3">
                     <label class="mr-2 text-gray-600 dark:text-neutral-400">Qualité Apparente :</label>
                     <input type="radio" id="qualite-oui" name="qualite" value="oui"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="qualite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                     <input type="radio" id="qualite-non" name="qualite" value="non"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="qualite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                 </div>
 
@@ -627,10 +642,10 @@
                 <div class="flex items-center mb-3">
                     <label class="mr-2 text-gray-600 dark:text-neutral-400">Diversité :</label>
                     <input type="radio" id="diversite-oui" name="diversite" value="oui"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="diversite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                     <input type="radio" id="diversite-non" name="diversite" value="non"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="diversite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                 </div>
             </div>
@@ -640,16 +655,16 @@
 
         </div>
 
-        <div class="max-w-4xl mt-6 flex">
+        <div class="flex max-w-4xl mt-6">
             @if ($notification->reponse)
-                <div class=" bg-gray-300 border p-2 rounded-md">
-                    <p class="text-md font-medium text-center">Réponse envoyée</p>
+                <div class="p-2 bg-gray-300 border rounded-md ">
+                    <p class="font-medium text-center text-md">Réponse envoyée</p>
                 </div>
             @else
                 <button wire:click='mainleve'
-                    class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4"><svg
+                    class="flex p-2 mr-4 font-medium text-white bg-green-700 rounded-md"><svg
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6 mr-2">
+                        stroke="currentColor" class="mr-2 size-6">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
                     </svg>
@@ -659,16 +674,16 @@
                     </span>
                     <span wire:loading>
                         Chargement...
-                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                        <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
                         </svg>
                     </span>
                 </button>
-                <button wire:click='refuseVerif' class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                <button wire:click='refuseVerif' class="flex p-2 font-medium text-white bg-red-700 rounded-md"><svg
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6 mr-2">
+                        stroke="currentColor" class="mr-2 size-6">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                     </svg>
@@ -677,7 +692,7 @@
                     </span>
                     <span wire:loading>
                         Chargement...
-                        <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                        <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -688,11 +703,11 @@
             @endif
         </div>
     @elseif ($notification->type === 'App\Notifications\mainleve')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-3">
+        <div class="max-w-4xl p-6 mx-auto mb-3 bg-white rounded-lg shadow-lg">
 
-            <h2 class="text-xl font-semibold mb-2">Information sur le produit à enlevé et livré</h2>
+            <h2 class="mb-2 text-xl font-semibold">Information sur le produit à enlevé et livré</h2>
 
-            <div class="bg-gray-100 p-4 rounded-lg">
+            <div class="p-4 bg-gray-100 rounded-lg">
                 <p class="mb-2">Nom du produit: <span class="font-semibold">{{ $produitfat->name }}</span></p>
                 <p class="mb-2">Quantité: <span class="font-semibold">{{ $notification->data['quantite'] }}</span>
                 </p>
@@ -716,19 +731,19 @@
             </div>
         </div>
 
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
 
-            <h2 class="text-xl font-semibold mb-2">Avis de conformité</h2>
+            <h2 class="mb-2 text-xl font-semibold">Avis de conformité</h2>
 
             <div class="space-y-3">
                 <!-- Quantité -->
                 <div class="flex items-center mb-3">
                     <label class="mr-2 text-gray-600 dark:text-neutral-400">Quantité :</label>
                     <input type="radio" id="quantite-oui" name="quantite" value="oui"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="quantite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                     <input type="radio" id="quantite-non" name="quantite" value="non"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="quantite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                 </div>
 
@@ -736,10 +751,10 @@
                 <div class="flex items-center mb-3">
                     <label class="mr-2 text-gray-600 dark:text-neutral-400">Qualité Apparente :</label>
                     <input type="radio" id="qualite-oui" name="qualite" value="oui"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="qualite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                     <input type="radio" id="qualite-non" name="qualite" value="non"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="qualite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                 </div>
 
@@ -747,10 +762,10 @@
                 <div class="flex items-center mb-3">
                     <label class="mr-2 text-gray-600 dark:text-neutral-400">Diversité :</label>
                     <input type="radio" id="diversite-oui" name="diversite" value="oui"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="diversite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                     <input type="radio" id="diversite-non" name="diversite" value="non"
-                        class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                        class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                     <label for="diversite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                 </div>
             </div>
@@ -760,8 +775,8 @@
         <form wire:submit.prevent="departlivr" method="POST">
             @csrf
 
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-                <h2 class="text-xl font-semibold mb-2">Estimation de date de livraison <span
+            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+                <h2 class="mb-2 text-xl font-semibold">Estimation de date de livraison <span
                         class="text-red-700">*</span>
 
                     <span class="font-medium">Date prévue de récupération du client:</span>
@@ -774,18 +789,18 @@
                     </span>
                 </h2>
 
-                <div class="lg:w-1/2 w-full mr-2 relative">
+                <div class="relative w-full mr-2 lg:w-1/2">
                     <input type="date" id="datePickerStart" name="dateLivr" wire:model.defer="dateLivr" required
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Ajouter une date de livraison">
                     @error('dateLivr')
-                        <span class="text-red-500 mt-4">{{ $message }}</span>
+                        <span class="mt-4 text-red-500">{{ $message }}</span>
                     @enderror
                 </div>
 
 
                 <!-- Select -->
-                <div class="lg:w-1/2 w-full mr-2 relative mt-4">
+                <div class="relative w-full mt-4 mr-2 lg:w-1/2">
                     <select id="select" wire:model.defer="matine" name="matine"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                         <option value="" disabled selected>Choisir la période de la journée</option>
@@ -796,22 +811,22 @@
 
 
                     @error('matine')
-                        <span class="text-red-500 mt-4">{{ $message }}</span>
+                        <span class="mt-4 text-red-500">{{ $message }}</span>
                     @enderror
                 </div>
 
                 <!-- End Select -->
             </div>
 
-            <div class="max-w-4xl mx-auto flex rounded-lg mb-4">
+            <div class="flex max-w-4xl mx-auto mb-4 rounded-lg">
                 @if ($notification->reponse)
-                    <div class="bg-gray-300 border p-2 rounded-md">
-                        <p class="text-md font-medium text-center">Réponse envoyée</p>
+                    <div class="p-2 bg-gray-300 border rounded-md">
+                        <p class="font-medium text-center text-md">Réponse envoyée</p>
                     </div>
                 @else
-                    <button type="submit" class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
+                    <button type="submit" class="flex p-2 mr-4 font-medium text-white bg-green-700 rounded-md">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
+                            stroke-width="1.5" stroke="currentColor" class="mr-2 size-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                         </svg>
@@ -821,7 +836,7 @@
                         </span>
                         <span wire:loading>
                             Chargement...
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -830,9 +845,9 @@
                     </button>
 
                     <button wire:click='refuseVerifLivreur'
-                        class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                        class="flex p-2 font-medium text-white bg-red-700 rounded-md"><svg
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6 mr-2">
+                            stroke="currentColor" class="mr-2 size-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>
@@ -841,7 +856,7 @@
                         </span>
                         <span wire:loading>
                             Chargement...
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -869,8 +884,8 @@
             });
         </script>
     @elseif ($notification->type === 'App\Notifications\attenteclient')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Verification du livreur</h2>
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            <h2 class="mb-4 text-xl font-semibold">Verification du livreur</h2>
 
 
             <form wire:submit.prevent="verifyCode" method="POST">
@@ -878,15 +893,15 @@
                 <div class="flex w-full">
                     <input type="text" name="code_verif" wire:model.defer="code_verif"
                         placeholder="Entrez le code de livraison"
-                        class="peer py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                        class="block w-full px-4 py-3 text-sm bg-gray-100 border-transparent rounded-lg peer focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
 
 
 
                     <button type="submit" wire:loading.attr="disabled"
-                        class="bg-green-400 text-white font-semibold rounded-md px-2 ml-3">
+                        class="px-2 ml-3 font-semibold text-white bg-green-400 rounded-md">
                         <span wire:loading.remove>Valider</span>
                         <span wire:loading>
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -897,17 +912,17 @@
             </form>
 
             @error('code_verif')
-                <span class="text-red-500 mt-4">{{ $message }}</span>
+                <span class="mt-4 text-red-500">{{ $message }}</span>
             @enderror
 
             @if (session()->has('succes'))
-                <div class="text-green-500 mt-4">
+                <div class="mt-4 text-green-500">
                     {{ session('succes') }}
                 </div>
             @endif
 
             @if (session()->has('error'))
-                <div class="text-red-500 mt-4">
+                <div class="mt-4 text-red-500">
                     {{ session('error') }}
                 </div>
             @endif
@@ -915,11 +930,11 @@
         </div>
 
         @if (session()->has('succes'))
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-                <h2 class="text-xl font-semibold mb-4">Information sur le livreur</h2>
+            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+                <h2 class="mb-4 text-xl font-semibold">Information sur le livreur</h2>
 
-                <div class=" w-full flex-col">
-                    <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
+                <div class="flex-col w-full ">
+                    <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
 
                         <img src="{{ asset($livreur->photo) }}" alt="photot" class="">
 
@@ -927,13 +942,13 @@
 
                     <div class="flex flex-col">
                         <p class="mb-3 text-md">Nom du client: <span
-                                class=" font-semibold">{{ $client->name }}</span>
+                                class="font-semibold ">{{ $client->name }}</span>
                         </p>
 
                         <p class="mb-3 text-md">Contact du client: <span
-                                class=" font-semibold">{{ $client->phone }}</span></p>
+                                class="font-semibold ">{{ $client->phone }}</span></p>
                         <p class="mb-3 text-md">Produit à recuperer: <span
-                                class= " font-semibold">{{ $produitfat->name }}</span></p>
+                                class= "font-semibold ">{{ $produitfat->name }}</span></p>
 
 
 
@@ -944,8 +959,8 @@
             </div>
         @endif
     @elseif ($notification->type === 'App\Notifications\mainlevefour')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Verification du livreur</h2>
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            <h2 class="mb-4 text-xl font-semibold">Verification du livreur</h2>
             @php
                 // Assurez-vous que la variable $notification est définie et accessible
                 $livreur = \App\Models\User::find($notification->data['livreur']);
@@ -960,15 +975,15 @@
                 <div class="flex w-full">
                     <input type="text" name="code_verif" wire:model.defer="code_verif"
                         placeholder="Entrez le code de livraison"
-                        class="peer py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                        class="block w-full px-4 py-3 text-sm bg-gray-100 border-transparent rounded-lg peer focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
 
 
 
                     <button type="submit" wire:loading.attr="disabled"
-                        class="bg-green-400 text-white font-semibold rounded-md px-2 ml-3">
+                        class="px-2 ml-3 font-semibold text-white bg-green-400 rounded-md">
                         <span wire:loading.remove>Valider</span>
                         <span wire:loading>
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -979,17 +994,17 @@
             </form>
 
             @error('code_verif')
-                <span class="text-red-500 mt-4">{{ $message }}</span>
+                <span class="mt-4 text-red-500">{{ $message }}</span>
             @enderror
 
             @if (session()->has('succes'))
-                <div class="text-green-500 mt-4">
+                <div class="mt-4 text-green-500">
                     {{ session('succes') }}
                 </div>
             @endif
 
             @if (session()->has('error'))
-                <div class="text-red-500 mt-4">
+                <div class="mt-4 text-red-500">
                     {{ session('error') }}
                 </div>
             @endif
@@ -997,11 +1012,11 @@
         </div>
 
         @if (session()->has('succes'))
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-                <h2 class="text-xl font-semibold mb-4">{{ $notification->data['id_client'] }}</h2>
+            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+                <h2 class="mb-4 text-xl font-semibold">{{ $notification->data['id_client'] }}</h2>
 
-                <div class=" w-full flex-col">
-                    <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
+                <div class="flex-col w-full ">
+                    <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
 
                         {{-- <img src="{{ asset($livreur->photo) }}" alt="photot" class=""> --}}
 
@@ -1009,15 +1024,15 @@
 
                     <div class="flex flex-col">
                         <p class="mb-3 text-md">Nom du livreur: <span
-                                class=" font-semibold">{{ $livreur->name }}</span>
+                                class="font-semibold ">{{ $livreur->name }}</span>
                         </p>
                         <p class="mb-3 text-md">Adress du livreur: <span
-                                class=" font-semibold">{{ $livreur->address }}</span></p>
+                                class="font-semibold ">{{ $livreur->address }}</span></p>
                         <p class="mb-3 text-md">Contact du livreur: <span
-                                class=" font-semibold">{{ $livreur->phone }}</span></p>
-                        <p class="mb-3 text-md">Engin du livreur : <span class=" font-semibold">Moto</span></p>
+                                class="font-semibold ">{{ $livreur->phone }}</span></p>
+                        <p class="mb-3 text-md">Engin du livreur : <span class="font-semibold ">Moto</span></p>
                         <p class="mb-3 text-md">Produit à recuperer: <span
-                                class= " font-semibold">{{ $produitfat->name }}</span></p>
+                                class= "font-semibold ">{{ $produitfat->name }}</span></p>
 
 
 
@@ -1028,8 +1043,8 @@
             </div>
         @endif
     @elseif ($notification->type === 'App\Notifications\VerifUser')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Vérification Du Client</h2>
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            <h2 class="mb-4 text-xl font-semibold">Vérification Du Client</h2>
 
 
             <form wire:submit.prevent="verifyCode" method="POST">
@@ -1037,13 +1052,13 @@
                 <div class="flex w-full">
                     <input type="text" name="code_verif" wire:model.defer="code_verif"
                         placeholder="Entrez le code de livraison"
-                        class="peer py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                        class="block w-full px-4 py-3 text-sm bg-gray-100 border-transparent rounded-lg peer focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
 
                     <button type="submit" wire:loading.attr="disabled"
-                        class="bg-green-400 text-white font-semibold rounded-md px-2 ml-3">
+                        class="px-2 ml-3 font-semibold text-white bg-green-400 rounded-md">
                         <span wire:loading.remove>Valider</span>
                         <span wire:loading>
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -1054,17 +1069,17 @@
             </form>
 
             @error('code_verif')
-                <span class="text-red-500 mt-4">{{ $message }}</span>
+                <span class="mt-4 text-red-500">{{ $message }}</span>
             @enderror
 
             @if (session()->has('succes'))
-                <div class="text-green-500 mt-4">
+                <div class="mt-4 text-green-500">
                     {{ session('succes') }}
                 </div>
             @endif
 
             @if (session()->has('error'))
-                <div class="text-red-500 mt-4">
+                <div class="mt-4 text-red-500">
                     {{ session('error') }}
                 </div>
             @endif
@@ -1072,11 +1087,11 @@
         </div>
 
         @if (session()->has('succes'))
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-                <h2 class="text-xl font-semibold mb-4">Information sur le client</h2>
+            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+                <h2 class="mb-4 text-xl font-semibold">Information sur le client</h2>
 
-                <div class=" w-full flex-col">
-                    <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
+                <div class="flex-col w-full ">
+                    <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
 
                         <img src="{{ asset($client->photo) }}" alt="photot" class="">
 
@@ -1084,15 +1099,15 @@
 
                     <div class="flex flex-col">
                         <p class="mb-3 text-md">Nom du client: <span
-                                class=" font-semibold">{{ $client->name }}</span>
+                                class="font-semibold ">{{ $client->name }}</span>
                         </p>
                         {{-- <p class="mb-3 text-md">Adress du client: <span
-                                class=" font-semibold">{{ $client->address }}</span></p> --}}
+                                class="font-semibold ">{{ $client->address }}</span></p> --}}
                         <p class="mb-3 text-md">Contact du client: <span
-                                class=" font-semibold">{{ $client->phone }}</span></p>
-                        {{-- <p class="mb-3 text-md">Engin du client : <span class=" font-semibold">Moto</span></p> --}}
+                                class="font-semibold ">{{ $client->phone }}</span></p>
+                        {{-- <p class="mb-3 text-md">Engin du client : <span class="font-semibold ">Moto</span></p> --}}
                         <p class="mb-3 text-md">Produit à recuperer: <span
-                                class= " font-semibold">{{ $produitfat->name }}</span></p>
+                                class= "font-semibold ">{{ $produitfat->name }}</span></p>
                     </div>
 
 
@@ -1100,8 +1115,8 @@
             </div>
         @endif
     @elseif ($notification->type === 'App\Notifications\mainleveclient')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Estimation de reception du colis</h2>
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            <h2 class="mb-4 text-xl font-semibold">Estimation de reception du colis</h2>
 
             <p class="text-md">Date : <span
                     class="font-semibold">{{ \Carbon\Carbon::parse($date_livr)->translatedFormat('d F Y') }} (
@@ -1109,8 +1124,8 @@
             </p>
 
         </div>
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Verification du livreur</h2>
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            <h2 class="mb-4 text-xl font-semibold">Verification du livreur</h2>
 
 
             <form wire:submit.prevent="verifyCode" method="POST">
@@ -1118,15 +1133,15 @@
                 <div class="flex w-full">
                     <input type="text" name="code_verif" wire:model.defer="code_verif"
                         placeholder="Entrez le code de livraison"
-                        class="peer py-3 px-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                        class="block w-full px-4 py-3 text-sm bg-gray-100 border-transparent rounded-lg peer focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
 
 
 
                     <button type="submit" wire:loading.attr="disabled"
-                        class="bg-green-400 text-white font-semibold rounded-md px-2 ml-3">
+                        class="px-2 ml-3 font-semibold text-white bg-green-400 rounded-md">
                         <span wire:loading.remove>Valider</span>
                         <span wire:loading>
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -1137,17 +1152,17 @@
             </form>
 
             @error('code_verif')
-                <span class="text-red-500 mt-4">{{ $message }}</span>
+                <span class="mt-4 text-red-500">{{ $message }}</span>
             @enderror
 
             @if (session()->has('succes'))
-                <div class="text-green-500 mt-4">
+                <div class="mt-4 text-green-500">
                     {{ session('succes') }}
                 </div>
             @endif
 
             @if (session()->has('error'))
-                <div class="text-red-500 mt-4">
+                <div class="mt-4 text-red-500">
                     {{ session('error') }}
                 </div>
             @endif
@@ -1160,11 +1175,11 @@
         @endphp
 
         @if (session()->has('succes'))
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-                <h2 class="text-xl font-semibold mb-4">Information sur le livreur</h2>
+            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+                <h2 class="mb-4 text-xl font-semibold">Information sur le livreur</h2>
 
-                <div class=" w-full flex-col">
-                    <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mr-4 mb-6">
+                <div class="flex-col w-full ">
+                    <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
 
                         {{-- <img src="{{ asset($livreur->photo) }}" alt="photo" class=""> --}}
 
@@ -1172,15 +1187,15 @@
 
                     <div class="flex flex-col">
                         <p class="mb-3 text-md">Nom du livreur: <span
-                                class=" font-semibold">{{ $livreur->name }}</span>
+                                class="font-semibold ">{{ $livreur->name }}</span>
                         </p>
                         <p class="mb-3 text-md">Adress du livreur: <span
-                                class=" font-semibold">{{ $livreur->address }}</span></p>
+                                class="font-semibold ">{{ $livreur->address }}</span></p>
                         <p class="mb-3 text-md">Contact du livreur: <span
-                                class=" font-semibold">{{ $livreur->phone }}</span></p>
-                        <p class="mb-3 text-md">Engin du livreur : <span class=" font-semibold">Moto</span></p>
+                                class="font-semibold ">{{ $livreur->phone }}</span></p>
+                        <p class="mb-3 text-md">Engin du livreur : <span class="font-semibold ">Moto</span></p>
                         <p class="mb-3 text-md">Produit à recuperer: <span
-                                class= " font-semibold">{{ $produitfat->name }}</span></p>
+                                class= "font-semibold ">{{ $produitfat->name }}</span></p>
 
 
 
@@ -1190,19 +1205,19 @@
                 </div>
             </div>
 
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
 
-                <h2 class="text-xl font-semibold mb-2">Avis de conformité</h2>
+                <h2 class="mb-2 text-xl font-semibold">Avis de conformité</h2>
 
                 <div class="space-y-3">
                     <!-- Quantité -->
                     <div class="flex items-center mb-3">
                         <label class="mr-2 text-gray-600 dark:text-neutral-400">Quantité :</label>
                         <input type="radio" id="quantite-oui" name="quantite" value="oui"
-                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                            class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                         <label for="quantite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                         <input type="radio" id="quantite-non" name="quantite" value="non"
-                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                            class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                         <label for="quantite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                     </div>
 
@@ -1210,10 +1225,10 @@
                     <div class="flex items-center mb-3">
                         <label class="mr-2 text-gray-600 dark:text-neutral-400">Qualité Apparente :</label>
                         <input type="radio" id="qualite-oui" name="qualite" value="oui"
-                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                            class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                         <label for="qualite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                         <input type="radio" id="qualite-non" name="qualite" value="non"
-                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                            class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                         <label for="qualite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                     </div>
 
@@ -1221,24 +1236,24 @@
                     <div class="flex items-center mb-3">
                         <label class="mr-2 text-gray-600 dark:text-neutral-400">Diversité :</label>
                         <input type="radio" id="diversite-oui" name="diversite" value="oui"
-                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                            class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                         <label for="diversite-oui" class="mr-4 text-gray-600 dark:text-neutral-400">OUI</label>
                         <input type="radio" id="diversite-non" name="diversite" value="non"
-                            class="shrink-0 mr-2 border-gray-200 rounded text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                            class="mr-2 text-blue-600 border-gray-200 rounded shrink-0 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
                         <label for="diversite-non" class="text-gray-600 dark:text-neutral-400">NON</label>
                     </div>
                 </div>
 
             </div>
 
-            <div class="max-w-4xl mx-auto flex">
+            <div class="flex max-w-4xl mx-auto">
                 @if ($notification->reponse)
-                    <div class=" bg-gray-300 border p-2 rounded-md">
-                        <p class="text-md font-medium text-center">Réponse envoyée</p>
+                    <div class="p-2 bg-gray-300 border rounded-md ">
+                        <p class="font-medium text-center text-md">Réponse envoyée</p>
                     </div>
                 @else
                     <button wire:click='acceptColis'
-                        class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
+                        class="flex p-2 mr-4 font-medium text-white bg-green-700 rounded-md">
 
 
                         <span wire:loading.remove>
@@ -1246,7 +1261,7 @@
                         </span>
                         <span wire:loading>
                             Chargement...
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -1255,9 +1270,9 @@
                     </button>
 
                     <button wire:click='refuseColis'
-                        class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                        class="flex p-2 font-medium text-white bg-red-700 rounded-md"><svg
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6 mr-2">
+                            stroke="currentColor" class="mr-2 size-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>
@@ -1266,7 +1281,7 @@
                         </span>
                         <span wire:loading>
                             Chargement...
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -1279,16 +1294,16 @@
 
         @endif
     @elseif ($notification->type === 'App\Notifications\colisaccept')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 class="text-xl font-semibold mb-4">Livraison terminé</h2>
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            <h2 class="mb-4 text-xl font-semibold">Livraison terminé</h2>
             <p class="mb-3 text-md">date de livraison: <span
-                    class=" font-semibold">{{ \Carbon\Carbon::parse($notification->created_at)->translatedFormat('d F Y') }}</span>
+                    class="font-semibold ">{{ \Carbon\Carbon::parse($notification->created_at)->translatedFormat('d F Y') }}</span>
             </p>
             <p class="mb-3 text-md">Code de la livraison: <span
-                    class=" font-semibold">{{ $notification->data['code_unique'] }}</span></p>
+                    class="font-semibold ">{{ $notification->data['code_unique'] }}</span></p>
 
-            <div class="flex w-full justify-center">
-                <div class=" w-80 h-80 overflow-hidden mr-3">
+            <div class="flex justify-center w-full">
+                <div class="mr-3 overflow-hidden w-80 h-80">
                     <svg class="w-full text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -1303,31 +1318,31 @@
 
         </div>
     @elseif ($notification->type === 'App\Notifications\Retrait')
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg mb-4">
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
 
             @if (session()->has('success'))
-                <div class="text-green-500 mt-4">
+                <div class="mt-4 text-green-500">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if (session()->has('error'))
-                <div class="text-red-500 mt-4">
+                <div class="mt-4 text-red-500">
                     {{ session('error') }}
                 </div>
             @endif
-            <h2 class="text-xl font-medium mb-4">{{ $demandeur->name }}, vous a fait une demande de retrait</h2>
+            <h2 class="mb-4 text-xl font-medium">{{ $demandeur->name }}, vous a fait une demande de retrait</h2>
 
-            <h1 class="font-semibold text-4xl">{{ $amount }} CFA</h1>
+            <h1 class="text-4xl font-semibold">{{ $amount }} CFA</h1>
 
-            <div class="w-full flex mt-5">
+            <div class="flex w-full mt-5">
                 @if ($notification->reponse)
-                    <div class=" bg-gray-300 border p-2 rounded-md">
-                        <p class="text-md font-medium text-center">Réponse envoyée</p>
+                    <div class="p-2 bg-gray-300 border rounded-md ">
+                        <p class="font-medium text-center text-md">Réponse envoyée</p>
                     </div>
                 @else
                     <button wire:click='accepteRetrait'
-                        class="p-2 flex text-white font-medium bg-green-700 rounded-md mr-4">
+                        class="flex p-2 mr-4 font-medium text-white bg-green-700 rounded-md">
 
 
                         <span wire:loading.remove>
@@ -1335,7 +1350,7 @@
                         </span>
                         <span wire:loading>
                             Chargement...
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -1344,9 +1359,9 @@
                     </button>
 
                     <button wire:click='refusRetrait'
-                        class="p-2 text-white flex font-medium bg-red-700 rounded-md"><svg
+                        class="flex p-2 font-medium text-white bg-red-700 rounded-md"><svg
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6 mr-2">
+                            stroke="currentColor" class="mr-2 size-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.137 12.137 0 0 1-.068-1.285c0-2.848.992-5.464 2.649-7.521C5.287 4.247 5.886 4 6.504 4h4.016a4.5 4.5 0 0 1 1.423.23l3.114 1.04a4.5 4.5 0 0 0 1.423.23h1.294M7.498 15.25c.618 0 .991.724.725 1.282A7.471 7.471 0 0 0 7.5 19.75 2.25 2.25 0 0 0 9.75 22a.75.75 0 0 0 .75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 0 0 2.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384m-10.253 1.5H9.7m8.075-9.75c.01.05.027.1.05.148.593 1.2.925 2.55.925 3.977 0 1.487-.36 2.89-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398-.306.774-1.086 1.227-1.918 1.227h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 0 0 .303-.54" />
                         </svg>
@@ -1355,7 +1370,7 @@
                         </span>
                         <span wire:loading>
                             Chargement...
-                            <svg class="w-5 h-5 animate-spin inline-block ml-2" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="inline-block w-5 h-5 ml-2 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
@@ -1369,6 +1384,280 @@
 
 
         </div>
+    @elseif ($notification->type === 'App\Notifications\DepositSos')
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            <!-- Messages de notification -->
+            @if (session()->has('success'))
+                <div class="p-4 mb-4 text-green-700 bg-green-100 border border-green-300 rounded-md">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="p-4 mb-4 text-red-700 bg-red-100 border border-red-300 rounded-md">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <!-- Affichage des erreurs de validation -->
+            @if ($errors->any())
+                <div class="p-4 mb-4 text-red-700 bg-red-100 border border-red-300 rounded-md">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <!-- Titre -->
+            <h2 class="mb-6 text-2xl font-semibold text-center text-gray-800">Détails de la demande</h2>
+
+            <!-- Informations de l'utilisateur -->
+            <div class="flex items-center mb-6 space-x-4">
+                <div class="flex-shrink-0">
+                    <img src="{{ $userDeposit->photo ?? 'https://via.placeholder.com/100' }}"
+                        alt="Photo de l'utilisateur" class="w-16 h-16 border border-gray-300 rounded-full">
+                </div>
+                <div>
+                    <p class="text-lg font-medium text-gray-900">{{ $userDeposit->name ?? 'Utilisateur inconnu' }}</p>
+                    <p class="text-sm text-gray-500">{{ $userDeposit->email ?? 'Email non disponible' }}</p>
+                </div>
+            </div>
+
+            <!-- Détails du dépôt -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="p-4 text-center border rounded-lg bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-700">Montant demandé</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ number_format($amountDeposit ?? 0, 0, ',', ' ') }}
+                        CFA</p>
+                </div>
+                <div class="p-4 text-center border rounded-lg bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-700">R.O.I Attendu</h3>
+                    <p class="text-2xl font-bold text-green-600">{{ number_format($roiDeposit ?? 0, 0, ',', ' ') }}
+                        CFA</p>
+                </div>
+            </div>
+
+            <!-- Sélection de l'opérateur -->
+            <label for="operator" class="block mb-2 text-gray-700">Opérateur</label>
+            <select id="operator" class="w-full p-2 mb-6 border border-gray-300 rounded-md" required
+                wire:model="operator">
+                <option value="" disabled selected>Choisir l'opérateur où vous voulez recevoir l'argent</option>
+                <option value="Wave">Wave</option>
+                <option value="Orange Money">Orange Money</option>
+                <option value="Moov Money">Moov Money</option>
+                <option value="MTN Money">MTN Money</option>
+                <option value="Tresor Pay">Tresor Pay</option>
+            </select>
+            @error('operator')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+
+            <!-- Numéro de réception -->
+            <label for="phonenumber" class="block mb-2 text-gray-700">Le numéro de réception</label>
+            <input type="text" id="phonenumber" wire:model="phonenumber"
+                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Entrez le numéro de réception">
+            @error('phonenumber')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+
+            <!-- Boutons d'action -->
+            <div class="flex justify-around mt-4">
+                @if ($existingRequest)
+                    <p class="font-bold text-red-600 ">Demande Expiré !</p>
+                @else
+                    @if ($notification->reponse)
+                        <div
+                            class="px-4 py-2 text-sm font-medium text-black bg-gray-300 border border-transparent rounded-md shadow-sm cursor-not-allowed">
+                            Réponse envoyée
+                        </div>
+                    @else
+                        <button wire:click="acceptDeposit"
+                            class="px-6 py-2 font-semibold text-white bg-green-500 rounded-md shadow-md hover:bg-green-600">
+                            Accepter
+                        </button>
+                        <button wire:click="rejectDeposit"
+                            class="px-6 py-2 font-semibold text-white bg-red-500 rounded-md shadow-md hover:bg-red-600">
+                            Refuser
+                        </button>
+                    @endif
+
+                @endif
+
+            </div>
+        </div>
+    @elseif ($notification->type === 'App\Notifications\DepositRecu')
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            @if (session()->has('success'))
+                <div class="p-4 mb-4 text-green-700 bg-green-100 border border-green-300 rounded-md">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="p-4 mb-4 text-red-700 bg-red-100 border border-red-300 rounded-md">
+                    {{ session('error') }}
+                </div>
+            @endif
+            <!-- Titre -->
+            <h2 class="mb-6 text-2xl font-semibold text-center text-gray-800">Détails de la demande</h2>
+
+            <!-- Informations de l'utilisateur -->
+            <div class="flex items-center mb-6 space-x-4">
+                <div class="flex-shrink-0">
+                    <img src="{{ $userDeposit->photo ?? 'https://via.placeholder.com/100' }}"
+                        alt="Photo de l'utilisateur" class="w-16 h-16 border border-gray-300 rounded-full">
+                </div>
+                <div>
+                    <p class="text-lg font-medium text-gray-900">{{ $userDeposit->name ?? 'Utilisateur inconnu' }}
+                    </p>
+                    <p class="text-sm text-gray-500">{{ $userDeposit->email ?? 'Email non disponible' }}</p>
+                </div>
+            </div>
+
+            <!-- Informations sur la demande -->
+            <div class="p-4 mb-4 border rounded-lg bg-gray-50">
+                <h3 class="mb-2 font-medium text-gray-600 text-md">Numéro de réception de l'argent</h3>
+                <p class="text-xl font-semibold text-gray-700">{{ $phonenumber }}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="p-4 text-center border rounded-lg bg-gray-50">
+                    <h3 class="text-lg font-medium text-gray-700">Opérateur</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ $operatorRecu }}</p>
+                </div>
+                <div class="p-4 text-center border rounded-lg bg-gray-50">
+                    <h3 class="text-lg font-medium text-gray-700">Montant à envoyer</h3>
+                    <p class="text-2xl font-bold text-green-600">{{ number_format($roiDeposit ?? 0, 0, ',', ' ') }}
+                        CFA</p>
+                </div>
+            </div>
+
+            <!-- Zone de téléchargement du reçu -->
+            <div class="mt-4">
+                <div class="relative">
+                    <label for="receipt" class="block text-sm font-medium text-gray-700">Télécharger le reçu</label>
+                    @if (!$receipt)
+                        <!-- Zone de téléchargement stylisée -->
+                        <label for="receipt"
+                            class="flex flex-col items-center justify-center w-full h-40 mt-1 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-400"
+                                viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 9a3.75 3.75 0 1 0 0 7.5A3.75 3.75 0 0 0 12 9Z" />
+                                <path fill-rule="evenodd"
+                                    d="M9.344 3.071a49.52 49.52 0 0 1 5.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71.386.054.77.113 1.152.177 1.432.239 2.429 1.493 2.429 2.909V18a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3V9.574c0-1.416.997-2.67 2.429-2.909.382-.064.766-.123 1.151-.178a1.56 1.56 0 0 0 1.11-.71l.822-1.315a2.942 2.942 0 0 1 2.332-1.39ZM6.75 12.75a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0Zm12-1.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span class="mt-2 text-sm text-gray-600">Cliquez ou déposez le reçu</span>
+                        </label>
+                    @else
+                        <!-- Affichage de l'image téléchargée et bouton de suppression -->
+                        <div class="relative">
+                            <img src="{{ $receipt->temporaryUrl() }}" alt="Aperçu du reçu"
+                                class="w-full h-auto border border-gray-300 rounded-md shadow-lg">
+                            <button wire:click="$set('receipt', null)" type="button"
+                                class="absolute p-1 text-white bg-red-600 rounded-full top-2 right-2 hover:bg-red-700 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    @endif
+                    <input wire:model="receipt" type="file" id="receipt" class="hidden" accept="image/*">
+                    @error('receipt')
+                        <span class="text-sm text-red-500">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex justify-around mt-4">
+                @if ($notification->reponse)
+                    <div
+                        class="px-4 py-2 text-sm font-medium text-black bg-gray-300 border border-transparent rounded-md shadow-sm cursor-not-allowed">
+                        Réponse envoyée
+                    </div>
+                @else
+                    <button wire:click="sendRecu"
+                        class="px-6 py-2 font-semibold text-white bg-blue-500 rounded-md shadow-md hover:bg-blue-600">
+                        Envoyer
+                    </button>
+                    <button wire:click="resetForm"
+                        class="px-6 py-2 font-semibold text-black bg-gray-300 rounded-md shadow-md hover:bg-gray-400">
+                        Annuler
+                    </button>
+                @endif
+            </div>
+        </div>
+    @elseif ($notification->type === 'App\Notifications\DepositSend')
+        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+            @if (session()->has('success'))
+                <div class="p-4 mb-4 text-green-700 bg-green-100 border border-green-300 rounded-md">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="p-4 mb-4 text-red-700 bg-red-100 border border-red-300 rounded-md">
+                    {{ session('error') }}
+                </div>
+            @endif
+            <!-- Titre -->
+            <h2 class="mb-6 text-2xl font-semibold text-center text-gray-800">Verification du recu</h2>
+
+            <!-- Informations de l'utilisateur -->
+            <div class="flex items-center mb-6 space-x-4">
+                <div class="flex-shrink-0">
+                    <img src="{{ $userDeposit->photo ?? 'https://via.placeholder.com/100' }}"
+                        alt="Photo de l'utilisateur" class="w-16 h-16 border border-gray-300 rounded-full">
+                </div>
+                <div>
+                    <p class="text-lg font-medium text-gray-900">{{ $userDeposit->name ?? 'Utilisateur inconnu' }}
+                    </p>
+                    <p class="text-sm text-gray-500">{{ $userDeposit->email ?? 'Email non disponible' }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="p-4 text-center border rounded-lg bg-gray-50">
+                    <h3 class="text-lg font-medium text-gray-700">Montant envoyé</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ number_format($amountDeposit ?? 0, 0, ',', ' ') }}
+                    </p>
+                </div>
+                <div class="p-4 text-center border rounded-lg bg-gray-50">
+                    <h3 class="text-lg font-medium text-gray-700">Montant à recevoir</h3>
+                    <p class="text-2xl font-bold text-green-600">{{ number_format($roiDeposit ?? 0, 0, ',', ' ') }}
+                        CFA</p>
+                </div>
+            </div>
+
+
+            <div class="flex justify-around mt-4">
+                @if ($notification->reponse)
+                    <div
+                        class="px-4 py-2 text-sm font-medium text-black bg-gray-300 border border-transparent rounded-md shadow-sm cursor-not-allowed">
+                        Réponse envoyée
+                    </div>
+                @else
+                    <button wire:click="montantRecu"
+                        class="px-6 py-2 font-semibold text-white bg-green-500 rounded-md shadow-md hover:bg-green-600">
+                        j'ai recu
+                    </button>
+                    <button wire:click="nonrecu"
+                        class="px-6 py-2 font-semibold text-white bg-red-500 rounded-md shadow-md hover:bg-red-600">
+                        Non, je n'es pas recu
+                    </button>
+                @endif
+            </div>
+
+
+
+
+        </div>
+
+
 
     @endif
 </div>
