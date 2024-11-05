@@ -1,12 +1,12 @@
 <div>
     <div class="p-4">
         @if (session('success'))
-            <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
+            <div class="px-4 py-2 mb-4 text-green-800 bg-green-200 rounded-md">
                 {{ session('success') }}
             </div>
         @endif
         @if ($errors->any())
-            <div class="bg-red-200 text-red-800 px-4 py-2 rounded-md mb-4">
+            <div class="px-4 py-2 mb-4 text-red-800 bg-red-200 rounded-md">
                 <ul>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -17,15 +17,15 @@
 
 
 
-        <div class="grid gap-y-4 mb-6 w-full grid-cols-1 md:grid-cols-2">
+        <div class="grid w-full grid-cols-1 mb-6 gap-y-4 md:grid-cols-2">
 
 
             <div class="flex flex-col col-span-1">
                 <!-- Card Container -->
                 <div
-                    class="bg-gradient-to-br from-black to-blue-500 rounded-lg shadow-lg p-6 w-full md:w-96 h-56 text-white relative">
+                    class="relative w-full h-56 p-6 text-white rounded-lg shadow-lg bg-gradient-to-br from-black to-blue-500 md:w-96">
                     <!-- Card Chip Icon -->
-                    <div class=" top-4 flex justify-between ">
+                    <div class="flex justify-between  top-4">
 
                         <img src="https://as1.ftcdn.net/v2/jpg/00/76/54/60/1000_F_76546001_fEMIgXIZEYF5HiNXwXzP0gI83FFCQSqv.jpg"
                             alt="Cart sim" class="h-10 rounded-md">
@@ -35,13 +35,13 @@
                     </div>
 
                     <!-- Card Number -->
-                    <div class="mt-8 text-2xl font-mono font-semibold tracking-widest"
+                    <div class="mt-8 font-mono text-2xl font-semibold tracking-widest"
                         style="font-family: 'Montserrat', sans-serif;">
                         {{ $this->formatAccountNumber($userWallet->Numero_compte) }}
                     </div>
 
                     <!-- Card Holder Info -->
-                    <div class="flex justify-between items-center mt-6">
+                    <div class="flex items-center justify-between mt-6">
                         <div>
                             <p class="text-sm">{{ strtoupper($user->name) }}</p>
                             <p class="text-sm">12/24</p>
@@ -56,12 +56,12 @@
                 </div>
 
 
-                <h2 class="text-xl text-slate-800 font-semibold mt-4 font-mono">Actions rapide</h2>
+                <h2 class="mt-4 font-mono text-xl font-semibold text-slate-800">Actions rapide</h2>
 
-                <div class="w-full md:w-96 border border-gray-300 rounded-lg p-3 bg-white mt-4 flex justify-around">
+                <div class="flex justify-around w-full p-3 mt-4 bg-white border border-gray-300 rounded-lg md:w-96">
                     <button wire:click="deposit">
-                        <div class="flex flex-col justify-center items-center">
-                            <div class="bg-green-500 p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="flex items-center justify-center w-10 h-10 p-2 text-white bg-green-500 rounded-full"
                                 data-tooltip-target="tooltip-w">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -76,13 +76,13 @@
                                 class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
                                 Recharger son compte <div class="tooltip-arrow" data-popper-arrow></div>
                             </div>
-                            <p class="text-md font-normal text-gray-600">Déposer</p>
+                            <p class="font-normal text-gray-600 text-md">Déposer</p>
                         </div>
                     </button>
 
                     <button wire:click="envoie">
-                        <div class="flex flex-col justify-center items-center">
-                            <div class=" bg-blue-500 p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="flex items-center justify-center w-10 h-10 p-2 text-white bg-blue-500 rounded-full "
                                 data-tooltip-target="tooltip-A">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-4">
@@ -95,13 +95,13 @@
                                 class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
                                 Envoie d'argent <div class="tooltip-arrow" data-popper-arrow></div>
                             </div>
-                            <p class="text-md font-normal text-gray-600">Envoyer</p>
+                            <p class="font-normal text-gray-600 text-md">Envoyer</p>
 
                         </div>
                     </button>
                     <button wire:click="retrait">
-                        <div class="flex flex-col justify-center items-center">
-                            <div class="bg-purple-500 p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="flex items-center justify-center w-10 h-10 p-2 text-white bg-purple-500 rounded-full"
                                 data-tooltip-target="tooltip-B">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-4">
@@ -115,13 +115,13 @@
                                 Retrait d'argent <div class="tooltip-arrow" data-popper-arrow></div>
                             </div>
 
-                            <p class="text-md font-normal text-gray-600">Retirer</p>
+                            <p class="font-normal text-gray-600 text-md">Retirer</p>
 
                         </div>
                     </button>
                     <button wire:click="transfert">
-                        <div class="flex flex-col justify-center items-center">
-                            <div class="bg-black p-2 w-10 h-10 rounded-full flex justify-center items-center text-white"
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="flex items-center justify-center w-10 h-10 p-2 text-white bg-black rounded-full"
                                 data-tooltip-target="tooltip-C">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -138,7 +138,7 @@
                                 Transfert entre compte <div class="tooltip-arrow" data-popper-arrow></div>
                             </div>
 
-                            <p class="text-md font-normal text-gray-600">Transfert</p>
+                            <p class="font-normal text-gray-600 text-md">Transfert</p>
 
                         </div>
 
@@ -151,14 +151,14 @@
             <div class="flex-1 col-span-1 ">
 
 
-                <div class="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
-                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1 md:col-span-2">
+                <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2">
+                    <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl md:col-span-2">
                         <!-- Contenu du premier élément ici -->
                         <div class="flex flex-col ">
-                            <div class="w-full flex justify-between">
+                            <div class="flex justify-between w-full">
                                 <div class="flex items-center">
                                     <div
-                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
+                                        class="flex items-center justify-center w-8 h-8 p-2 text-white bg-gray-600 rounded-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -168,13 +168,13 @@
 
 
                                     </div>
-                                    <h2 class="ml-3 font-bold text-md text-gray-800">Compte courant</h2>
+                                    <h2 class="ml-3 font-bold text-gray-800 text-md">Compte courant</h2>
 
                                 </div>
 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                     data-tooltip-target="tooltip-coc" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    stroke="currentColor" class="text-gray-600 size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                                 </svg>
@@ -190,19 +190,19 @@
                             </div>
 
 
-                            <p class="text-md font-meduim text-gray-800 mt-4">
+                            <p class="mt-4 text-gray-800 text-md font-meduim">
                                 {{ number_format($userWallet->balance, 2, ',', ' ') }} FCFA</p>
 
 
                         </div>
                     </div>
-                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                    <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl">
                         <!-- Contenu du premier élément ici -->
                         <div class="flex flex-col ">
-                            <div class="w-full flex justify-between">
+                            <div class="flex justify-between w-full">
                                 <div class="flex items-center">
                                     <div
-                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
+                                        class="flex items-center justify-center w-8 h-8 p-2 text-white bg-gray-600 rounded-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -211,13 +211,13 @@
 
 
                                     </div>
-                                    <h2 class="ml-3 font-bold text-md text-gray-800">COI</h2>
+                                    <h2 class="ml-3 font-bold text-gray-800 text-md">COI</h2>
 
                                 </div>
 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                     data-tooltip-target="tooltip-coi" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    stroke="currentColor" class="text-gray-600 size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                                 </svg>
@@ -229,19 +229,19 @@
 
                             </div>
 
-                            <p class="text-md font-meduim text-gray-800 mt-4">
+                            <p class="mt-4 text-gray-800 text-md font-meduim">
                                 {{ number_format($coi->Solde, 2, ',', ' ') }} FCFA</p>
 
 
                         </div>
                     </div>
-                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                    <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl">
                         <!-- Contenu du deuxième élément ici -->
                         <div class="flex flex-col ">
-                            <div class="w-full flex justify-between">
+                            <div class="flex justify-between w-full">
                                 <div class="flex items-center">
                                     <div
-                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
+                                        class="flex items-center justify-center w-8 h-8 p-2 text-white bg-gray-600 rounded-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -251,12 +251,12 @@
 
 
                                     </div>
-                                    <h2 class="ml-3 font-bold text-md text-gray-800">CEDD</h2>
+                                    <h2 class="ml-3 font-bold text-gray-800 text-md">CEDD</h2>
 
                                 </div>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                     data-tooltip-target="tooltip-cedd" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    stroke="currentColor" class="text-gray-600 size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                                 </svg>
@@ -269,19 +269,19 @@
 
                             </div>
 
-                            <p class="text-md font-meduim text-gray-800 mt-4">
+                            <p class="mt-4 text-gray-800 text-md font-meduim">
                                 {{ number_format($cedd->Solde, 2, ',', ' ') }} FCFA</p>
 
 
                         </div>
                     </div>
-                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                    <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl">
                         <!-- Contenu du troisième élément ici -->
                         <div class="flex flex-col ">
-                            <div class="w-full flex justify-between">
+                            <div class="flex justify-between w-full">
                                 <div class="flex items-center">
                                     <div
-                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
+                                        class="flex items-center justify-center w-8 h-8 p-2 text-white bg-gray-600 rounded-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -291,13 +291,13 @@
 
 
                                     </div>
-                                    <h2 class="ml-3 font-bold text-md text-gray-800">CFA</h2>
+                                    <h2 class="ml-3 font-bold text-gray-800 text-md">CFA</h2>
 
                                 </div>
 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                     data-tooltip-target="tooltip-cfa" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    stroke="currentColor" class="text-gray-600 size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                                 </svg>
@@ -309,19 +309,19 @@
 
                             </div>
 
-                            <p class="text-md font-meduim text-gray-800 mt-4">
+                            <p class="mt-4 text-gray-800 text-md font-meduim">
                                 {{ number_format($cfa->Solde, 2, ',', ' ') }} FCFA</p>
 
 
                         </div>
                     </div>
-                    <div class="p-4 bg-white border border-gray-300 rounded-xl col-span-1">
+                    <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl">
                         <!-- Contenu du quatrième élément ici -->
                         <div class="flex flex-col ">
-                            <div class="w-full flex justify-between">
+                            <div class="flex justify-between w-full">
                                 <div class="flex items-center">
                                     <div
-                                        class="bg-gray-600 p-2 w-8 h-8 rounded-full flex justify-center items-center text-white">
+                                        class="flex items-center justify-center w-8 h-8 p-2 text-white bg-gray-600 rounded-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -331,13 +331,13 @@
 
 
                                     </div>
-                                    <h2 class="ml-3 font-bold text-md text-gray-800">CEFP</h2>
+                                    <h2 class="ml-3 font-bold text-gray-800 text-md">CEFP</h2>
 
                                 </div>
 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                     data-tooltip-target="tooltip-cefp" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" class="size-6 text-gray-600">
+                                    stroke="currentColor" class="text-gray-600 size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                                 </svg>
@@ -349,7 +349,7 @@
 
                             </div>
 
-                            <p class="text-md font-meduim text-gray-800 mt-4">
+                            <p class="mt-4 text-gray-800 text-md font-meduim">
                                 {{ number_format($cefd->Solde, 2, ',', ' ') }} FCFA</p>
 
 
@@ -366,15 +366,15 @@
 
         @if ($currentPage === 'transaction')
             <!-- Transactions Section -->
-            <div class="bg-white p-4 rounded-lg shadow-sm">
+            <div class="p-4 bg-white rounded-lg shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-semibold">Transactions</h2>
-                    <div class="lg:flex items-center space-x-2  hidden">
+                    <div class="items-center hidden space-x-2 lg:flex">
 
                         <div class="relative">
                             <input type="text" placeholder="Rechercher..."
                                 class="px-4 py-2 border border-gray-300 rounded-lg">
-                            <svg class="w-5 h-5 text-gray-400 absolute top-3 right-3" fill="none"
+                            <svg class="absolute w-5 h-5 text-gray-400 top-3 right-3" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 4.35a7.5 7.5 0 010 10.3z"></path>
@@ -389,7 +389,7 @@
 
                 <div>
                     @if ($transacCount == 0)
-                        <div class="text-center w-full h-80 flex-col justify-center items-center">
+                        <div class="flex-col items-center justify-center w-full text-center h-80">
                             <div class="flex justify-center mb-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" class="w-12 h-12 text-gray-500 dark:text-gray-400">
@@ -397,7 +397,7 @@
                                         d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                                 </svg>
                             </div>
-                            <h2 class="text-2xl font-semibold mb-2">Aucune transaction</h2>
+                            <h2 class="mb-2 text-2xl font-semibold">Aucune transaction</h2>
                             <p class="text-gray-500">Vous verrez les historiques des transactions ici !</p>
                         </div>
                     @else
@@ -412,7 +412,7 @@
                             @endphp
 
                             @if ($isRelevantTransaction)
-                                <div class="flex justify-between items-center hover:bg-gray-100 p-4 rounded-xl cursor-pointer"
+                                <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 rounded-xl"
                                     data-modal-target="static-modal-{{ $transaction->id }}"
                                     data-modal-toggle="static-modal-{{ $transaction->id }}">
                                     <div class="flex items-center">
@@ -451,8 +451,8 @@
                                             }
                                         @endphp
                                         <div
-                                            class="bg-gray-200 lg:flex hidden justify-center items-center lg:w-10 lg:h-10 w-8 h-8 rounded-full mr-4">
-                                            <svg class="w-4 h-4 text-black font-bold"
+                                            class="items-center justify-center hidden w-8 h-8 mr-4 bg-gray-200 rounded-full lg:flex lg:w-10 lg:h-10">
+                                            <svg class="w-4 h-4 font-bold text-black"
                                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke-width="1.5" stroke="currentColor">
                                                 {!! $iconSvg !!}
@@ -495,7 +495,7 @@
                                                     '+' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
                                                 $amountClass = 'text-green-500';
                                             } elseif (
-                                                ($transaction->type == 'Gele' ||
+                                                (
                                                     $transaction->type == 'Envoie' ||
                                                     $transaction->type == 'withdrawal') &&
                                                 $transaction->sender_user_id == $userId
@@ -503,6 +503,10 @@
                                                 $amountDisplay =
                                                     '-' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
                                                 $amountClass = 'text-red-500';
+                                            }elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId) {
+                                                $amountDisplay =
+                                                    '-' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
+                                                $amountClass = 'text-blue-500';
                                             }
                                         @endphp
                                         @if ($amountDisplay)
@@ -517,15 +521,15 @@
                                     data-modal-backdrop="static-modal-{{ $transaction->id }}" tabindex="-1"
                                     aria-hidden="true"
                                     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-                                    <div class="bg-white w-full max-w-lg mx-4 rounded-lg shadow-lg p-6">
+                                    <div class="w-full max-w-lg p-6 mx-4 bg-white rounded-lg shadow-lg">
 
                                         <div class="flex items-center justify-between ">
 
-                                            <h2 class="text-xl font-semibold text-gray-800 mb-4">Détails de la
+                                            <h2 class="mb-4 text-xl font-semibold text-gray-800">Détails de la
                                                 Transaction
                                             </h2>
                                             <button type="button"
-                                                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white"
                                                 data-modal-hide="static-modal-{{ $transaction->id }}">
                                                 <svg class="w-3 h-3" aria-hidden="true"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none"
