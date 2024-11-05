@@ -134,8 +134,6 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('acceuil', [ProduitServiceController::class, 'homeBiicf'])->name('biicf.acceuil');
     Route::get('recheche', [ProduitServiceController::class, 'search'])->name('biicf.search');
 
-
-
     Route::get('notif', [NotificationController::class, 'index'])->name('biicf.notif');
 
     Route::get('api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');

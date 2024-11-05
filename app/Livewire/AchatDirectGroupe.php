@@ -16,11 +16,13 @@ use App\Events\NotificationSent;
 use App\Models\AchatGrouper;
 use App\Models\Consommation;
 use App\Models\CrediScore;
+use App\Models\gelement;
 use App\Models\NotificationLog;
 use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
 use App\Notifications\AchatGroupBiicf;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Illuminate\Support\Str;
@@ -101,7 +103,7 @@ class AchatDirectGroupe extends Component
             'prix' => 'required|numeric',
         ]);
 
-        dd($validated);
+        // dd($validated);
 
         Log::info('Validation réussie.', $validated);
 
@@ -133,11 +135,14 @@ class AchatDirectGroupe extends Component
         }
 
         try {
+            // Commencez une transaction de base de données
+            DB::beginTransaction();
+
             // Utilisez `selectedSpec` pour obtenir la spécification sélectionnée
-            $selectedSpec = $this->selectedSpec;
+            // $selectedSpec = $this->selectedSpec;
 
             // Assurez-vous que `selectedSpec` est bien défini
-            $specificites = !empty($selectedSpec) ? $selectedSpec : null;
+            // $specificites = !empty($selectedSpec) ? $selectedSpec : null;
 
             $achat = AchatDirectModel::create([
                 'nameProd' => $validated['nameProd'],
@@ -151,30 +156,38 @@ class AchatDirectGroupe extends Component
                 'dayPeriod' => $validated['dayPeriod'],
                 'userTrader' => $validated['userTrader'],
                 'userSender' => $validated['userSender'],
-                'specificite' => $specificites,
+                'specificite' => $this->produit->specification,
                 'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
                 'code_unique' => $this->code_unique,
 
             ]);
-            // dd($achat);
+
+
+            // Mettre à jour le solde du portefeuille
             $userWallet->decrement('balance', $montantTotal);
 
-            $transaction = new Transaction();
-            $transaction->sender_user_id = $userId;
-            $transaction->receiver_user_id = $validated['userTrader'];
-            $transaction->type = 'Gele';
-            $transaction->amount = $montantTotal;
-            $transaction->save();
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
+            Log::info('Référence de transaction générée: ' . $reference_id);
 
-            Log::info('Transaction enregistrée.', [
-                'transactionId' => $transaction->id,
+            // Mettre à jour la table de gelement de fond
+            gelement::create([
+                'id_wallet' => $userWallet->id,
                 'amount' => $montantTotal,
+                'reference_id' => $reference_id,
             ]);
+
+            // Créer deux transactions
+            $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Gele Pour ' . 'Achat de ' . $validated['nameProd'], 'effectué', 'COC');
+            // $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Réception de fond', 'effectué', $cfa->type_compte);
+            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+
 
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
             Notification::send($owner, new AchatBiicf($achat));
+
             // Après l'envoi de la notification
             event(new NotificationSent($owner));
 
@@ -186,9 +199,12 @@ class AchatDirectGroupe extends Component
                 $notification->update(['type_achat' => $selectedOption]);
             }
 
-            $user = User::find($userId);
-            $this->reset(['quantité', 'localite', 'selectedSpec']);
-            session()->flash('success', 'Achat passé avec succès.');
+            // $user = User::find($userId);
+            $this->reset(['quantité', 'localite']);
+
+            // Valider la transaction de base de données
+            DB::commit();
+
             // Émettre un événement après la soumission
             $this->dispatch('formSubmitted', 'achat effectué avec success');
         } catch (\Exception $e) {
@@ -197,10 +213,31 @@ class AchatDirectGroupe extends Component
                 'userId' => $userId,
                 'data' => $validated,
             ]);
-            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
+            session()->flash('error', 'Une erreur est survenue ');
         }
     }
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
+        $transaction->save();
+    }
 
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
+    }
 
     public function requestCredit()
     {

@@ -1,6 +1,11 @@
 <div>
 
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect">
+        @if (session('error'))
+            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-800 dark:bg-gray-800 dark:text-red-400" >
+                <span class="font-medium text-white">{{ session('error') }}</span>
+            </div>
+        @endif
         <div x-data="{ selectedOption: @entangle('selectedOption') }">
 
             <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
@@ -102,8 +107,7 @@
                                     <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure
                                         de
                                         début</label>
-                                    <input type="time" id="timePickerStart" name="timeStart"
-                                        wire:model="timeStart"
+                                    <input type="time" id="timePickerStart" name="timeStart" wire:model="timeStart"
                                         class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                 </div>
 

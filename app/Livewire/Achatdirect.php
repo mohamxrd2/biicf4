@@ -9,14 +9,19 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\CountdownNotificationAd;
 use App\Notifications\livraisonAchatdirect;
+use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Livewire\WithFileUploads;
+use Intervention\Image\Facades\Image;
 use Livewire\Component;
 
 class Achatdirect extends Component
 {
+    use WithFileUploads;
+
     public $notification;
     public $id;
     public $nombreLivr;
@@ -34,6 +39,8 @@ class Achatdirect extends Component
     public $clientContinent;
     public $clientSous_Region;
     public $clientDepartement;
+    public $photoProd1;
+    public $textareaValue;
 
 
 
@@ -125,10 +132,13 @@ class Achatdirect extends Component
         $this->livreursCount = $this->livreurs->count();
     }
 
-    public function accepter($textareaContent = null)
+    public function accepter()
     {
-        // Récupérez le contenu du textarea depuis la requête
-        $textareaContent = $textareaContent ?? '';
+        $validated = $this->validate([
+            'photoProd1' => 'required|image|max:1024', // Limite de taille du fichier à 1 MB
+            'textareaValue' => 'required', // Limite de taille du fichier à 1 MB
+        ]);
+
 
         // Vérifiez si l'utilisateur a un portefeuille
         $userId = Auth::id();
@@ -155,6 +165,9 @@ class Achatdirect extends Component
         $code_livr = $this->code_unique ?? $this->genererCodeAleatoire(10);
         $produit = ProduitService::find($this->notification->data['idProd'] ?? $this->idProd2);
 
+        // Téléchargez la photo et obtenez le nom de fichier
+        $photoName = $this->handlePhotoUpload('photoProd1');
+
         // Préparez les données pour la notification
         $data = [
             'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
@@ -165,10 +178,12 @@ class Achatdirect extends Component
             'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'] ?? null,
             'code_livr' => $code_livr,
             'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix ?? null,
-            'textareaContent' => $textareaContent,
+            'textareaContent' => $validated['textareaValue'], // Correction ici
+            'photoProd1' =>$photoName ,
             'dateTot' => null,
             'dateTard' => null,
         ];
+        // dd($data );
         Log::info('data', ['data' => $data]);
 
 
@@ -187,11 +202,27 @@ class Achatdirect extends Component
             }
         }
 
-
         session()->flash('success', 'Achat accepté.');
 
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
+    }
+
+    protected function handlePhotoUpload($photoField)
+    {
+        if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {
+            $photo = $this->$photoField;
+            $photoName = Carbon::now()->timestamp . '_' . $photoField . '.' . $photo->extension();
+
+            // Redimensionner l'image
+            $imageResized = Image::make($photo->getRealPath())->fit(500, 400);
+
+            // Sauvegarder l'image
+            $imageResized->save(public_path('post/all/' . $photoName), 90);
+
+            return $photoName; // Retourne le nom du fichier pour mise à jour ultérieure
+        }
+        return null; // Retourne null si aucun fichier valide
     }
 
     public function takeaway()

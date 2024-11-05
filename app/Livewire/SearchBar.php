@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\ProduitService;
+use App\Models\SearchQuery;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
@@ -58,10 +60,11 @@ class SearchBar extends Component
             'qte' => $this->qte,
             'prix' => $this->prix,
         ];
-        // La méthode `render` sera automatiquement exécutée après pour rafraîchir les résultats
 
-        // Émettre un événement pour fermer le modal
-        // $this->dispatch('closePage');
+        SearchQuery::create([
+            'query' => $this->keyword,
+            'nombre_posts' => 0, // Assurez-vous de définir une valeur par défaut
+        ]);
     }
 
     public function render()
@@ -127,10 +130,19 @@ class SearchBar extends Component
         // Pagination des résultats
         $results = $produits->paginate(10);
 
+        $searchQueries = SearchQuery::select('query', DB::raw('COUNT(*) as count'))
+            ->groupBy('query')
+            ->orderBy('count', 'desc') // Trie par le nombre de requêtes
+            ->limit(5)
+            ->get();
+
+
+
         Log::info('Résultats paginés récupérés', ['results_count' => $results->count()]);
 
         return view('livewire.search-bar', [
             'produits' => $results,
+            'searchQueries' => $searchQueries,
         ]);
     }
 }

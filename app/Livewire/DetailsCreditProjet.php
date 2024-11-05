@@ -42,7 +42,7 @@ class DetailsCreditProjet extends Component
 
         // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
         $this->userDetails = User::find($this->userId);
-        $userNumber = $this->userDetails->phone;
+        $userNumber = $this->userDetails->phone ?? null;
 
         // Récupérer l'ID de l'utilisateur connecté
         $user_connecte = Auth::id();

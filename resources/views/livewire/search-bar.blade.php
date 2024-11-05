@@ -2,7 +2,7 @@
 
 
 
-    <section class="bg-gray-50 py-8 antialiased dark:bg-gray-900 md:py-12">
+    <section class="bg-gray-50 py-8 antialiased dark:bg-gray-900 md:py-12 rounded-lg">
         <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
             <!-- Heading & Filters -->
             <div class="mb-4 items-end justify-between space-y-4 sm:flex sm:space-y-0 md:mb-8">
@@ -29,7 +29,8 @@
                                             stroke-width="2" d="m9 5 7 7-7 7" />
                                     </svg>
                                     <a href="#"
-                                        class="ms-1 text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white md:ms-2">Products</a>
+                                        class="ms-1 text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white md:ms-2">Produits
+                                        & Services</a>
                                 </div>
                             </li>
                         </ol>
@@ -74,7 +75,7 @@
                                 <div
                                     class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                                        Static modal
+                                        Filtres
                                     </h3>
                                     <button type="button"
                                         class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -111,100 +112,30 @@
                                     <div id="myTabContent">
                                         <div class="grid grid-cols-2 gap-4 md:grid-cols-3" id="brand"
                                             role="tabpanel" aria-labelledby="brand-tab">
-
                                             <div
                                                 class="space-y-3.5 capitalize text-xs font-normal mt-5 mb-2 text-gray-600 dark:text-white/80">
-                                                <a href="#">
-                                                    <div class="flex items-center gap-3 p">
-                                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
-                                                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none" viewBox="0 0 24 24">
-                                                            <path stroke="currentColor" stroke-linecap="round"
-                                                                stroke-width="2"
-                                                                d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-                                                        </svg>
-                                                        <div class="flex-1">
-                                                            <h4
-                                                                class="font-semibold text-black dark:text-white text-sm">
-                                                                artificial intelligence
-                                                            </h4>
-                                                            <div class="mt-0.5"> 1,245,62 post </div>
+                                                @foreach ($searchQueries as $searchQuery)
+                                                    <a href="#">
+                                                        <div class="flex items-center gap-3 p">
+                                                            <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none" viewBox="0 0 24 24">
+                                                                <path stroke="currentColor" stroke-linecap="round"
+                                                                    stroke-width="2"
+                                                                    d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+                                                            </svg>
+                                                            <div class="flex-1">
+                                                                <h4
+                                                                    class="font-semibold text-black dark:text-white text-sm">
+                                                                    {{ $searchQuery->query }}
+                                                                </h4>
+                                                                <div class="mt-0.5">{{ $searchQuery->count }}
+                                                                    post{{ $searchQuery->count > 1 ? 's' : '' }}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </a>
-
-                                                <a href="#" class="block">
-                                                    <div class="flex items-center gap-3">
-                                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
-                                                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none" viewBox="0 0 24 24">
-                                                            <path stroke="currentColor" stroke-linecap="round"
-                                                                stroke-width="2"
-                                                                d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-                                                        </svg>
-                                                        <div class="flex-1">
-                                                            <h4
-                                                                class="font-semibold text-black dark:text-white text-sm">
-                                                                Web
-                                                                developers</h4>
-                                                            <div class="mt-0.5"> 1,624 post </div>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                                <a href="#" class="block">
-                                                    <div class="flex items-center gap-3">
-                                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
-                                                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none" viewBox="0 0 24 24">
-                                                            <path stroke="currentColor" stroke-linecap="round"
-                                                                stroke-width="2"
-                                                                d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-                                                        </svg>
-                                                        <div class="flex-1">
-                                                            <h4
-                                                                class="font-semibold text-black dark:text-white text-sm">
-                                                                Ui
-                                                                Designers</h4>
-                                                            <div class="mt-0.5"> 820 post </div>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                                <a href="#" class="block">
-                                                    <div class="flex items-center gap-3">
-                                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
-                                                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none" viewBox="0 0 24 24">
-                                                            <path stroke="currentColor" stroke-linecap="round"
-                                                                stroke-width="2"
-                                                                d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-                                                        </svg>
-                                                        <div class="flex-1">
-                                                            <h4
-                                                                class="font-semibold text-black dark:text-white text-sm">
-                                                                affiliate marketing </h4>
-                                                            <div class="mt-0.5"> 480 post </div>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                                <a href="#" class="block">
-                                                    <div class="flex items-center gap-3">
-                                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
-                                                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none" viewBox="0 0 24 24">
-                                                            <path stroke="currentColor" stroke-linecap="round"
-                                                                stroke-width="2"
-                                                                d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-                                                        </svg>
-                                                        <div class="flex-1">
-                                                            <h4
-                                                                class="font-semibold text-black dark:text-white text-sm">
-                                                                affiliate marketing </h4>
-                                                            <div class="mt-0.5"> 480 post </div>
-                                                        </div>
-                                                    </div>
-                                                </a>
-
-
+                                                    </a>
+                                                @endforeach
                                             </div>
 
                                         </div>
@@ -356,102 +287,61 @@
                 </div>
             </div>
             <main class="max-w-6xl mx-auto px-4 py-8">
-                <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Produits & Services</h1>
+                {{-- <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Produits & Services</h1> --}}
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Projet 1 -->
-                    <div
-                        class="group bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                        <div class="relative overflow-hidden">
-                            <img src="https://picsum.photos/seed/1/400/300" alt="Projet 1"
-                                class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110">
-                            <div
-                                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300">
+                    @foreach ($produits as $produit)
+                        <div
+                            class="group bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                            <div class="relative overflow-hidden">
+                                <img src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="{{ $produit->name }}"
+                                    class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110">
+                                <div
+                                    class="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300">
+                                </div>
                             </div>
-                        </div>
-                        <div class="p-6 transform transition-all duration-300">
-                            <h3 class="text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-600">Projet E-commerce
-                            </h3>
-                            <p class="text-gray-600 mb-4">Site e-commerce responsive avec panier d'achat et paiement en ligne.
-                            </p>
-                            <div class="flex flex-wrap gap-2">
-                                <span
-                                    class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm transform transition hover:scale-105">React</span>
-                                <span
-                                    class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm transform transition hover:scale-105">Node.js</span>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
-            </main>
-            <div class="mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-2 xl:grid-cols-4">
-
-                @foreach ($produits as $produit)
-                    <div
-                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <div class="h-56 w-full">
-                            <a href="{{ route('biicf.postdet', $produit->id) }}">
-                                <img class="rounded-lg mx-auto h-full dark:hidden"
-                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                                    alt="{{ $produit->name }}" />
-                                <img class="rounded-lg mx-auto hidden h-full dark:block"
-                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                                    alt="{{ $produit->name }}" />
-                            </a>
-                        </div>
-                        <div class="p-2">
-                            <div class="flex items-center justify-between">
+                            <div class="p-6 transform transition-all duration-300">
                                 <a href="{{ route('biicf.postdet', $produit->id) }}"
-                                    class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white hover:text-purple-600 transition-colors duration-300 ease-in-out">
+                                    class="text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-600">
                                     {{ $produit->name }}
                                 </a>
-                                @if ($produit->type == 'Produit')
-                                    <span
-                                        class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-green-800 bg-green-100">Produit</span>
-                                @else
-                                    <span
-                                        class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium leading-none text-yellow-800 bg-yellow-100">Service</span>
-                                @endif
+                                <p class="text-gray-600 mb-4">{{ number_format($produit->prix, 0, ',', ' ') }} XOF
+                                </p>
+                                <hr class="my-3">
+
+                                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline-block text-gray-400"
+                                        fill="currentColor" viewBox="0 0 24 24">
+                                        <path fill-rule="evenodd"
+                                            d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <span>{{ $produit->comnServ }}</span>
+                                    <span class="text-gray-500">&bull;</span>
+                                    <span>{{ $produit->villeServ }}</span>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                    {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}
+                                </p>
+                                <div class="flex flex-wrap gap-2">
+                                    @if ($produit->type == 'Produit')
+                                        <span
+                                            class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm transform transition hover:scale-105">Produit</span>
+                                    @else
+                                        <span
+                                            class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm transform transition hover:scale-105">Service</span>
+                                    @endif
+                                </div>
                             </div>
-                            <p class="mt-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                {{ number_format($produit->prix, 0, ',', ' ') }} XOF
-                            </p>
-
-                            <hr class="my-3">
-
-                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline-block text-gray-400"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path fill-rule="evenodd"
-                                        d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                <span>{{ $produit->comnServ }}</span>
-                                <span class="text-gray-500">&bull;</span>
-                                <span>{{ $produit->villeServ }}</span>
-                            </div>
-
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}
-                            </p>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
+            </main>
 
-            </div>
-            <div class="w-full text-center">
-                <button type="button"
-                    class="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">Show
-                    more</button>
-            </div>
         </div>
 
-
     </section>
-
-
-
 
 </div>

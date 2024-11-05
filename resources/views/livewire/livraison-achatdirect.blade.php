@@ -90,17 +90,9 @@
                 </div>
                 <!-- Section images à gauche -->
 
-                @if ($produit)
-                    <div class="grid grid-cols-2 gap-4">
-                        <img class="h-28 w-auto  rounded-lg" style="margin-left: 6rem;" src="{{ asset('post/all/' . $produit->photoProd1) }}"
-                            alt="">
-                        <img class="h-28 w-auto rounded-lg" src="{{ asset('post/all/' . $produit->photoProd2) }}"
-                            alt="">
-                        <img class="h-28 w-auto rounded-lg" style="margin-left: 6rem;" src="{{ asset('post/all/' . $produit->photoProd3) }}"
-                            alt="">
-                        <img class="h-28 w-auto rounded-lg" src="{{ asset('post/all/' . $produit->photoProd4) }}"
-                            alt="">
-                    </div>
+                @if ($notification->data['photoProd1'])
+                    <img class="h-52 w-auto  rounded-lg" style="margin-left: 6rem;"
+                        src="{{ asset('post/all/' . $notification->data['photoProd1']) }}" alt="">
                 @endif
                 <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
                     class="mb-3 text-blue-700 hover:underline flex items-center">
