@@ -63,7 +63,6 @@ class SearchBar extends Component
 
         SearchQuery::create([
             'query' => $this->keyword,
-            'nombre_posts' => 0, // Assurez-vous de définir une valeur par défaut
         ]);
     }
 
