@@ -6,11 +6,11 @@
 
 
 
-    
+
     <div class="lg:col-span-2 col-span-3">
 
         @livewire('search-bar')
-
+        
     </div>
 
 
