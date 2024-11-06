@@ -10,15 +10,19 @@ use App\Models\Coi;
 use App\Models\CommentTaux;
 use App\Models\Countdown;
 use App\Models\CrediScore;
+use App\Models\credits;
 use App\Models\DemandeCredi;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserPromir;
 use App\Models\Wallet;
+use App\Notifications\RefusAchat;
+use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -232,7 +236,7 @@ class DetailsCredit extends Component
             //     $reference_id = $this->generateIntegerReference();
 
             //     $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué', $coi->type_compte);
-            //     $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué', $cfa->type_compte);
+            //     $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué', $cfa->type_compte);
             // }
 
             // Committer la transaction
@@ -347,10 +351,29 @@ class DetailsCredit extends Component
                 $cfa->save();
             }
 
+            //  Calculer la portion journalière en fonction du montant et de la durée.
+            // Assurez-vous que les dates sont bien des instances de Carbon
+            $dateDebut = Carbon::parse($this->demandeCredit->date_debut);
+            $dateFin = Carbon::parse($this->demandeCredit->duree);
+            $jours = $dateDebut->diffInDays($dateFin);
+            $portion_journaliere = $jours > 0 ? $montant / $jours : 0;
+
+            // Mettre à jour ou créer un enregistrement dans la table credits
+            credits::create([
+                'emprunteur_id' => $this->userId,
+                'investisseurs' => [Auth::id()],
+                'montant' => $montant,
+                'taux_interet' => $demandeCredit->taux,
+                'date_debut' => $demandeCredit->date_debut,
+                'date_fin' => $demandeCredit->duree,
+                'portion_journaliere' => $portion_journaliere,
+                'statut' => 'en_cours',
+            ]);
+
             $reference_id = $this->generateIntegerReference();
 
             $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Reception', $montant, $reference_id,  'reception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'reception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
 
             // Mettre à jour l'état de la notification en approuvé
@@ -486,7 +509,12 @@ class DetailsCredit extends Component
     public function refuser()
     {
         $this->notification->update(['reponse' => 'refuser']);
-        session()->flash('error', 'Demande de credit refuser avec succes.');
+        session()->flash('error', 'Demande de credit refuser avec succes.L\'utilisateur seras informe de votre reponse ');
+
+        $owner = User::find($this->user_id);
+
+        $reason = "L'achat dépasse la limite de crédit autorisée.";
+        Notification::send($owner, new RefusAchat($reason));
     }
     public function joursRestants()
     {

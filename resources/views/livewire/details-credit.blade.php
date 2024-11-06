@@ -467,7 +467,7 @@
                     <!-- Montant total (avec pourcentage) -->
                     <div class="flex flex-col text-center">
                         <span class="font-semibold text-lg">{{ $demandeCredit->duree }}</span>
-                        <span class="text-gray-500 text-sm">Periode de remboursement</span>
+                        <span class="text-gray-500 text-sm"> Fin de Remboursement</span>
                     </div>
                     <div class="sm:col-span-2">
 

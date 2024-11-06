@@ -156,4 +156,8 @@ class AdminWalletController extends Controller
     {
         return view('biicf.retrait');
     }
+    public function cfa()
+    {
+        return view('biicf.cfa');
+    }
 }

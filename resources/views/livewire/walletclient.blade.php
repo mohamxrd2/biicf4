@@ -277,43 +277,46 @@
                     </div>
                     <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl">
                         <!-- Contenu du troisième élément ici -->
-                        <div class="flex flex-col ">
-                            <div class="flex justify-between w-full">
-                                <div class="flex items-center">
-                                    <div
-                                        class="flex items-center justify-center w-8 h-8 p-2 text-white bg-gray-600 rounded-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M14.121 7.629A3 3 0 0 0 9.017 9.43c-.023.212-.002.425.028.636l.506 3.541a4.5 4.5 0 0 1-.43 2.65L9 16.5l1.539-.513a2.25 2.25 0 0 1 1.422 0l.655.218a2.25 2.25 0 0 0 1.718-.122L15 15.75M8.25 12H12m9 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                        </svg>
+                        <a href="{{ route('biicf.cfa') }}" wire:navigate>
+                            <div class="flex flex-col ">
+                                <div class="flex justify-between w-full">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="flex items-center justify-center w-8 h-8 p-2 text-white bg-gray-600 rounded-full">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M14.121 7.629A3 3 0 0 0 9.017 9.43c-.023.212-.002.425.028.636l.506 3.541a4.5 4.5 0 0 1-.43 2.65L9 16.5l1.539-.513a2.25 2.25 0 0 1 1.422 0l.655.218a2.25 2.25 0 0 0 1.718-.122L15 15.75M8.25 12H12m9 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
 
 
+
+                                        </div>
+                                        <h2 class="ml-3 font-bold text-gray-800 text-md">CFA</h2>
 
                                     </div>
-                                    <h2 class="ml-3 font-bold text-gray-800 text-md">CFA</h2>
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        data-tooltip-target="tooltip-cfa" viewBox="0 0 24 24" stroke-width="1.5"
+                                        stroke="currentColor" class="text-gray-600 size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                    </svg>
+                                    <div id="tooltip-cfa" role="tooltip"
+                                        class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                        Collecte des Financements Accordés<div class="tooltip-arrow" data-popper-arrow>
+                                        </div>
+                                    </div>
 
                                 </div>
 
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    data-tooltip-target="tooltip-cfa" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" class="text-gray-600 size-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                                </svg>
-                                <div id="tooltip-cfa" role="tooltip"
-                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                    Collecte des Financements Accordés<div class="tooltip-arrow" data-popper-arrow>
-                                    </div>
-                                </div>
+                                <p class="mt-4 text-gray-800 text-md font-meduim">
+                                    {{ number_format($cfa->Solde, 2, ',', ' ') }} FCFA</p>
+
 
                             </div>
-
-                            <p class="mt-4 text-gray-800 text-md font-meduim">
-                                {{ number_format($cfa->Solde, 2, ',', ' ') }} FCFA</p>
-
-
-                        </div>
+                        </a>
                     </div>
                     <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl">
                         <!-- Contenu du quatrième élément ici -->
@@ -495,15 +498,17 @@
                                                     '+' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
                                                 $amountClass = 'text-green-500';
                                             } elseif (
-                                                (
-                                                    $transaction->type == 'Envoie' ||
+                                                ($transaction->type == 'Envoie' ||
                                                     $transaction->type == 'withdrawal') &&
                                                 $transaction->sender_user_id == $userId
                                             ) {
                                                 $amountDisplay =
                                                     '-' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
                                                 $amountClass = 'text-red-500';
-                                            }elseif ($transaction->type == 'Gele' && $transaction->sender_user_id == $userId) {
+                                            } elseif (
+                                                $transaction->type == 'Gele' &&
+                                                $transaction->sender_user_id == $userId
+                                            ) {
                                                 $amountDisplay =
                                                     '-' . number_format($transaction->amount, 2, ',', ' ') . ' FCFA';
                                                 $amountClass = 'text-blue-500';
