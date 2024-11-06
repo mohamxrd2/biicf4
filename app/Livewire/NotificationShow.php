@@ -487,8 +487,13 @@ class NotificationShow extends Component
             $userWallet->decrement('balance', $this->amount);
             $psapWallet->increment('balance', $this->amount);
 
-            $this->createTransaction($this->demandeur->id, Auth::id(), 'Reception', $this->amount);
-            $this->createTransaction($this->demandeur->id,  Auth::id(), 'withdrawal', $this->amount);
+            // $this->createTransaction($this->demandeur->id, Auth::id(), 'Reception', $this->amount);
+            // $this->createTransaction($this->demandeur->id,  Auth::id(), 'withdrawal', $this->amount);
+
+            $referenceId = $this->generateIntegerReference();
+
+            $this->createTransactionNew($this->demandeur->id, Auth::id(), 'Envoie', 'COC', $this->amountDeposit, $referenceId, 'Retrait via PSAP');
+            $this->createTransactionNew($this->demandeur->id, Auth::id(), 'Réception', 'COC', $this->amountDeposit, $referenceId, 'Retrait via PSAP');
 
             DB::commit();
 
