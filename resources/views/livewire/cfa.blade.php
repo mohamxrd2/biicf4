@@ -104,9 +104,4 @@
 
         </div>
     </div>
-    <script>
-        document.addEventListener('livewire:navigating', () => {
-            // Modify your HTML here
-        })
-    </script>
 </div>
