@@ -22,6 +22,8 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:ajout-qoffre')->everyMinute();
             $schedule->command('app:projet-countdown')->everyMinute();
             $schedule->command('app:projet-groupe')->everyMinute();
+            $schedule->command('app:rappel-journalieres')->everyMinute();  // Exécuter chaque jour
+
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');

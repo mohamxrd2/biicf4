@@ -358,11 +358,12 @@ class DetailsCredit extends Component
             $jours = $dateDebut->diffInDays($dateFin);
             $portion_journaliere = $jours > 0 ? $montant / $jours : 0;
 
+            $montantTotal =  $montant / (1 + $demandeCredit->taux / 100);
             // Mettre à jour ou créer un enregistrement dans la table credits
             credits::create([
                 'emprunteur_id' => $this->userId,
                 'investisseurs' => [Auth::id()],
-                'montant' => $montant,
+                'montant' => $montantTotal,
                 'taux_interet' => $demandeCredit->taux,
                 'date_debut' => $demandeCredit->date_debut,
                 'date_fin' => $demandeCredit->duree,

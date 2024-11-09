@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class transactions_remboursement extends Model
 {
     use HasFactory;
-    protected $table = 'transactions';
+    protected $table = 'transactions_remboursements';
 
     protected $fillable = [
         'credit_id',
+        'reference_id',
         'emprunteur_id',
         'investisseur_id',
         'montant',
@@ -35,36 +36,15 @@ class transactions_remboursement extends Model
     /**
      * Relation avec l'emprunteur (utilisateur).
      */
+    // Relation avec l'emprunteur
     public function emprunteur()
     {
         return $this->belongsTo(User::class, 'emprunteur_id');
     }
 
-    /**
-     * Relation avec l'investisseur (utilisateur).
-     */
+    // Relation avec l'investisseur
     public function investisseur()
     {
         return $this->belongsTo(User::class, 'investisseur_id');
-    }
-
-    /**
-     * Vérifie si la transaction est réussie.
-     *
-     * @return bool
-     */
-    public function estEffectue()
-    {
-        return $this->statut === 'effectue';
-    }
-
-    /**
-     * Calcule le total de la transaction incluant le montant et l'intérêt.
-     *
-     * @return float
-     */
-    public function montantTotal()
-    {
-        return $this->montant + $this->interet;
     }
 }

@@ -277,7 +277,7 @@
                     </div>
                     <div class="col-span-1 p-4 bg-white border border-gray-300 rounded-xl">
                         <!-- Contenu du troisième élément ici -->
-                        <a href="{{ route('biicf.cfa') }}" wire:navigate>
+                        <a  href="{{ route('biicf.cfa') }}">
                             <div class="flex flex-col ">
                                 <div class="flex justify-between w-full">
                                     <div class="flex items-center">
