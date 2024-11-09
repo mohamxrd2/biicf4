@@ -105,9 +105,9 @@ class TransfertArgent extends Component
             // Générer une référence pour la transaction
             $referenceId = $this->generateIntegerReference();
 
-            // Enregistrer la transaction
-            $this->createTransaction($senderId, $receiver->id, 'Envoie', $this->amount, $referenceId, 'Envoie d\'argent');
-            $this->createTransaction($senderId, $receiver->id, 'Réception', $this->amount, $referenceId, 'Réception d\'argent');
+
+            $this->createTransactionNew($senderId, $receiver->id, 'Réception', 'COC', $this->amount, $referenceId, 'Réception d\'argent');
+            $this->createTransactionNew($senderId, $receiver->id, 'Envoie', 'COC', $this->amount, $referenceId, 'Envoie d\'argent');
 
             Log::info('Recharge réussie.', [
                 'sender_id' => $senderId,
@@ -145,13 +145,15 @@ class TransfertArgent extends Component
         $receiverWallet->increment('balance', $this->amount);
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description)
+
+    protected function createTransactionNew(int $senderId, int $receiverId, string $type, string $type_compte, float $amount, int $reference_id, string $description)
     {
 
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
+        $transaction->type_compte = $type_compte;
         $transaction->amount = $amount;
         $transaction->reference_id = $reference_id;
         $transaction->description = $description;

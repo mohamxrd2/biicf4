@@ -2,17 +2,20 @@
 
 namespace App\Livewire;
 
-use App\Models\Cedd;
-use App\Models\Cefp;
+use Carbon\Carbon;
 use App\Models\Cfa;
 use App\Models\Coi;
-use App\Models\Transaction;
+use App\Models\Crp;
+use App\Models\Cedd;
+use App\Models\Cefp;
 use App\Models\User;
 use App\Models\Wallet;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\On;
 use Livewire\Component;
+use App\Models\Transaction;
+use Livewire\Attributes\On;
+
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class Walletclient extends Component
 {
@@ -22,6 +25,7 @@ class Walletclient extends Component
     public $cfa;
     public $cedd;
     public $cefd;
+    public $crp;
 
     public $currentPage = 'transaction';
 
@@ -73,6 +77,7 @@ class Walletclient extends Component
         $this->cfa = Cfa::where('id_wallet', $this->userWallet->id)->first();
         $this->cedd = Cedd::where('id_wallet', $this->userWallet->id)->first();
         $this->cefd = Cefp::where('id_wallet', $this->userWallet->id)->first();
+        $this->crp = Crp::where('id_wallet', $this->userWallet->id)->first();
 
     }
     public function formatAccountNumber($accountNumber)
@@ -87,6 +92,42 @@ class Walletclient extends Component
         // Retourner le numéro de compte formaté
         return $formattedVisiblePart . ' ' . $maskedPart;
     }
+
+      /**
+     * Calcule la somme des transactions de type 'Reception' pour l'utilisateur connecté sur les 30 derniers jours
+     *
+     * @return float
+     */
+    public function getReceptionTransactionSumForLast30Days()
+    {
+        $userId = Auth::guard('web')->id();
+
+        // Récupérer la somme des montants des transactions de type 'Reception' pour l'utilisateur connecté
+        $sum = Transaction::where('type', 'Réception')
+            ->where('receiver_user_id', $userId)
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->sum('amount');
+
+        return $sum;
+    }
+
+      /**
+     * Calcule la somme des transactions de type 'Envoie' pour l'utilisateur connecté sur les 30 derniers jours
+     *
+     * @return float
+     */
+    public function getEnvoieTransactionSumForLast30Days()
+    {
+        $userId = Auth::guard('web')->id();
+
+        $sum = Transaction::where('type', 'Envoie')
+            ->where('sender_user_id', $userId)
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->sum('amount');
+
+        return $sum;
+    }
+    
     
 
 
@@ -96,11 +137,8 @@ class Walletclient extends Component
         $userId = Auth::guard('web')->id();
         Log::info('User ID:', ['user_id' => $userId]);
 
-
-
-        // Récupérer les utilisateurs à exclure l'utilisateur authentifié
         $users = User::with('admin')
-            ->where('id', '!=', $userId) // Exclure l'utilisateur authentifié
+            ->where('id', '!=', $userId)
             ->orderBy('created_at', 'DESC')
             ->get();
         Log::info('Users (excluding authenticated user):', ['users' => $users]);
@@ -108,7 +146,6 @@ class Walletclient extends Component
         $userCount = User::where('id', '!=', $userId)->count();
         Log::info('User Count (excluding authenticated user):', ['user_count' => $userCount]);
 
-        // Récupérer les transactions impliquant l'utilisateur authentifié
         $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
             ->where(function ($query) use ($userId) {
                 $query->where('sender_user_id', $userId)
@@ -124,6 +161,9 @@ class Walletclient extends Component
         })->count();
         Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $transacCount]);
 
-        return view('livewire.walletclient', compact('users', 'userCount', 'transactions', 'transacCount', 'userId'));
+        $receptionTransactionSum = $this->getReceptionTransactionSumForLast30Days();
+        $envoieTransactionSum = $this->getEnvoieTransactionSumForLast30Days();
+
+        return view('livewire.walletclient', compact('users', 'userCount', 'transactions', 'transacCount', 'userId', 'receptionTransactionSum', 'envoieTransactionSum'));
     }
 }
