@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\NotificationSent;
 use App\Events\PortionUpdated;
 use App\Models\Cfa;
 use App\Models\credits;
@@ -81,68 +82,74 @@ class RappelPortionsJournal extends Command
 
                 DB::beginTransaction();
                 try {
-                    // Récupérer l'emprunteur associé au crédit
-                    $emprunteur = User::find($credit->emprunteur_id);
-                    if (!$emprunteur) {
-                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
-                    }
+                    if ($wallet->balance >= $montantTotal) {
+                        // Récupérer l'emprunteur associé au crédit
+                        $emprunteur = User::find($credit->emprunteur_id);
+                        Log::info('emprunteur ID : ' . $credit->emprunteur_id);
+                        if (!$emprunteur) {
+                            throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
+                        }
 
-                    // Vérifier le solde du wallet de l'emprunteur
-                    if ($wallet->balance < $montantTotal) {
+                        // Mettre à jour le solde du wallet et du CRP
+                        $wallet->balance -= $montantTotal;
+                        $wallet->save();
+
+                        $crp = Crp::where('id_wallet', $wallet->id)->first();
+                        if ($crp) {
+                            $crp->Solde += $montantTotal;
+                            $crp->save();
+                        }
+
+
+                        // Soustraire le montant total du montant restant dans le crédit
+                        $credit->montant_restant -= $montantTotal;
+                        $credit->save();
+
+                        $reference_id = $this->generateIntegerReference();
+
+                        foreach ($investisseursIds as $investisseurId) {
+                            Log::info("Début de la transaction pour l'investisseur ID: " . $investisseurId);
+
+                            $this->createTransaction(
+                                $credit->emprunteur_id,
+                                $investisseurId,
+                                'Reception',
+                                $portionCapital,
+                                $reference_id,
+                                'Fond conservé pour remboursement de crédit',
+                                'Gele'
+                            );
+
+                            $this->remboursement(
+                                $credit->id,
+                                $reference_id,
+                                $credit->emprunteur_id,
+                                $investisseurId,
+                                $montantTotal,
+                                $portionInteret,
+                                $dateDuJour,
+                                'effectué'
+                            );
+                            broadcast(new PortionUpdated($credit->id, $credit->emprunteur_id, $credit->montant_restant));
+                        }
+
+                        Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret));
+                        Log::info('Notification envoyée pour le crédit ID : ' . $credit->id);
+                    } elseif ($wallet->balance < $montantTotal) {
+                        // Récupérer l'emprunteur associé au crédit
+                        $emprunteur = User::find($credit->emprunteur_id);
+                        Log::info('emprunteur ID : ' . $credit->emprunteur_id);
+                        if (!$emprunteur) {
+                            throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
+                        }
                         $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
                         Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret, $message));
+
+                        // Après l'envoi de la notification
+                        event(new NotificationSent($emprunteur));
+
                         Log::info('Notification envoyée pour solde insuffisant.');
-                        DB::rollBack();
-                        continue;
                     }
-
-                    // Mettre à jour le solde du wallet et du CRP
-                    $wallet->balance -= $montantTotal;
-                    $wallet->save();
-
-                    $crp = Crp::where('id_wallet', $wallet->id)->first();
-                    if ($crp) {
-                        $crp->Solde -= $montantTotal;
-                        $crp->save();
-                    }
-
-
-                    // Soustraire le montant total du montant restant dans le crédit
-                    $credit->montant_restant -= $montantTotal;
-                    $credit->save();
-
-                    $reference_id = $this->generateIntegerReference();
-
-                    foreach ($investisseursIds as $investisseurId) {
-                        Log::info("Début de la transaction pour l'investisseur ID: " . $investisseurId);
-
-                        $this->createTransaction(
-                            $credit->emprunteur_id,
-                            $investisseurId,
-                            'Reception',
-                            $portionCapital,
-                            $reference_id,
-                            'Fond conservé pour remboursement de crédit',
-                            'Gele'
-                        );
-
-                        $this->remboursement(
-                            $credit->id,
-                            $reference_id,
-                            $credit->emprunteur_id,
-                            $investisseurId,
-                            $montantTotal,
-                            $portionInteret,
-                            $dateDuJour,
-                            'effectué'
-                        );
-                        broadcast(new PortionUpdated($credit->id, $credit->emprunteur_id, $credit->montant_restant));
-
-                    }
-
-                    Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret));
-                    Log::info('Notification envoyée pour le crédit ID : ' . $credit->id);
-
 
                     DB::commit();
                 } catch (Exception $e) {

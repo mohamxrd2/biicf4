@@ -20,7 +20,7 @@ class UnreadNotificationCount extends Component
     #[On('echo:private-App.Models.User.{userId},NotificationSent')]
     public function incrementNotification($event)
     {
-        // dd($event);
+        dd($event);
 
         $this->updateUnreadCount();
     }
