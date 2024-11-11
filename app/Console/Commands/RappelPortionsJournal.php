@@ -90,19 +90,27 @@ class RappelPortionsJournal extends Command
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
                         }
 
-                        // Mettre à jour le solde du wallet et du CRP
-                        $wallet->balance -= $montantTotal;
+                        // Calculer le montant réel à soustraire (ne pas dépasser le montant restant du crédit)
+                        $montantASoustraire = min($montantTotal, $credit->montant_restant);
+
+                        // Mettre à jour le solde du wallet et du CRP avec le montant ajusté
+                        $wallet->balance -= $montantASoustraire;
                         $wallet->save();
 
                         $crp = Crp::where('id_wallet', $wallet->id)->first();
                         if ($crp) {
-                            $crp->Solde += $montantTotal;
+                            $crp->Solde += $montantASoustraire;
                             $crp->save();
                         }
 
+                        // Soustraire le montant ajusté du montant restant dans le crédit
+                        $credit->montant_restant -= $montantASoustraire;
 
-                        // Soustraire le montant total du montant restant dans le crédit
-                        $credit->montant_restant -= $montantTotal;
+                        // Vérifier si le crédit est totalement remboursé
+                        if ($credit->montant_restant == 0) {
+                            $credit->statut = "remboursé";
+                        }
+
                         $credit->save();
 
                         $reference_id = $this->generateIntegerReference();

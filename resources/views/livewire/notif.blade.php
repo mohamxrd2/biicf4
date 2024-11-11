@@ -1057,7 +1057,7 @@
 
                             <div class="flex flex-col justify-between w-full">
                                 <div class="flex items-center justify-between w-full">
-                                    <p class="font-semibold text-md">Fonds Insuffisants Pour Le Credit {{$notification->data['credit_id']}}</p>
+                                    <p class="font-semibold text-md">Rappel de remboursement Pour Le Credit {{$notification->data['credit_id']}}</p>
                                     <p class="text-[12px] text-gray-400 text-right">
                                         {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
                                     </p>
