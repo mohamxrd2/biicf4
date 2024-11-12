@@ -1,5 +1,5 @@
 <div>
-    <div class="container mx-auto py-8">
+    <div class="container mx-auto py-8 bg-gray-100 p-8 min-h-screen">
         <h1 class="text-2xl font-bold text-gray-800">Tableau de Bord des Crédits et Remboursements</h1>
         <p class="text-gray-600 mb-6">Suivez vos Crédits et Remboursements en attente et leur statut</p>
 
@@ -142,7 +142,7 @@
 
         <!-- Transactions Section -->
         <div class="space-y-4 mt-5">
-            {{-- @if ($transacCount == 0)
+            @if ($transacCount == 0)
                 <div class="flex-col items-center justify-center w-full text-center h-80">
                     <div class="flex justify-center mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -154,95 +154,95 @@
                     <h2 class="mb-2 text-2xl font-semibold">Aucune transaction</h2>
                     <p class="text-gray-500">Vous verrez les historiques des transactions ici !</p>
                 </div>
-            @else --}}
-            <div class="flex items-center space-x-2">
-                <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path d="M15 12h3m-3 4h2m-2-8h2M4 6h16M4 10h16M4 14h16M4 18h16" />
-                </svg>
-                <h2 class="text-2xl font-bold text-gray-800 py-4 px-6">Transactions de Remboursements</h2>
-            </div>
-            <div class="border rounded-lg shadow overflow-y-auto h-80 p-4">
-                <div class="space-y-4">
-                    <!-- Transaction -->
-                    @foreach ($transactions as $transaction)
-                        <div data-modal-target="static-modal-{{ $credit->id }}"
-                            data-modal-toggle="static-modal-{{ $credit->id }}"
-                            class="flex items-center justify-between p-3 border-b hover:bg-gray-50 cursor-pointer transition-colors">
-                            <div class="flex items-center space-x-3">
-                                <div class="p-2 rounded-full bg-green-100">
-                                    <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-800">
-                                        {{ $transaction->type ?? 'Type de transaction' }}</p>
-                                    <p class="text-sm text-gray-500">
-                                        {{ $transaction->date_transaction->format('d/m/Y') }}</p>
-                                </div>
-                            </div>
-                            <div class="font-semibold text-green-600">{{ $transaction->montant }} FCFA</div>
-                        </div>
-                    @endforeach
-
-                    <!-- Main modal -->
-                    <div id="static-modal-{{ $credit->id }}" data-modal-backdrop="static-{{ $credit->id }}"
-                        tabindex="-1" aria-hidden="true"
-                        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-
-                        <!-- Modal body -->
-                        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-                            <div class="flex justify-between items-center border-b pb-3">
-                                <h2 class="text-lg font-semibold">Transaction Details</h2>
-                                <button class="text-gray-400 hover:text-gray-600"
-                                    data-modal-hide="static-modal-{{ $credit->id }}">&times;</button>
-                            </div>
-                            <div class="py-4 space-y-4">
-                                <div class="flex justify-center">
-                                    <div class="p-3 rounded-full bg-green-100">
-                                        <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24"
+            @else
+                <div class="flex items-center space-x-2">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M15 12h3m-3 4h2m-2-8h2M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    <h2 class="text-2xl font-bold text-gray-800 py-4 px-6">Transactions de Remboursements</h2>
+                </div>
+                <div class="border rounded-lg shadow overflow-y-auto h-80 p-4">
+                    <div class="space-y-4">
+                        <!-- Transaction -->
+                        @foreach ($transactions as $transaction)
+                            <div data-modal-target="static-modal-{{ $credit->id }}"
+                                data-modal-toggle="static-modal-{{ $credit->id }}"
+                                class="flex items-center justify-between p-3 border-b hover:bg-gray-50 cursor-pointer transition-colors">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 rounded-full bg-green-100">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
                                             <path d="M5 13l4 4L19 7" />
                                         </svg>
                                     </div>
+                                    <div>
+                                        <p class="font-medium text-gray-800">
+                                            {{ $transaction->type ?? 'Type de transaction' }}</p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ $transaction->date_transaction->format('d/m/Y') }}</p>
+                                    </div>
                                 </div>
+                                <div class="font-semibold text-green-600">{{ $transaction->montant }} FCFA</div>
+                            </div>
+                        @endforeach
 
-                                <div class="text-center">
-                                    <p class="text-3xl font-bold">+${{ $transaction->montant }} FCFA</p>
-                                    <span
-                                        class="px-2 py-1 text-sm rounded bg-green-100 text-green-800">Completed</span>
+                        <!-- Main modal -->
+                        <div id="static-modal-{{ $credit->id }}" data-modal-backdrop="static-{{ $credit->id }}"
+                            tabindex="-1" aria-hidden="true"
+                            class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
+                            <!-- Modal body -->
+                            <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+                                <div class="flex justify-between items-center border-b pb-3">
+                                    <h2 class="text-lg font-semibold">Transaction Details</h2>
+                                    <button class="text-gray-400 hover:text-gray-600"
+                                        data-modal-hide="static-modal-{{ $credit->id }}">&times;</button>
                                 </div>
-
-                                <div class="space-y-4 text-sm text-gray-700">
-                                    <div class="flex items-center space-x-3">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path d="M8 7v10m4-10v10m4-10v10M5 10h14M5 14h14" />
-                                        </svg>
-                                        <div>
-                                            <p class="font-medium">Date</p>
-                                            <p>20/03/2024</p>
+                                <div class="py-4 space-y-4">
+                                    <div class="flex justify-center">
+                                        <div class="p-3 rounded-full bg-green-100">
+                                            <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path d="M5 13l4 4L19 7" />
+                                            </svg>
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <p class="font-medium">Description</p>
-                                        <p>Loan disbursement</p>
+                                    <div class="text-center">
+                                        <p class="text-3xl font-bold">+${{ $transaction->montant }} FCFA</p>
+                                        <span
+                                            class="px-2 py-1 text-sm rounded bg-green-100 text-green-800">Completed</span>
                                     </div>
 
-                                    <div>
-                                        <p class="font-medium">Reference Number</p>
-                                        <p class="font-mono">REF123456789</p>
+                                    <div class="space-y-4 text-sm text-gray-700">
+                                        <div class="flex items-center space-x-3">
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path d="M8 7v10m4-10v10m4-10v10M5 10h14M5 14h14" />
+                                            </svg>
+                                            <div>
+                                                <p class="font-medium">Date</p>
+                                                <p>20/03/2024</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-medium">Description</p>
+                                            <p>Loan disbursement</p>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-medium">Reference Number</p>
+                                            <p class="font-mono">REF123456789</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
+                        </div>
                     </div>
                 </div>
-            </div>
-            {{-- @endif --}}
+            @endif
         </div>
 
 
