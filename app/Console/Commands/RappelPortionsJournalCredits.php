@@ -22,10 +22,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-class RappelPortionsJournal extends Command
+class RappelPortionsJournalCredits extends Command
 {
 
-    protected $signature = 'app:rappel-journalieres';
+    protected $signature = 'app:rappel-journalieres-credits';
     protected $description = 'Récupérer les portions journalières à rembourser depuis PROMIR';
 
 
@@ -66,14 +66,21 @@ class RappelPortionsJournal extends Command
                     continue;
                 }
 
-                // Décoder les investisseurs depuis le JSON dans le crédit de la portion
-                $decodedProdUsers = [];
-                $investisseursIds = $existingPortion->credit->investisseurs;
+                // Décoder les investisseurs depuis le JSON
+                $investisseursJson = $existingPortion->credit->investisseurs; // Chaîne JSON
 
-                foreach ($investisseursIds as $investisseursId) {
-                    $decodedValues = json_decode($investisseursId, true);
-                    if (is_array($decodedValues)) {
-                        $decodedProdUsers = array_merge($decodedProdUsers, $decodedValues);
+                // Décodage du JSON en tableau PHP
+                $decodedInvestisseurs = json_decode($investisseursJson, true);
+
+                // Initialiser un tableau pour stocker les IDs des investisseurs uniquement
+                $investisseursIds = [];
+
+                if (is_array($decodedInvestisseurs)) {
+                    foreach ($decodedInvestisseurs as $investisseur) {
+                        // Vérifier que l'ID de l'investisseur est défini, puis l'ajouter au tableau
+                        if (isset($investisseur['investisseur_id'])) {
+                            $investisseursIds[] = $investisseur['investisseur_id'];
+                        }
                     }
                 }
 

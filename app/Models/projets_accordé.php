@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class credits extends Model
+class projets_accordé extends Model
 {
     use HasFactory;
 
-    protected $table = 'credits';
+    protected $table = 'projets_accordés';
 
     protected $fillable = [
         'emprunteur_id',
         'investisseurs',
         'montant',
-        'montant_restantt',
+        'montan_restantt',
+        'action',
         'taux_interet',
         'date_debut',
         'date_fin',
@@ -37,7 +38,4 @@ class credits extends Model
     {
         return $this->belongsTo(User::class, 'emprunteur_id');
     }
-
-
-
 }

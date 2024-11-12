@@ -15,14 +15,17 @@ class Kernel extends ConsoleKernel
     {
         if (App::environment('local')) {
             // En local, exécuter la commande toutes les minutes
-            $schedule->command('check:countdowns')->everyMinute();
-            // $schedule->command('app:envoi-four')->everyMinute();
-            // $schedule->command('app:grouper-facture')->everyMinute();
-            $schedule->command('app:appeloffre')->everyMinute();
-            $schedule->command('app:ajout-qoffre')->everyMinute();
-            $schedule->command('app:projet-countdown')->everyMinute();
-            $schedule->command('app:projet-groupe')->everyMinute();
-            $schedule->command('app:rappel-journalieres')->everyMinute();  // Exécuter chaque jour
+            // $schedule->command('check:countdowns')->everyMinute();
+            // // $schedule->command('app:envoi-four')->everyMinute();
+            // // $schedule->command('app:grouper-facture')->everyMinute();
+            // $schedule->command('app:appeloffre')->everyMinute();
+            // $schedule->command('app:ajout-qoffre')->everyMinute();
+            // $schedule->command('app:projet-countdown')->everyMinute();
+            // $schedule->command('app:projet-groupe')->everyMinute();
+            // $schedule->command('app:rappel-journalieres-credits')->everyMinute();  // Exécuter chaque jour
+            // $schedule->command('app:rappel-journalieres-projets')->everyMinute();  // Exécuter chaque jour
+            $schedule->command('app:RemboursementCredit')->everyMinute();
+            // $schedule->command('app:finacementProjetAccorde')->everyMinute();  // Exécuter chaque jour
 
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique

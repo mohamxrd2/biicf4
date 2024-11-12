@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\credits;
+use App\Models\projets_accordé;
 use App\Models\transactions_remboursement;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,11 +15,15 @@ class Cfa extends Component
 {
 
     public $credits; // Propriété publique pour stocker les crédits
+    public $projets; // Propriété publique pour stocker les crédits
     public $totalCredits; // Propriété publique pour stocker les crédits
     public $totalCreditsRembourses; // Propriété publique pour stocker les crédits
+    public $totalprojets; // Propriété publique pour stocker les crédits
+    public $totalprojetsRembourses; // Propriété publique pour stocker les crédits
     public $transacCount;
     public $transactions;
     public $pourcentageRemboursement;
+    public $pourcentageRemboursementprojets;
 
     public function mount()
     {
@@ -30,9 +35,23 @@ class Cfa extends Component
     {
         $userId = Auth::id();
 
-        // Récupérer les crédits associés à cet utilisateur
-        // Si un utilisateur a des crédits associés, les récupérer
+        // Récupérer les projets associés à cet utilisateur; Si un utilisateur a des projets associés, les récupérer
+        $this->projets = projets_accordé::where('emprunteur_id', $userId)->get();
+
+        $this->totalprojets = projets_accordé::where('emprunteur_id', $userId)->sum('montant');
+
+        $this->totalprojetsRembourses = projets_accordé::where('emprunteur_id', $userId)
+            ->sum(DB::raw('montant - montan_restantt'));
+        // Calcul du pourcentage de remboursement
+        if ($this->totalprojets > 0) {
+            $this->pourcentageRemboursementprojets = ($this->totalprojetsRembourses / $this->totalprojets) * 100;
+        } else {
+            $this->pourcentageRemboursementprojets = 0; // éviter la division par zéro
+        }
+
+        // Récupérer les crédits associés à cet utilisateur; Si un utilisateur a des crédits associés, les récupérer
         $this->credits = credits::where('emprunteur_id', $userId)->get();
+
 
         $this->totalCredits = credits::where('emprunteur_id', $userId)->sum('montant');
 
@@ -45,6 +64,7 @@ class Cfa extends Component
         } else {
             $this->pourcentageRemboursement = 0; // éviter la division par zéro
         }
+
         // Récupérer les transactions impliquant l'utilisateur authentifié
         $this->transactions = transactions_remboursement::with(['emprunteur', 'investisseur']) // Remplacer par les relations
             ->where(function ($query) use ($userId) {
@@ -59,6 +79,7 @@ class Cfa extends Component
             $query->where('emprunteur_id', $userId)
                 ->orWhere('investisseur_id', $userId);
         })->count();
+        
         Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $this->transacCount]);
     }
 

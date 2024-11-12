@@ -88,8 +88,6 @@
 
                     @livewire('unread-notification-count')
 
-
-
                 </li>
 
 

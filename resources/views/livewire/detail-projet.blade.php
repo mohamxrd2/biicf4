@@ -198,7 +198,7 @@
         <p class="text-gray-500">
             {{ $projet->description }}
         </p>
-    @elseif (isset($projet->Portion_action) || (isset($projet->Portion_action) && isset($projet->Portion_obligt)))
+    @elseif (isset($projet->Portion_action) || (isset($projet->Portion_action) && isset($projet->Portion_obligt)))z
         @if ($investisseurQuiAPayeTout)
             @include('finance.components.entete2')
         @endif

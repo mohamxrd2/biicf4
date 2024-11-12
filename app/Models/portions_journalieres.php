@@ -16,6 +16,7 @@ class portions_journalieres extends Model
         'date_portion',
         'portion_capital',
         'portion_interet',
+        'id_projet_accord',
     ];
 
     protected $casts = [
@@ -28,6 +29,10 @@ class portions_journalieres extends Model
     public function credit()
     {
         return $this->belongsTo(credits::class, 'credit_id');
+    }
+    public function projet()
+    {
+        return $this->belongsTo(projets_accordé::class, 'id_projet_accord');
     }
 
 

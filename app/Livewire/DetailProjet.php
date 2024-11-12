@@ -93,6 +93,8 @@ class DetailProjet extends Component
             $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
         }
 
+
+
         // Calculer le pourcentage d'actions investies
         if ($this->projet->nombreActions > 0) {
             $this->pourcentageInvestiAction = ($this->sommeInvestieActions / $this->projet->nombreActions) * 100; // Calculer le pourcentage investi
@@ -298,6 +300,16 @@ class DetailProjet extends Component
         $this->sommeRestante = $montant - $this->sommeInvestie;
         $this->pourcentageInvesti = ($this->sommeInvestie / $montant) * 100;
 
+        // Vérifier si le pourcentage investi est de 100% ou plus
+        if ($this->pourcentageInvesti == 100) {
+            $this->projet->update([
+                'count' => true
+            ]);
+        } else {
+            $this->projet->update([
+                'count' => false
+            ]);
+        }
         // Log de mise à jour des sommes investies
         Log::info('Somme investie mise à jour pour le projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
 
@@ -318,6 +330,8 @@ class DetailProjet extends Component
             ->groupBy('id_invest')
             ->havingRaw('SUM(montant) >= ?', [$montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
+
+
         // Si un investisseur a payé le montant total, déclencher l'événement
         if ($this->investisseurQuiAPayeTout) {
             // Déclencher l'événement `DebutDeNegociation`
