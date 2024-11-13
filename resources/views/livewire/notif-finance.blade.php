@@ -42,7 +42,7 @@ if ($userDetails) {
                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Date fin:</dt>
                     <dd class="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                        {{ $demandeCredit->date_fin }}
+                        {{ \Carbon\Carbon::parse($demandeCredit->date_fin)->format('d/m/Y') }}
                     </dd>
                 </dl>
 

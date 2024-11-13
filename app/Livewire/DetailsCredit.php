@@ -12,6 +12,7 @@ use App\Models\Countdown;
 use App\Models\CrediScore;
 use App\Models\credits;
 use App\Models\DemandeCredi;
+use App\Models\remboursements;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserPromir;
@@ -330,16 +331,25 @@ class DetailsCredit extends Component
 
         try {
 
-            // // Mettre à jour le solde du wallet de l'investisseur
-            // $wallet->balance -= $montant;
-            // $wallet->save();
-
             // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
             $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+
             if ($coi) {
-                $coi->Solde -= $montant; // Débiter le montant du solde du COI
-                $coi->save();
+                // Vérifie si le solde est suffisant pour le débit
+                if ($coi->Solde >= $montant) {
+                    $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                    $coi->save();
+                } else {
+                    // Retourne un message ou gère le cas où le solde est insuffisant
+                    session()->flash('error', 'Solde insuffisant dans le COI.');
+                    // Arrête le processus si le solde est insuffisant
+                    return;
+                }
+            } else {
+                // Gérer le cas où le compte COI n'existe pas ou n'est pas trouvé
+                session()->flash('error', 'Compte COI introuvable.');
             }
+
 
             // Mettre à jour ou créer un enregistrement dans la table CFA
             $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
@@ -353,32 +363,45 @@ class DetailsCredit extends Component
 
             //  Calculer la portion journalière en fonction du montant et de la durée.
             // Assurez-vous que les dates sont bien des instances de Carbon
-            $dateDebut = Carbon::parse($this->demandeCredit->date_debut);
-            $dateFin = Carbon::parse($this->demandeCredit->duree);
-            $jours = $dateDebut->diffInDays($dateFin);
-            $portion_journaliere = $jours > 0 ? $montant / $jours : 0;
+            $debut = Carbon::parse($this->demandeCredit->date_fin);
+            $durer = Carbon::parse($this->demandeCredit->duree);
+            $jours = $debut->diffInDays($durer);
 
-            $montantTotal =  $montant / (1 + $demandeCredit->taux / 100);
+            $montantTotal = $montant * (1 + $demandeCredit->taux / 100);
+            $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
+
             // Mettre à jour ou créer un enregistrement dans la table credits
-            credits::create([
+            $credit = credits::create([
                 'emprunteur_id' => $this->userId,
                 'investisseurs' => [Auth::id()],
                 'montant' => $montantTotal,
+                'montant_restant' => $montantTotal,
                 'taux_interet' => $demandeCredit->taux,
                 'date_debut' => $demandeCredit->date_debut,
                 'date_fin' => $demandeCredit->duree,
                 'portion_journaliere' => $portion_journaliere,
                 'statut' => 'en_cours',
             ]);
+            // Création du remboursement associé
+            Remboursements::create([
+                'credit_id' => $credit->id,  // Associe le remboursement au crédit créé
+                'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
+                'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
+                'montant_interet' => $demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
+                'date_remboursement' => $demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
+                'statut' => 'en cours',  // Statut du remboursement
+                'description' => $demandeCredit->objet_financement,  // Statut du remboursement
+            ]);
 
             $reference_id = $this->generateIntegerReference();
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'reception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'Financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
 
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);
+            $this->demandeCredit->update(['status' => 'terminer']);
 
             // Committer la transaction
             DB::commit();
@@ -510,9 +533,11 @@ class DetailsCredit extends Component
     public function refuser()
     {
         $this->notification->update(['reponse' => 'refuser']);
+        $this->demandeCredit->update(['status' => 'refuser']);
+
         session()->flash('error', 'Demande de credit refuser avec succes.L\'utilisateur seras informe de votre reponse ');
 
-        $owner = User::find($this->user_id);
+        $owner = User::find($this->userId);
 
         $reason = "L'achat dépasse la limite de crédit autorisée.";
         Notification::send($owner, new RefusAchat($reason));

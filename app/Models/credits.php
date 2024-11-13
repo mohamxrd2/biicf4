@@ -15,7 +15,7 @@ class credits extends Model
         'emprunteur_id',
         'investisseurs',
         'montant',
-        'montant_restantt',
+        'montant_restant',
         'taux_interet',
         'date_debut',
         'date_fin',

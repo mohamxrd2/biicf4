@@ -33,26 +33,33 @@ class RappelPortionsJournalCredits extends Command
     {
         // Date du jour
         $dateDuJour = Carbon::today()->toDateString();
+        Log::info('Date du jour : ' . $dateDuJour);
 
         // Récupérer tous les crédits
         $credits = credits::where('statut', 'en_cours')->get();
+        Log::info('Nombre de credits avec statut "en cours" : ' . $credits->count());
 
         foreach ($credits as $credit) {
+            Log::info('Le crédit avec ID ' . $credit->id);
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
-            if ($dateDuJour >= $credit->date_debut && $dateDuJour <= $credit->date_fin) {
+            if ($dateDuJour <= $credit->date_fin) {
+                Log::info('Le crédit avec ID ' . $credit->id . ' est actif aujourd\'hui.');
+
                 // Vérifier si la portion a déjà été enregistrée pour cette date
-                $existingPortion = portions_journalieres::where('credit_id', $credit->id)
+                $existingPortion = portions_journalieres::where('id_user', $credit->emprunteur_id)
                     ->where('date_portion', $dateDuJour)
                     ->first();
 
                 if (!$existingPortion) {
-                    Log::warning("Aucune portion trouvée pour la date du jour.");
+                    Log::warning("Aucune portion trouvée.");
                     continue;
                 }
 
-                $portionCapital = $existingPortion->portion_capital;
-                $portionInteret = $existingPortion->portion_interet;
-                $montantTotal = $portionCapital + $portionInteret;
+                $portionCapital = $credit->montant;
+                $portionInteret = $credit->taux_interet;
+
+                $montantTotal = $credit->portion_journaliere;
+
                 Log::info("Montants récupérés pour le crédit ID: " . $credit->id, [
                     'portion_capital' => $portionCapital,
                     'portion_interet' => $portionInteret,
@@ -61,35 +68,19 @@ class RappelPortionsJournalCredits extends Command
 
                 // Récupérer le wallet de l'utilisateur
                 $wallet = Wallet::where('user_id', $credit->emprunteur_id)->first();
-                if (!$wallet) {
+                $crp = Crp::where('id_wallet', $wallet->id)->first();
+
+                if (!$wallet && !$crp) {
                     Log::warning("Wallet non trouvé pour l'emprunteur ID : " . $credit->emprunteur_id);
                     continue;
                 }
 
-                // Décoder les investisseurs depuis le JSON
-                $investisseursJson = $existingPortion->credit->investisseurs; // Chaîne JSON
-
-                // Décodage du JSON en tableau PHP
-                $decodedInvestisseurs = json_decode($investisseursJson, true);
-
-                // Initialiser un tableau pour stocker les IDs des investisseurs uniquement
-                $investisseursIds = [];
-
-                if (is_array($decodedInvestisseurs)) {
-                    foreach ($decodedInvestisseurs as $investisseur) {
-                        // Vérifier que l'ID de l'investisseur est défini, puis l'ajouter au tableau
-                        if (isset($investisseur['investisseur_id'])) {
-                            $investisseursIds[] = $investisseur['investisseur_id'];
-                        }
-                    }
-                }
-
-                // Log des IDs des investisseurs
-                Log::info('Liste des IDs des investisseurs : ' . implode(', ', $investisseursIds));
-
+                
                 DB::beginTransaction();
                 try {
-                    if ($wallet->balance >= $montantTotal) {
+                    $balanceSuffisante = $wallet->balance >= $montantTotal;
+
+                    if ($balanceSuffisante ) {
                         // Récupérer l'emprunteur associé au crédit
                         $emprunteur = User::find($credit->emprunteur_id);
                         Log::info('emprunteur ID : ' . $credit->emprunteur_id);
@@ -104,7 +95,6 @@ class RappelPortionsJournalCredits extends Command
                         $wallet->balance -= $montantASoustraire;
                         $wallet->save();
 
-                        $crp = Crp::where('id_wallet', $wallet->id)->first();
                         if ($crp) {
                             $crp->Solde += $montantASoustraire;
                             $crp->save();
@@ -122,34 +112,26 @@ class RappelPortionsJournalCredits extends Command
 
                         $reference_id = $this->generateIntegerReference();
 
-                        foreach ($investisseursIds as $investisseurId) {
-                            Log::info("Début de la transaction pour l'investisseur ID: " . $investisseurId);
 
-                            $this->createTransaction(
-                                $credit->emprunteur_id,
-                                $investisseurId,
-                                'Reception',
-                                $portionCapital,
-                                $reference_id,
-                                'Fond conservé pour remboursement de crédit',
-                                'Gele'
-                            );
 
-                            $this->remboursement(
-                                $credit->id,
-                                $reference_id,
-                                $credit->emprunteur_id,
-                                $investisseurId,
-                                $montantTotal,
-                                $portionInteret,
-                                $dateDuJour,
-                                'effectué'
-                            );
-                            broadcast(new PortionUpdated($credit->id, $credit->emprunteur_id, $credit->montant_restant));
-                        }
+                        $this->remboursement(
+                            $credit->id,
+                            $reference_id,
+                            $credit->emprunteur_id,
+                            $credit->emprunteur_id,
+                            $montantTotal,
+                            $portionInteret,
+                            $dateDuJour,
+                            'effectué'
+                        );
+
 
                         Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret));
                         Log::info('Notification envoyée pour le crédit ID : ' . $credit->id);
+
+                        // Après l'envoi de la notification
+                        event(new NotificationSent($emprunteur));
+                        event(new PortionUpdated($credit->id, $credit->emprunteur_id, $credit->montan_restantt));
                     } elseif ($wallet->balance < $montantTotal) {
                         // Récupérer l'emprunteur associé au crédit
                         $emprunteur = User::find($credit->emprunteur_id);
@@ -173,19 +155,6 @@ class RappelPortionsJournalCredits extends Command
                 }
             }
         }
-    }
-
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->status = $status;
-        $transaction->save();
     }
 
     protected function remboursement(int $creditId, int $reference_id, int $emprunteurId, int $investisseurId, float $montant, float $interet, string $date, string $status): void

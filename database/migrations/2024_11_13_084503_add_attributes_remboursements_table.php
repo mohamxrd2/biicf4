@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('portions_journalieres', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_projet_accord')->nullable(); // Lien vers le crédit, si applicable
-
-            $table->foreign('id_projet_accord')->references('id')->on('projets_accordés')->onDelete('cascade');
-
+        Schema::table('remboursements', function (Blueprint $table) {
+            $table->text('description')->nullable();
         });
     }
 

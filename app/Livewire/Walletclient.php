@@ -85,10 +85,10 @@ class Walletclient extends Component
         // Séparer les 8 premiers chiffres et masquer les 8 derniers
         $visiblePart = substr($accountNumber, 0, 8);  // Garde les 8 premiers chiffres
         $maskedPart = '**** ****'; // Masque les 8 derniers chiffres
-    
+
         // Ajouter un espace tous les 4 chiffres pour la partie visible
         $formattedVisiblePart = trim(chunk_split($visiblePart, 4, ' '));
-    
+
         // Retourner le numéro de compte formaté
         return $formattedVisiblePart . ' ' . $maskedPart;
     }
@@ -127,8 +127,8 @@ class Walletclient extends Component
 
         return $sum;
     }
-    
-    
+
+
 
 
     #[On('refreshComponent')]
@@ -141,7 +141,7 @@ class Walletclient extends Component
             ->where('id', '!=', $userId)
             ->orderBy('created_at', 'DESC')
             ->get();
-        Log::info('Users (excluding authenticated user):', ['users' => $users]);
+        // Log::info('Users (excluding authenticated user):', ['users' => $users]);
 
         $userCount = User::where('id', '!=', $userId)->count();
         Log::info('User Count (excluding authenticated user):', ['user_count' => $userCount]);
@@ -153,7 +153,7 @@ class Walletclient extends Component
             })
             ->orderBy('created_at', 'DESC')
             ->get();
-        Log::info('Transactions involving authenticated user:', ['transactions' => $transactions]);
+        // Log::info('Transactions involving authenticated user:', ['transactions' => $transactions]);
 
         $transacCount = Transaction::where(function ($query) use ($userId) {
             $query->where('sender_user_id', $userId)

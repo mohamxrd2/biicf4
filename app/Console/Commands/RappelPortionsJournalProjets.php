@@ -72,10 +72,6 @@ class RappelPortionsJournalProjets extends Command
                     continue;
                 }
 
-
-
-
-
                 DB::beginTransaction();
                 try {
                     if ($wallet->balance >= $montantTotal) {

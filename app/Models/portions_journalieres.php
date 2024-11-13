@@ -12,11 +12,10 @@ class portions_journalieres extends Model
     protected $table = 'portions_journalieres';
 
     protected $fillable = [
-        'credit_id',
+        'id_user',
         'date_portion',
         'portion_capital',
         'portion_interet',
-        'id_projet_accord',
     ];
 
     protected $casts = [
@@ -26,14 +25,11 @@ class portions_journalieres extends Model
     /**
      * Relation avec le crédit concerné.
      */
-    public function credit()
+    public function user()
     {
-        return $this->belongsTo(credits::class, 'credit_id');
+        return $this->belongsTo(User::class, 'id_user');
     }
-    public function projet()
-    {
-        return $this->belongsTo(projets_accordé::class, 'id_projet_accord');
-    }
+
 
 
 }

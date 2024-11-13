@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
             // $schedule->command('app:rappel-journalieres-credits')->everyMinute();  // Exécuter chaque jour
             // $schedule->command('app:rappel-journalieres-projets')->everyMinute();  // Exécuter chaque jour
             $schedule->command('app:RemboursementCredit')->everyMinute();
+            // $schedule->command('app:RemboursementProjet')->everyMinute();
             // $schedule->command('app:finacementProjetAccorde')->everyMinute();  // Exécuter chaque jour
 
         } else {

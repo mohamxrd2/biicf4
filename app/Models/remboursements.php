@@ -13,10 +13,12 @@ class remboursements extends Model
 
     protected $fillable = [
         'credit_id',
+        'id_user',
         'montant_capital',
         'montant_interet',
         'date_remboursement',
         'statut',
+        'description',
     ];
 
     protected $casts = [
@@ -30,34 +32,9 @@ class remboursements extends Model
     {
         return $this->belongsTo(credits::class, 'credit_id');
     }
-
-    /**
-     * Calcul du montant total remboursé (capital + intérêt).
-     *
-     * @return float
-     */
-    public function montantTotalRembourse()
+    public function user()
     {
-        return $this->montant_capital + $this->montant_interet;
+        return $this->belongsTo(User::class, 'id_user');
     }
 
-    /**
-     * Vérifier si le remboursement est en attente.
-     *
-     * @return bool
-     */
-    public function estEnAttente()
-    {
-        return $this->statut === 'en_attente';
-    }
-
-    /**
-     * Vérifier si le remboursement a été effectué.
-     *
-     * @return bool
-     */
-    public function estEffectue()
-    {
-        return $this->statut === 'effectue';
-    }
 }
