@@ -52,7 +52,7 @@
         <div class="space-y-4 mt-5">
 
             <div class="grid gap-4">
-                <!-- Credit Card -->
+                <!-- Credit  -->
                 @foreach ($credits as $credit)
                     @php
                         // Calculer le pourcentage de remboursement pour chaque crédit
@@ -110,8 +110,15 @@
         <div class="space-y-4 mt-5">
 
             <div class="grid gap-4">
-                <!-- Credit Card -->
+                <!-- Credit groupé -->
                 @foreach ($creditsGroupe as $creditGroupe)
+                    @php
+                        // Calculer le pourcentage de remboursement pour chaque crédit
+                        $pourcentageRemboursement =
+                            $credit->montant > 0
+                                ? (($credit->montant - $credit->montant_restant) / $credit->montant) * 100
+                                : 0;
+                    @endphp
                     <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center space-x-3">
@@ -123,7 +130,7 @@
                                 <h3 class="font-semibold text-gray-700">{{ $creditGroupe->description }} XXXXXXX
                                 </h3>
                             </div>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 font-semibold rounded">ID Projet :
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 font-semibold rounded">ID Credit :
                                 00{{ $creditGroupe->id }}</span>
                             <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Date Debut :
                                 {{ $creditGroupe->date_debut->format('d/m/Y') }}</span>
@@ -142,7 +149,7 @@
                                     style="width: {{ $pourcentageRemboursementGroupe }}%;"></div>
                             </div>
                             <div class="flex justify-between text-xs text-gray-500">
-                                <span></span>
+                                <span>Pourcentage remboursé: {{ number_format($pourcentageRemboursementGroupe, 2) }}%</span>
                                 <span>Montant restant: {{ $creditGroupe->montan_restantt }} FCFA</span>
                             </div>
                         </div>

@@ -13,6 +13,7 @@ class remboursements extends Model
 
     protected $fillable = [
         'credit_id',
+        'creditGrp_id',
         'id_user',
         'montant_capital',
         'montant_interet',

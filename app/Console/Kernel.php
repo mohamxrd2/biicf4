@@ -19,10 +19,10 @@ class Kernel extends ConsoleKernel
 
             // $schedule->command('app:appeloffre')->everyMinute();
             // $schedule->command('app:ajout-qoffre')->everyMinute();
-            // $schedule->command('app:credit-countdown')->everyMinute();
+            $schedule->command('app:credit-countdown')->everyMinute();
             // $schedule->command('app:projet-countdown)->everyMinute();
-            // $schedule->command('app:rappel-journalieres-credits')->everyMinute();
-            // $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
+            $schedule->command('app:rappel-journalieres-credits')->everyMinute();
+            $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
             // $schedule->command('app:rappel-journalieres-projets')->everyMinute();
             // $schedule->command('app:RemboursementCredit')->everyMinute();
             // $schedule->command('app:RemboursementProjet')->everyMinute();

@@ -194,56 +194,49 @@ class RappelPortionsJournalCreditsGroupé extends Command
 
         DB::beginTransaction();
         try {
+            // Mise à jour de la table CRP
+            $crp = Crp::where('id_wallet', $wallet->id)->first();
+            if ($crp) {
+                // Vérifie si le solde est suffisant
+                if ($crp->Solde >= $credit->montant) {
+                    $ancienSoldeCrp = $crp->Solde;
+                    $crp->Solde -= $credit->montant;
+                    $crp->save();
+
+                    // Log de la mise à jour
+                    Log::info('Mise à jour de la table CRP', [
+                        'id_wallet' => $wallet->id,
+                        'ancien_solde' => $ancienSoldeCrp,
+                        'nouveau_solde' => $crp->Solde,
+                        'montant_débité' => $credit->montant
+                    ]);
+                } else {
+                    $emprunteur = User::find($credit->emprunteur_id);
+                    Log::info('emprunteur ID : ' . $emprunteur);
+                    if (!$emprunteur) {
+                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
+                    }
+                    $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
+
+                    Notification::send($emprunteur, new PortionJournaliere($credit, $emprunteur, $emprunteur, $message));
+
+                    // Log si le solde est insuffisant
+                    Log::warning('Solde insuffisant dans CRP pour effectuer la déduction', [
+                        'id_wallet' => $wallet->id,
+                        'solde_actuel' => $crp->Solde,
+                        'montant_requis' => $credit->montant
+                    ]);
+                    // Optionnel : Lever une exception ou retourner une erreur
+                    throw new Exception("Solde insuffisant pour effectuer cette opération.");
+                }
+            } else {
+                Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [
+                    'id_wallet' => $wallet->id
+                ]);
+            }
             foreach ($investisseursMontants as $id => $montant) {
                 // Log de l'opération
                 Log::info("Investisseur ID $id a financé : $montant");
-
-                // Mise à jour de la table CRP
-                $crp = Crp::where('id_wallet', $wallet->id)->first();
-                if ($crp) {
-                    // Vérifie si le solde est suffisant
-                    if ($crp->Solde >= $credit->montant) {
-                        $ancienSoldeCrp = $crp->Solde;
-                        $crp->Solde -= $credit->montant;
-                        $crp->save();
-
-                        // Log de la mise à jour
-                        Log::info('Mise à jour de la table CRP', [
-                            'id_wallet' => $wallet->id,
-                            'ancien_solde' => $ancienSoldeCrp,
-                            'nouveau_solde' => $crp->Solde,
-                            'montant_débité' => $credit->montant
-                        ]);
-                    } else {
-                        $emprunteur = User::find($credit->emprunteur_id);
-                        Log::info('emprunteur ID : ' . $id);
-                        if (!$emprunteur) {
-                            throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
-                        }
-                        $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
-
-                        Notification::send($emprunteur, new PortionJournaliere($credit, $emprunteur, $emprunteur, $message));
-
-                        // Log si le solde est insuffisant
-                        Log::warning('Solde insuffisant dans CRP pour effectuer la déduction', [
-                            'id_wallet' => $wallet->id,
-                            'solde_actuel' => $crp->Solde,
-                            'montant_requis' => $credit->montant
-                        ]);
-                        // Optionnel : Lever une exception ou retourner une erreur
-                        throw new Exception("Solde insuffisant pour effectuer cette opération.");
-                    }
-                } else {
-                    Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [
-                        'id_wallet' => $wallet->id
-                    ]);
-                }
-                // Log de la mise à jour
-                Log::info('Mise à jour de la table CRP', [
-                    'id_wallet' => $wallet->id,
-                    'nouveau_solde' => $crp->Solde,
-                    'montant_débité' => $credit->montant
-                ]);
 
                 // Mise à jour de la table COI
                 $walletInvestisseurs = Wallet::where('user_id', $id)->first();
@@ -257,14 +250,13 @@ class RappelPortionsJournalCreditsGroupé extends Command
                 if ($coi) {
                     $coi->Solde += $credit->montant;
                     $coi->save();
+                    // Log de la mise à jour
+                    Log::info('Mise à jour de la table CRP', [
+                        'id_wallet' => $walletInvestisseurs->id,
+                        'nouveau_solde' => $coi->Solde,
+                        'montant_débité' => $credit->montant
+                    ]);
                 }
-                // Log de la mise à jour
-                Log::info('Mise à jour de la table CRP', [
-                    'id_wallet' => $walletInvestisseurs->id,
-                    'nouveau_solde' => $coi->Solde,
-                    'montant_débité' => $credit->montant
-                ]);
-
 
                 $reference_id = $this->generateIntegerReference();
                 $this->createTransaction(

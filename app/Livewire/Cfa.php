@@ -76,12 +76,14 @@ class Cfa extends Component
         $this->creditsGroupe = credits_groupé::where('emprunteur_id', $userId)->get();
 
 
-        $this->totalCreditsGroupe = credits::where('emprunteur_id', $userId)->sum('montant');
+        // Calculer le montant total des crédits et le montant total remboursé
+        $this->totalCreditsGroupe = $this->credits->sum('montant');
+        $this->totalCreditsRemboursesGroupe = $this->credits->sum(function ($creditsGroupe) {
+            return $creditsGroupe->montant - $creditsGroupe->montan_restantt;
+        });
 
-        $this->totalCreditsRemboursesGroupe = credits_groupé::where('emprunteur_id', $userId)
-            ->sum(DB::raw('montant - montan_restantt'));
 
-        // Calcul du pourcentage de remboursement
+        // Calcul du pourcentage de remboursement global
         if ($this->totalCreditsGroupe > 0) {
             $this->pourcentageRemboursementGroupe = ($this->totalCreditsRemboursesGroupe / $this->totalCreditsGroupe) * 100;
         } else {
