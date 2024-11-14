@@ -12,9 +12,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-class projetGrouper extends Command
+class projetCountdown extends Command
 {
-    protected $signature = 'app:projet-groupe';
+    protected $signature = 'app:projet-countdown';
     protected $description = 'Command to send notifications for grouped invoices';
 
     public function handle()

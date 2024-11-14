@@ -185,12 +185,7 @@ class RappelPortionsJournalCredits extends Command
                                             'id_wallet' => $wallet->id
                                         ]);
                                     }
-                                    // Log de la mise à jour
-                                    Log::info('Mise à jour de la table CRP', [
-                                        'id_wallet' => $wallet->id,
-                                        'nouveau_solde' => $crp->Solde,
-                                        'montant_débité' => $credit->montant
-                                    ]);
+
 
                                     $walletInvestisseurs = Wallet::where('user_id', $id)->first();
                                     Log::info('wallet de l\'investisseur', [
@@ -205,7 +200,7 @@ class RappelPortionsJournalCredits extends Command
                                         $coi->save();
                                     }
                                     // Log de la mise à jour
-                                    Log::info('Mise à jour de la table CRP', [
+                                    Log::info('Mise à jour de la table COI', [
                                         'id_wallet' => $walletInvestisseurs->id,
                                         'nouveau_solde' => $coi->Solde,
                                         'montant_débité' => $credit->montant
@@ -237,7 +232,7 @@ class RappelPortionsJournalCredits extends Command
                                     // Vous pourriez ajouter ici la logique d'envoi
                                     // Récupérer l'emprunteur associé au crédit
                                     $investisseur = User::find($id);
-                                    Log::info('emprunteur ID : ' . $id);
+                                    Log::info('investisseur: ' . $id);
                                     if (!$investisseur) {
                                         throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
                                     }
@@ -257,12 +252,9 @@ class RappelPortionsJournalCredits extends Command
                             // 2. Récupérer les remboursements associés
                             $remboursements = remboursements::where('credit_id', $credit->id);
 
-                            // 3. Vérifier si le montant remboursé est égal au montant total du crédit
-                            if ($remboursements) {
-                                // Mettre à jour le statut en "remboursé"
-                                $remboursements->statut = 'remboursé';
-                                $remboursements->save();
-                            }
+                            // Mettre à jour le statut en "remboursé"
+                            $remboursements->credit->status = 'remboursé';
+
                         }
 
                         $credit->save();

@@ -200,15 +200,10 @@ class DetailsCredit extends Component
         DB::beginTransaction();
 
         try {
-            // Vérifier si c'est la première soumission
-            $ajoutMontant = AjoutMontant::where('id_demnd_credit', $user->id)
-                ->where('id_demnd_credit', $this->demandeCredit->id)
-                ->first();
-
 
             // Sauvegarder le montant dans la table `ajout_montant`
-            $ajoumontant = AjoutMontant::create([
-                'montant' => isset($ajoutMontant) ? 0 : $montant,
+           $ajoumontant = AjoutMontant::create([
+                'montant' => $montant,
                 'id_invest' => Auth::id(),
                 'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
                 'id_demnd_credit' => $this->demandeCredit->id,
@@ -231,8 +226,7 @@ class DetailsCredit extends Component
             $reference_id = $this->generateIntegerReference();
 
             $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué', $coi->type_compte);
-            //     $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué', $cfa->type_compte);
-            // }
+
 
             // Committer la transaction
             DB::commit();
@@ -290,10 +284,6 @@ class DetailsCredit extends Component
             // Déclencher l'événement `DebutDeNegociation`
             broadcast(new DebutDeNegociation($this->demandeCredit, $this->investisseurQuiAPayeTout));
             $this->dispatch('DebutDeNegociation', $this->demandeCredit, $this->investisseurQuiAPayeTout);
-
-            $this->demandeCredit->update([
-                'count' => true,
-            ]);
         }
         // Log de l'investisseur qui a payé tout
         Log::info('Investisseur qui a payé tout pour le demandeCredit ID: ' . $this->demandeCredit->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
@@ -448,7 +438,7 @@ class DetailsCredit extends Component
 
         // Vérifier si c'est la première soumission pour chaque utilisateur connecté
         $ajoutMontant = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->where('id_invest', $user->id) // Corrected to check against user_id
+            ->where('id_invest', $user->id)
             ->first();
 
         if (!$ajoutMontant) {

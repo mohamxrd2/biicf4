@@ -164,9 +164,21 @@ class DetailsGagnant extends Component
             $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
 
+            // Récupérer toutes les demandes ayant le même 'demande_id'
+            $demandesAvecLeMemeId = DemandeCredi::where('demande_id', $this->demandeCredit->demande_id)->get();
+
+            // Mettre à jour le champ 'count' à true pour toutes les demandes récupérées
+            foreach ($demandesAvecLeMemeId as $demande) {
+                $demande->update([
+                    'count' => true,
+                ]);
+                $demande->update([
+                    'status' => 'terminer'
+                ]);
+            }
+
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);
-            $this->demandeCredit->update(['status' => 'terminer']);
 
             // Committer la transaction
             DB::commit();

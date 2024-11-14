@@ -42,84 +42,83 @@ class finacementCreditsGroupe extends Command
 
         // Récupérer les credits où 'count' est égal à true et dont la date de fin est passée
         $credits = DemandeCredi::where('count', true)
-            ->whereDate('date_fin', '<', $dateActuelle)
+            ->whereDate('date_fin', '=', $dateActuelle)
+            ->where('status',  'en cours') // Exclure ceux dont le statut est 'terminer'
+            ->where('type_financement', 'offre-composite')
             ->whereNotNull('bailleur')
             ->select('id', 'demande_id', 'id_user', 'date_fin', 'duree', 'montant', 'taux', 'status')
-            ->where(function ($query) {
-                $query->where('status', '!=', 'terminer')
-                    ->orWhereNull('status'); // Inclure les enregistrements où status est NULL
-            })->distinct() // Récupérer des résultats distincts
+            ->distinct() // Récupérer des résultats distincts
             ->get()
             ->groupBy('demande_id') // Grouper par 'demande_id'
             ->map(function ($group) {
                 return $group->first(); // Utiliser le premier élément de chaque groupe
             });
-        Log::info('credits récupérés: ' . $credits->count() . ' credits');
+        Log::info('credits récupérés groupe: ' . $credits->count() . ' credits');
 
         // Tableau pour stocker les résultats
         $resultatsInvestisseurs = [];
 
         // Parcourir les credits sélectionnés pour remplir la nouvelle table
-        // foreach ($credits as $credit) {
-        //     Log::info('Traitement du crédit ID: ' . $credit->id . ' pour l\'utilisateur ID: ' . $credit->id_user);
+        foreach ($credits as $credit) {
+            Log::info('Traitement du crédit ID: ' . $credit->id . ' pour l\'utilisateur ID: ' . $credit->id_user);
 
-        //     // Récupérer les montants financés par chaque investisseur pour le credit en sommant les montants si plusieurs enregistrements existent
-        //     $investissements = AjoutMontant::where('id_demnd_credit', $credit->id)
-        //         ->select('id_invest', DB::raw('SUM(montant) as total_montant'))
-        //         ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
-        //         ->get();
+            // Récupérer les montants financés par chaque investisseur pour le credit en sommant les montants si plusieurs enregistrements existent
+            $investissements = AjoutMontant::where('id_demnd_credit', $credit->id)
+                ->select('id_invest', DB::raw('SUM(montant) as total_montant'))
+                ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
+                ->get();
 
-        //     Log::info('Investissements associés au credit ID ' . $credit->id . ': ' . $investissements->count() . ' investisseurs (somme totale par investisseur)');
+            Log::info('Investissements associés au credit ID ' . $credit->id . ': ' . $investissements->count() . ' investisseurs (somme totale par investisseur)');
 
-        //     // Parcourir les investissements pour chaque investisseur dans le credit
-        //     foreach ($investissements as $investissement) {
-        //         // Stocker dans le tableau les informations sur le credit, l'investisseur et le montant total financé
-        //         $resultatsInvestisseurs[] = [
-        //             'id_demnd_credit' => $credit->id,
-        //             'investisseur_id' => $investissement->id_invest,
-        //             'montant_finance' => $investissement->total_montant, // Montant total financé par cet investisseur
-        //         ];
+            // Parcourir les investissements pour chaque investisseur dans le credit
+            foreach ($investissements as $investissement) {
+                // Stocker dans le tableau les informations sur le credit, l'investisseur et le montant total financé
+                $resultatsInvestisseurs[] = [
+                    'id_demnd_credit' => $credit->id,
+                    'investisseur_id' => $investissement->id_invest,
+                    'montant_finance' => $investissement->total_montant, // Montant total financé par cet investisseur
+                ];
 
-        //         // Log des informations sur chaque investisseur et son montant total financé
-        //         Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le credit ID: ' . $credit->id);
-        //     }
+                // Log des informations sur chaque investisseur et son montant total financé
+                Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le credit ID: ' . $credit->id);
+            }
 
-        //     // Insertion dans la table projets_accordés
-        //     try {
-        //         // Assurez-vous que les dates sont bien des instances de Carbon
+            //     // Insertion dans la table projets_accordés
+            //     try {
+            //         // Assurez-vous que les dates sont bien des instances de Carbon
 
-        //         $debut = Carbon::parse($credit->date_fin);
-        //         $durer = Carbon::parse($credit->duree);
-        //         $jours = $debut->diffInDays($durer);
-        //         Log::info('nbre date:' . $jours);
+                    $debut = Carbon::parse($credit->date_fin);
+                    $durer = Carbon::parse($credit->duree);
+                    $jours = $debut->diffInDays($durer);
+                    Log::info('nbre date:' . $jours);
 
-        //         $montantTotal = $credit->montant  * (1 + $credit->taux / 100);
-        //         $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
+                    $montantTotal = $credit->montant  * (1 + $credit->taux / 100);
+                    $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
 
-        //         Log::info('credit user ID: ' . $credit->id_user);
+                    Log::info('credit user ID: ' . $credit->id_user);
 
-        //         credits_groupé::create([
-        //             'emprunteur_id' => $credit->id_user, // Assurez-vous que la relation est bien définie
-        //             'investisseurs' => json_encode($resultatsInvestisseurs), // Convertir les investisseurs en JSON
-        //             'montant' => $montantTotal,
-        //             'montan_restantt' => $montantTotal, // Assurez-vous que ce champ existe dans la table 'credits'
-        //             'taux_interet' => $credit->taux,
-        //             'date_debut' => $debut,
-        //             'date_fin' => $durer,
-        //             'portion_journaliere' => $portion_journaliere,
-        //             'statut' => 'en cours',
-        //         ]);
+            //         credits_groupé::create([
+            //             'emprunteur_id' => $credit->id_user, // Assurez-vous que la relation est bien définie
+            //             'investisseurs' => json_encode($resultatsInvestisseurs), // Convertir les investisseurs en JSON
+            //             'montant' => $montantTotal,
+            //             'montan_restantt' => $montantTotal, // Assurez-vous que ce champ existe dans la table 'credits'
+            //             'taux_interet' => $credit->taux,
+            //             'date_debut' => $debut,
+            //             'date_fin' => $durer,
+            //             'portion_journaliere' => $portion_journaliere,
+            //             'statut' => 'en cours',
+            //         ]);
 
-        //         // Après avoir inséré toutes les informations pour un demande_id donné,
-        //         // mettre à jour le statut de tous les crédits ayant le même demande_id à "terminer".
-        //         DemandeCredi::where('demande_id', $credit->demande_id)->update(['status' => 'terminer']);
+            //         // Après avoir inséré toutes les informations pour un demande_id donné,
+            //         // mettre à jour le statut de tous les crédits ayant le même demande_id à "terminer".
+            //         DemandeCredi::where('demande_id', $credit->demande_id)->update(['status' => 'terminer']);
 
 
-        //         Log::info('Projet ID: ' . $credit->id . ' inséré dans la table projets_accordés');
-        //     } catch (Exception $e) {
-        //         Log::error('Erreur lors de l\'insertion du credit ID ' . $credit->id . ' dans la table projets_accordés: ' . $e->getMessage());
-        //     }
-        // }
+            //         Log::info('Projet ID: ' . $credit->id . ' inséré dans la table projets_accordés');
+            //     } catch (Exception $e) {
+            //         Log::error('Erreur lors de l\'insertion du credit ID ' . $credit->id . ' dans la table projets_accordés: ' . $e->getMessage());
+            //     }
+        }
 
         // Log de fin de traitement
         // Log::info('Traitement des credits terminé. Nombre total de résultats d\'investisseurs: ' . count($resultatsInvestisseurs));

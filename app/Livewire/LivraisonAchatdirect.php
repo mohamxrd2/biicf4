@@ -70,10 +70,7 @@ class LivraisonAchatdirect extends Component
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
         $this->serverTime = Carbon::now()->toIso8601String();
     }
-    public function placeholder()
-    {
-        return view('admin.components.placeholder');
-    }
+   
     public function commentFormLivr()
     {
 
