@@ -41,12 +41,6 @@ class RemboursementProjet extends Command
         foreach ($projets as $projet) {
             Log::info('Projet ID : ' . $projet->id . ' - Emprunteur ID : ' . $projet->emprunteur_id);
 
-
-
-
-
-
-
             // Récupérer le wallet de l'utilisateur
             $wallet = Wallet::where('user_id', $projet->emprunteur_id)->first();
             if (!$wallet) {

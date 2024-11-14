@@ -710,7 +710,7 @@
                 this.jours = this.hours = this.minutes = this.seconds = 0;
                 this.isFinished = true;
 
-                // Soumettre l'événement seulement une fois
+                //Soumettre l'événement seulement une fois
                 if (!this.hasSubmitted) {
                     setTimeout(() => {
                         Livewire.dispatch('compteReboursFini');

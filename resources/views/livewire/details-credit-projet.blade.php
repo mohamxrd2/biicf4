@@ -49,6 +49,7 @@
                 </div>
             </div>
         </section>
+    
     @else
         <!-- Image du projet -->
         <div class="flex flex-col justify-center items-center text-center bg-gray-200 p-4 rounded-lg mb-6">

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('code_unique'); // Code unique
             $table->foreignId('id_invest')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (investisseur)
             $table->foreignId(column: 'id_emp')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (emprunteur)
+
             $table->timestamps();
         });
     }

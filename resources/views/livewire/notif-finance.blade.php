@@ -23,7 +23,7 @@ if ($userDetails) {
     }
 }
 
-// Récupérer l'ID de la demande depuis les données de la notification
+               // Récupérer l'ID de la demande depuis les données de la notification
                 $demandeId = $notification->data['demande_id'];
 
                 // Vérifier si la demande de crédit existe

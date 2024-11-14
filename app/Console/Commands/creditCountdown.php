@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\CommentTaux;
 use App\Models\Countdown;
+use App\Models\DemandeCredi;
 use App\Models\Projet;
 use App\Models\User;
 use App\Notifications\GagnantProjetNotifications;
@@ -11,9 +12,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-class projetCountdown extends Command
+class creditCountdown extends Command
 {
-    protected $signature = 'app:projet-countdown';
+    protected $signature = 'app:credit-countdown';
     protected $description = 'Command to send notifications for grouped invoices';
 
     public function handle()
@@ -35,7 +36,7 @@ class projetCountdown extends Command
 
             // Retrouver l'enregistrement avec le taux le plus bas, et en cas d'égalité, prendre le plus ancien
             $lowestTauxComment = CommentTaux::with('investisseur')
-                ->where('id_projet', $code_unique) // Filtrer par le code unique du projet
+                ->where('code_unique', $code_unique) // Filtrer par le code unique du credit
                 ->orderBy('taux', 'asc')           // Trier par le taux le plus bas en premier
                 ->orderBy('created_at', 'asc')     // En cas d'égalité, trier par la date de création (le plus ancien en premier)
                 ->first();                         // Récupérer le premier résultat
@@ -55,24 +56,33 @@ class projetCountdown extends Command
                     $taux = $lowestTauxComment->taux;
                     $id_invest = $lowestTauxComment->id_invest;
                     $id_emp = $lowestTauxComment->id_emp;
-                    $id_projet = $lowestTauxComment->id_projet;
-                    $id_projet = $lowestTauxComment->id_projet; // ID du projet que vous avez récupéré
-                    $projet = Projet::find($id_projet); // Recherche du projet correspondant dans la table 'projets'
+                    $ID = $lowestTauxComment->code_unique; // ID du credit récupéré
 
+                    // Recherche d'un credit dans la table 'DemandeCredi' où 'demande_id' correspond au 'code_unique'
+                    $credit = DemandeCredi::where('demande_id', $ID)->first(); // Récupérer le premier credit qui correspond
+
+                    // Vérifier si un credit a été trouvé
+                    if ($credit) {
+                        // Vous pouvez maintenant accéder aux données de $credit
+                        Log::info('Projet trouvé : ' . $credit->id);
+                    } else {
+                        // Si aucun credit n'est trouvé
+                        Log::error('Aucun credit trouvé pour code_unique : ' . $ID);
+                    }
 
                     // Définir les détails de la notification
                     $details = [
                         'taux' => $taux ?? null,
                         'id_invest' => $id_invest,
                         'id_emp' => $id_emp,
-                        'projet_id' => $id_projet,
-                        'duree' => $projet->durer,
-                        'montant' => $projet->montant,
-                        'type_financement' => $projet->type_financement,
+                        'credit_id' => $credit->id,
+                        'duree' => $credit->duree,
+                        'montant' => $credit->montant,
+                        'type_financement' => $credit->type_financement,
                     ];
 
                     // Log avant d'envoyer la notification
-                    Log::info('Envoi de la notification pour le projet.', ['id_invest' => $id_invest]);
+                    Log::info('Envoi de la notification pour le credit.', ['id_invest' => $id_invest]);
 
                     // Récupérer l'utilisateur (investisseur)
                     $owner = User::find($id_invest);

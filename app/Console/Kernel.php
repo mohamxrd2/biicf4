@@ -14,25 +14,25 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         if (App::environment('local')) {
-            // En local, exécuter la commande toutes les minutes
+            //En local, exécuter la commande toutes les minutes
             // $schedule->command('check:countdowns')->everyMinute();
-            // // $schedule->command('app:envoi-four')->everyMinute();
-            // // $schedule->command('app:grouper-facture')->everyMinute();
+
             // $schedule->command('app:appeloffre')->everyMinute();
             // $schedule->command('app:ajout-qoffre')->everyMinute();
-            // $schedule->command('app:projet-countdown')->everyMinute();
+            // $schedule->command('app:credit-countdown')->everyMinute();
             // $schedule->command('app:projet-groupe')->everyMinute();
-            // $schedule->command('app:rappel-journalieres-credits')->everyMinute();  // Exécuter chaque jour
-            // $schedule->command('app:rappel-journalieres-projets')->everyMinute();  // Exécuter chaque jour
-            $schedule->command('app:RemboursementCredit')->everyMinute();
+            $schedule->command('app:rappel-journalieres-credits')->everyMinute();
+            // $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
+            // $schedule->command('app:rappel-journalieres-projets')->everyMinute();
+            // $schedule->command('app:RemboursementCredit')->everyMinute();
             // $schedule->command('app:RemboursementProjet')->everyMinute();
-            // $schedule->command('app:finacementProjetAccorde')->everyMinute();  // Exécuter chaque jour
+            // $schedule->command('app:finacementProjetAccorde')->everyMinute();
+            // $schedule->command('app:finacementCreditsGroupe')->everyMinute();
 
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');
-            // $schedule->command('app:envoi-four')->cron('* * * * *');
-            // $schedule->command('app:grouper-facture')->cron('* * * * *');
+
             $schedule->command('app:appeloffre')->cron('* * * * *');
             $schedule->command('app:ajout-qoffre')->cron('* * * * *');
             $schedule->command('app:projet-countdown')->cron('* * * * *');

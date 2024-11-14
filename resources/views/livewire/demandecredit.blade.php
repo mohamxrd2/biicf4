@@ -273,7 +273,7 @@
             console.log("Date de fin sélectionnée :", Datefin.value);
 
             // Vérification si la date de fin est supérieure à la durée
-            if (selectedDatefin && selectedDate && selectedDatefin > selectedDate) {
+            if (selectedDatefin && selectedDate && selectedDatefin >= selectedDate) {
                 alert('La date de fin ne doit pas dépasser la durée.');
                 Datefin.value = ''; // Réinitialiser la date de fin si la condition est remplie
                 console.log("Condition échouée : la date de fin est supérieure à la durée.");
@@ -281,7 +281,7 @@
                 console.log("Condition réussie : la date de fin est inférieure ou égale à la durée.");
             }
         }
-    
+
         // Fonction pour mettre à jour le montant total en fonction de la quantité
         function updateMontantTotalCredit() {
             const quantitInput = document.getElementById('quantitInput');

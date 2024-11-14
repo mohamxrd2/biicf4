@@ -15,6 +15,7 @@ use App\Models\transactions_remboursement;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\PortionJournaliere;
+use App\Notifications\remboursement;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
@@ -103,63 +104,89 @@ class RappelPortionsJournalProjets extends Command
                             $projet->statut = "remboursé";
 
                             // Décoder les investisseurs depuis le JSON
-                            $investisseursJson = $existingPortion->projet->investisseurs; // Chaîne JSON
+                            $investisseursJson = $projet->investisseurs; // Chaîne JSON
 
                             // Décodage du JSON en tableau PHP
                             $decodedInvestisseurs = json_decode($investisseursJson, true);
 
-                            // Vérifier que le JSON est correctement formaté
+                            // Initialiser des tableaux pour stocker les IDs des investisseurs et leurs montants financés
+                            $investisseursIds = [];
+                            $investisseursMontants = [];
+
                             if (is_array($decodedInvestisseurs)) {
-                                // Total de l'investissement global pour calculer les parts de chaque investisseur
-                                $totalInvestissement = array_sum(array_column($decodedInvestisseurs, 'montant_finance'));
+                                foreach ($decodedInvestisseurs as $investisseur) {
+                                    // Vérifier que l'ID de l'investisseur et le montant financé sont définis, puis les ajouter aux tableaux
+                                    if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
+                                        $investisseursIds[] = $investisseur['investisseur_id'];
+                                        $investisseursMontants[$investisseur['investisseur_id']] = $investisseur['montant_finance'];
+                                    }
+                                }
+                            }
 
-                                // Récupérer le portefeuille principal (CRP) pour déduire le montant total
-                                $crpWallet = Crp::where('id_wallet', $wallet->id)->first();
+                            // Log des IDs des investisseurs
+                            Log::info('Liste des IDs des investisseurs : ' . implode(', ', $investisseursIds));
 
-                                if ($crpWallet && $crpWallet->Solde >= $totalInvestissement) { // Assurez-vous que le solde est suffisant
-                                    foreach ($decodedInvestisseurs as $investisseur) {
-                                        // Vérifier que l'ID de l'investisseur et le montant investi sont définis
-                                        if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
-                                            $investisseurId = $investisseur['investisseur_id'];
-                                            $montantInvesti = $investisseur['montant_finance'];
+                            // Log des montants financés par investisseur
+                            DB::beginTransaction();
+                            try {
+                                foreach ($investisseursMontants as $id => $montant) {
+                                    // Log de l'opération
+                                    Log::info("Investisseur ID $id a financé : $montant");
 
-                                            // Calculer la part de remboursement pour cet investisseur
-                                            $montantRembourse = ($montantInvesti / $totalInvestissement) * $montantASoustraire;
-
-                                            // Récupérer le portefeuille de l'investisseur
-                                            $investisseurWallet = Wallet::where('id_user', $investisseurId)->first();
-
-                                            if ($investisseurWallet) {
-                                                // Ajouter le montant remboursé au portefeuille de l'investisseur
-                                                $investisseurWallet->Solde += $montantRembourse;
-                                                $investisseurWallet->save();
-
-                                                // Enregistrer la transaction (optionnel)
-                                                $reference_id = $this->generateIntegerReference();
-
-                                                $this->createTransaction(
-                                                    $projet->emprunteur_id,
-                                                    $investisseurId,
-                                                    'Reception',
-                                                    $portionCapital,
-                                                    $reference_id,
-                                                    'Fond conservé pour remboursement de crédit',
-                                                    'Gele'
-                                                );
-                                            }
-                                        }
+                                    // Mise à jour de la table CRP
+                                    $crp = Crp::where('id_wallet', $wallet->id)->first();
+                                    if ($crp) {
+                                        $crp->Solde -= $montant;
+                                        $crp->save();
                                     }
 
-                                    // Déduire le montant total remboursé du portefeuille CRP
-                                    $crpWallet->Solde -= $montantASoustraire;
-                                    $crpWallet->save();
+                                    // Mise à jour de la table COI
+                                    $coi = Coi::where('id_wallet', $wallet->id)->first();
+                                    if ($coi) {
+                                        $coi->Solde += $montant;
+                                        $coi->save();
+                                    }
 
-                                    Log::info("Montant total de {$montantASoustraire} remboursé et distribué aux investisseurs.");
-                                } else {
-                                    Log::error("Solde insuffisant dans le portefeuille CRP pour effectuer le remboursement.");
+                                    $reference_id = $this->generateIntegerReference();
+                                    $this->createTransaction(
+                                        $projet->emprunteur_id,
+                                        $id,
+                                        'Envoi',
+                                        $montant,
+                                        $reference_id,
+                                        'Remboursement de financement',
+                                        'effectué',
+                                        $crp->type_compte
+                                    );
+
+                                    $this->createTransaction(
+                                        $projet->emprunteur_id,
+                                        $id,
+                                        'Réception',
+                                        $montant,
+                                        $reference_id,
+                                        'Remboursement de financement',
+                                        'effectué',
+                                        $crp->type_compte
+                                    );
+
+                                    // Vous pourriez ajouter ici la logique d'envoi
+                                    // Récupérer l'emprunteur associé au crédit
+                                    $investisseur = User::find($id);
+                                    Log::info('emprunteur ID : ' . $id);
+                                    if (!$investisseur) {
+                                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $projet->id);
+                                    }
+
+                                    $message = 'Payement de credit effectué avec success.';
+                                    Notification::send($investisseur, new remboursement($message));
                                 }
-                            } else {
-                                Log::error("Format incorrect des investisseurs dans le JSON.");
+                                DB::commit();
+                            } catch (Exception $e) {
+                                // Annulation de toutes les modifications en cas d'erreur
+                                DB::rollback();
+                                Log::error("Erreur lors du traitement des transactions: " . $e->getMessage());
+                                throw $e;
                             }
                         }
 
@@ -216,7 +243,7 @@ class RappelPortionsJournalProjets extends Command
         }
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
@@ -226,6 +253,7 @@ class RappelPortionsJournalProjets extends Command
         $transaction->reference_id = $reference_id;
         $transaction->description = $description;
         $transaction->status = $status;
+        $transaction->type_compte = $type_compte;
         $transaction->save();
     }
 

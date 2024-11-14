@@ -629,11 +629,15 @@ class UserController extends Controller
 
     public function detailcredit($id)
     {
-        return view('finance.detailcredit', ['id' => $id, 'id_projet' => null]); // Si vous n'avez pas d'ID de projet
+        return view('finance.detailcredit', ['id' => $id, 'id_projet' => null, 'id_details' => null]); // Si vous n'avez pas d'ID de projet
     }
 
     public function detailcreditprojet($id)
     {
-        return view('finance.detailcredit', ['id' => null, 'id_projet' => $id]); // Passer un ID de projet
+        return view('finance.detailcredit', ['id' => null, 'id_projet' => $id, 'id_details' => null]); // Passer un ID de projet
+    }
+    public function gagnantNegocation($id)
+    {
+        return view('finance.detailcredit', ['id' => null, 'id_projet' => null, 'id_details' => $id]); // Passer un ID de projet
     }
 }

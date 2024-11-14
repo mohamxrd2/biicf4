@@ -245,6 +245,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('finance/detail-projet-negocie/{id}', [UserController::class, 'detailprojetNegocie'])->name('detailprojetNegocie');
     Route::get('finance/detail-credit/{id}', [UserController::class, 'detailcredit'])->name('detailcredit');
     Route::get('finance/detail-credit-projet/{id}', [UserController::class, 'detailcreditprojet'])->name('detailcreditprojet');
+    Route::get('finance/gagnant-negocation/{id}', [UserController::class, 'gagnantNegocation'])->name('gagnantNegocation');
 });
 
 

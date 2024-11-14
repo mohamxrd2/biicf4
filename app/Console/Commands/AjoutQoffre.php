@@ -25,8 +25,7 @@ class AjoutQoffre extends Command
 
     public function handle()
     {
-        // Retrieve non-notified offer groups that are at least 1 minute old
-        Log::info('Starting AjoutQoffre command.');
+       
 
         $offrecountdowns = Countdown::where('notified', false)
             ->where('difference', 'offregroupe') // Ensure column name and value are correct

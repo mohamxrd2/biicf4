@@ -12,4 +12,8 @@
         @livewire('details-credit-projet', ['id' => $id_projet])
     @endif
 
+    @if ($id_details)
+        @livewire('details-gagnant', ['id' => $id_details])
+    @endif
+
 @endsection

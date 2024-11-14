@@ -33,7 +33,7 @@ class GagnantProjetNotifications extends Notification implements ShouldQueue
             'taux' => $this->details['taux'] ?? null, // Vérifie que la clé 'taux' existe dans le tableau
             'id_invest' => $this->details['id_invest'] ?? null, // Vérifie que la clé 'id_invest' existe
             'id_emp' => $this->details['id_emp'] ?? null, // Vérifie que la clé 'id_emp' existe
-            'projet_id' => $this->details['projet_id'] ?? null, // Vérifie que la clé 'id_projet' existe
+            'credit_id' => $this->details['credit_id'] ?? null, // Vérifie que la clé 'id_projet' existe
             'duree' => $this->details['duree'] ?? null, // Vérifie que la clé 'id_projet' existe
             'montant' => $this->details['montant'] ?? null, // Vérifie que la clé 'id_projet' existe
             'type_financement' => $this->details['type_financement'] ?? null, // Vérifie que la clé 'id_projet' existe
