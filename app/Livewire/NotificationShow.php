@@ -1422,8 +1422,12 @@ class NotificationShow extends Component
         Log::info('Solde du portefeuille du fournisseur mis à jour', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
 
         // Transactions
-        $this->createTransaction(Auth::user()->id, $this->notification->data['fournisseur'], 'Reception', $totalSom);
-        Log::info('Transaction fournisseur créée', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
+        // $this->createTransaction(Auth::user()->id, $this->notification->data['fournisseur'], 'Reception', $totalSom);
+        // Log::info('Transaction fournisseur créée', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
+
+        $referenceId = $this->generateIntegerReference();
+
+        $this->createTransactionNew(Auth::user()->id, $this->notification->data['fournisseur'], 'Réception', 'COC', $totalSom, $referenceId, 'Reception pour achat de ' . $produit->name);
 
         // Montant total de la transaction
         $prixTotal = $this->notification->data['prixTrade'];
@@ -1433,8 +1437,11 @@ class NotificationShow extends Component
         $livreurWallet->increment('balance', $montantLivreur);
         Log::info('Solde du portefeuille du livreur mis à jour', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
-        $this->createTransaction(Auth::user()->id, $this->notification->data['livreur'], 'Reception', $montantLivreur);
-        Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
+
+        // $this->createTransaction(Auth::user()->id, $this->notification->data['livreur'], 'Reception', $montantLivreur);
+        // Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
+
+        $this->createTransactionNew(Auth::user()->id, $this->notification->data['livreur'], 'Réception', 'COC', $montantLivreur, $referenceId, 'Reception pour livraison de ' . $produit->name);
 
 
         Notification::send($client, new colisaccept($data));

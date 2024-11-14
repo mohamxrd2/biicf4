@@ -2,21 +2,23 @@
 
 namespace App\Livewire;
 
-use App\Models\Livraisons;
-use App\Models\NotificationEd;
-use App\Models\ProduitService;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Notifications\CountdownNotificationAd;
-use App\Notifications\livraisonAchatdirect;
-use Carbon\Carbon;
-use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
-use Livewire\WithFileUploads;
-use Intervention\Image\Facades\Image;
 use Livewire\Component;
+use App\Models\Livraisons;
+use App\Models\Transaction;
+use Livewire\WithFileUploads;
+use App\Models\NotificationEd;
+use App\Models\ProduitService;
+use App\Notifications\RefusAchat;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Intervention\Image\Facades\Image;
+use App\Notifications\livraisonAchatdirect;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\CountdownNotificationAd;
+use Illuminate\Notifications\DatabaseNotification;
 
 class Achatdirect extends Component
 {
@@ -206,6 +208,68 @@ class Achatdirect extends Component
 
         $this->modalOpen = false;
         $this->notification->update(['reponse' => 'accepte']);
+    }
+
+    public function refuser()
+    {
+        // Vérifiez si l'utilisateur a un portefeuille
+        $userId = Auth::id();
+
+        $clientId = $this->notification->data['userSender'];
+        $userWallet = Wallet::where('user_id', $clientId)->first();
+        if (!$userWallet) {
+            session()->flash('error', 'Portefeuille introuvable.');
+            return;
+        }
+
+        
+
+        // Mettez à jour la notification
+        $notification = NotificationEd::find($this->notification->id);
+        if (!$notification) {
+            session()->flash('error', 'Notification introuvable.');
+            return;
+        }
+        
+
+        $montantTotal = $notification->data['montantTotal'];
+        $userWallet->increment('balance', $montantTotal);
+
+        $reference_id = $this->generateIntegerReference();
+
+        $this->createTransaction($userId, $clientId, 'Réception', $montantTotal, $reference_id, 'Achat refusé', 'effectué', 'COC');
+
+        $owner = User::find($clientId);
+
+        Notification::send($owner, new RefusAchat('Votre achat à été refusé'));
+
+        session()->flash('success', 'Achat refusé.');
+
+
+        $this->notification->update(['reponse' => 'refuser']);
+        
+    }
+
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
+        $transaction->save();
+    }
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
 
     protected function handlePhotoUpload($photoField)

@@ -35,6 +35,8 @@ class CountdownNotificationAd extends Component
         $this->user = Auth::id(); // Initialisation de $user avec l'utilisateur authentifié
 
 
+
+
         $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification'
             || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
             || $this->notification->type === 'App\Notifications\AppelOffreTerminerGrouper'
@@ -96,10 +98,15 @@ class CountdownNotificationAd extends Component
         }
 
         // Déduire le montant requis du portefeuille de l'utilisateur
-        $userWallet->decrement('balance', $requiredAmount);
-        Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
+        //$userWallet->decrement('balance', $requiredAmount);
+        //Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
 
-        $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
+        // $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
+
+        $reference_id = $this->generateIntegerReference();
+
+        $this->createTransaction($userSender->id, $this->notification->data['fournisseur'], 'Envoie', $requiredAmount, $reference_id, 'Debité pour achat', 'effectué', 'COC');
+
 
         // Vérifiez si $this->userFour est défini
         if (!isset($this->userFour) || !$this->userFour) {
@@ -164,14 +171,26 @@ class CountdownNotificationAd extends Component
 
         session()->flash('success', 'Validation effectuée avec succès.');
     }
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
         $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
         $transaction->save();
+    }
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
 
     public function render()
