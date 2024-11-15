@@ -24,12 +24,12 @@ if ($userDetails) {
                 }
 
             @endphp
-
+d
             <div class="flex flex-wrap items-center gap-y-4 py-6">
                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Projet ID:</dt>
                     <dd class="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                        <a href="#" class="hover:underline">#{{ $notification->data['credit_id'] }}</a>
+                        <a href="#" class="hover:underline">#{{ $notification->data['projet_id'] }}</a>
                     </dd>
                 </dl>
 

@@ -3,14 +3,17 @@
 namespace App\Livewire;
 
 use App\Models\Cfa;
+use App\Models\projets_accordé;
 use App\Models\User;
 use App\Models\Projet;
 use App\Models\Wallet;
 use App\Models\CrediScore;
+use App\Models\remboursements;
 use App\Models\UserPromir;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Livewire\Component;
 
@@ -20,7 +23,6 @@ class DetailsCreditProjet extends Component
     public $notification;
     public $userId;
     public $userDetails;
-    public $demandeCredit;
     public $insuffisant = false;
     public $userInPromir;
     public $crediScore;
@@ -52,7 +54,13 @@ class DetailsCreditProjet extends Component
         $projetId = $this->notification->data['projet_id'] ?? null;
         $this->projet = $projetId ? Projet::find($projetId) : null;
 
-        //  
+        $this->images = array_filter([
+            $this->projet->photo1,
+            $this->projet->photo2,
+            $this->projet->photo3,
+            $this->projet->photo4,
+            $this->projet->photo5 // Ajoutez autant de photos que vous avez dans la base de données
+        ]);
 
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
@@ -101,15 +109,24 @@ class DetailsCreditProjet extends Component
         DB::beginTransaction();
 
         try {
-            // // Mettre à jour le solde du wallet de l'investisseur
-            // $wallet->balance -= $montant;
-            // $wallet->save();
 
             // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
             $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+
             if ($coi) {
-                $coi->Solde -= $montant; // Débiter le montant du solde du COI
-                $coi->save();
+                // Vérifie si le solde est suffisant pour le débit
+                if ($coi->Solde >= $montant) {
+                    $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                    $coi->save();
+                } else {
+                    // Retourne un message ou gère le cas où le solde est insuffisant
+                    session()->flash('error', 'Solde insuffisant dans le COI.');
+                    // Arrête le processus si le solde est insuffisant
+                    return;
+                }
+            } else {
+                // Gérer le cas où le compte COI n'existe pas ou n'est pas trouvé
+                session()->flash('error', 'Compte COI introuvable.');
             }
 
             // Mettre à jour ou créer un enregistrement dans la table CFA
@@ -121,6 +138,40 @@ class DetailsCreditProjet extends Component
                 $cfa->save();
             }
 
+            //  Calculer la portion journalière en fonction du montant et de la durée.
+            // Assurez-vous que les dates sont bien des instances de Carbon
+            $debut = Carbon::parse($this->projet->date_fin);
+            $durer = Carbon::parse($this->projet->durer);
+            $jours = $debut->diffInDays($durer);
+
+            $montantTotal = $montant * (1 + $this->projet->taux / 100);
+            $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
+
+
+            // Mettre à jour ou créer un enregistrement dans la table credits
+            $credit = projets_accordé::create([
+                'emprunteur_id' => $this->userId,
+                'investisseurs' => [Auth::id()],
+                'montant' => $montantTotal,
+                'montant_restant' => $montantTotal,
+                'taux_interet' => $this->projet->taux,
+                'date_debut' => $this->projet->date_fin,
+                'date_fin' => $this->projet->durer,
+                'portion_journaliere' => $portion_journaliere,
+                'statut' => 'en_cours',
+            ]);
+
+            // Création du remboursement associé
+            remboursements::create([
+                'credit_id' => $credit->id,  // Associe le remboursement au crédit créé
+                'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
+                'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
+                'montant_interet' => $this->projet->taux,  // Définissez cette variable en fonction de votre logique métier
+                'date_remboursement' => $this->projet->durer,  // Définissez cette variable en fonction de votre logique métier
+                'statut' => 'en cours',  // Statut du remboursement
+                'description' => $this->projet->name,  // Statut du remboursement
+            ]);
+
             $reference_id = $this->generateIntegerReference();
 
             $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
@@ -128,6 +179,7 @@ class DetailsCreditProjet extends Component
 
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);
+            $this->projet->update(['count' => true]);
 
             // Committer la transaction
             DB::commit();
