@@ -2,15 +2,16 @@
 
 namespace App\Livewire;
 
-use App\Models\CategorieProduits_Servives;
-use App\Models\ProduitService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
+use Livewire\WithFileUploads;
+use App\Models\ProduitService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Intervention\Image\Facades\Image;
+use App\Models\CategorieProduits_Servives;
 
 
 class AjoutProduitServices extends Component
@@ -94,6 +95,7 @@ class AjoutProduitServices extends Component
 
     public $locked = false; // Déverrouillé par défaut
     public $countries = [];
+    public $user;
 
     public function mount()
     {
@@ -101,6 +103,8 @@ class AjoutProduitServices extends Component
         $this->categories = CategorieProduits_Servives::all();
         $this->produits = collect(); // Ensure it's an empty Collection
         $this->fetchCountries();
+        $this->user = User::find(auth()->id());
+
     }
     public function updatedSearchTerm()
     {
@@ -138,6 +142,7 @@ class AjoutProduitServices extends Component
 
         if ($selectedProduct) {
             // Remplir les propriétés avec les détails du produit sélectionné
+            $this->categorie = $selectedProduct->categorie->categorie_produit_services;
             $this->reference = $selectedProduct->reference;
             $this->name = $selectedProduct->name;
             $this->type = $selectedProduct->type;
@@ -147,10 +152,10 @@ class AjoutProduitServices extends Component
             $this->origine = $selectedProduct->origine;
             $this->specification = $selectedProduct->specification;
 
-            $this->photoProd1 = $selectedProduct->photoProd1;
-            $this->photoProd2 = $selectedProduct->photoProd2;
-            $this->photoProd3 = $selectedProduct->photoProd3;
-            $this->photoProd4 = $selectedProduct->photoProd4;
+            // $this->photoProd1 = $selectedProduct->photoProd1;
+            // $this->photoProd2 = $selectedProduct->photoProd2;
+            // $this->photoProd3 = $selectedProduct->photoProd3;
+            // $this->photoProd4 = $selectedProduct->photoProd4;
 
             $this->qualification = $selectedProduct->qalifServ;
             $this->specialite = $selectedProduct->sepServ;
@@ -229,12 +234,12 @@ class AjoutProduitServices extends Component
             'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'Quantite' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
             //
-            'selectedSous_region' => 'required|string',
-            'selectedContinent' => 'required|string',
-            'pays' => 'required|string',
-            'depart' => 'required|string',
-            'ville' => 'required|string',
-            'commune' => 'required|string',
+            // 'selectedSous_region' => 'required|string',
+            // 'selectedContinent' => 'required|string',
+            // 'pays' => 'string',
+            // 'depart' => 'string',
+            // 'ville' => 'string',
+            // 'commune' => 'string',
             //photo
             'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
             'photoProd2' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
@@ -297,12 +302,12 @@ class AjoutProduitServices extends Component
                 'description' => $this->type === 'Service' ? $this->descrip : null,
                 'quantite' => $this->type === 'Service' ? $this->Quantite : null,
                 //localisation
-                'continent' => $this->selectedContinent,
-                'sous_region' => $this->selectedSous_region,
-                'pays' => $this->pays,
-                'zonecoServ' => $this->depart,
-                'villeServ' => $this->ville,
-                'comnServ' => $this->commune,
+                'continent' => $this->user->continent,
+                'sous_region' => $this->user->sous_region,
+                'pays' => $this->user->country,
+                'zonecoServ' => $this->user->active_zone,
+                'villeServ' => $this->user->ville,
+                'comnServ' => $this->user->commune,
                 'user_id' => auth()->id(),
                 'categorie_id' => $categorie->id ?? null,
             ]);

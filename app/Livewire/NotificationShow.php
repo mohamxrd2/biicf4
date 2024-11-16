@@ -1458,6 +1458,7 @@ class NotificationShow extends Component
     {
 
         $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
+        $produit = ProduitService::find($this->notification->data['idProd']);
 
         $montantTotal = $this->totalPrice;
 
@@ -1489,9 +1490,15 @@ class NotificationShow extends Component
 
         $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
 
-        $this->createTransaction($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
+        
 
-        $this->createTransaction($this->notification->data['id_client'], $this->notification->data['id_livreur'], 'Reception', $this->notification->data['prixTrade']);
+        $referenceId = $this->generateIntegerReference();
+
+        $this->createTransactionNew($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Réception', 'COC', $montantTotal, $referenceId, 'Refus de recupération de ' . $produit->name);
+
+        
+
+        $this->createTransactionNew($this->notification->data['id_client'], $$this->notification->data['id_livreur'], 'Réception', 'COC', $this->notification->data['prixTrade'], $referenceId, 'Réception pour livraison de ' . $produit->name);
 
         Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
 
