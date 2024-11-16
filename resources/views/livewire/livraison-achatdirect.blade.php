@@ -47,7 +47,6 @@
                             @endforeach
                         </div>
 
-
                         <form wire:submit.prevent="commentFormLivr">
 
                             <div

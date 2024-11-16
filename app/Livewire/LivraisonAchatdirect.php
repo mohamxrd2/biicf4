@@ -70,7 +70,7 @@ class LivraisonAchatdirect extends Component
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
         $this->serverTime = Carbon::now()->toIso8601String();
     }
-   
+
     public function commentFormLivr()
     {
 
@@ -119,7 +119,7 @@ class LivraisonAchatdirect extends Component
                 'code_unique' => $validatedData['code_livr'],
             ]);
             // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-            broadcast(new OldestCommentUpdated(now()->toIso8601String()));
+            dd(broadcast(new OldestCommentUpdated(now()->toIso8601String())));
             $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
         }
 
