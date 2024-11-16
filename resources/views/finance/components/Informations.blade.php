@@ -37,7 +37,7 @@
                 <p class="text-gray-600 font-medium">Motif du crédit:
                 </p>
                 <p class="text-gray-800">
-                    {{ $demandeCredit->objet_financement }}</p>
+                    {{ $demandeCredit->objet_financement ?? $projet->name }}</p>
             </div>
 
 
@@ -45,15 +45,15 @@
                 <p class="text-gray-600 font-medium">Type de crédit:
                 </p>
                 <p class="text-gray-800">
-                    {{ $demandeCredit->type_financement }}</p>
+                    {{ $demandeCredit->type_financement ?? $projet->type_financement }}</p>
             </div>
 
             <div>
                 @php
                     use Carbon\Carbon;
-                    $date = Carbon::parse($demandeCredit->duree); // Assurez-vous que duree est une date valide
-                    $date2 = Carbon::parse($demandeCredit->date_debut); // Assurez-vous que duree est une date valide
-                    $date3 = Carbon::parse($demandeCredit->date_fin); // Assurez-vous que duree est une date valide
+                    $date = Carbon::parse($demandeCredit->duree ?? $projet->durer); // Assurez-vous que duree est une date valide
+                    $date2 = Carbon::parse($demandeCredit->date_debut ?? $projet->created_at); // Assurez-vous que duree est une date valide
+                    $date3 = Carbon::parse($demandeCredit->date_fin ?? $projet->date_fin); // Assurez-vous que duree est une date valide
                 @endphp
                 <p class="text-gray-600 font-medium">Date de Remboursement du crédit:
                 </p>
@@ -78,7 +78,7 @@
             <div>
                 <p class="text-gray-600 font-medium">heure fin:
                 </p>
-                <p class="text-gray-800">{{ $demandeCredit->heure_fin }}
+                <p class="text-gray-800">{{ $demandeCredit->heure_fin ?? $projet->heure_fin  }}
                 </p>
             </div>
 
@@ -92,7 +92,7 @@
             <div>
                 <p class="text-gray-600 font-medium">Taux du crédit:
                 </p>
-                <p class="text-gray-800">{{ $demandeCredit->taux }} %
+                <p class="text-gray-800">{{ $demandeCredit->taux ?? $projet->taux }} %
                 </p>
             </div>
 

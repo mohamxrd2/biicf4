@@ -229,6 +229,14 @@ class RappelPortionsJournalCredits extends Command
                                         $coi->type_compte
                                     );
 
+                                    $credit->statut = "payé";
+
+                                    // 2. Récupérer les remboursements associés
+                                    $remboursements = remboursements::where('credit_id', $credit->id);
+
+                                    // Mettre à jour le statut en "remboursé"
+                                    $remboursements->credit->status = 'remboursé';
+                                    
                                     // Vous pourriez ajouter ici la logique d'envoi
                                     // Récupérer l'emprunteur associé au crédit
                                     $investisseur = User::find($id);
@@ -247,13 +255,7 @@ class RappelPortionsJournalCredits extends Command
                                 Log::error("Erreur lors du traitement des transactions: " . $e->getMessage());
                                 throw $e;
                             }
-                            $credit->statut = "payé";
 
-                            // 2. Récupérer les remboursements associés
-                            $remboursements = remboursements::where('credit_id', $credit->id);
-
-                            // Mettre à jour le statut en "remboursé"
-                            $remboursements->credit->status = 'remboursé';
 
                         }
 

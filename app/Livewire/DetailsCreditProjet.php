@@ -147,23 +147,31 @@ class DetailsCreditProjet extends Component
             $montantTotal = $montant * (1 + $this->projet->taux / 100);
             $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
 
+            $resultatsInvestisseurs = [];
 
+            // Stocker dans le tableau les informations sur le projet, l'investisseur et le montant total financé
+            $resultatsInvestisseurs[] = [
+                'projet_id' => $this->projet->id,
+                'investisseur_id' => Auth::id(),
+                'montant_finance' => $montant, // Montant total financé par cet investisseur
+            ];
+            
             // Mettre à jour ou créer un enregistrement dans la table credits
-            $credit = projets_accordé::create([
+            projets_accordé::create([
                 'emprunteur_id' => $this->userId,
-                'investisseurs' => [Auth::id()],
+                'investisseurs' => json_encode($resultatsInvestisseurs),
                 'montant' => $montantTotal,
-                'montant_restant' => $montantTotal,
+                'montan_restantt' => $montantTotal,
                 'taux_interet' => $this->projet->taux,
                 'date_debut' => $this->projet->date_fin,
                 'date_fin' => $this->projet->durer,
                 'portion_journaliere' => $portion_journaliere,
-                'statut' => 'en_cours',
+                'statut' => 'en cours',
             ]);
 
             // Création du remboursement associé
             remboursements::create([
-                'credit_id' => $credit->id,  // Associe le remboursement au crédit créé
+                'projet_id' => $this->projet->id,  // Associe le remboursement au crédit créé
                 'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
                 'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
                 'montant_interet' => $this->projet->taux,  // Définissez cette variable en fonction de votre logique métier

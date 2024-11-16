@@ -10,6 +10,7 @@ use App\Models\credits;
 use App\Models\Crp;
 use App\Models\portions_journalieres;
 use App\Models\projets_accordé;
+use App\Models\remboursements;
 use App\Models\Transaction;
 use App\Models\transactions_remboursement;
 use App\Models\User;
@@ -39,7 +40,7 @@ class RappelPortionsJournalProjets extends Command
         Log::info('Date du jour : ' . $dateDuJour);
 
         // Récupérer tous les crédits
-        $projets = projets_accordé::where('statut', 'en cours')->get();
+        $projets = projets_accordé::where('statut', 'en cours')->orderBy('id')->get();
         Log::info('Nombre de projets avec statut "en cours" : ' . $projets->count());
 
         foreach ($projets as $projet) {
@@ -47,35 +48,42 @@ class RappelPortionsJournalProjets extends Command
 
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
             if ($dateDuJour >= $projet->date_debut && $dateDuJour <= $projet->date_fin) {
+                Log::info('$projet->date_debut : ' . $projet->date_debut . ' - $projet->date_fin : ' . $projet->date_fin);
+
                 // Vérifier si la portion a déjà été enregistrée pour cette date
-                $existingPortion = portions_journalieres::where('id_projet_accord', $projet->id)
+                $existingPortion = portions_journalieres::where('id_user', $projet->emprunteur_id)
                     ->where('date_portion', $dateDuJour)
                     ->first();
 
                 if (!$existingPortion) {
                     Log::warning("Aucune portion trouvée pour la date du jour.");
-                    continue;
                 }
+                Log::info("Traitement du projet ID : " . $projet->id);
 
-                $portionCapital = $existingPortion->portion_capital;
-                $portionInteret = $existingPortion->portion_interet;
-                $montantTotal = $portionCapital + $portionInteret;
+                $portionCapital = $projet->montant;
+                $portionInteret = $projet->taux_interet;
+
+                $montantTotal = $projet->portion_journaliere;
+
                 Log::info("Montants récupérés pour le crédit ID: " . $projet->id, [
                     'portion_capital' => $portionCapital,
                     'portion_interet' => $portionInteret,
                     'montant_total' => $montantTotal
                 ]);
 
-                // Récupérer le wallet de l'utilisateur
                 $wallet = Wallet::where('user_id', $projet->emprunteur_id)->first();
-                if (!$wallet) {
+                $crp = Crp::where('id_wallet', $wallet->id)->first();
+
+                if (!$wallet && !$crp) {
                     Log::warning("Wallet non trouvé pour l'emprunteur ID : " . $projet->emprunteur_id);
                     continue;
                 }
 
                 DB::beginTransaction();
                 try {
-                    if ($wallet->balance >= $montantTotal) {
+                    $balanceSuffisante = $wallet->balance >= $montantTotal;
+
+                    if ($balanceSuffisante) {
                         // Récupérer l'emprunteur associé au crédit
                         $emprunteur = User::find($projet->emprunteur_id);
                         Log::info('emprunteur ID : ' . $projet->emprunteur_id);
@@ -103,91 +111,7 @@ class RappelPortionsJournalProjets extends Command
                         if ($projet->montan_restantt == 0) {
                             $projet->statut = "remboursé";
 
-                            // Décoder les investisseurs depuis le JSON
-                            $investisseursJson = $projet->investisseurs; // Chaîne JSON
-
-                            // Décodage du JSON en tableau PHP
-                            $decodedInvestisseurs = json_decode($investisseursJson, true);
-
-                            // Initialiser des tableaux pour stocker les IDs des investisseurs et leurs montants financés
-                            $investisseursIds = [];
-                            $investisseursMontants = [];
-
-                            if (is_array($decodedInvestisseurs)) {
-                                foreach ($decodedInvestisseurs as $investisseur) {
-                                    // Vérifier que l'ID de l'investisseur et le montant financé sont définis, puis les ajouter aux tableaux
-                                    if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
-                                        $investisseursIds[] = $investisseur['investisseur_id'];
-                                        $investisseursMontants[$investisseur['investisseur_id']] = $investisseur['montant_finance'];
-                                    }
-                                }
-                            }
-
-                            // Log des IDs des investisseurs
-                            Log::info('Liste des IDs des investisseurs : ' . implode(', ', $investisseursIds));
-
-                            // Log des montants financés par investisseur
-                            DB::beginTransaction();
-                            try {
-                                foreach ($investisseursMontants as $id => $montant) {
-                                    // Log de l'opération
-                                    Log::info("Investisseur ID $id a financé : $montant");
-
-                                    // Mise à jour de la table CRP
-                                    $crp = Crp::where('id_wallet', $wallet->id)->first();
-                                    if ($crp) {
-                                        $crp->Solde -= $montant;
-                                        $crp->save();
-                                    }
-
-                                    // Mise à jour de la table COI
-                                    $coi = Coi::where('id_wallet', $wallet->id)->first();
-                                    if ($coi) {
-                                        $coi->Solde += $montant;
-                                        $coi->save();
-                                    }
-
-                                    $reference_id = $this->generateIntegerReference();
-                                    $this->createTransaction(
-                                        $projet->emprunteur_id,
-                                        $id,
-                                        'Envoi',
-                                        $montant,
-                                        $reference_id,
-                                        'Remboursement de financement',
-                                        'effectué',
-                                        $crp->type_compte
-                                    );
-
-                                    $this->createTransaction(
-                                        $projet->emprunteur_id,
-                                        $id,
-                                        'Réception',
-                                        $montant,
-                                        $reference_id,
-                                        'Remboursement de financement',
-                                        'effectué',
-                                        $crp->type_compte
-                                    );
-
-                                    // Vous pourriez ajouter ici la logique d'envoi
-                                    // Récupérer l'emprunteur associé au crédit
-                                    $investisseur = User::find($id);
-                                    Log::info('emprunteur ID : ' . $id);
-                                    if (!$investisseur) {
-                                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $projet->id);
-                                    }
-
-                                    $message = 'Payement de credit effectué avec success.';
-                                    Notification::send($investisseur, new remboursement($message));
-                                }
-                                DB::commit();
-                            } catch (Exception $e) {
-                                // Annulation de toutes les modifications en cas d'erreur
-                                DB::rollback();
-                                Log::error("Erreur lors du traitement des transactions: " . $e->getMessage());
-                                throw $e;
-                            }
+                            $this->remboursementCredit($projet, $wallet,);
                         }
 
 
@@ -243,6 +167,140 @@ class RappelPortionsJournalProjets extends Command
         }
     }
 
+    protected function remboursementCredit($projet, $wallet)
+    {
+        // Décoder les investisseurs depuis le JSON
+        $investisseursJson = $projet->investisseurs; // Chaîne JSON
+
+        // Décodage du JSON en tableau PHP
+        $decodedInvestisseurs = json_decode($investisseursJson, true);
+
+        // Initialiser des tableaux pour stocker les IDs des investisseurs et leurs montants financés
+        $investisseursIds = [];
+        $investisseursMontants = [];
+
+        if (is_array($decodedInvestisseurs)) {
+            foreach ($decodedInvestisseurs as $investisseur) {
+                // Vérifier que l'ID de l'investisseur et le montant financé sont définis, puis les ajouter aux tableaux
+                if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
+                    $investisseursIds[] = $investisseur['investisseur_id'];
+                    $investisseursMontants[$investisseur['investisseur_id']] = $investisseur['montant_finance'];
+                }
+            }
+        }
+
+        // Log des IDs des investisseurs
+        Log::info('Liste des IDs des investisseurs : ' . implode(', ', $investisseursIds));
+
+        DB::beginTransaction();
+        try {
+            // Mise à jour de la table CRP
+            $crp = Crp::where('id_wallet', $wallet->id)->first();
+            if ($crp) {
+                // Vérifie si le solde est suffisant
+                if ($crp->Solde >= $projet->montant) {
+                    $ancienSoldeCrp = $crp->Solde;
+                    $crp->Solde -= $projet->montant;
+                    $crp->save();
+
+                    // Log de la mise à jour
+                    Log::info('Mise à jour de la table CRP', [
+                        'id_wallet' => $wallet->id,
+                        'ancien_solde' => $ancienSoldeCrp,
+                        'nouveau_solde' => $crp->Solde,
+                        'montant_débité' => $projet->montant
+                    ]);
+                } else {
+                    $emprunteur = User::find($projet->emprunteur_id);
+                    Log::info('emprunteur ID : ' . $emprunteur);
+                    if (!$emprunteur) {
+                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $projet->id);
+                    }
+                    $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
+
+                    Notification::send($emprunteur, new PortionJournaliere($projet, $emprunteur, $emprunteur, $message));
+
+                    // Log si le solde est insuffisant
+                    Log::warning('Solde insuffisant dans CRP pour effectuer la déduction', [
+                        'id_wallet' => $wallet->id,
+                        'solde_actuel' => $crp->Solde,
+                        'montant_requis' => $projet->montant
+                    ]);
+                    // Optionnel : Lever une exception ou retourner une erreur
+                    throw new Exception("Solde insuffisant pour effectuer cette opération.");
+                }
+            } else {
+                Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [
+                    'id_wallet' => $wallet->id
+                ]);
+            }
+            foreach ($investisseursMontants as $id => $montant) {
+                // Log de l'opération
+                Log::info("Investisseur ID $id a financé : $montant");
+
+                // Mise à jour de la table COI
+                $walletInvestisseurs = Wallet::where('user_id', $id)->first();
+                Log::info('wallet de l\'investisseur', [
+                    'id_wallet' => $walletInvestisseurs->id,
+
+                ]);
+
+                // Mise à jour de la table COI
+                $coi = Coi::where('id_wallet', $walletInvestisseurs->id)->first();
+                if ($coi) {
+                    $coi->Solde += $projet->montant;
+                    $coi->save();
+                    // Log de la mise à jour
+                    Log::info('Mise à jour de la table CRP', [
+                        'id_wallet' => $walletInvestisseurs->id,
+                        'nouveau_solde' => $coi->Solde,
+                        'montant_débité' => $projet->montant
+                    ]);
+                }
+
+                $reference_id = $this->generateIntegerReference();
+                $this->createTransaction(
+                    $projet->emprunteur_id,
+                    $id,
+                    'Envoie',
+                    $projet->montant,
+                    $reference_id,
+                    'Remboursement de financement',
+                    'effectué',
+                    $crp->type_compte
+                );
+
+                $this->createTransaction(
+                    $projet->emprunteur_id,
+                    $id,
+                    'Réception',
+                    $projet->montant,
+                    $reference_id,
+                    'Remboursement de financement',
+                    'effectué',
+                    $crp->type_compte
+                );
+
+                $projet->statut = "payé";
+
+                // Envoi de la notification
+                $investisseur = User::find($id);
+                Log::info('Investisseur ID : ' . $id);
+                if (!$investisseur) {
+                    throw new Exception("Investisseur non trouvé pour le crédit ID : " . $projet->id);
+                }
+
+                $message = 'Paiement de crédit effectué avec succès.';
+                Notification::send($investisseur, new remboursement($message));
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            // Annulation de toutes les modifications en cas d'erreur
+            DB::rollback();
+            Log::error("Erreur lors du traitement des transactions: " . $e->getMessage());
+            throw $e;
+        }
+    }
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
     {
         $transaction = new Transaction();

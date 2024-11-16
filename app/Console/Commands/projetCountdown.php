@@ -28,38 +28,60 @@ class projetCountdown extends Command
         Log::info('Nombre de countdowns récupérés : ', ['countdown_count' => $countdowns->count()]);
 
         foreach ($countdowns as $countdown) {
-            // Récupérer le code unique du countdown
-            $code_unique = $countdown->code_unique;
+            if ($countdown->difference === 'projet_taux') {
+                // Récupérer le code unique
+                $code_unique = $countdown->code_unique;
 
-            // Log pour le traitement d'un countdown spécifique
-            Log::info('Traitement du countdown', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
+                // Log pour le traitement d'un countdown spécifique
+                Log::info('Traitement du countdown', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
 
-            // Vérifier si le countdown correspond à une notification pour ajout de montant
-            if ($countdown->difference === 'projet_compo') {
-                // Récupérer les enregistrements d'ajout de montant associés au projet
-                $ajoutMontants = AjoutMontant::where('id_projet', $code_unique)->get();
+                // Retrouver l'enregistrement avec le taux le plus bas, et en cas d'égalité, prendre le plus ancien
+                $lowestTauxComment = CommentTaux::with('investisseur')
+                    ->where('projet_id', $code_unique) // Filtrer par le code unique du credit
+                    ->orderBy('taux', 'asc')           // Trier par le taux le plus bas en premier
+                    ->orderBy('created_at', 'asc')     // En cas d'égalité, trier par la date de création (le plus ancien en premier)
+                    ->first();                         // Récupérer le premier résultat
 
-                // Log pour vérifier le nombre de montants récupérés
-                Log::info('Nombre de montants récupérés pour le projet', ['countdown_id' => $countdown->id, 'montant_count' => $ajoutMontants->count()]);
+                // Vérifier si un commentaire avec le taux le plus bas a été trouvé
+                if ($lowestTauxComment) {
+                    Log::info('Commentaire avec le taux le plus bas récupéré.', [
+                        'comment_taux_id' => $lowestTauxComment->id,
+                        'taux' => $lowestTauxComment->taux
+                    ]);
 
-                foreach ($ajoutMontants as $ajoutMontant) {
-                    // Extraire les détails du montant et de l'investisseur
-                    $id_invest = $ajoutMontant->id_invest;
-                    $montant = $ajoutMontant->montant;
-                    $id_projet = $ajoutMontant->id_projet;
-                    $projet = Projet::find($id_projet); // Recherche du projet correspondant
+                    // Log pour signaler que le countdown est prêt pour une notification
+                    Log::info('Préparation des détails de la notification.', ['countdown' => $countdown->id]);
+
+                    $taux = $lowestTauxComment->taux;
+                    $id_invest = $lowestTauxComment->id_invest;
+                    $id_emp = $lowestTauxComment->id_emp;
+                    $ID = $lowestTauxComment->projet_id; // ID du projet récupéré
+
+                    // Recherche d'un projet dans la table 'DemandeCredi' où 'demande_id' correspond au 'code_unique'
+                    $projet = Projet::where('id', $ID)->first(); // Récupérer le premier credit qui correspond
+
+                    // Vérifier si un projet a été trouvé
+                    if ($projet) {
+                        // Vous pouvez maintenant accéder aux données de $credit
+                        Log::info('Projet trouvé : ' . $projet->id);
+                    } else {
+                        // Si aucun projet n'est trouvé
+                        Log::error('Aucun projet trouvé pour code_unique : ' . $ID);
+                    }
 
                     // Définir les détails de la notification
                     $details = [
-                        'montant' => $montant,
+                        'taux' => $taux ?? null,
                         'id_invest' => $id_invest,
-                        'projet_id' => $id_projet,
-                        'duree' => $projet->durer ?? null,
-                        'type_financement' => 'grouper',
+                        'id_emp' => $id_emp,
+                        'projet_id' => $projet->id,
+                        'duree' => $projet->durer,
+                        'montant' => $projet->montant,
+                        'type_financement' => $projet->type_financement,
                     ];
 
                     // Log avant d'envoyer la notification
-                    Log::info('Envoi de la notification pour l\'ajout de montant.', ['id_invest' => $id_invest, 'montant' => $montant]);
+                    Log::info('Envoi de la notification pour le credit.', ['id_invest' => $id_invest]);
 
                     // Récupérer l'utilisateur (investisseur)
                     $owner = User::find($id_invest);
@@ -70,16 +92,13 @@ class projetCountdown extends Command
 
                         // Log après l'envoi de la notification
                         Log::info('Notification envoyée.', ['notification_details' => $details]);
+
+                        // Mettre à jour l'état du countdown après la notification
+                        $countdown->update(['notified' => true]);
                     } else {
                         Log::warning('Aucun utilisateur trouvé avec cet ID.', ['id_invest' => $id_invest]);
                     }
                 }
-
-                // Mettre à jour l'état du countdown après avoir traité tous les ajouts de montant
-                $countdown->update(['notified' => true]);
-            } else {
-                // Log si le countdown n'est pas pour ajout de montant
-                Log::warning('Le countdown ne correspond pas à un ajout de montant.', ['countdown_id' => $countdown->id]);
             }
         }
     }

@@ -12,6 +12,7 @@ use App\Models\Countdown;
 use App\Models\CrediScore;
 use App\Models\credits;
 use App\Models\DemandeCredi;
+use App\Models\gelement;
 use App\Models\remboursements;
 use App\Models\Transaction;
 use App\Models\User;
@@ -202,7 +203,7 @@ class DetailsCredit extends Component
         try {
 
             // Sauvegarder le montant dans la table `ajout_montant`
-           $ajoumontant = AjoutMontant::create([
+            $ajoumontant = AjoutMontant::create([
                 'montant' => $montant,
                 'id_invest' => Auth::id(),
                 'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
@@ -491,19 +492,21 @@ class DetailsCredit extends Component
         DB::beginTransaction();
 
         try {
-            // Vérifier si c'est la première soumission
-            $ajoutMontant = AjoutMontant::where('id_demnd_credit', $user->id)
-                ->where('id_demnd_credit', $this->demandeCredit->id)
-                ->first();
+
 
             // Sauvegarder le montant dans la table `ajout_montant`
             $ajoumontant = AjoutMontant::create([
-                'montant' => isset($ajoutMontant) ? 0 : $montant,
+                'montant' => $montant,
                 'id_invest' => Auth::id(),
                 'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
                 'id_demnd_credit' => $this->demandeCredit->id,
             ]);
-
+            // gelement le montant dans la table `gelement`
+            $gelement = gelement::create([
+                'id_wallet' => $wallet->id,
+                'amount' => $montant,
+                'reference_id' => $this->demandeCredit->demande_id,
+            ]);
             // Log après l'ajout du montant
             Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
 
@@ -514,8 +517,6 @@ class DetailsCredit extends Component
                 $coi->Solde -= $montant; // Débiter le montant du solde du COI
                 $coi->save();
             }
-
-
 
             $reference_id = $this->generateIntegerReference();
 

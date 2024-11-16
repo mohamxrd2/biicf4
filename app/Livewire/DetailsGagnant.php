@@ -2,10 +2,15 @@
 
 namespace App\Livewire;
 
+use App\Models\AjoutAction;
 use App\Models\Cfa;
+use App\Models\Countdown;
 use App\Models\CrediScore;
 use App\Models\credits;
 use App\Models\DemandeCredi;
+use App\Models\gelement;
+use App\Models\Projet;
+use App\Models\projets_accordé;
 use App\Models\remboursements;
 use App\Models\Transaction;
 use App\Models\User;
@@ -15,6 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class DetailsGagnant extends Component
@@ -22,6 +28,7 @@ class DetailsGagnant extends Component
     public $id;
     public $notification;
     public $demandeCredit;
+    public $projet;
     public $userId;
     public $userDetails;
     public $crediScore;
@@ -50,8 +57,21 @@ class DetailsGagnant extends Component
         }
 
         // Récupérer l'ID de la demande de credi du userId
-        $credit_id = $this->notification->data['credit_id'];
-        $this->demandeCredit = DemandeCredi::find($credit_id)->first();
+        // $credit_id = $this->notification->data['credit_id'];
+        // $this->demandeCredit = DemandeCredi::find($credit_id)->first();
+
+        // Récupérer l'ID soit du crédit soit du projet
+        $credit_id = $this->notification->data['credit_id'] ?? null;
+        $projet_id = $this->notification->data['projet_id'] ?? null;
+
+        // Vérifier si c'est un crédit ou un projet
+        if ($credit_id) {
+            // Si c'est un crédit, récupérer la demande de crédit
+            $this->demandeCredit = DemandeCredi::find($credit_id);
+        } elseif ($projet_id) {
+            // Si c'est un projet, récupérer les informations du projet
+            $this->projet = Projet::find($projet_id);
+        }
     }
 
     public function approuver($montant)
@@ -192,6 +212,141 @@ class DetailsGagnant extends Component
             return;
         }
     }
+    public function approuver2($montant)
+    {
+        // Convertir le montant en float
+        $montant = floatval($montant);
+
+        // Vérification si le montant est valide
+        if ($montant <= 0) {
+            session()->flash('error', 'Montant invalide.');
+            return;
+        }
+
+        // Récupérer le wallet de l'utilisateur connecté
+        $wallet = Wallet::where('user_id', Auth::id())->first();
+        $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
+
+        if (!$wallet || !$walletDemandeur) {
+            session()->flash('error', 'Portefeuille introuvable.');
+            return;
+        }
+
+        // Vérifier que le solde du COI est suffisant
+        $coi = $wallet->coi; // Assurez-vous que la relation `coi` est définie dans le modèle Wallet
+        if (!$coi || $coi->Solde < $montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
+            return;
+        }
+
+        // Utilisation d'une transaction pour garantir la cohérence des données
+        DB::beginTransaction();
+
+        try {
+            // Vérifier si le id_wallet existe dans la table `gelements`
+            $gelement = gelement::where('status', 'Pending')
+                ->where('id_wallet', $wallet->id)
+                ->where('reference_id', $this->notification->data['projet_id'])
+                ->first();
+
+            if (!$gelement) {
+                throw new \Exception('Gélément introuvable.');
+            }
+
+            // Vérifier si le `reference_id` correspond au `code_unique` dans la table Countdown
+            $countdown = Countdown::where('code_unique', $gelement->reference_id)->exists();
+            if (!$countdown) {
+                throw new \Exception('Référence invalide.');
+            }
+
+            // Mettre à jour ou créer un enregistrement dans la table CFA
+            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
+            if ($cfa) {
+                $cfa->Solde += $montant;
+                $cfa->save();
+            } else {
+                $cfa = Cfa::create([
+                    'id_wallet' => $walletDemandeur->id,
+                    'Solde' => $montant,
+                ]);
+            }
+
+            // Calculer les données nécessaires pour le projet
+            $debut = Carbon::parse($this->projet->date_fin);
+            $fin = Carbon::parse($this->projet->durer);
+            $jours = $debut->diffInDays($fin);
+
+            $montantTotal = $montant * (1 + $this->projet->taux / 100);
+            $portion_journaliere = $jours > 0 ? $montantTotal / $jours : 0;
+
+            $resultatsInvestisseurs = [
+                [
+                    'projet_id' => $this->projet->id,
+                    'investisseur_id' => Auth::id(),
+                    'montant_finance' => $montant,
+                ],
+            ];
+
+            // Vérifier les actions existantes
+            $actions = AjoutAction::where('id_projet', $this->projet->id)
+                ->select('id_invest', DB::raw('SUM(montant) as total_montant'), DB::raw('SUM(nombreActions) as nombre_actions'))
+                ->groupBy('id_invest')
+                ->get();
+
+            $actionsData = [];
+            foreach ($actions as $action) {
+                $actionsData[] = [
+                    'projet_id' => $this->projet->id,
+                    'investisseur_id' => $action->id_invest,
+                    'montant_finance' => $action->total_montant,
+                    'nombreActions' => $action->nombre_actions,
+                ];
+            }
+
+            // Créer un enregistrement dans la table projets_accordé
+            projets_accordé::create([
+                'emprunteur_id' => $this->userId,
+                'investisseurs' => json_encode($resultatsInvestisseurs),
+                'montant' => $montantTotal,
+                'montan_restantt' => $montantTotal,
+                'action' => json_encode($actionsData),
+                'taux_interet' => $this->projet->taux,
+                'date_debut' => $this->projet->date_fin,
+                'date_fin' => $this->projet->durer,
+                'portion_journaliere' => $portion_journaliere,
+                'statut' => 'en cours',
+            ]);
+
+            // Créer un remboursement
+            remboursements::create([
+                'projet_id' => $this->projet->id,
+                'id_user' => Auth::id(),
+                'montant_capital' => $montant,
+                'montant_interet' => $this->projet->taux,
+                'date_remboursement' => $this->projet->durer,
+                'statut' => 'en cours',
+                'description' => $this->projet->name,
+            ]);
+
+            // Effectuer les transactions
+            $reference_id = $this->generateIntegerReference();
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Financement de crédit', 'effectué', $coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'Réception de financement', 'effectué', $cfa->type_compte);
+
+            // Mettre à jour la notification et le projet
+            $this->notification->update(['reponse' => 'approved']);
+            $this->projet->update(['count' => true]);
+
+            DB::commit();
+
+            session()->flash('success', 'Le montant a été ajouté avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
+            Log::error('Erreur dans approuver2 : ' . $e->getMessage());
+        }
+    }
+
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {

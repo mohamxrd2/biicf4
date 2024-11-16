@@ -167,6 +167,8 @@ class RappelPortionsJournalCreditsGroupé extends Command
             }
         }
     }
+
+
     protected function remboursementCredit($credit, $wallet)
     {
         // Décoder les investisseurs depuis le JSON
@@ -280,6 +282,8 @@ class RappelPortionsJournalCreditsGroupé extends Command
                     'effectué',
                     $crp->type_compte
                 );
+                
+                $credit->statut = "payé";
 
                 // Envoi de la notification
                 $investisseur = User::find($id);

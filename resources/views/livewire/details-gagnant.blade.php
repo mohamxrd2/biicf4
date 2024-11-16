@@ -15,22 +15,23 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
                 </svg>
-                <span class="ml-2 text-sm text-gray-500">{{ $demandeCredit->objet_financement }}</span>
+                <span
+                    class="ml-2 text-sm text-gray-500">{{ $demandeCredit->objet_financement ?? ($projet->name ?? null) }}</span>
             </div>
             @php
                 // Récupérer les données actuelles
                 $montantTotal = $notification->data['montant'];
-                $taux = $demandeCredit->taux ?? 0;
+                $taux = $demandeCredit->taux ?? ($projet->taux ?? 0);
 
-                // Calculer le montant sans pourcentage (montant de base)
-                $montantDeBase = $montantTotal / (1 + $taux / 100);
+                $montantInterret = $montantTotal * (1 + $taux / 100);
+
             @endphp
             <div
                 class="grid grid-cols-2 gap-4 text-sm border border-gray-300 rounded-lg p-3 shadow-md text-gray-600 mt-4 w-full justify-between">
 
                 <!-- Montant de base (sans pourcentage) -->
                 <div class="flex flex-col text-center">
-                    <span class="font-semibold text-lg">{{ number_format($montantDeBase, 0, ',', ' ') }}
+                    <span class="font-semibold text-lg">{{ number_format($montantTotal, 0, ',', ' ') }}
                         FCFA</span>
                     <span class="text-gray-500 text-sm">Capital Demandé (sans intérêt)</span>
                 </div>
@@ -43,13 +44,13 @@
 
                 <!-- Montant total (avec pourcentage) -->
                 <div class="flex flex-col text-center">
-                    <span class="font-semibold text-lg">{{ number_format($montantTotal, 0, ',', ' ') }}
+                    <span class="font-semibold text-lg">{{ number_format($montantInterret, 0, ',', ' ') }}
                         FCFA</span>
                     <span class="text-gray-500 text-sm">Capital Total (avec intérêt)</span>
                 </div>
                 <!-- Montant total (avec pourcentage) -->
                 <div class="flex flex-col text-center">
-                    <span class="font-semibold text-lg">{{ $demandeCredit->duree }}</span>
+                    <span class="font-semibold text-lg">{{ $demandeCredit->duree ?? $projet->durer }}</span>
                     <span class="text-gray-500 text-sm"> Fin de Remboursement</span>
                 </div>
                 <div class="sm:col-span-2">
@@ -57,7 +58,7 @@
                     <!-- Montant total (avec pourcentage) -->
                     <div class="flex flex-col text-center text-red-500">
                         <span
-                            class="font-semibold text-lg">{{ number_format($montantTotal - $montantDeBase, 0, ',', ' ') }}</span>
+                            class="font-semibold text-lg">{{ number_format($montantInterret - $montantTotal, 0, ',', ' ') }}</span>
                         <span class="text-red-500 text-sm">Retour sur Investissement (ROI)</span>
                     </div>
 
@@ -92,7 +93,12 @@
                             </div>
                         @else
                             <!-- Bouton Approuver -->
-                            <button id="approveButton" wire:click="approuver({{ $montantDeBase }})"
+                            <button id="approveButton"
+                                @if ($this->demandeCredit)
+                                   wire:click="approuver({{ $montantTotal }})"
+                                @else
+                                   wire:click="approuver2({{ $montantTotal }})"
+                                @endif
                                 class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
                                 wire:loading.attr="disabled">
                                 <span wire:loading.remove>Approuver</span>

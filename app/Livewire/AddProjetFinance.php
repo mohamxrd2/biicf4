@@ -31,6 +31,7 @@ class AddProjetFinance extends Component
     public $portionObligations;
     public $mode_recouvre;
     public $nombreActions;
+    public $durerFin;
     public $statut = 'en attente'; // Statut par défaut
     public $durer; // Nouvel attribut pour la date limite
 
@@ -70,6 +71,7 @@ class AddProjetFinance extends Component
         'photo4' => 'nullable|image|max:2048',
         'photo5' => 'nullable|image|max:2048',
         'durer' => 'required|date',
+        'durerFin' => 'required|date',
     ];
 
     // Messages personnalisés
@@ -184,6 +186,16 @@ class AddProjetFinance extends Component
         // Validation des champs
         $this->validate();
 
+        if ($this->type_financement === 'négocié' && $this->portionActions && !$this->portionObligations) {
+            $this->dispatch(
+                'formSubmitted',
+                ' Le type de financement négocié avec uniquement des actions nest pas autorisé.'
+            );
+            return; // Stoppe la fonction
+        }
+
+
+
         // Calcul du retour sur investissement (montant * taux / 100)
         $tauxInteret = ($this->montant * $this->taux) / 100;
 
@@ -210,10 +222,12 @@ class AddProjetFinance extends Component
                 'type_financement' => $this->type_financement,
                 'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
                 'durer' => $this->durer,
+                'date_fin' => $this->durerFin,
                 'id_user' => auth()->id(), // ID de l'utilisateur connecté
                 'Portion_action' => $this->portionActions,
                 'Portion_obligt' => !empty($this->portionObligations) ? (int)$this->portionObligations : NULL,
                 'nombreActions' => $this->nombreActions,
+                'etat' => 'negocier',
             ]);
 
             // Gestion des photos en appelant la méthode handlePhotoUpload

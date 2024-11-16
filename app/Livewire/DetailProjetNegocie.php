@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\gelement;
 use Livewire\Component;
 use App\Events\CommentSubmittedTaux;
 use App\Events\DebutDeNegociation;
@@ -127,7 +128,7 @@ class DetailProjetNegocie extends Component
             ->where('nombreActions', $this->projet->nombreActions)
             ->exists();
 
-        $this->dateFin = \Carbon\Carbon::parse($this->projet->durer);
+        $this->dateFin = \Carbon\Carbon::parse($this->projet->date_fin);
 
         $this->listenTaux();
     }
@@ -161,7 +162,7 @@ class DetailProjetNegocie extends Component
     public function listenTaux()
     {
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-            ->where('id_projet', $this->projet->id)
+            ->where('projet_id', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->orderBy('created_at', 'asc')
             ->get();
@@ -348,6 +349,7 @@ class DetailProjetNegocie extends Component
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
+
         // Récupérer le projet
         $projet = $this->projet;
 
@@ -363,9 +365,6 @@ class DetailProjetNegocie extends Component
 
         // Récupérer le wallet de l'investisseur
         $wallet = Wallet::where('user_id', Auth::id())->first();
-
-        // Récupérer le wallet du demandeur
-        $walletDemandeur = Wallet::where('user_id', $this->projet->id_user)->first();
 
         // Vérifier que l'utilisateur possède un wallet
         if (!$wallet) {
@@ -405,24 +404,15 @@ class DetailProjetNegocie extends Component
             if ($coi) {
                 $coi->Solde -= $montant;
                 $coi->save();
+
                 Log::info('Solde COI mis à jour pour l\'utilisateur ID: ' . Auth::id() . ', Nouveau solde COI: ' . $coi->Solde);
             }
 
-            // // Mettre à jour ou créer un enregistrement dans la table CFA du demandeur
-            // $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
-            // if ($cfa) {
-            //     $cfa->Solde += $montant;
-            //     $cfa->save();
-            //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
-            // }
-
             // Générer une référence de transaction
             $reference_id = $this->generateIntegerReference();
-            Log::info('Référence de transaction générée: ' . $reference_id);
 
             // Créer deux transactions
             $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Achat d\'action', 'effectué', $coi->type_compte);
-            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'Réception de fond', 'effectué', $cfa->type_compte);
             Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
 
             // Committer la transaction
@@ -488,11 +478,7 @@ class DetailProjetNegocie extends Component
         $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
 
         $userWallet = Wallet::where('user_id', $user->id)->first();
-        $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
-        if (!$coiWallet  || $coiWallet->Solde < $montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $montant . ' CFA.');
-            return;
-        }
+
 
         // Vérifier si c'est la première soumission
         $ajoutMontant = AjoutMontant::where('id_invest', $user->id)
@@ -500,14 +486,120 @@ class DetailProjetNegocie extends Component
             ->first();
 
         if (!$ajoutMontant) {
+
+            // Vérifier si un wallet Coi existe et si le solde est suffisant
+            $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
+
+            // Vérifier si le wallet existe et si le solde est insuffisant par rapport au montant requis
+            if ($coiWallet && $coiWallet->Solde < $montant) {
+                // Si le solde est insuffisant, afficher un message d'erreur et arrêter l'exécution
+                session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
+                return;  // Arrêter l'exécution de la fonction
+            }
             // Appeler la fonction confirmer si c'est la première soumission
-            $this->confirmer();
+            $this->confirmer2();
         }
 
         // Appeler la fonction pour afficher le formulaire de commentaire
         $this->ElementcommentForm();
     }
+    public function confirmer2()
+    {
+        // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
+        $montant = floatval($this->projet->montant);
 
+        if (empty($this->projet->montant) || !is_numeric($montant) || $montant <= 0) {
+            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $this->projet->montant);
+            session()->flash('error', 'Veuillez saisir un montant valide.');
+            return;
+        }
+
+        // Récupérer le projet
+        $projet = $this->projet;
+
+        // Vérifiez si le projet et le demandeur existent
+        if (!$projet || !$projet->demandeur || !$projet->demandeur->id) {
+            Log::error('Projet ou demandeur introuvable pour l\'utilisateur ID: ' . Auth::id());
+            session()->flash('error', 'Le projet ou le demandeur est introuvable.');
+            return;
+        }
+
+        // Log du projet et demandeur
+        Log::info('Projet trouvé, ID du projet: ' . $projet->id . ', ID du demandeur: ' . $projet->demandeur->id);
+
+        // Récupérer le wallet de l'investisseur
+        $wallet = Wallet::where('user_id', Auth::id())->first();
+
+        // Vérifier que l'utilisateur possède un wallet
+        if (!$wallet) {
+            Log::error('Wallet introuvable pour l\'utilisateur ID: ' . Auth::id());
+            session()->flash('error', 'Votre portefeuille est introuvable.');
+            return;
+        }
+
+
+
+        // Début de la transaction
+        DB::beginTransaction();
+
+        try {
+            // Log avant l'ajout du montant
+            Log::info('Ajout du montant pour l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $montant);
+
+
+            // Sauvegarder le montant dans la table `ajout_montant`
+            $ajoumontant = AjoutMontant::create([
+                'montant' => $montant,
+                'id_invest' => Auth::id(),
+                'id_emp' => $projet->demandeur->id,
+                'id_projet' => $projet->id,
+            ]);
+
+            // gelement le montant dans la table `gelement`
+            $gelement = gelement::create([
+                'id_wallet' => $wallet->id,
+                'amount' => $montant,
+                'reference_id' => $this->projet->id,
+            ]);
+
+            // Log après l'ajout du montant
+            Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
+
+            // Mettre à jour le solde du COI
+            $coi = $wallet->coi;
+            if ($coi) {
+                $coi->Solde -= $montant;
+                $coi->save();
+                Log::info('Solde COI mis à jour pour l\'utilisateur ID: ' . Auth::id() . ', Nouveau solde COI: ' . $coi->Solde);
+            }
+
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
+            // Créer deux transactions
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
+
+            // Committer la transaction
+            DB::commit();
+            Log::info('Transaction committée avec succès pour l\'utilisateur ID: ' . Auth::id());
+        } catch (\Exception $e) {
+            // Rollback en cas d'erreur
+            DB::rollBack();
+            Log::error('Erreur lors de l\'ajout du montant pour l\'utilisateur ID: ' . Auth::id() . ', Erreur: ' . $e->getMessage());
+            session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
+            return;
+        }
+
+
+        // Réinitialiser le montant saisi et les indicateurs
+        $this->montant = '';
+        $this->insuffisant = false;
+
+
+        // Mettre à jour le nombre d'investisseurs distincts
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
+            ->distinct()
+            ->count('id_invest');
+    }
     protected function ElementcommentForm()
     {
 
@@ -517,7 +609,7 @@ class DetailProjetNegocie extends Component
                 'taux' => $this->tauxTrade,
                 'id_invest' => auth()->id(),
                 'id_emp' => $this->projet->id_user,
-                'id_projet' => $this->projet->id,
+                'projet_id' => $this->projet->id,
             ]);
 
             // Réinitialiser le champ tauxTrade après l'insertion
@@ -534,7 +626,7 @@ class DetailProjetNegocie extends Component
         // Commenter cette ligne une fois que vous avez vérifié
 
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-            ->where('id_projet', $this->projet->id)
+            ->where('projet_id', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
 
@@ -554,10 +646,6 @@ class DetailProjetNegocie extends Component
                 'difference' => 'projet_taux',
                 'code_unique' =>  $this->projet->id,
             ]);
-
-            // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-            // broadcast(new OldestCommentUpdated(now()->toIso8601String()));
-            // $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
         }
     }
 

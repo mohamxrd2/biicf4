@@ -26,11 +26,13 @@ class Projet extends Model
         'photo4',
         'photo5',
         'durer',
+        'date_fin',
         'name',
         'count',
         'Portion_action',
         'Portion_obligt',
         'nombreActions',
+        'etat',
     ];
 
 

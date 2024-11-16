@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Events\NotificationSent;
 use App\Events\PortionUpdated;
+use App\Models\AjoutAction;
 use App\Models\AjoutMontant;
 use App\Models\Cfa;
 use App\Models\credits;
@@ -41,16 +42,27 @@ class finacementProjetAccorde extends Command
         // Récupérer les projets où 'count' est égal à true et dont la date de fin est passée
         $projets = Projet::where('count', true)
             ->whereDate('durer', '<', $dateActuelle)
+            ->where('etat', 'en cours')
             ->get();
 
         Log::info('Projets récupérés: ' . $projets->count() . ' projets');
 
         // Tableau pour stocker les résultats
         $resultatsInvestisseurs = [];
+        $actionsData = [];
 
         // Parcourir les projets sélectionnés pour remplir la nouvelle table
         foreach ($projets as $projet) {
             Log::info('Traitement du projet ID: ' . $projet->id);
+            // Mise à jour de l'état du projet
+            $projet = Projet::findOrFail($projet->id); // Vérifie que le projet existe
+            $projet->update(['etat' => 'terminer']);  // Met à jour l'état du projet
+
+            // Enregistre une confirmation dans les logs
+            Log::info('Projet mis à jour avec succès', [
+                'id' => $projet->id,
+                'nouvel_etat' => $projet->etat,
+            ]);
 
             // Récupérer les montants financés par chaque investisseur pour le projet en sommant les montants si plusieurs enregistrements existent
             $investissements = AjoutMontant::where('id_projet', $projet->id)
@@ -72,26 +84,56 @@ class finacementProjetAccorde extends Command
                 // Log des informations sur chaque investisseur et son montant total financé
                 Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
+            //////\\\\\
+            // Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
+            $actions = AjoutAction::where('id_projet', $projet->id)
+                ->select('id_invest', DB::raw('SUM(montant) as total_montant'), DB::raw('SUM(nombreActions) as nombre_actions'))
+                ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
+                ->get();
+
+            Log::info('Investissements associés au action ID ' . $actions->id . ': ' . $actions->count() . ' investisseurs (somme totale par investisseur)');
+
+            // Si des actions existent, les ajouter à un tableau JSON
+            if ($actions->count() > 0) {
+
+                foreach ($actions as $action) {
+                    // Ajouter chaque action au tableau avec des informations pertinentes
+                    $actionsData[] = [
+                        'projet_id' => $projet->id,
+                        'investisseur_id' => $action->id_invest,
+                        'montant_finance' => $action->total_montant,
+                        'nombreActions' => $action->nombre_actions,
+                    ];
+
+                    // Log des informations sur chaque action prise pour le projet
+                    Log::info('Action ID: ' . $action->id . ' prise pour le projet ID: ' . $projet->id);
+                }
+            } else {
+                Log::info('Aucune action trouvée pour le projet ID: ' . $projet->id);
+            }
 
             // Insertion dans la table projets_accordés
             try {
                 // Assurez-vous que les dates sont bien des instances de Carbon
-                $dateDebut = Carbon::parse($projet->created_at);
-                $dateFin = Carbon::parse($projet->durer);
-                $jours = $dateDebut->diffInDays($dateFin);
-                $portion_journaliere = $jours > 0 ? $projet->montant / $jours : 0;
+                $debut = Carbon::parse($projet->date_fin);
+                $durer = Carbon::parse($projet->duree);
+                $jours = $debut->diffInDays($durer);
+                Log::info('nbre date:' . $jours);
 
-                $montantTotal =  $projet->montant / (1 + $projet->taux / 100);
+                $montantTotal = $projet->montant  * (1 + $projet->taux / 100);
+                $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
+
+                Log::info('projet user ID: ' . $projet->id_user);
 
                 projets_accordé::create([
                     'emprunteur_id' => $projet->id_user, // Assurez-vous que la relation est bien définie
                     'investisseurs' => json_encode($resultatsInvestisseurs), // Convertir les investisseurs en JSON
                     'montant' => $montantTotal,
                     'montan_restantt' => $montantTotal, // Assurez-vous que ce champ existe dans la table 'projets'
-                    'action' => $projet->action,
+                    'action' => json_encode($actionsData),
                     'taux_interet' => $projet->taux,
-                    'date_debut' => $dateDebut,
-                    'date_fin' => $dateFin,
+                    'date_debut' => $debut,
+                    'date_fin' => $durer,
                     'portion_journaliere' => $portion_journaliere,
                     'statut' => 'en cours',
                 ]);

@@ -43,7 +43,7 @@ class finacementCreditsGroupe extends Command
 
         // Récupérer les credits où 'count' est égal à true et dont la date de fin est passée
         $credits = DemandeCredi::where('count', true)
-            ->whereDate('date_fin', '=', $dateActuelle)
+            ->whereDate('date_fin', '<', $dateActuelle)
             ->where('status',  'en cours') // Exclure ceux dont le statut est 'terminer'
             ->where('type_financement', 'offre-composite')
             ->whereNotNull('bailleur')

@@ -11,18 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projet', function (Blueprint $table) {
+        Schema::table('comment_taux', function (Blueprint $table) {
 
-            $table->date('date_fin')->after('durer')->nullable(); // Date de fin prévue du crédit
-
+            $table->unsignedBigInteger('projet_id')->change();
         });
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-       
+        //
     }
 };

@@ -43,10 +43,11 @@ class Cfa extends Component
         // Récupérer les projets associés à cet utilisateur; Si un utilisateur a des projets associés, les récupérer
         $this->projets = projets_accordé::where('emprunteur_id', $userId)->get();
 
-        $this->totalprojets = projets_accordé::where('emprunteur_id', $userId)->sum('montant');
+        $this->totalprojets = $this->projets->sum('montant');
+        $this->totalprojetsRembourses = $this->projets->sum(function ($projet) {
+            return $projet->montant - $projet->montant_restant;
+        });
 
-        $this->totalprojetsRembourses = projets_accordé::where('emprunteur_id', $userId)
-            ->sum(DB::raw('montant - montan_restantt'));
         // Calcul du pourcentage de remboursement
         if ($this->totalprojets > 0) {
             $this->pourcentageRemboursementprojets = ($this->totalprojetsRembourses / $this->totalprojets) * 100;
@@ -70,7 +71,6 @@ class Cfa extends Component
         } else {
             $this->pourcentageRemboursement = 0; // éviter la division par zéro
         }
-
 
         // Récupérer les crédits associés à cet utilisateur; Si un utilisateur a des crédits G associés, les récupérer
         $this->creditsGroupe = credits_groupé::where('emprunteur_id', $userId)->get();

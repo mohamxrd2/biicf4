@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('remboursements', function (Blueprint $table) {
+        Schema::table('projet', function (Blueprint $table) {
+            $table->string('etat');
 
-            $table->unsignedBigInteger('creditGrp_id')->after('credit_id')->nullable(); // Lien vers le crédit concerné
-
-            $table->foreign('creditGrp_id')->references('id')->on('credits_groupés')->onDelete('cascade');
         });
     }
 
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('projet');
     }
 };

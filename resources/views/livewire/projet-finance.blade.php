@@ -17,7 +17,8 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-gray-600">Total en Attente</p>
-                        <p class="text-2xl font-semibold text-gray-800">{{ number_format($totalMontants, 2, ',', ' ') }}FCFA</p>
+                        <p class="text-2xl font-semibold text-gray-800">
+                            {{ number_format($totalMontants, 2, ',', ' ') }}FCFA</p>
                     </div>
                 </div>
                 <div class="bg-white shadow rounded-lg p-6 flex items-center">
@@ -43,7 +44,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-gray-600">Investissements Actifs</p>
-                        <p class="text-2xl font-semibold text-gray-800">{{$countRemboursements}}</p>
+                        <p class="text-2xl font-semibold text-gray-800">{{ $countRemboursements }}</p>
                     </div>
                 </div>
             </div>
@@ -102,7 +103,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-gray-600">Total en Attente</p>
-                        <p class="text-2xl font-semibold text-gray-800">$225 000</p>
+                        <p class="text-2xl font-semibold text-gray-800">{{ $totalMontantp }}</p>
                     </div>
                 </div>
                 <div class="bg-white shadow rounded-lg p-6 flex items-center">
@@ -128,7 +129,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-gray-600">Investisseurs Actifs</p>
-                        <p class="text-2xl font-semibold text-gray-800">3</p>
+                        <p class="text-2xl font-semibold text-gray-800">{{ $countProjets }}</p>
                     </div>
                 </div>
             </div>
@@ -142,42 +143,26 @@
                             <th class="py-3 px-6 text-left">Nom du Projet</th>
                             <th class="py-3 px-6 text-left">Montant</th>
                             <th class="py-3 px-6 text-left">Date</th>
-                            <th class="py-3 px-6 text-left">Description</th>
+                            <th class="py-3 px-6 text-left">Categorie</th>
                             <th class="py-3 px-6 text-left">Statut</th>
 
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 text-base font-semibold tracking-wide">
-                        <!-- Exemple de données statiques pour la démonstration -->
-                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-3 px-6 text-left">vente</td>
-                            <td class="py-3 px-6 text-left">200 €</td>
-                            <td class="py-3 px-6 text-left">10/10/2024</td>
-                            <td class="py-3 px-6 text-left">Achat en ligne</td>
-                            <td class="py-3 px-6 text-left">
-                                <span class="bg-green-200 text-green-800 py-1 px-3 rounded-full text-xs">Terminé</span>
-                            </td>
-                        </tr>
-                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-3 px-6 text-left">vente</td>
+                        @foreach ($projets as $projet)
+                            <!-- Exemple de données statiques pour la démonstration -->
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left">{{ $projet->name }}</td>
+                                <td class="py-3 px-6 text-left">{{ $projet->montant }} fcfa</td>
+                                <td class="py-3 px-6 text-left">{{ \Carbon\Carbon::parse($projet->date_fin)->format('d/m/Y') }} </td>
+                                <td class="py-3 px-6 text-left">{{ $projet->categorie }} </td>
+                                <td class="py-3 px-6 text-left">
+                                    <span
+                                        class="bg-green-200 text-green-800 py-1 px-3 rounded-full text-xs">{{ $projet->etat }}</span>
+                                </td>
+                            </tr>
+                        @endforeach
 
-                            <td class="py-3 px-6 text-left">500 €</td>
-                            <td class="py-3 px-6 text-left">15/09/2024</td>
-                            <td class="py-3 px-6 text-left">Prêt personnel</td>
-                            <td class="py-3 px-6 text-left">
-                                <span class="bg-green-200 text-green-800 py-1 px-3 rounded-full text-xs">Terminé</span>
-                            </td>
-                        </tr>
-                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-3 px-6 text-left">vente</td>
-
-                            <td class="py-3 px-6 text-left">1200 €</td>
-                            <td class="py-3 px-6 text-left">01/08/2024</td>
-                            <td class="py-3 px-6 text-left">Remboursement carte de crédit</td>
-                            <td class="py-3 px-6 text-left">
-                                <span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs">En cours</span>
-                            </td>
-                        </tr>
                     </tbody>
 
                 </table>
@@ -227,7 +212,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-gray-600">Demandes Credits Actifs</p>
-                        <p class="text-2xl font-semibold text-gray-800">{{$countDemandecredits}}</p>
+                        <p class="text-2xl font-semibold text-gray-800">{{ $countDemandecredits }}</p>
                     </div>
                 </div>
             </div>
