@@ -22,10 +22,10 @@ class Kernel extends ConsoleKernel
             // $schedule->command('app:projet-groupe')->everyMinute();
             // $schedule->command('app:projet-countdown')->everyMinute();
             $schedule->command('app:rappel-journalieres-credits')->everyMinute();
-            // $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
+            $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
             // $schedule->command('app:rappel-journalieres-projets')->everyMinute();
             // $schedule->command('app:finacementProjetAccorde')->everyMinute();
-            // $schedule->command('app:finacementCreditsGroupe')->everyMinute();
+            $schedule->command('app:finacementCreditsGroupe')->everyMinute();
 
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
@@ -34,11 +34,11 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:ajout-qoffre')->cron('* * * * *');
             $schedule->command('app:projet-countdown')->cron('* * * * *');
             $schedule->command('app:projet-groupe')->cron('* * * * *');
-            $schedule->command('app:rappel-journalieres-credits')->everyMinute();
-            $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
-            $schedule->command('app:rappel-journalieres-projets')->everyMinute();
-            $schedule->command('app:finacementProjetAccorde')->everyMinute();
-            $schedule->command('app:finacementCreditsGroupe')->everyMinute();
+            $schedule->command('app:rappel-journalieres-credits')->cron('* * * * *');
+            $schedule->command('app:rappel-journalieres-credits-groupé')->cron('* * * * *');
+            $schedule->command('app:rappel-journalieres-projets')->cron('* * * * *');
+            $schedule->command('app:finacementProjetAccorde')->cron('* * * * *');
+            $schedule->command('app:finacementCreditsGroupe')->cron('* * * * *');
         }
     }
     /**
