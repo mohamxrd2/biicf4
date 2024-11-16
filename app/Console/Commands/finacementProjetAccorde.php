@@ -84,34 +84,35 @@ class finacementProjetAccorde extends Command
                 // Log des informations sur chaque investisseur et son montant total financé
                 Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
-            //////\\\\\
             
-            // Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
-            $actions = AjoutAction::where('id_projet', $projet->id)
-                ->select('id_invest', DB::raw('SUM(montant) as total_montant'), DB::raw('SUM(nombreActions) as nombre_actions'))
-                ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
-                ->get();
+            //////\\\\\
 
-            Log::info('Investissements associés au action ID ' . $actions->id . ': ' . $actions->count() . ' investisseurs (somme totale par investisseur)');
+            // // Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
+            // $actions = AjoutAction::where('id_projet', $projet->id)
+            //     ->select('id_invest', DB::raw('SUM(montant) as total_montant'), DB::raw('SUM(nombreActions) as nombre_actions'))
+            //     ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
+            //     ->get();
 
-            // Si des actions existent, les ajouter à un tableau JSON
-            if ($actions->count() > 0) {
+            // Log::info('Investissements associés au action ID ' . $actions->id . ': ' . $actions->count() . ' investisseurs (somme totale par investisseur)');
 
-                foreach ($actions as $action) {
-                    // Ajouter chaque action au tableau avec des informations pertinentes
-                    $actionsData[] = [
-                        'projet_id' => $projet->id,
-                        'investisseur_id' => $action->id_invest,
-                        'montant_finance' => $action->total_montant,
-                        'nombreActions' => $action->nombre_actions,
-                    ];
+            // // Si des actions existent, les ajouter à un tableau JSON
+            // if ($actions->count() > 0) {
 
-                    // Log des informations sur chaque action prise pour le projet
-                    Log::info('Action ID: ' . $action->id . ' prise pour le projet ID: ' . $projet->id);
-                }
-            } else {
-                Log::info('Aucune action trouvée pour le projet ID: ' . $projet->id);
-            }
+            //     foreach ($actions as $action) {
+            //         // Ajouter chaque action au tableau avec des informations pertinentes
+            //         $actionsData[] = [
+            //             'projet_id' => $projet->id,
+            //             'investisseur_id' => $action->id_invest,
+            //             'montant_finance' => $action->total_montant,
+            //             'nombreActions' => $action->nombre_actions,
+            //         ];
+
+            //         // Log des informations sur chaque action prise pour le projet
+            //         Log::info('Action ID: ' . $action->id . ' prise pour le projet ID: ' . $projet->id);
+            //     }
+            // } else {
+            //     Log::info('Aucune action trouvée pour le projet ID: ' . $projet->id);
+            // }
 
             // Insertion dans la table projets_accordés
             try {
