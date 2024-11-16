@@ -85,6 +85,7 @@ class finacementProjetAccorde extends Command
                 Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
             //////\\\\\
+            
             // Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
             $actions = AjoutAction::where('id_projet', $projet->id)
                 ->select('id_invest', DB::raw('SUM(montant) as total_montant'), DB::raw('SUM(nombreActions) as nombre_actions'))

@@ -19,7 +19,6 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:appeloffre')->everyMinute();
             $schedule->command('app:ajout-qoffre')->everyMinute();
             $schedule->command('app:credit-countdown')->everyMinute();
-            $schedule->command('app:projet-groupe')->everyMinute();
             $schedule->command('app:projet-countdown')->everyMinute();
             $schedule->command('app:rappel-journalieres-credits')->everyMinute();
             $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
@@ -33,7 +32,6 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:appeloffre')->cron('* * * * *');
             $schedule->command('app:ajout-qoffre')->cron('* * * * *');
             $schedule->command('app:projet-countdown')->cron('* * * * *');
-            $schedule->command('app:projet-groupe')->cron('* * * * *');
             $schedule->command('app:rappel-journalieres-credits')->cron('* * * * *');
             $schedule->command('app:rappel-journalieres-credits-groupé')->cron('* * * * *');
             $schedule->command('app:rappel-journalieres-projets')->cron('* * * * *');
