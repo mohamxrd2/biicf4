@@ -94,11 +94,11 @@
                         @else
                             <!-- Bouton Approuver -->
                             <button id="approveButton"
-                                @if ($this->demandeCredit)
+                                {{-- @if ($this->demandeCredit)
                                    wire:click="approuver({{ $montantTotal }})"
-                                @else
+                                @else --}}
                                    wire:click="approuver2({{ $montantTotal }})"
-                                @endif
+                                {{-- @endif --}}
                                 class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
                                 wire:loading.attr="disabled">
                                 <span wire:loading.remove>Approuver</span>

@@ -168,7 +168,8 @@ class DetailProjet extends Component
     {
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
             ->where('projet_id', $this->projet->id)
-            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
+            ->orderBy('taux', 'asc')
+            ->orderBy('created_at', 'asc')
             ->get();
     }
     public function updatedMontant()
@@ -660,7 +661,7 @@ class DetailProjet extends Component
                 'taux' => $this->tauxTrade,
                 'id_invest' => auth()->id(),
                 'id_emp' => $this->projet->id_user,
-                'id_projet' => $this->projet->id,
+                'projet_id' => $this->projet->id,
             ]);
 
             // Réinitialiser le champ tauxTrade après l'insertion
@@ -677,7 +678,7 @@ class DetailProjet extends Component
         // Commenter cette ligne une fois que vous avez vérifié
 
         $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-            ->where('id_projet', $this->projet->id)
+            ->where('projet_id', $this->projet->id)
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
 
@@ -697,10 +698,6 @@ class DetailProjet extends Component
                 'difference' => 'projet_taux',
                 'code_unique' =>  $this->projet->id,
             ]);
-
-            // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-            // broadcast(new OldestCommentUpdated(now()->toIso8601String()));
-            // $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
         }
     }
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void

@@ -105,11 +105,7 @@ class DetailsGagnant extends Component
             return;
         }
 
-        // Vérifier que le solde du wallet est suffisant
-        if ($wallet->balance < $montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
-            return;
-        }
+
 
         // Utilisation d'une transaction pour garantir la cohérence des données
         DB::beginTransaction();
@@ -234,10 +230,7 @@ class DetailsGagnant extends Component
 
         // Vérifier que le solde du COI est suffisant
         $coi = $wallet->coi; // Assurez-vous que la relation `coi` est définie dans le modèle Wallet
-        if (!$coi || $coi->Solde < $montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
-            return;
-        }
+
 
         // Utilisation d'une transaction pour garantir la cohérence des données
         DB::beginTransaction();
@@ -331,7 +324,7 @@ class DetailsGagnant extends Component
             // Effectuer les transactions
             $reference_id = $this->generateIntegerReference();
             $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'Financement de crédit', 'effectué', $coi->type_compte);
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id, 'Réception de financement', 'effectué', $cfa->type_compte);
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'Réception de financement', 'effectué', $cfa->type_compte);
 
             // Mettre à jour la notification et le projet
             $this->notification->update(['reponse' => 'approved']);

@@ -313,7 +313,7 @@
                             <div class="relative">
                                 <label for="durer" class="block text-sm font-medium text-gray-700">Date
                                     limite</label>
-                                <input wire:model="durerFin" type="date" id="durerFin"
+                                <input wire:model="durerFin" type="datetime-local" id="durerFin"
                                     min="{{ now()->addDay()->toDateString() }}"
                                     class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                                 @error('durer')
@@ -323,7 +323,7 @@
                             <div class="relative">
                                 <label for="durer" class="block text-sm font-medium text-gray-700">Date
                                     limite de remboursement</label>
-                                <input wire:model="durer" type="date" id="durer"
+                                <input wire:model="durer" type="datetime-local" id="durer"
                                     min="{{ now()->addDay()->toDateString() }}"
                                     class="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                                 @error('durer')

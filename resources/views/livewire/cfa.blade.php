@@ -240,8 +240,8 @@
                     <div class="space-y-4">
                         <!-- Transaction -->
                         @foreach ($transactions as $transaction)
-                            <div data-modal-target="static-modal-{{ $credit->id }}"
-                                data-modal-toggle="static-modal-{{ $credit->id }}"
+                            <div data-modal-target="static-modal-"
+                                data-modal-toggle="static-modal-"
                                 class="flex items-center justify-between p-3 border-b hover:bg-gray-50 cursor-pointer transition-colors">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 rounded-full bg-green-100">
@@ -262,7 +262,7 @@
                         @endforeach
 
                         <!-- Main modal -->
-                        <div id="static-modal-{{ $credit->id }}" data-modal-backdrop="static-{{ $credit->id }}"
+                        <div id="static-modal-" data-modal-backdrop="static-"
                             tabindex="-1" aria-hidden="true"
                             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
 
@@ -271,7 +271,7 @@
                                 <div class="flex justify-between items-center border-b pb-3">
                                     <h2 class="text-lg font-semibold">Transaction Details</h2>
                                     <button class="text-gray-400 hover:text-gray-600"
-                                        data-modal-hide="static-modal-{{ $credit->id }}">&times;</button>
+                                        data-modal-hide="static-modal-">&times;</button>
                                 </div>
                                 <div class="py-4 space-y-4">
                                     <div class="flex justify-center">
