@@ -3,31 +3,31 @@
 @section('title', 'Appel d\'offre')
 
 @section('content')
-    
 
-    <div class="grid grid-cols-3 gap-4">
-        <div class="lg:col-span-2 col-span-3">
+
+    <div class="grid grid-cols-3 gap-4 ">
+        <div class="col-span-3 lg:col-span-2">
 
             @if (session('success'))
-                <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
+                <div class="px-4 py-2 mb-4 text-green-800 bg-green-200 rounded-md">
                     {{ session('success') }}
                 </div>
             @endif
             @if ($errors->any())
-                <div class="bg-red-200 text-red-800 px-4 py-2 rounded-md mb-4">
+                <div class="px-4 py-2 mb-4 text-red-800 bg-red-200 rounded-md">
                     @foreach ($errors->all() as $error)
                         <p>{{ $error }}</p>
                     @endforeach
                 </div>
             @endif
 
-            <form action="{{ route('biicf.appeloffre') }}" method="GET" class="max-w-2xl mx-auto">
+            <form action="{{ route('biicf.appeloffre') }}" method="GET" class="">
                 @csrf
                 <label for="default-search"
                     class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
                 <div class="relative" data-hs-combo-box="">
                     <div class="relative">
-                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <div class="absolute inset-y-0 flex items-center pointer-events-none start-0 ps-3">
                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -35,7 +35,7 @@
                             </svg>
                         </div>
                         <input type="search" id="default-search"
-                            class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            class="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg ps-10 bg-gray-50 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Recherche de produit ou service..." required data-hs-combo-box-input=""
                             name="keyword" value="{{ $keyword }}" />
                         <button type="submit"
@@ -56,13 +56,13 @@
 
                         <!-- Utiliser la boucle foreach pour générer les éléments de la liste déroulante -->
                         @foreach ($produitDims->take(5) as $produitDim)
-                            <div class="cursor-pointer  py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-none focus:bg-gray-100"
+                            <div class="w-full px-4 py-2 text-sm text-gray-800 rounded-lg cursor-pointer hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
                                 tabindex="{{ $loop->index }}" data-hs-combo-box-output-item="{{ $produitDim->id }}">
                                 <div class="flex">
                                     <img class="w-8 h-8 mr-2 rounded-md"
                                         src="{{ $produitDim->photoProd1 ? asset('post/all/' . $produitDim->photoProd1) : asset('img/noimg.jpeg') }}"
                                         alt="">
-                                    <div class="flex justify-between items-center w-full">
+                                    <div class="flex items-center justify-between w-full">
                                         <span data-hs-combo-box-search-text="{{ $produitDim->name }} "
                                             data-hs-combo-box-value="{{ $produitDim->id }}">{{ $produitDim->name }}</span>
                                         <span class="hidden hs-combo-box-selected:block">
@@ -83,7 +83,7 @@
                 <div class="grid grid-cols-2 gap-3 mt-2">
                     <div class="col-span-1">
                         <select name="zone_economique"
-                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm   disabled:opacity-50 disabled:pointer-events-none"
+                            class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg pe-9 disabled:opacity-50 disabled:pointer-events-none"
                             required>
                             <option disabled selected>Zone economique</option>
                             <option value="proximite">Proximité</option>
@@ -96,7 +96,7 @@
                     </div>
                     <div class="col-span-1">
                         <select name="type"
-                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                            class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg pe-9 disabled:opacity-50 disabled:pointer-events-none">
                             <option selected disabled>Type</optionselected>
                             <option>Produit</option>
                             <option>Service</option>
@@ -109,7 +109,7 @@
 
 
             @if ($resultCount == 0)
-                <div class="max-w-sm mx-auto flex h-52 justify-center mt-4">
+                <div class="flex justify-center max-w-sm mx-auto mt-4 h-52">
                     <div class="flex-col ">
                         <svg class=" w-52 h-52" xmlns="http://www.w3.org/2000/svg" width="552.81023" height="515.45882"
                             viewBox="0 0 552.81023 515.45882" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -196,7 +196,7 @@
                                     fill="#ccc" />
                             </g>
                         </svg>
-                        <p class="text-sm text-slate-500 mt-4">Aucun resultat pour votre recherche</p>
+                        <p class="mt-4 text-sm text-slate-500">Aucun resultat pour votre recherche</p>
                     </div>
 
 
@@ -206,24 +206,24 @@
                 @if ($keyword == '')
 
 
-                    <div class="bg-white p-6 flex flex-col mt-10 border border-gray-100 rounded-xl shadow-lg">
+                    <div class="flex flex-col p-6 mt-10 bg-white border border-gray-100 shadow-lg rounded-xl">
                         <h1 class="text-2xl font-bold text-center">Faite un recherche</h1>
 
-                        <p class="text-sm italic text-gray-500 mt-5 text-center">Tapez le nom du produit de la barre de
+                        <p class="mt-5 text-sm italic text-center text-gray-500">Tapez le nom du produit de la barre de
                             recherche ou rechercher par votre zone economique pour trouver des fournisseurs plus proche et
                             lancer un appel d'offre et permettre au different fournisseur de discuter sur le
                             prix afin que vous ayez le meilleur prix.</p>
 
                     </div>
                 @elseif ($zoneEconomique)
-                    <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
+                    <div class="my-3 text-sm font-medium shadow-sm rounded-xl border1 dark:bg-dark2">
                         @if ($filtered->isEmpty())
-                            <div class="p-4 bg-yellow-100 text-yellow-700 rounded-lg">
+                            <div class="p-4 text-yellow-700 bg-yellow-100 rounded-lg">
                                 <p>Aucun produit trouvé dans cette zone économique. Veuillez essayer une autre zone
                                     économique.</p>
                             </div>
                         @else
-                            <span class="text-gray-700 font-medium">Les résultats ci-dessous sont des fournisseurs situé
+                            <span class="font-medium text-gray-700">Les résultats ci-dessous sont des fournisseurs situé
                                 dans la zone : <span class="text-indigo-600">{{ $appliedZoneValue }}</span></span>
                             @foreach ($filtered as $filtre => $group)
                                 @php
@@ -241,7 +241,7 @@
 
                                 @endphp
                                 <div
-                                    class="mb-4 p-4 border border-gray-200 rounded-lg shadow-sm bg-white dark:bg-gray-800 dark:border-gray-700">
+                                    class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                                     <div class="flex items-start gap-4">
                                         <div class="flex-1">
                                             <h4 class="text-lg font-semibold text-black dark:text-white">
@@ -258,7 +258,7 @@
                                             <div x-data="{ open: false }">
                                                 <!-- Bouton pour ouvrir le pop-up -->
                                                 <button @click="open = true"
-                                                    class="bg-blue-500 text-white px-4 py-2 rounded">
+                                                    class="px-4 py-2 text-white bg-blue-500 rounded">
                                                     Details
                                                 </button>
 
@@ -266,8 +266,8 @@
                                                 <div x-show="open"
                                                     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
                                                     style="display: none;">
-                                                    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                                                        <h2 class="text-xl font-bold mb-4">Details Du Produit Recherché
+                                                    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+                                                        <h2 class="mb-4 text-xl font-bold">Details Du Produit Recherché
                                                         </h2>
                                                         <p>Référence : {{ $filtre }}</p>
 
@@ -279,7 +279,7 @@
 
                                                         <p>Particularité : {{ $distinctParticularites->join(', ') }}</p>
                                                         <button @click="open = false"
-                                                            class="bg-red-500 text-white px-4 py-2 rounded">
+                                                            class="px-4 py-2 text-white bg-red-500 rounded">
                                                             Fermer
                                                         </button>
                                                     </div>
@@ -288,7 +288,7 @@
                                         </div>
                                         <div class="flex items-center">
                                             <div
-                                                class="flex p-2 items-center text-xs bg-yellow-100/60 text-yellow-600 rounded">
+                                                class="flex items-center p-2 text-xs text-yellow-600 rounded bg-yellow-100/60">
                                                 <p class="mr-1 font-semibold">{{ $distinctUserCount }}</p>
                                                 <span>Fournisseurs</span>
                                             </div>
@@ -296,7 +296,7 @@
 
                                     </div>
                                     @if ($distinctUserCount <= 1)
-                                        <p class="text-red-600 text-sm mt-2">
+                                        <p class="mt-2 text-sm text-red-600">
                                             Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour
                                             effectuer
                                             l'appel d'offre.
@@ -304,7 +304,7 @@
                                     @endif
                                     <form action="{{ route('biicf.form') }}" method="POST">
                                         @csrf
-                                        <div class="w-full text-center mt-4">
+                                        <div class="w-full mt-4 text-center">
                                             <input type="hidden" name="distinctSpecifications"
                                                 value="{{ $distinctSpecifications->join(', ') }}">
 
@@ -319,7 +319,7 @@
                                                 <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                             @endforeach
 
-                                            <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit"
+                                            <button class="px-3 py-2 text-white bg-purple-600 rounded-xl" type="submit"
                                                 @if ($distinctUserCount <= 1) disabled @endif>
                                                 @if ($distinctUserCount <= 1)
                                                     Fournisseur insuffisant
@@ -334,7 +334,7 @@
                         @endif
                     </div>
                 @else
-                    <div class=" rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 my-3">
+                    <div class="my-3 text-sm font-medium shadow-sm rounded-xl border1 dark:bg-dark2">
 
                         @foreach ($groupedByReference as $reference => $group)
                             @php
@@ -353,7 +353,7 @@
                             @endphp
 
                             <div
-                                class="mb-4 p-4 border border-gray-200 rounded-lg shadow-sm bg-white dark:bg-gray-800 dark:border-gray-700">
+                                class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                                 <div class="flex items-start gap-4">
                                     <div class="flex-1">
                                         <h4 class="text-lg font-semibold text-black dark:text-white">
@@ -369,7 +369,7 @@
                                         @endforeach
                                         <div x-data="{ open: false }">
                                             <!-- Bouton pour ouvrir le pop-up -->
-                                            <button @click="open = true" class="bg-blue-500 text-white px-4 py-2 rounded">
+                                            <button @click="open = true" class="px-4 py-2 text-white bg-blue-500 rounded">
                                                 Details
                                             </button>
 
@@ -377,8 +377,8 @@
                                             <div x-show="open"
                                                 class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
                                                 style="display: none;">
-                                                <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                                                    <h2 class="text-xl font-bold mb-4">Titre du Pop-up</h2>
+                                                <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+                                                    <h2 class="mb-4 text-xl font-bold">Titre du Pop-up</h2>
                                                     <p>Référence : {{ $reference }}</p>
 
                                                     <!-- Afficher d'autres détails ici -->
@@ -389,7 +389,7 @@
 
                                                     <p>Particularité : {{ $distinctParticularites->join(', ') }}</p>
                                                     <button @click="open = false"
-                                                        class="bg-red-500 text-white px-4 py-2 rounded">
+                                                        class="px-4 py-2 text-white bg-red-500 rounded">
                                                         Fermer
                                                     </button>
                                                 </div>
@@ -399,7 +399,7 @@
                                     </div>
                                     <div class="flex items-center">
                                         <div
-                                            class="flex p-2 items-center text-xs bg-yellow-100/60 text-yellow-600 rounded">
+                                            class="flex items-center p-2 text-xs text-yellow-600 rounded bg-yellow-100/60">
                                             <p class="mr-1 font-semibold">{{ $distinctUserCount }}</p>
                                             <span>Fournisseurs</span>
                                         </div>
@@ -407,7 +407,7 @@
                                 </div>
 
                                 @if ($distinctUserCount <= 1)
-                                    <p class="text-red-600 text-sm mt-2">
+                                    <p class="mt-2 text-sm text-red-600">
                                         Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour effectuer
                                         l'appel d'offre.
                                     </p>
@@ -415,7 +415,7 @@
 
                                 <form action="{{ route('biicf.form') }}" method="POST">
                                     @csrf
-                                    <div class="w-full text-center mt-4">
+                                    <div class="w-full mt-4 text-center">
                                         <input type="hidden" name="distinctSpecifications"
                                             value="{{ $distinctSpecifications->join(', ') }}">
 
@@ -427,7 +427,7 @@
                                             <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                         @endforeach
 
-                                        <button class="px-3 py-2 bg-purple-600 text-white rounded-xl" type="submit"
+                                        <button class="px-3 py-2 text-white bg-purple-600 rounded-xl" type="submit"
                                             @if ($distinctUserCount <= 1) disabled @endif>
                                             @if ($distinctUserCount <= 1)
                                                 Fournisseur insuffisant
@@ -447,10 +447,10 @@
 
         </div>
 
-        <div class="lg:col-span-1 lg:block hidden">
+        <div class="hidden lg:col-span-1 lg:block">
             <div class="flex flex-col ">
 
-                <div class="flex flex-col bg-white border border-gray-200 p-4 rounded-xl">
+                <div class="flex flex-col p-4 bg-white border border-gray-200 rounded-xl">
                     <p class="font-semibold">Thèmes les plus rechercher</p>
 
                     <div class="space-y-3.5 capitalize text-xs font-normal mt-5 mb-2 text-gray-600 dark:text-white/80">
@@ -462,7 +462,7 @@
                                         d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
                                 </svg>
                                 <div class="flex-1">
-                                    <h4 class="font-semibold text-black dark:text-white text-sm"> artificial intelligence
+                                    <h4 class="text-sm font-semibold text-black dark:text-white"> artificial intelligence
                                     </h4>
                                     <div class="mt-0.5"> 1,245,62 post </div>
                                 </div>
@@ -477,7 +477,7 @@
                                         d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
                                 </svg>
                                 <div class="flex-1">
-                                    <h4 class="font-semibold text-black dark:text-white text-sm"> Web developers</h4>
+                                    <h4 class="text-sm font-semibold text-black dark:text-white"> Web developers</h4>
                                     <div class="mt-0.5"> 1,624 post </div>
                                 </div>
                             </div>
@@ -490,7 +490,7 @@
                                         d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
                                 </svg>
                                 <div class="flex-1">
-                                    <h4 class="font-semibold text-black dark:text-white text-sm"> Ui Designers</h4>
+                                    <h4 class="text-sm font-semibold text-black dark:text-white"> Ui Designers</h4>
                                     <div class="mt-0.5"> 820 post </div>
                                 </div>
                             </div>
@@ -503,7 +503,7 @@
                                         d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
                                 </svg>
                                 <div class="flex-1">
-                                    <h4 class="font-semibold text-black dark:text-white text-sm"> affiliate marketing </h4>
+                                    <h4 class="text-sm font-semibold text-black dark:text-white"> affiliate marketing </h4>
                                     <div class="mt-0.5"> 480 post </div>
                                 </div>
                             </div>
@@ -516,7 +516,7 @@
                                         d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
                                 </svg>
                                 <div class="flex-1">
-                                    <h4 class="font-semibold text-black dark:text-white text-sm"> affiliate marketing </h4>
+                                    <h4 class="text-sm font-semibold text-black dark:text-white"> affiliate marketing </h4>
                                     <div class="mt-0.5"> 480 post </div>
                                 </div>
                             </div>
@@ -526,7 +526,7 @@
                     </div>
 
                 </div>
-                <footer class="text-center text-sm text-gray-600 pt-8 pb-11 ">
+                <footer class="pt-8 text-sm text-center text-gray-600 pb-11 ">
                     &copy; 2024 BIICF. Tous droits réservés.
                 </footer>
             </div>

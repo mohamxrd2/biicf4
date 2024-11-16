@@ -1422,8 +1422,12 @@ class NotificationShow extends Component
         Log::info('Solde du portefeuille du fournisseur mis à jour', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
 
         // Transactions
-        $this->createTransaction(Auth::user()->id, $this->notification->data['fournisseur'], 'Reception', $totalSom);
-        Log::info('Transaction fournisseur créée', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
+        // $this->createTransaction(Auth::user()->id, $this->notification->data['fournisseur'], 'Reception', $totalSom);
+        // Log::info('Transaction fournisseur créée', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
+
+        $referenceId = $this->generateIntegerReference();
+
+        $this->createTransactionNew(Auth::user()->id, $this->notification->data['fournisseur'], 'Réception', 'COC', $totalSom, $referenceId, 'Reception pour achat de ' . $produit->name);
 
         // Montant total de la transaction
         $prixTotal = $this->notification->data['prixTrade'];
@@ -1433,8 +1437,11 @@ class NotificationShow extends Component
         $livreurWallet->increment('balance', $montantLivreur);
         Log::info('Solde du portefeuille du livreur mis à jour', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
 
-        $this->createTransaction(Auth::user()->id, $this->notification->data['livreur'], 'Reception', $montantLivreur);
-        Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
+
+        // $this->createTransaction(Auth::user()->id, $this->notification->data['livreur'], 'Reception', $montantLivreur);
+        // Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
+
+        $this->createTransactionNew(Auth::user()->id, $this->notification->data['livreur'], 'Réception', 'COC', $montantLivreur, $referenceId, 'Reception pour livraison de ' . $produit->name);
 
 
         Notification::send($client, new colisaccept($data));
@@ -1451,6 +1458,7 @@ class NotificationShow extends Component
     {
 
         $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
+        $produit = ProduitService::find($this->notification->data['idProd']);
 
         $montantTotal = $this->totalPrice;
 
@@ -1482,9 +1490,15 @@ class NotificationShow extends Component
 
         $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
 
-        $this->createTransaction($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Reception', $montantTotal);
+        
 
-        $this->createTransaction($this->notification->data['id_client'], $this->notification->data['id_livreur'], 'Reception', $this->notification->data['prixTrade']);
+        $referenceId = $this->generateIntegerReference();
+
+        $this->createTransactionNew($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Réception', 'COC', $montantTotal, $referenceId, 'Refus de recupération de ' . $produit->name);
+
+        
+
+        $this->createTransactionNew($this->notification->data['id_client'], $$this->notification->data['id_livreur'], 'Réception', 'COC', $this->notification->data['prixTrade'], $referenceId, 'Réception pour livraison de ' . $produit->name);
 
         Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
 

@@ -27,7 +27,7 @@ class RefusAchat extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            // 'message' => 'Votre achat a été refusé.',
+            'message' => 'Votre achat a été refusé.',
             'reason' => $this->reason,
         ];
     }

@@ -5,20 +5,20 @@
 @section('content')
     <div class="px-4">
         @if (session('success'))
-            <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
+            <div class="px-4 py-2 mb-4 text-green-800 bg-green-200 rounded-md">
                 {{ session('success') }}
             </div>
         @endif
         @if (session('error'))
-            <div class="bg-red-200 text-red-800 px-4 py-2 rounded-md mb-4">
+            <div class="px-4 py-2 mb-4 text-red-800 bg-red-200 rounded-md">
                 {{ session('error') }}
             </div>
         @endif
         <form action="{{ route('biicf.formstoreGroupe') }}" method="POST" enctype="multipart/form-data" id="mainForm"
             x-data="{ isSubmitting: false }" x-on:submit="isSubmitting = true">
             @csrf
-            <div class="w-full flex flex-col justify-center items-center">
-                <h1 class="font-medium text-xl text-slate-700 mb-4">Remplissez le formulaire</h1>
+            <div class="flex flex-col items-center justify-center w-full">
+                <h1 class="mb-4 text-xl font-medium text-slate-700">Remplissez le formulaire</h1>
                 <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPricedProduct }}">
                 <input type="hidden" name="reference" value="{{ $reference }}">
                 <input type="hidden" name="appliedZoneValue" value="{{ $appliedZoneValue }}">
@@ -26,23 +26,23 @@
                 @foreach ($prodUsers as $userId)
                     <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                 @endforeach
-                <div class="lg:w-2/3 w-full bg-white rounded-lg p-2 shadow-md mb-4">
-                    <h1 class="text-md font-medium text-slate-900">Prix unitaire max</h1>
+                <div class="w-full p-2 mb-4 bg-white rounded-lg shadow-md lg:w-2/3">
+                    <h1 class="font-medium text-md text-slate-900">Prix unitaire max</h1>
                     <p class="text-sm">{{ $lowestPricedProduct }} FCFA</p>
                 </div>
-                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                <div class="w-full mb-3 space-y-3 lg:w-2/3">
                     <input type="text"
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none"
+                        class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Nom du produit" value="{{ $name }}" name="productName" required readonly>
                 </div>
-                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                <div class="w-full mb-3 space-y-3 lg:w-2/3">
                     <input type="number" required
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                        class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Quantité" name="quantity">
                 </div>
-                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                <div class="w-full mb-3 space-y-3 lg:w-2/3">
                     <select name="payment" required
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                        class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                         <option value="" selected disabled>Payment</option>
                         <option value="Payment comptant">Payment comptant</option>
                         <option value="Avance partielle" disabled>Avance partielle</option>
@@ -52,17 +52,17 @@
                         </option>
                     </select>
                 </div>
-                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                <div class="w-full mb-3 space-y-3 lg:w-2/3">
                     @if ($type == 'Service')
                         <select id="livraisonSelect" name="Livraison" required
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                            class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" selected disabled>Type de livraison</option>
                             <option value="Take Away">Take Away</option>
                             {{-- <option value="Reservation">Reservation</option> --}}
                         </select>
                     @else
                         <select id="livraisonSelect" name="Livraison" required
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                            class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" selected disabled>Type de livraison</option>
                             <option value="Achat avec livreur">Achat avec livreur</option>
                             <option value="Take Away">Take Away</option>
@@ -70,15 +70,15 @@
                         </select>
                     @endif
                 </div>
-                <div date-rangepicker class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
-                    <div class="w-1/2 mr-2 relative">
+                <div date-rangepicker class="flex items-center w-full mb-3 overflow-auto lg:w-2/3">
+                    <div class="relative w-1/2 mr-2">
                         <label for="datePickerStart">Au plus tôt</label>
                         <input type="date" id="datePickerStart" name="dateTot" required
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
                             placeholder="Sélectionner la date de début">
                     </div>
-                    <span class="mx-4 text-gray-500 items-center h-full justify-center flex">à</span>
-                    <div class="w-1/2 ml-2 relative">
+                    <span class="flex items-center justify-center h-full mx-4 text-gray-500">à</span>
+                    <div class="relative w-1/2 ml-2">
                         <label for="datePickerEnd" class="mb-1">Au plus tard</label>
                         <input type="date" id="datePickerEnd" name="dateTard" required
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
@@ -86,28 +86,28 @@
                     </div>
                 </div>
 
-                <div id="timeFields" class="overflow-auto flex items-center lg:w-2/3 w-full mb-3" style="display: none;">
+                <div id="timeFields" class="flex items-center w-full mb-3 overflow-auto lg:w-2/3" style="display: none;">
                     <!-- Heure de début -->
-                    <div class="w-1/2 mr-2 relative">
+                    <div class="relative w-1/2 mr-2">
                         <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure de début</label>
                         <input type="time" id="timePickerStart" name="timeStart"
-                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     </div>
 
                     <!-- Heure de fin -->
-                    <div class="w-1/2 mr-2 relative">
+                    <div class="relative w-1/2 mr-2">
                         <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure de fin</label>
                         <input type="time" id="timePickerEnd" name="timeEnd"
-                            class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     </div> <br>
                     <p class="text-center">OU</p>
                 </div>
 
                 <!-- Sélecteur de période de la journée -->
-                <div class="overflow-auto flex items-center lg:w-2/3 w-full mb-3">
+                <div class="flex items-center w-full mb-3 overflow-auto lg:w-2/3">
 
                     <select id="dayPeriod" name="dayPeriod"
-                        class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                        class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg pe-9 disabled:opacity-50 disabled:pointer-events-none">
                         <option value="" selected>Choisir la période de la journée</option>
                         <option value="Matin">Matin</option>
                         <option value="Après-midi">Après-midi</option>
@@ -115,16 +115,16 @@
                         <option value="Nuit">Nuit</option>
                     </select>
                 </div>
-                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                <div class="w-full mb-3 space-y-3 lg:w-2/3">
                     <input type="text" required
-                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                        class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                         placeholder="Lieu de livraison" name="localite">
                 </div>
-                <div class="lg:w-2/3 w-full space-y-3 mb-3">
+                <div class="w-full mb-3 space-y-3 lg:w-2/3">
                     @if ($type == 'Service')
                     @else
                         <select name="specification" required
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
+                            class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
                             <option value="" selected disabled>choisir une specification</option>
 
                             @if (!empty($distinctSpecifications))
@@ -137,12 +137,12 @@
 
 
                 </div>
-                <div class="lg:w-2/3 flex justify-between items-center w-full space-y-3 mb-6">
+                <div class="flex items-center justify-between w-full mb-6 space-y-3 lg:w-2/3">
                     <h3>Ajouter un document (facultatif)</h3>
-                    <div class="flex items-center justify-center w-20 z-10" id="floating_photo1">
-                        <div class="overflow-hidden rounded-md relative w-full">
+                    <div class="z-10 flex items-center justify-center w-20" id="floating_photo1">
+                        <div class="relative w-full overflow-hidden rounded-md">
                             <label for="file-upload1"
-                                class="flex flex-col items-center justify-center w-full h-30 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                class="flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer h-30 bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
                                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                     <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -157,9 +157,9 @@
                             </label>
                             <input id="file-upload1" class="hidden rounded-md" type="file"
                                 onchange="previewImage(this)" name="image">
-                            <img id="image-preview1" class="absolute inset-0 w-full h-full object-cover hidden">
+                            <img id="image-preview1" class="absolute inset-0 hidden object-cover w-full h-full">
                             <button type="button" onclick="removeImage()" id="remove-button1"
-                                class="text-red-600 bg-white w-5 h-5 rounded-full absolute top-2 right-2 hidden">
+                                class="absolute hidden w-5 h-5 text-red-600 bg-white rounded-full top-2 right-2">
                                 <svg class="w-full" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -169,19 +169,19 @@
                     </div>
                 </div>
 
-                <div class="lg:w-2/3 w-full flex flex-col items-center space-y-4">
+                <div class="flex flex-col items-center w-full space-y-4 lg:w-2/3">
                     <!-- Cancel Button -->
                     <button type="reset"
-                        class="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition duration-200 ease-in-out">
+                        class="px-4 py-2 text-gray-700 transition duration-200 ease-in-out bg-gray-200 rounded-md hover:bg-gray-300">
                         Annuler
                     </button>
 
                     <!-- First Direct Section -->
-                    <div class="w-full flex flex-col items-center space-y-2">
+                    <div class="flex flex-col items-center w-full space-y-2">
                         <p class="text-center text-gray-600">Pour vous envoyer directement aux fournisseurs de votre zone,
                             cliquez ici :</p>
                         <button type="submit" id="submitEnvoie"
-                            class="w-full lg:w-auto px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-800 transition duration-200 ease-in-out flex items-center justify-center"
+                            class="flex items-center justify-center w-full px-4 py-2 text-white transition duration-200 ease-in-out bg-purple-700 rounded-md lg:w-auto hover:bg-purple-800"
                             x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Direct'">
                         </button>
                     </div>
@@ -192,12 +192,12 @@
                         </p>
                     @elseif ($appliedZoneValue)
                         <!-- Second Grouper Section -->
-                        <div class="w-full flex flex-col items-center space-y-2">
+                        <div class="flex flex-col items-center w-full space-y-2">
                             <p class="text-center text-gray-600">
                                 Pour vous grouper avec d'autres acheteurs de votre zone, cliquez ici :
                             </p>
                             <button type="submit" id="submitGroupe"
-                                class="w-full lg:w-auto px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-center"
+                                class="flex items-center justify-center w-full px-4 py-2 text-white transition duration-200 ease-in-out bg-green-500 rounded-md lg:w-auto hover:bg-green-600"
                                 x-bind:disabled="isSubmitting" x-text="isSubmitting ? 'Envoi...' : 'Groupé'">
                             </button>
                         </div>

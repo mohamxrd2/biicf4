@@ -11,8 +11,6 @@
         @livewire('command-verif-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAd')
         @livewire('mainleve-ad', ['id' => $id])
-
-
         {{-- Appel Offre Direct --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="p-6 bg-white rounded-lg shadow-md">
