@@ -15,6 +15,8 @@ class ProjetFinance extends Component
     public $projets;
     public $totalMontantp;
     public $totalMontant;
+    public $interet;
+    public $calculInteret;
     public $totalMontants;
     public $countDemandecredits;
     public $countProjets;
@@ -37,7 +39,13 @@ class ProjetFinance extends Component
         $this->totalMontant = $this->demandecredits->sum('montant');
         $this->totalMontants = $this->remboursements->sum('montant_capital');
         $this->totalMontantp = $this->projets->sum('montant');
-    }
+
+        // Calcule le total des interet
+        $this->interet = $this->remboursements->sum('montant_interet');
+        $this->calculInteret = $this->remboursements->sum(function ($remboursement) {
+            return ($remboursement->montant_capital * $remboursement->montant_interet) / 100;
+        });
+            }
     public function render()
     {
         return view('livewire.projet-finance');

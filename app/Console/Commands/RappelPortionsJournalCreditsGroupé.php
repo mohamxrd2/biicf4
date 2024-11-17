@@ -50,15 +50,6 @@ class RappelPortionsJournalCreditsGroupé extends Command
             if ($dateDuJour <= $credit->date_fin) {
                 Log::info('Le crédit avec ID ' . $credit->id . ' est actif aujourd\'hui.');
 
-                // Vérifier si la portion a déjà été enregistrée pour cette date
-                $existingPortion = portions_journalieres::where('id_user', $credit->emprunteur_id)
-                    ->where('date_portion', $dateDuJour)
-                    ->first();
-
-                if (!$existingPortion) {
-                    Log::warning("Aucune portion trouvée pour la date du jour.");
-                    continue;
-                }
 
                 $portionCapital = $credit->montant;
                 $portionInteret = $credit->taux_interet;
@@ -150,7 +141,7 @@ class RappelPortionsJournalCreditsGroupé extends Command
                         if (!$emprunteur) {
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
                         }
-                        $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
+                        $message = 'Le solde de votre compte est insuffisant. Penalité de 10%, Veuillez recharger votre compte pour effectuer cette opération.';
                         Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret, $message));
 
                         // Après l'envoi de la notification
@@ -186,7 +177,12 @@ class RappelPortionsJournalCreditsGroupé extends Command
                 // Vérifier que l'ID de l'investisseur et le montant financé sont définis, puis les ajouter aux tableaux
                 if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
                     $investisseursIds[] = $investisseur['investisseur_id'];
-                    $investisseursMontants[$investisseur['investisseur_id']] = $investisseur['montant_finance'];
+
+                    // Calcul du montant total financé avec les intérêts
+                    $montantAvecInteret = $investisseur['montant_finance'] + ($investisseur['montant_finance'] * $credit->taux_interet) / 100;
+
+                    // Stocker le montant financé augmenté des intérêts dans le tableau
+                    $investisseursMontants[$investisseur['investisseur_id']] = $montantAvecInteret;
                 }
             }
         }
@@ -250,13 +246,13 @@ class RappelPortionsJournalCreditsGroupé extends Command
                 // Mise à jour de la table COI
                 $coi = Coi::where('id_wallet', $walletInvestisseurs->id)->first();
                 if ($coi) {
-                    $coi->Solde += $credit->montant;
+                    $coi->Solde += $montant;
                     $coi->save();
                     // Log de la mise à jour
                     Log::info('Mise à jour de la table CRP', [
                         'id_wallet' => $walletInvestisseurs->id,
                         'nouveau_solde' => $coi->Solde,
-                        'montant_débité' => $credit->montant
+                        'montant_débité' => $montant
                     ]);
                 }
 
@@ -282,7 +278,7 @@ class RappelPortionsJournalCreditsGroupé extends Command
                     'effectué',
                     $crp->type_compte
                 );
-                
+
                 $credit->statut = "payé";
 
                 // Envoi de la notification

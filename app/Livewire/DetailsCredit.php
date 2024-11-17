@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Events\AjoutMontantF;
 use App\Events\CommentSubmittedTaux;
 use App\Events\DebutDeNegociation;
 use App\Models\AjoutMontant;
@@ -66,21 +67,14 @@ class DetailsCredit extends Component
         // Récupérer l'ID de l'utilisateur connecté
         $user_connecte = Auth::id();
         $wallet = Wallet::where('user_id', $user_connecte)->first();
-        $this->solde = $wallet ? $wallet->balance : 0;
-
-        // Récupérer les credits où 'count' est égal à true et dont la date de fin est passée
-
+        $this->solde = $wallet ? $wallet->coi->Solde : 0;
 
         // Récupérer l'ID de la demande de credi du userId
         $demandeId = $this->notification->data['demande_id'];
         $this->demandeCredit = DemandeCredi::where('demande_id', $demandeId)->first();
 
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', operator: $this->demandeCredit->id)
-            ->distinct()
-            ->count('id_invest');
 
-        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->sum('montant'); // Somme des montants investis
+
 
 
 
@@ -93,21 +87,9 @@ class DetailsCredit extends Component
         }
 
 
-        // Calculer le pourcentage investi
-        if ($this->demandeCredit->montant > 0) {
-            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
-        } else {
-            $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
-        }
 
-        // Calculer la somme restante à investir
-        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
 
-        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
-        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
 
-        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
-        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
 
         // Vérifier si un investisseur a payé la totalité du demandeCredit
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
@@ -120,6 +102,7 @@ class DetailsCredit extends Component
         Log::info('Investisseur qui a payé tout pour le demandeCredit ID: ' . $this->demandeCredit->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
 
         $this->listenTaux();
+        $this->updatedMontant();
     }
 
     // Méthode déclenchée lorsque le compte à rebours est terminé
@@ -155,10 +138,28 @@ class DetailsCredit extends Component
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
     }
+
+    #[On('echo:ajout-montant,AjoutMontantF')]
     public function updatedMontant()
     {
-        // Vérifier si le montant saisi dépasse le solde
-        $this->insuffisant = !empty($this->montant) && $this->montant > $this->solde;
+        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->sum('montant'); // Somme des montants investis
+        // Calculer la somme restante à investir
+        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
+        // Calculer le pourcentage investi
+        if ($this->demandeCredit->montant > 0) {
+            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
+        } else {
+            $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
+        }
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', operator: $this->demandeCredit->id)
+            ->distinct()
+            ->count('id_invest');
+        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
+
+        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
+        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
     }
 
     #[On('echo:debut-negociation,DebutDeNegociation')]
@@ -191,8 +192,17 @@ class DetailsCredit extends Component
             return;
         }
 
-        // Vérifier que le solde du wallet est suffisant
-        if ($wallet->balance < $montant) {
+        // Récupérer l'objet COI associé
+        $coi = $wallet->coi; // L'objet `coi`, supposant qu'il est une relation avec le wallet
+
+        // Vérifier que l'objet COI existe
+        if (!$coi) {
+            session()->flash('error', 'Votre compte COI est introuvable.');
+            return;
+        }
+
+        // Vérifier que le solde est suffisant
+        if ($coi->Solde < $montant) {
             session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
             return;
         }
@@ -214,20 +224,15 @@ class DetailsCredit extends Component
             Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
 
 
-            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
-            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
-            if ($coi) {
-                $coi->Solde -= $montant; // Débiter le montant du solde du COI
-                $coi->save();
-            }
+            // Mettre à jour le solde du COI
+            $coi->Solde -= $montant; // Débiter le montant du solde du COI
+            $coi->save();
 
-
-
-            // if (!$ajoutMontant) {
             $reference_id = $this->generateIntegerReference();
 
             $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué', $coi->type_compte);
 
+            broadcast(new AjoutMontantF($ajoumontant))->toOthers();
 
             // Committer la transaction
             DB::commit();

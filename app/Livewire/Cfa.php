@@ -72,17 +72,13 @@ class Cfa extends Component
             $this->pourcentageRemboursement = 0; // éviter la division par zéro
         }
 
-        // Récupérer les crédits associés à cet utilisateur; Si un utilisateur a des crédits G associés, les récupérer
+        // Récupérer les CREDITS ASSOCIER GROUPER
         $this->creditsGroupe = credits_groupé::where('emprunteur_id', $userId)->get();
-
-
         // Calculer le montant total des crédits et le montant total remboursé
-        $this->totalCreditsGroupe = $this->credits->sum('montant');
-        $this->totalCreditsRemboursesGroupe = $this->credits->sum(function ($creditsGroupe) {
+        $this->totalCreditsGroupe = $this->creditsGroupe->sum('montant');
+        $this->totalCreditsRemboursesGroupe = $this->creditsGroupe->sum(function ($creditsGroupe) {
             return $creditsGroupe->montant - $creditsGroupe->montan_restantt;
         });
-
-
         // Calcul du pourcentage de remboursement global
         if ($this->totalCreditsGroupe > 0) {
             $this->pourcentageRemboursementGroupe = ($this->totalCreditsRemboursesGroupe / $this->totalCreditsGroupe) * 100;
@@ -90,7 +86,7 @@ class Cfa extends Component
             $this->pourcentageRemboursementGroupe = 0; // éviter la division par zéro
         }
 
-        // Récupérer les transactions impliquant l'utilisateur authentifié
+        // RECUPERER les transactions impliquant l'utilisateur authentifié
         $this->transactions = transactions_remboursement::with(['emprunteur', 'investisseur']) // Remplacer par les relations
             ->where(function ($query) use ($userId) {
                 $query->where('emprunteur_id', $userId)
@@ -105,7 +101,7 @@ class Cfa extends Component
                 ->orWhere('investisseur_id', $userId);
         })->count();
 
-        Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $this->transacCount]);
+        // Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $this->transacCount]);
     }
 
     public function render()

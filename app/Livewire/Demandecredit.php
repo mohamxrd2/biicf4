@@ -193,6 +193,7 @@ class Demandecredit extends Component
                             'date_fin' => $this->endDate,
                             'heure_fin' => $this->endTime,
                             'taux' => $this->roi, // Le taux de retour sur investissement
+                            'status' => 'en cours', // Le taux de retour sur investissement
                         ]);
                     }
                     // Reset des champs après soumission

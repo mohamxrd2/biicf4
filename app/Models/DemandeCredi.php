@@ -27,6 +27,7 @@ class DemandeCredi extends Model
         'heure_fin',
         'status',
         'count',
+        'status',
     ];
 
     // Relation avec le modèle User

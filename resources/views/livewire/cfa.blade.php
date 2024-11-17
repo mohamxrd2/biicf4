@@ -116,7 +116,8 @@
                         // Calculer le pourcentage de remboursement pour chaque crédit
                         $pourcentageRemboursement =
                             $creditGroupe->montant > 0
-                                ? (($creditGroupe->montant - $creditGroupe->montant_restant) / $creditGroupe->montant) * 100
+                                ? (($creditGroupe->montant - $creditGroupe->montant_restant) / $creditGroupe->montant) *
+                                    100
                                 : 0;
                     @endphp
                     <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
@@ -127,7 +128,7 @@
                                     <path
                                         d="M3 11a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm1-6h16a1 1 0 011 1v3H3V6a1 1 0 011-1z" />
                                 </svg>
-                                <h3 class="font-semibold text-gray-700">{{ $creditGroupe->description }} XXXXXXX
+                                <h3 class="font-semibold text-gray-700">{{ $creditGroupe->description }}
                                 </h3>
                             </div>
                             <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 font-semibold rounded">ID Credit :
@@ -220,8 +221,8 @@
             @if ($transacCount == 0)
                 <div class="flex-col items-center justify-center w-full text-center h-80">
                     <div class="flex justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" class="w-12 h-12 text-gray-500 dark:text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-12 h-12 text-gray-500 dark:text-gray-400">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                         </svg>
@@ -240,8 +241,7 @@
                     <div class="space-y-4">
                         <!-- Transaction -->
                         @foreach ($transactions as $transaction)
-                            <div data-modal-target="static-modal-"
-                                data-modal-toggle="static-modal-"
+                            <div data-modal-target="static-modal-{{$transaction->id}}" data-modal-toggle="static-modal-{{$transaction->id}}"
                                 class="flex items-center justify-between p-3 border-b hover:bg-gray-50 cursor-pointer transition-colors">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 rounded-full bg-green-100">
@@ -259,62 +259,61 @@
                                 </div>
                                 <div class="font-semibold text-green-600">{{ $transaction->montant }} FCFA</div>
                             </div>
-                        @endforeach
+                            <!-- Main modal -->
+                            <div id="static-modal-{{$transaction->id}}" data-modal-backdrop="static-{{$transaction->id}}" tabindex="-1" aria-hidden="true"
+                                class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
 
-                        <!-- Main modal -->
-                        <div id="static-modal-" data-modal-backdrop="static-"
-                            tabindex="-1" aria-hidden="true"
-                            class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-
-                            <!-- Modal body -->
-                            <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-                                <div class="flex justify-between items-center border-b pb-3">
-                                    <h2 class="text-lg font-semibold">Transaction Details</h2>
-                                    <button class="text-gray-400 hover:text-gray-600"
-                                        data-modal-hide="static-modal-">&times;</button>
-                                </div>
-                                <div class="py-4 space-y-4">
-                                    <div class="flex justify-center">
-                                        <div class="p-3 rounded-full bg-green-100">
-                                            <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </div>
+                                <!-- Modal body -->
+                                <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+                                    <div class="flex justify-between items-center border-b pb-3">
+                                        <h2 class="text-lg font-semibold">Transaction Details</h2>
+                                        <button class="text-gray-400 hover:text-gray-600"
+                                            data-modal-hide="static-modal-{{$transaction->id}}">&times;</button>
                                     </div>
-
-                                    <div class="text-center">
-                                        <p class="text-3xl font-bold">+${{ $transaction->montant }} FCFA</p>
-                                        <span
-                                            class="px-2 py-1 text-sm rounded bg-green-100 text-green-800">Completed</span>
-                                    </div>
-
-                                    <div class="space-y-4 text-sm text-gray-700">
-                                        <div class="flex items-center space-x-3">
-                                            <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path d="M8 7v10m4-10v10m4-10v10M5 10h14M5 14h14" />
-                                            </svg>
-                                            <div>
-                                                <p class="font-medium">Date</p>
-                                                <p>20/03/2024</p>
+                                    <div class="py-4 space-y-4">
+                                        <div class="flex justify-center">
+                                            <div class="p-3 rounded-full bg-green-100">
+                                                <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path d="M5 13l4 4L19 7" />
+                                                </svg>
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <p class="font-medium">Description</p>
-                                            <p>Loan disbursement</p>
+                                        <div class="text-center">
+                                            <p class="text-3xl font-bold">+{{ $transaction->montant }} FCFA</p>
+                                            <span
+                                                class="px-2 py-1 text-sm rounded bg-green-100 text-green-800">Completed</span>
                                         </div>
 
-                                        <div>
-                                            <p class="font-medium">Reference Number</p>
-                                            <p class="font-mono">REF123456789</p>
+                                        <div class="space-y-4 text-sm text-gray-700">
+                                            <div class="flex items-center space-x-3">
+                                                <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path d="M8 7v10m4-10v10m4-10v10M5 10h14M5 14h14" />
+                                                </svg>
+                                                <div>
+                                                    <p class="font-medium">Date</p>
+                                                    <p>{{$transaction->created_at}}</p>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <p class="font-medium">Description</p>
+                                                <p>Loan disbursement</p>
+                                            </div>
+
+                                            <div>
+                                                <p class="font-medium">Reference Number</p>
+                                                <p class="font-mono">REF{{$transaction->reference_id}}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                        </div>
+                            </div>
+                        @endforeach
+
                     </div>
                 </div>
             @endif

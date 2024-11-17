@@ -21,6 +21,7 @@ class credits_groupé extends Model
         'date_fin',
         'portion_journaliere',
         'statut',
+        'description',
     ];
 
     // Indiquer que le champ "investisseurs" est en JSON

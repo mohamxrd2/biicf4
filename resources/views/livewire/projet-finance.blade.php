@@ -30,8 +30,8 @@
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-gray-600">Rendement Moyen Attendu</p>
-                        <p class="text-2xl font-semibold text-gray-800">15.0%</p>
+                        <p class="text-gray-600">Rendement Attendu</p>
+                        <p class="text-2xl font-semibold text-gray-800">{{ $interet }}%({{ $calculInteret }}FCFA)</p>
                     </div>
                 </div>
                 <div class="bg-white shadow rounded-lg p-6 flex items-center">
@@ -57,18 +57,23 @@
                             <th class="pb-3 text-gray-600 font-semibold">Objet d'investissement</th>
                             <th class="pb-3 text-gray-600 font-semibold">Montant</th>
                             <th class="pb-3 text-gray-600 font-semibold">Rendu Attendu(ROI)</th>
-                            <th class="pb-3 text-gray-600 font-semibold">Investisseur</th>
+                            <th class="pb-3 text-gray-600 font-semibold">Emprunteur</th>
                             <th class="pb-3 text-gray-600 font-semibold">Date</th>
                             <th class="pb-3 text-gray-600 font-semibold">Statut</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @foreach ($remboursements as $remboursement)
+                            @php
+                                $montant_total =
+                                    ($remboursement->montant_capital * $remboursement->montant_interet) / 100;
+                            @endphp
                             <tr>
                                 <td class="py-3">{{ $remboursement->description }} </td>
                                 <td class="py-3">{{ $remboursement->montant_capital }} FCFA</td>
-                                <td class="py-3">{{ $remboursement->montant_interet }}%</td>
-                                <td class="py-3">{{ $remboursement->user->name }}
+                                <td class="py-3">{{ $remboursement->montant_interet }}%({{ $montant_total }} FCFA)
+                                </td>
+                                <td class="py-3">{{ $remboursement->creditgrp->emprunteur->name }}
                                 </td>
                                 <td class="py-3">
                                     {{ Carbon\Carbon::parse($remboursement->date_remboursement)->format('d F Y') }}</td>
@@ -154,7 +159,8 @@
                             <tr class="border-b border-gray-200 hover:bg-gray-100">
                                 <td class="py-3 px-6 text-left">{{ $projet->name }}</td>
                                 <td class="py-3 px-6 text-left">{{ $projet->montant }} fcfa</td>
-                                <td class="py-3 px-6 text-left">{{ \Carbon\Carbon::parse($projet->date_fin)->format('d/m/Y') }} </td>
+                                <td class="py-3 px-6 text-left">
+                                    {{ \Carbon\Carbon::parse($projet->date_fin)->format('d/m/Y') }} </td>
                                 <td class="py-3 px-6 text-left">{{ $projet->categorie }} </td>
                                 <td class="py-3 px-6 text-left">
                                     <span
