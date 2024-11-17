@@ -97,7 +97,6 @@ class Demandecredit extends Component
                 'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
                 'bailleur' => 'nullable|string',
                 'endDate' => 'required|date',
-                'endTime' => 'required|date_format:H:i',
                 'duration' => 'required|date',
             ]);
 
@@ -125,11 +124,9 @@ class Demandecredit extends Component
                     'type_financement' => $this->financementType,
                     'bailleur' => $this->bailleur,
                     'id_user' => auth()->id(), // Utilisateur connecté
-                    'id_investisseur' => $investorId, // Utiliser l'id récupéré
-                    'date_debut' => now()->format('Y-m-d'),
-                    'heure_debut' => now()->format('H:i:s'),
+                    'id_investisseurs' => json_decode($investorId), // Utiliser l'id récupéré
+                    'date_debut' => now()->format('Y-m-d H:i:s'),
                     'date_fin' => $this->endDate,
-                    'heure_fin' => $this->endTime,
                     'taux' => $this->roi, // Le taux de retour sur investissement
                 ]);
 
@@ -176,43 +173,42 @@ class Demandecredit extends Component
                         'bailleur' => $this->bailleur,
                         'user_id' => auth()->id(),
                     ]);
-                } else {
-                    // Insérer les données dans la table demande_credi pour chaque investisseur
-                    foreach ($investisseurs as $investisseur) {
-                        $demande = DemandeCredi::create([
-                            'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
-                            'objet_financement' => 'Demande de crédit pour Achat du produit ' . $this->nameProd,
-                            'montant' => $creditTotal,
-                            'duree' => $this->duration,
-                            'type_financement' => $this->financementType,
-                            'bailleur' => $this->bailleur,
-                            'id_user' => auth()->id(), // Utilisateur connecté
-                            'id_investisseur' => $investisseur->id, // Utilise l'id de l'investisseur actuel
-                            'date_debut' => now()->format('Y-m-d'),
-                            'heure_debut' => now()->format('H:i:s'),
-                            'date_fin' => $this->endDate,
-                            'heure_fin' => $this->endTime,
-                            'taux' => $this->roi, // Le taux de retour sur investissement
-                            'status' => 'en cours', // Le taux de retour sur investissement
-                        ]);
-                    }
-                    // Reset des champs après soumission
-                    $this->reset();
-
-                    // Envoi de la notification aux investisseurs concernés
-                    foreach ($investisseurs as $investisseur) {
-                        // Récupérer l'utilisateur associé à l'investisseur
-                        $investisseurUser = $investisseur->user;
-
-                        if ($investisseurUser) {
-                            Notification::send($investisseurUser, new DemandeCreditNotification($demande));
-                        } else {
-                            Log::warning('No user found for investor ID: ' . $investisseur->id);
-                        }
-                    }
-                    // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
-                    $this->dispatch('formSubmitted', 'Demandes de crédit envoyées avec succès');
                 }
+                // Récupérer les IDs des investisseurs dans un tableau
+                $investisseurIds = $investisseurs->pluck('id')->toArray();
+
+                $demande = DemandeCredi::create([
+                    'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
+                    'objet_financement' => 'Achat du produit ' . $this->nameProd,
+                    'montant' => $creditTotal,
+                    'duree' => $this->duration,
+                    'type_financement' => $this->financementType,
+                    'bailleur' => $this->bailleur,
+                    'id_user' => auth()->id(), // Utilisateur connecté
+                    'id_investisseurs' =>  json_encode($investisseurIds), // Utilise l'id de l'investisseur actuel
+                    'date_debut' => now()->format('Y-m-d H:i:s'),
+                    'date_fin' => $this->endDate,
+                    'taux' => $this->roi, // Le taux de retour sur investissement
+                    'status' => 'en cours', // Le taux de retour sur investissement
+                ]);
+
+
+                // Envoi de la notification aux investisseurs concernés
+                foreach ($investisseurs as $investisseur) {
+                    // Récupérer l'utilisateur associé à l'investisseur
+                    $investisseurUser = $investisseur->user;
+
+                    if ($investisseurUser) {
+                        Notification::send($investisseurUser, new DemandeCreditNotification($demande));
+                    } else {
+                        Log::warning('No user found for investor ID: ' . $investisseur->id);
+                    }
+                }
+                // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
+                $this->dispatch('formSubmitted', 'Demandes de crédit envoyées avec succès');
+
+                // Reset des champs après soumission
+                $this->reset();
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Assurez-vous que $messages est un tableau et ajoutez les nouvelles erreurs

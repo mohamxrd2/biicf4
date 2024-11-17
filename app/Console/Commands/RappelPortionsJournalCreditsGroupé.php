@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Notification;
 class RappelPortionsJournalCreditsGroupé extends Command
 {
 
-    protected $signature = 'app:rappel-journalieres-credits-groupé';
+    protected $signature = 'app:rappel-journalieres-credits';
     protected $description = 'Récupérer les portions journalières à rembourser depuis PROMIR';
 
 

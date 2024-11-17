@@ -181,7 +181,8 @@
                             </div>
 
                             <!-- Ciblage du bailleur -->
-                            <div x-show="typeFinancement === 'offre-composite' || typeFinancement === 'négocié'" class="flex flex-col flex-1">
+                            <div x-show="typeFinancement === 'offre-composite' || typeFinancement === 'négocié'"
+                                class="flex flex-col flex-1">
                                 <label for="bailleur"
                                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un
                                     bailleur ou entrez son username</label>
@@ -200,44 +201,38 @@
                         </div>
                     </div>
                     <div class="sm:col-span-2">
-                        <label for="duration"
-                            class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Date
-                            limite d'attente</label>
+
                     </div>
                     <!-- Dates et Heures alignées -->
                     <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
 
 
                         <div>
-                            <label for="end-date"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de
-                                fin</label>
+                            <label for="Datefin"
+                            class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Date
+                            limite d'attente</label>
                             <input type="datetime-local" wire:model="endDate" id="Datefin"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 oninput="updateDate()" required>
                         </div>
 
                         <div>
-                            <label for="end-time"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Heure de
-                                fin</label>
-                            <input type="time" wire:model="endTime" id="end-time"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                required>
+                            <!-- Durée du crédit -->
+
+                            <div class="">
+                                <label for="duration"
+                                    class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Durée
+                                    du crédit (Délais de remboursement)</label>
+                                <input type="datetime-local" wire:model="duration" id="Periode"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    oninput="updateDate()" required>
+                            </div>
 
                         </div>
                     </div>
 
-                    <!-- Durée du crédit -->
 
-                    <div class="sm:col-span-2">
-                        <label for="duration"
-                            class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Durée
-                            du crédit (Délais de remboursement)</label>
-                        <input type="date" wire:model="duration" id="Periode"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                            oninput="updateDate()" required>
-                    </div>
+
 
 
                     <!-- Soumission du formulaire -->

@@ -48,17 +48,8 @@ class RappelPortionsJournalProjets extends Command
 
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
             if ($dateDuJour <= $projet->date_fin) {
-                Log::info('$projet->date_debut : ' . $projet->date_debut . ' - $projet->date_fin : ' . $projet->date_fin);
+                Log::info("Traitement du projet ID : " . $projet->id . '$projet->date_debut : ' . $projet->date_debut . ' - $projet->date_fin : ' . $projet->date_fin);
 
-                // Vérifier si la portion a déjà été enregistrée pour cette date
-                $existingPortion = portions_journalieres::where('id_user', $projet->emprunteur_id)
-                    ->where('date_portion', $dateDuJour)
-                    ->first();
-
-                if (!$existingPortion) {
-                    Log::warning("Aucune portion trouvée pour la date du jour.");
-                }
-                Log::info("Traitement du projet ID : " . $projet->id);
 
                 $portionCapital = $projet->montant;
                 $portionInteret = $projet->taux_interet;

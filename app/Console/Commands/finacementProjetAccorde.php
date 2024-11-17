@@ -41,7 +41,7 @@ class finacementProjetAccorde extends Command
 
         // Récupérer les projets où 'count' est égal à true et dont la date de fin est passée
         $projets = Projet::where('count', true)
-            ->whereDate('durer', '<', $dateActuelle)
+            ->whereDate('date_fin', '<', $dateActuelle)
             ->where('etat', 'en cours')
             ->get();
 
@@ -84,7 +84,7 @@ class finacementProjetAccorde extends Command
                 // Log des informations sur chaque investisseur et son montant total financé
                 Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
-            
+
             //////\\\\\
 
             // // Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
