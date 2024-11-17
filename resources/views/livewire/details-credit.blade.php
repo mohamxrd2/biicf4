@@ -585,6 +585,27 @@
     </div>
     @if (isset($demandeCredit) && $demandeCredit->type_financement === 'offre-composite')
         <script>
+            /////////VALIDATAUX DU TAUX//
+
+            const tauxPresent = @json($demandeCredit->taux); // Le taux déjà présent
+            const tauxTradeInput = document.getElementById('tauxTrade');
+            const submitBtn = document.getElementById('submitBtnAppel');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Fonction de validation du taux
+            function validateTaux() {
+                if (parseFloat(tauxTradeInput.value) >= parseFloat(tauxPresent)) {
+                    errorMessage.innerText = `Le taux ne peut pas être supérieur à ${tauxPresent}.`;
+                    errorMessage.classList.remove('hidden');
+                    submitBtn.disabled = true;
+                    return false;
+                } else {
+                    errorMessage.classList.add('hidden');
+                    submitBtn.disabled = false;
+                    return true;
+                }
+            }
+            /////////VALIDATAUX DU TAUX//
             document.getElementById('showInputButton').addEventListener('click', function() {
                 var inputDiv = document.getElementById('inputDiv');
                 inputDiv.classList.toggle('hidden'); // Basculer l'affichage

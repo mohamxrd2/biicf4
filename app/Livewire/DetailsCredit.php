@@ -420,12 +420,17 @@ class DetailsCredit extends Component
 
         try {
             // Sauvegarde du montant dans AjoutMontant
-            $ajoumontant = $this->ajouterMontant();
+           AjoutMontant::create([
+                'montant' => $this->demandeCredit->montant,
+                'id_invest' => Auth::id(),
+                'id_emp' => $this->demandeCredit->id_user,
+                'id_demnd_credit' => $this->demandeCredit->id,
+            ]);
 
             // gelement le montant dans la table `gelement`
             gelement::create([
                 'id_wallet' => $this->wallet->id,
-                'amount' => $montant,
+                'amount' => $this->demandeCredit->montant,
                 'reference_id' => $this->demandeCredit->demande_id,
             ]);
 
@@ -433,11 +438,11 @@ class DetailsCredit extends Component
             // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
             $coi = $this->wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
             if ($coi) {
-                $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                $coi->Solde -= $this->demandeCredit->montant; // Débiter le montant du solde du COI
                 $coi->save();
             }
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->demandeCredit->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
 
 
 
@@ -543,8 +548,9 @@ class DetailsCredit extends Component
 
     private function ajouterMontant()
     {
+        
         return AjoutMontant::create([
-            'montant' => $this->montant,
+            'montant' => $this->montant ?? $this->demandeCredit->montant,
             'id_invest' => Auth::id(),
             'id_emp' => $this->demandeCredit->id_user,
             'id_demnd_credit' => $this->demandeCredit->id,
@@ -588,12 +594,17 @@ class DetailsCredit extends Component
         // passage a la negociation de taux lorsque cest une seule personne qui tt
         if ($this->pourcentageInvesti == 100 && $this->investisseurQuiAPayeTout) {
 
+            $this->demandeCredit->update([
+                'status' => 'negociation',
+            ]);
             // gelement le montant dans la table `gelement`
             gelement::create([
                 'id_wallet' => $this->wallet->id,
                 'amount' => $this->montant,
                 'reference_id' => $this->demandeCredit->demande_id,
             ]);
+
+
 
             // Si un investisseur a payé le montant total, déclencher l'événement
             if ($this->investisseurQuiAPayeTout) {
@@ -625,8 +636,8 @@ class DetailsCredit extends Component
     }
     public function joursRestants()
     {
-        $dateFin = \Carbon\Carbon::parse($this->demandeCredit->date_fin);
-        $dateActuelle = now();
+        $dateFin = Carbon::parse($this->demandeCredit->date_fin);
+        $dateActuelle = Carbon::parse($this->demandeCredit->date_debut);
         $joursRestants = $dateActuelle->diffInDays($dateFin);
         return max(0, $joursRestants); // Retournez 0 si le demandeCredit est déjà terminé
     }
