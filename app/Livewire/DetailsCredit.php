@@ -305,35 +305,35 @@ class DetailsCredit extends Component
 
             $resultatsInvestisseurs = [
                 [
-                    'projet_id' => $this->projet->id,
+                    'credit_id' => $this->demandeCredit->id,
                     'investisseur_id' => Auth::id(),
                     'montant_finance' => $montant,
                 ],
             ];
 
             // Mettre à jour ou créer un enregistrement dans la table credits
-            $credit = credits_groupé::create([
+            $creditGrp_id = credits_groupé::create([
                 'emprunteur_id' => $this->userId,
                 'investisseurs' => json_encode($resultatsInvestisseurs),
                 'montant' => $montantTotal,
-                'montant_restant' => $montantTotal,
-                'taux_interet' => $$this->demandeCreditdemandeCredit->taux,
-                'date_debut' => $$this->demandeCreditdemandeCredit->date_fin,
-                'date_fin' => $$this->demandeCreditdemandeCredit->duree,
+                'montan_restantt' => $montantTotal,
+                'taux_interet' => $this->demandeCredit->taux,
+                'date_debut' => $this->demandeCredit->date_fin,
+                'date_fin' => $this->demandeCredit->duree,
                 'portion_journaliere' => $portion_journaliere,
                 'statut' => 'en cours',
-                'description' => $$this->demandeCreditdemandeCredit->objet_financement,
+                'description' => $this->demandeCredit->objet_financement,
             ]);
 
             // Création du remboursement associé
             Remboursements::create([
-                'credit_id' => $credit->id,  // Associe le remboursement au crédit créé
+                'creditGrp_id' => $creditGrp_id->id,  // Associe le remboursement au crédit créé
                 'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
                 'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
-                'montant_interet' => $this->demandeCreditdemandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
-                'date_remboursement' => $this->demandeCreditdemandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
+                'montant_interet' => $this->demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
+                'date_remboursement' => $this->demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
                 'statut' => 'en cours',  // Statut du remboursement
-                'description' => $this->demandeCreditdemandeCredit->objet_financement,  // Statut du remboursement
+                'description' => $this->demandeCredit->objet_financement,  // Statut du remboursement
             ]);
 
             $reference_id = $this->generateIntegerReference();

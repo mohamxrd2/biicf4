@@ -124,7 +124,7 @@ class Demandecredit extends Component
                     'type_financement' => $this->financementType,
                     'bailleur' => $this->bailleur,
                     'id_user' => auth()->id(), // Utilisateur connecté
-                    'id_investisseurs' => json_decode($investorId), // Utiliser l'id récupéré
+                    'id_investisseurs' => json_encode($investorId), // Utiliser l'id récupéré
                     'date_debut' => now()->format('Y-m-d H:i:s'),
                     'date_fin' => $this->endDate,
                     'taux' => $this->roi, // Le taux de retour sur investissement
