@@ -118,7 +118,7 @@ class Demandecredit extends Component
                 // Insérer les données dans la table demande_credi
                 $demande = DemandeCredi::create([
                     'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
-                    'objet_financement' => 'Demande de crédit pour Achat du produit ' . $this->nameProd,
+                    'objet_financement' => 'Achat du produit ' . $this->nameProd,
                     'montant' => $montantMax,
                     'duree' => $this->duration,
                     'type_financement' => $this->financementType,

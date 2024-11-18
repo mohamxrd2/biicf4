@@ -47,7 +47,7 @@ class RappelPortionsJournalCreditsGroupé extends Command
             Log::info('Credit ID : ' . $credit->id . ' - Emprunteur ID : ' . $credit->emprunteur_id);
 
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
-            if ($dateDuJour <= $credit->date_fin) {
+            if ($dateDuJour >= $credit->date_debut || $dateDuJour <= $credit->date_fin) {
                 Log::info('Le crédit avec ID ' . $credit->id . ' est actif aujourd\'hui.');
 
 
