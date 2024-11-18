@@ -7,6 +7,7 @@ use App\Models\Cfa;
 use App\Models\Countdown;
 use App\Models\CrediScore;
 use App\Models\credits;
+use App\Models\credits_groupé;
 use App\Models\DemandeCredi;
 use App\Models\gelement;
 use App\Models\Projet;
@@ -100,7 +101,7 @@ class DetailsGagnant extends Component
         $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
 
         // Vérifier que l'utilisateur possède un wallet
-        if (!$wallet) {
+        if (!$wallet && !$walletDemandeur) {
             session()->flash('error', 'Votre portefeuille est introuvable.');
             return;
         }
@@ -151,47 +152,46 @@ class DetailsGagnant extends Component
             $montantTotal = $montant * (1 + $demandeCredit->taux / 100);
             $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
 
+            $resultatsInvestisseurs = [
+                [
+                    'credit_id' => $this->demandeCredit->id,
+                    'investisseur_id' => Auth::id(),
+                    'montant_finance' => $montant,
+                ],
+            ];
+
             // Mettre à jour ou créer un enregistrement dans la table credits
-            $credit = credits::create([
+            $creditGrp_id = credits_groupé::create([
                 'emprunteur_id' => $this->userId,
-                'investisseurs' => [Auth::id()],
+                'investisseurs' => json_encode($resultatsInvestisseurs),
                 'montant' => $montantTotal,
-                'montant_restant' => $montantTotal,
-                'taux_interet' => $demandeCredit->taux,
-                'date_debut' => $demandeCredit->date_debut,
-                'date_fin' => $demandeCredit->duree,
+                'montan_restantt' => $montantTotal,
+                'taux_interet' => $this->demandeCredit->taux,
+                'date_debut' => $this->demandeCredit->date_fin,
+                'date_fin' => $this->demandeCredit->duree,
                 'portion_journaliere' => $portion_journaliere,
-                'statut' => 'en_cours',
+                'statut' => 'en cours',
+                'description' => $this->demandeCredit->objet_financement,
             ]);
+
             // Création du remboursement associé
-            remboursements::create([
-                'credit_id' => $credit->id,  // Associe le remboursement au crédit créé
+            Remboursements::create([
+                'creditGrp_id' => $creditGrp_id->id,  // Associe le remboursement au crédit créé
                 'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
                 'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
-                'montant_interet' => $demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
-                'date_remboursement' => $demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
+                'montant_interet' => $this->demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
+                'date_remboursement' => $this->demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
                 'statut' => 'en cours',  // Statut du remboursement
-                'description' => $demandeCredit->objet_financement,  // Statut du remboursement
+                'description' => $this->demandeCredit->objet_financement,  // Statut du remboursement
             ]);
 
-            $reference_id = $this->generateIntegerReference();
-
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'Financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
-
-
-            // Récupérer toutes les demandes ayant le même 'demande_id'
-            $demandesAvecLeMemeId = DemandeCredi::where('demande_id', $this->demandeCredit->demande_id)->get();
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $this->generateIntegerReference(),  'Financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $this->generateIntegerReference(),  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
             // Mettre à jour le champ 'count' à true pour toutes les demandes récupérées
-            foreach ($demandesAvecLeMemeId as $demande) {
-                $demande->update([
-                    'count' => true,
-                ]);
-                $demande->update([
-                    'status' => 'terminer'
-                ]);
-            }
+            $this->demandeCredit->update([
+                'status' => 'terminer'
+            ]);
 
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);

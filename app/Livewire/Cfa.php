@@ -97,14 +97,12 @@ class Cfa extends Component
             })
             ->orderBy('created_at', 'DESC')
             ->get();
-        // Log::info('Transactions involving authenticated user:', ['transactions' => $this->transactions]);
 
         $this->transacCount = transactions_remboursement::where(function ($query) use ($userId) {
             $query->where('emprunteur_id', $userId)
                 ->orWhere('investisseur_id', $userId);
         })->count();
 
-        // Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $this->transacCount]);
     }
 
     public function render()

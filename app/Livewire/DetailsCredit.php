@@ -134,17 +134,11 @@ class DetailsCredit extends Component
             )
         ]);
 
-        // Optionnel : Vous pouvez également émettre un événement pour informer l'utilisateur
+        //Vous pouvez également émettre un événement pour informer l'utilisateur
         $this->dispatch(
             'formSubmitted',
             'Temps écoule, Négociation terminé.'
         );
-        // $close = true; // Votre logique d'éligibilité ici
-
-        // if ($close) {
-        //     $this->dispatch('submittion', $close,);
-        // }
-
     }
 
     #[On('echo:comments,CommentSubmittedTaux')]
@@ -213,9 +207,9 @@ class DetailsCredit extends Component
             $this->debutNegociationSiMontantTotalAtteint();
 
             if ($this->pourcentageInvesti == 100 && $this->investisseurQuiAPayeTout) {
-                $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
-            } else {
                 $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->montant, $this->generateIntegerReference(),  'Gelement pour negociation financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+            } else {
+                $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
             }
 
             broadcast(new AjoutMontantF($ajoumontant))->toOthers();
@@ -336,10 +330,8 @@ class DetailsCredit extends Component
                 'description' => $this->demandeCredit->objet_financement,  // Statut du remboursement
             ]);
 
-            $reference_id = $this->generateIntegerReference();
-
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'Financement  de Crédit d\'achat',  'effectué', $this->coi->type_compte);
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $this->generateIntegerReference(),  'Financement  de Crédit d\'achat',  'effectué', $this->coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $this->generateIntegerReference(),  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
 
             // Mettre à jour l'état de la notification en approuvé
@@ -407,7 +399,7 @@ class DetailsCredit extends Component
 
         try {
             // Sauvegarde du montant dans AjoutMontant
-           AjoutMontant::create([
+            AjoutMontant::create([
                 'montant' => $this->demandeCredit->montant,
                 'id_invest' => Auth::id(),
                 'id_emp' => $this->demandeCredit->id_user,
@@ -503,7 +495,7 @@ class DetailsCredit extends Component
                 'userSender' => $this->userId,
                 // 'start_time' => $this->dateFin,
                 'start_time' => now(),
-                'difference' => 'projet_taux',
+                'difference' => 'credit_taux',
                 'code_unique' =>  $this->demandeCredit->demande_id,
             ]);
         }
