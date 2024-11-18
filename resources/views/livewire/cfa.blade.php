@@ -55,53 +55,43 @@
         <div class="space-y-4 mt-5">
 
             <div class="grid gap-4">
-                <!-- Credit groupé -->
-                @foreach ($creditsGroupe as $creditGroupe)
+                <!-- Credit  -->
+                @foreach ($credits as $credit)
                     @php
-                        // Calculer le pourcentage de remboursement pour chaque crédit
                         $pourcentageRemboursement =
-                            $creditGroupe->montant > 0
-                                ? (($creditGroupe->montant - $creditGroupe->montant_restant) / $creditGroupe->montant) *
+                            $credit->montant > 0
+                                ? (($credit->montant - $credit->montan_restantt) / $credit->montant) *
                                     100
                                 : 0;
                     @endphp
                     <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                        d="M3 11a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm1-6h16a1 1 0 011 1v3H3V6a1 1 0 011-1z" />
-                                </svg>
-                                <h3 class="font-semibold text-gray-700">{{ $creditGroupe->description }}
-                                </h3>
-                            </div>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 font-semibold rounded">ID Credit :
-                                00{{ $creditGroupe->id }}</span>
+                        <div class="flex items-center justify-between space-x-4 mb-4">
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">ID Credit :
+                                00{{ $credit->id }}</span>
                             <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Date Debut :
-                                {{ $creditGroupe->date_debut->format('d/m/Y') }}</span>
+                                {{ $credit->date_debut ? $credit->date_debut->format('d/m/Y') : 'N/A' }}</span>
                             <span class="bg-blue-50 text-red-600 text-xs px-2 py-1 rounded">Date limite :
-                                {{ $creditGroupe->date_fin->format('d/m/Y') }}</span>
+                                {{ $credit->date_fin ? $credit->date_fin->format('d/m/Y') : 'N/A' }}</span>
                             <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Statut:
-                                {{ $creditGroupe->statut }}</span>
+                                {{ $credit->statut }}</span>
                         </div>
                         <div class="space-y-2">
                             <div class="flex justify-between text-sm text-gray-600">
                                 <span>Montant</span>
-                                <span>{{ $creditGroupe->montant }} FCFA</span>
+                                <span>{{ $credit->montant ?? 'N/A' }} FCFA</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="{{ $pourcentageRemboursementGroupe == 100 ? 'bg-green-600' : 'bg-blue-600' }} h-2 rounded-full"
-                                    style="width: {{ $pourcentageRemboursementGroupe }}%;"></div>
+                                <div class="{{ $pourcentageRemboursement == 100 ? 'bg-green-600' : 'bg-blue-600' }} h-2 rounded-full"
+                                    style="width: {{ $pourcentageRemboursement }}%;"></div>
                             </div>
                             <div class="flex justify-between text-xs text-gray-500">
-                                <span>Pourcentage remboursé:
-                                    {{ number_format($pourcentageRemboursementGroupe, 2) }}%</span>
-                                <span>Montant restant: {{ $creditGroupe->montan_restantt }} FCFA</span>
+                                <span>Pourcentage remboursé: {{ number_format($pourcentageRemboursement, 2) }}%</span>
+                                <span>Montant restant: {{ $credit->montan_restantt ?? 'N/A' }} FCFA</span>
                             </div>
                         </div>
                     </div>
                 @endforeach
+
 
             </div>
         </div>
@@ -112,7 +102,7 @@
 
             <div class="grid gap-4">
                 <!-- Credit Card -->
-                @foreach ($projets as $projet)
+                {{-- @foreach ($projets as $projet)
                     @php
                         // Calculer le pourcentage de remboursement pour chaque crédit
                         $pourcentageRemboursementprojets =
@@ -156,7 +146,7 @@
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @endforeach --}}
 
             </div>
         </div>
@@ -186,7 +176,8 @@
                     <div class="space-y-4">
                         <!-- Transaction -->
                         @foreach ($transactions as $transaction)
-                            <div data-modal-target="static-modal-{{$transaction->id}}" data-modal-toggle="static-modal-{{$transaction->id}}"
+                            <div data-modal-target="static-modal-{{ $transaction->id }}"
+                                data-modal-toggle="static-modal-{{ $transaction->id }}"
                                 class="flex items-center justify-between p-3 border-b hover:bg-gray-50 cursor-pointer transition-colors">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 rounded-full bg-green-100">
@@ -205,7 +196,9 @@
                                 <div class="font-semibold text-green-600">{{ $transaction->montant }} FCFA</div>
                             </div>
                             <!-- Main modal -->
-                            <div id="static-modal-{{$transaction->id}}" data-modal-backdrop="static-{{$transaction->id}}" tabindex="-1" aria-hidden="true"
+                            <div id="static-modal-{{ $transaction->id }}"
+                                data-modal-backdrop="static-{{ $transaction->id }}" tabindex="-1"
+                                aria-hidden="true"
                                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
 
                                 <!-- Modal body -->
@@ -213,13 +206,13 @@
                                     <div class="flex justify-between items-center border-b pb-3">
                                         <h2 class="text-lg font-semibold">Transaction Details</h2>
                                         <button class="text-gray-400 hover:text-gray-600"
-                                            data-modal-hide="static-modal-{{$transaction->id}}">&times;</button>
+                                            data-modal-hide="static-modal-{{ $transaction->id }}">&times;</button>
                                     </div>
                                     <div class="py-4 space-y-4">
                                         <div class="flex justify-center">
                                             <div class="p-3 rounded-full bg-green-100">
-                                                <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
+                                                <svg class="w-6 h-6 text-green-600" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
                                                     <path d="M5 13l4 4L19 7" />
                                                 </svg>
                                             </div>
@@ -239,7 +232,7 @@
                                                 </svg>
                                                 <div>
                                                     <p class="font-medium">Date</p>
-                                                    <p>{{$transaction->created_at}}</p>
+                                                    <p>{{ $transaction->created_at }}</p>
                                                 </div>
                                             </div>
 
@@ -250,7 +243,7 @@
 
                                             <div>
                                                 <p class="font-medium">Reference Number</p>
-                                                <p class="font-mono">REF{{$transaction->reference_id}}</p>
+                                                <p class="font-mono">REF{{ $transaction->reference_id }}</p>
                                             </div>
                                         </div>
                                     </div>
