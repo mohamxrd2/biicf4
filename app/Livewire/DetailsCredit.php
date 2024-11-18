@@ -246,28 +246,18 @@ class DetailsCredit extends Component
             return;
         }
 
-        // Récupérer la demande de crédit et le wallet de l'utilisateur (investisseur)
-        $demandeCredit = $this->demandeCredit;
 
-        // Vérifiez si la demande de crédit et l'ID de la demande existent
-        if (!$demandeCredit || !$this->notification->data['demande_id']) {
-            session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
-            return;
-        }
-
-        // Récupérer le wallet de l'utilisateur connecté
-        $wallet = Wallet::where('user_id', Auth::id())->first();
         // Récupérer le wallet de l'utilisateur demandeur
         $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
 
         // Vérifier que l'utilisateur possède un wallet
-        if (!$wallet) {
+        if (!$walletDemandeur) {
             session()->flash('error', 'Votre portefeuille est introuvable.');
             return;
         }
 
         // Vérifier que le solde du wallet est suffisant
-        if ($wallet->balance < $montant) {
+        if ($this->coi->Solde < $montant) {
             session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
             return;
         }
@@ -277,14 +267,11 @@ class DetailsCredit extends Component
 
         try {
 
-            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
-            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
-
-            if ($coi) {
+            if ($this->coi) {
                 // Vérifie si le solde est suffisant pour le débit
-                if ($coi->Solde >= $montant) {
-                    $coi->Solde -= $montant; // Débiter le montant du solde du COI
-                    $coi->save();
+                if ($this->coi->Solde >= $montant) {
+                    $this->coi->Solde -= $montant; // Débiter le montant du solde du COI
+                    $this->coi->save();
                 } else {
                     // Retourne un message ou gère le cas où le solde est insuffisant
                     session()->flash('error', 'Solde insuffisant dans le COI.');
@@ -313,7 +300,7 @@ class DetailsCredit extends Component
             $durer = Carbon::parse($this->demandeCredit->duree);
             $jours = $debut->diffInDays($durer);
 
-            $montantTotal = $montant * (1 + $demandeCredit->taux / 100);
+            $montantTotal = $montant * (1 + $this->demandeCredit->taux / 100);
             $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
 
             $resultatsInvestisseurs = [
@@ -330,12 +317,12 @@ class DetailsCredit extends Component
                 'investisseurs' => json_encode($resultatsInvestisseurs),
                 'montant' => $montantTotal,
                 'montant_restant' => $montantTotal,
-                'taux_interet' => $demandeCredit->taux,
-                'date_debut' => $demandeCredit->date_fin,
-                'date_fin' => $demandeCredit->duree,
+                'taux_interet' => $$this->demandeCreditdemandeCredit->taux,
+                'date_debut' => $$this->demandeCreditdemandeCredit->date_fin,
+                'date_fin' => $$this->demandeCreditdemandeCredit->duree,
                 'portion_journaliere' => $portion_journaliere,
                 'statut' => 'en cours',
-                'description' => $demandeCredit->objet_financement,
+                'description' => $$this->demandeCreditdemandeCredit->objet_financement,
             ]);
 
             // Création du remboursement associé
@@ -343,15 +330,15 @@ class DetailsCredit extends Component
                 'credit_id' => $credit->id,  // Associe le remboursement au crédit créé
                 'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
                 'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
-                'montant_interet' => $demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
-                'date_remboursement' => $demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
+                'montant_interet' => $this->demandeCreditdemandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
+                'date_remboursement' => $this->demandeCreditdemandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
                 'statut' => 'en cours',  // Statut du remboursement
-                'description' => $demandeCredit->objet_financement,  // Statut du remboursement
+                'description' => $this->demandeCreditdemandeCredit->objet_financement,  // Statut du remboursement
             ]);
 
             $reference_id = $this->generateIntegerReference();
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'Financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'Financement  de Crédit d\'achat',  'effectué', $this->coi->type_compte);
             $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
 
@@ -548,7 +535,7 @@ class DetailsCredit extends Component
 
     private function ajouterMontant()
     {
-        
+
         return AjoutMontant::create([
             'montant' => $this->montant ?? $this->demandeCredit->montant,
             'id_invest' => Auth::id(),
