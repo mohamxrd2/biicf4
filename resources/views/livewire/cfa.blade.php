@@ -15,7 +15,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-gray-600">Total Crédits Accordés</p>
-                    <p class="text-2xl font-semibold text-green-500">{{ $totalCredits }} FCFA</p>
+                    {{-- <p class="text-2xl font-semibold text-green-500">{{ $totalCredits }} FCFA</p> --}}
                 </div>
             </div>
             <div class="bg-white shadow rounded-lg p-6 flex items-center">
@@ -29,7 +29,7 @@
                 <div class="ml-4">
                     <p class="text-gray-600"> Crédits Remboursés
                     </p>
-                    <p class="text-2xl font-semibold text-red-500">{{ $totalCreditsRembourses }} FCFA</p>
+                    {{-- <p class="text-2xl font-semibold text-red-500">{{ $totalCreditsRembourses }} FCFA</p> --}}
                 </div>
             </div>
             <div class="bg-white shadow rounded-lg p-6 flex items-center">
@@ -48,7 +48,7 @@
         </div>
 
 
-       
+
 
         <!-- credit accordes Section -->
 
