@@ -48,62 +48,7 @@
         </div>
 
 
-        <!-- Credits Section -->
-        <div class="space-y-4 mt-5">
-
-            <div class="grid gap-4">
-                <!-- Credit  -->
-                @foreach ($credits as $credit)
-                    @php
-                        // Calculer le pourcentage de remboursement pour chaque crédit
-                        $pourcentageRemboursement =
-                            $credit->montant > 0
-                                ? (($credit->montant - $credit->montant_restant) / $credit->montant) * 100
-                                : 0;
-                    @endphp
-
-                    <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow mb-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                        d="M3 11a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm1-6h16a1 1 0 011 1v3H3V6a1 1 0 011-1z" />
-                                </svg>
-                                <h3 class="font-semibold text-gray-700">{{ $credit->description }} achat de bannane</h3>
-                            </div>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 font-semibold rounded">ID Credit :
-                                00{{ $credit->id }}</span>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Date Debut :
-                                {{ $credit->date_debut->format('d/m/Y') }}</span>
-                            <span class="bg-blue-50 text-red-600 text-xs px-2 py-1 rounded">Date limite :
-                                {{ $credit->date_fin->format('d/m/Y') }}</span>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Statut:
-                                {{ $credit->statut }}</span>
-                        </div>
-
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm text-gray-600">
-                                <span>Montant</span>
-                                <span>{{ $credit->montant }} FCFA</span>
-                            </div>
-
-                            <!-- Barre de progression pour chaque crédit -->
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="{{ $pourcentageRemboursement == 100 ? 'bg-green-600' : 'bg-blue-600' }} h-2 rounded-full"
-                                    style="width: {{ $pourcentageRemboursement }}%;"></div>
-                            </div>
-
-                            <div class="flex justify-between text-xs text-gray-500">
-                                <span>Pourcentage remboursé: {{ number_format($pourcentageRemboursement, 2) }}%</span>
-                                <span>Montant restant: {{ $credit->montant_restant }} FCFA</span>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-
-            </div>
-        </div>
+       
 
         <!-- credit accordes Section -->
 

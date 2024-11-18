@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-class RappelPortionsJournalCreditsGroupé extends Command
+class RappelPortionsJournalCredits extends Command
 {
 
     protected $signature = 'app:rappel-journalieres-credits';
@@ -256,13 +256,13 @@ class RappelPortionsJournalCreditsGroupé extends Command
                     ]);
                 }
 
-                $reference_id = $this->generateIntegerReference();
+
                 $this->createTransaction(
                     $credit->emprunteur_id,
                     $id,
                     'Envoie',
                     $montant,
-                    $reference_id,
+                    $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
                     $crp->type_compte
@@ -273,10 +273,10 @@ class RappelPortionsJournalCreditsGroupé extends Command
                     $id,
                     'Réception',
                     $montant,
-                    $reference_id,
+                    $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
-                    $crp->type_compte
+                    $coi->type_compte
                 );
 
                 $credit->statut = "payé";

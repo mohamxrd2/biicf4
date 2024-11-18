@@ -15,20 +15,17 @@ use Livewire\Component;
 class Cfa extends Component
 {
 
-    public $credits; // Propriété publique pour stocker les crédits
     public $creditsGroupe; // Propriété publique pour stocker les crédits
     public $projets; // Propriété publique pour stocker les crédits
-    public $totalCredits; // Propriété publique pour stocker les crédits
     public $totalCreditsGroupe; // Propriété publique pour stocker les crédits
     public $totalCreditsRembourses; // Propriété publique pour stocker les crédits
-    public $totalCreditsRemboursesGroupe; // Propriété publique pour stocker les crédits
     public $totalprojets; // Propriété publique pour stocker les crédits
     public $totalprojetsRembourses; // Propriété publique pour stocker les crédits
-    public $transacCount;
-    public $transactions;
-    public $pourcentageRemboursement;
+    public $totalCreditsRemboursesGroupe;
     public $pourcentageRemboursementGroupe;
     public $pourcentageRemboursementprojets;
+    public $transacCount;
+    public $transactions;
 
     public function mount()
     {
@@ -53,23 +50,6 @@ class Cfa extends Component
             $this->pourcentageRemboursementprojets = ($this->totalprojetsRembourses / $this->totalprojets) * 100;
         } else {
             $this->pourcentageRemboursementprojets = 0; // éviter la division par zéro
-        }
-
-        // Récupérer les crédits associés à cet utilisateur; Si un utilisateur a des crédits associés, les récupérer
-        // Récupérer les crédits associés à cet utilisateur
-        $this->credits = credits::where('emprunteur_id', $userId)->get();
-
-        // Calculer le montant total des crédits et le montant total remboursé
-        $this->totalCredits = $this->credits->sum('montant');
-        $this->totalCreditsRembourses = $this->credits->sum(function ($credit) {
-            return $credit->montant - $credit->montant_restant;
-        });
-
-        // Calcul du pourcentage de remboursement global
-        if ($this->totalCredits > 0) {
-            $this->pourcentageRemboursement = ($this->totalCreditsRembourses / $this->totalCredits) * 100;
-        } else {
-            $this->pourcentageRemboursement = 0; // éviter la division par zéro
         }
 
         // Récupérer les CREDITS ASSOCIER GROUPER
