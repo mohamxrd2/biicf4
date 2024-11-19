@@ -239,13 +239,13 @@ class RappelPortionsJournalProjets extends Command
                 // Mise à jour de la table COI
                 $coi = Coi::where('id_wallet', $walletInvestisseurs->id)->first();
                 if ($coi) {
-                    $coi->Solde += $projet->montant;
+                    $coi->Solde += $montant;
                     $coi->save();
                     // Log de la mise à jour
                     Log::info('Mise à jour de la table CRP', [
                         'id_wallet' => $walletInvestisseurs->id,
                         'nouveau_solde' => $coi->Solde,
-                        'montant_débité' => $projet->montant
+                        'montant_débité' => $montant
                     ]);
                 }
 
@@ -253,7 +253,7 @@ class RappelPortionsJournalProjets extends Command
                     $projet->emprunteur_id,
                     $id,
                     'Envoie',
-                    $projet->montant,
+                    $montant,
                     $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
@@ -264,11 +264,11 @@ class RappelPortionsJournalProjets extends Command
                     $projet->emprunteur_id,
                     $id,
                     'Réception',
-                    $projet->montant,
+                    $montant,
                     $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
-                    $crp->type_compte
+                    $coi->type_compte
                 );
 
                 $projet->statut = "payé";
