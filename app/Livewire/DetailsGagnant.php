@@ -163,7 +163,7 @@ class DetailsGagnant extends Component
                 'investisseurs' => json_encode($resultatsInvestisseurs),
                 'montant' => $montantTotal,
                 'montan_restantt' => $montantTotal,
-                'taux_interet' => $this->demandeCredit->taux,
+                'taux_interet' => $this->notification->data['taux'],
                 'date_debut' => $this->demandeCredit->date_fin,
                 'date_fin' => $this->demandeCredit->duree,
                 'portion_journaliere' => $portion_journaliere,
@@ -176,7 +176,7 @@ class DetailsGagnant extends Component
                 'creditGrp_id' => $creditGrp_id->id,  // Associe le remboursement au crédit créé
                 'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
                 'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
-                'montant_interet' => $this->demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
+                'montant_interet' => $this->notification->data['taux'],  // Définissez cette variable en fonction de votre logique métier
                 'date_remboursement' => $this->demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
                 'statut' => 'en cours',  // Statut du remboursement
                 'description' => $this->demandeCredit->objet_financement,  // Statut du remboursement
@@ -308,7 +308,7 @@ class DetailsGagnant extends Component
                 'montant' => $montantTotal,
                 'montan_restantt' => $montantTotal,
                 'action' => json_encode($actionsData),
-                'taux_interet' => $this->projet->taux,
+                'taux_interet' => $this->notification->data['taux'],
                 'date_debut' => $this->projet->date_fin,
                 'date_fin' => $this->projet->durer,
                 'portion_journaliere' => $portion_journaliere,
@@ -320,7 +320,7 @@ class DetailsGagnant extends Component
                 'projet_id' => $this->projet->id,
                 'id_user' => Auth::id(),
                 'montant_capital' => $montant,
-                'montant_interet' => $this->projet->taux,
+                'montant_interet' => $this->notification->data['taux'],
                 'date_remboursement' => $this->projet->durer,
                 'statut' => 'en cours',
                 'description' => $this->projet->name,
