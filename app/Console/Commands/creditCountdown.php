@@ -89,8 +89,12 @@ class creditCountdown extends Command
                         // Récupérer l'utilisateur (investisseur)
                         $owner = User::find($id_invest);
 
+                        
+
                         // Vérifier que l'utilisateur existe avant d'envoyer la notification
                         if ($owner) {
+
+
                             Notification::send($owner, new GagnantProjetNotifications($details));
 
                             // Log après l'envoi de la notification

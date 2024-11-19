@@ -191,7 +191,7 @@
                                         <p class="font-medium text-gray-800">
                                             {{ $transaction->type ?? 'Type de transaction' }}</p>
                                         <p class="text-sm text-gray-500">
-                                            {{ $transaction->date_transaction->format('d/m/Y') }}</p>
+                                            {{ $transaction->date_transaction->translatedFormat('j F Y \à H\hi') }}  </p>
                                     </div>
                                 </div>
                                 <div class="font-semibold text-green-600">{{ $transaction->montant }} FCFA</div>
