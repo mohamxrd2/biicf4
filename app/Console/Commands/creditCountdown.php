@@ -2,15 +2,18 @@
 
 namespace App\Console\Commands;
 
-use App\Models\CommentTaux;
-use App\Models\Countdown;
-use App\Models\DemandeCredi;
-use App\Models\Projet;
 use App\Models\User;
-use App\Notifications\GagnantProjetNotifications;
+use App\Models\Projet;
+use App\Models\Wallet;
+use App\Models\gelement;
+use App\Models\Countdown;
+use App\Models\CommentTaux;
+use App\Models\Transaction;
+use App\Models\DemandeCredi;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use App\Notifications\GagnantProjetNotifications;
 
 class creditCountdown extends Command
 {
@@ -89,16 +92,59 @@ class creditCountdown extends Command
                         // Récupérer l'utilisateur (investisseur)
                         $owner = User::find($id_invest);
 
-                        
+                        // Récupérer la liste des investisseurs
+                        $investisseurs = $credit->id_investisseurs;
+
+                        // Assurez-vous que $investisseurs est un tableau
+                        if (is_string($investisseurs)) {
+                            // Exemple si c'est une chaîne JSON
+                            $investisseurs = json_decode($investisseurs, true);
+                        } elseif (is_string($investisseurs)) {
+                            // Exemple si c'est une chaîne CSV
+                            $investisseurs = explode(',', $investisseurs);
+                        }
+
+                        // Exclure l'investisseur courant ($id_invest)
+                        $investisseurs = array_filter($investisseurs, function ($investisseur) use ($id_invest) {
+                            return $investisseur != $id_invest; // Utilisez != au lieu de !== si $investisseurs contient des chaînes
+                        });
+
+                        // Réindexer les clés
+                        $investisseurs = array_values($investisseurs);
+
+                        $gelement = gelement::where('reference_id', $ID)->first();
+
+                        $montant =  $gelement->amount;
+
+
 
                         // Vérifier que l'utilisateur existe avant d'envoyer la notification
                         if ($owner) {
 
+                            $referenceId = $this->generateIntegerReference();
 
                             Notification::send($owner, new GagnantProjetNotifications($details));
 
                             // Log après l'envoi de la notification
                             Log::info('Notification envoyée.', ['notification_details' => $details]);
+
+                            foreach($investisseurs as $investisseur){
+                                $userWallet = Wallet::where('user_id', $investisseur)->first();
+
+                                if ($userWallet) {
+
+                               $userWallet->increment('balance', $montant);
+                                    
+    
+                                // Créer la transaction
+                                $this->createTransactionNew($credit->id_user, $investisseur, 'Réception', 'COC', $montant, $referenceId, 'Rechargement SOS');
+
+                                }
+                                
+
+                                
+                            }
+
 
                             // Mettre à jour l'état du countdown après la notification
                             $countdown->update(['notified' => true]);
@@ -109,5 +155,27 @@ class creditCountdown extends Command
                 }
             }
         }
+    }
+    protected function createTransactionNew(int $senderId, int $receiverId, string $type, string $type_compte, float $amount, int $reference_id, string $description)
+    {
+
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->type_compte = $type_compte;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = 'effectué';
+        $transaction->save();
+    }
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
 }
