@@ -115,7 +115,7 @@ class DetailsGagnant extends Component
             // Vérifier si le id_wallet existe dans la table `gelements`
             $gelement = gelement::where('status', 'Pending')
                 ->where('id_wallet', $wallet->id)
-                ->where('reference_id', $this->notification->data['projet_id'])
+                ->where('reference_id', $this->notification->data['credit_id'])
                 ->first();
 
             if (!$gelement) {

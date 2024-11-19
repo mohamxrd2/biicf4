@@ -65,6 +65,12 @@
                     @endphp
                     <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
                         <div class="flex items-center justify-between space-x-4 mb-4">
+                            <div class="flex items-center space-x-3">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path d="M3 11a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm1-6h16a1 1 0 011 1v3H3V6a1 1 0 011-1z" />
+                                </svg>
+                                <h3 class="font-semibold text-gray-700">{{ $credit->description }}</h3>
+                            </div>
                             <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">ID Credit :
                                 00{{ $credit->id }}</span>
                             <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Date Debut :
