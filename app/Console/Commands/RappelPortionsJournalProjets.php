@@ -47,7 +47,7 @@ class RappelPortionsJournalProjets extends Command
             Log::info('Projet ID : ' . $projet->id . ' - Emprunteur ID : ' . $projet->emprunteur_id);
 
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
-            if ($dateDuJour >= $projet->date_debut || $dateDuJour <= $projet->date_fin) {
+            if ($dateDuJour <= $projet->date_fin) {
                 Log::info("Traitement du projet ID : " . $projet->id . '$projet->date_debut : ' . $projet->date_debut . ' - $projet->date_fin : ' . $projet->date_fin);
 
 
