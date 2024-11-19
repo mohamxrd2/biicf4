@@ -219,8 +219,6 @@ class DetailProjet extends Component
                 'id_projet' => $this->projet->id,
             ]);
 
-            // Log après l'ajout du montant
-            Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
 
             // Mettre à jour le solde du COI
             $coi = $this->wallet->coi;
@@ -304,7 +302,6 @@ class DetailProjet extends Component
             ->groupBy('id_invest')
             ->havingRaw('SUM(montant) >= ?', [$montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
-
     }
     private function mettreAJourProprietes()
     {
@@ -487,8 +484,6 @@ class DetailProjet extends Component
 
         // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon this->projet->montant
         $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
-
-
 
         // Vérifier si c'est la première soumission pour chaque utilisateur connecté
         $ajoutMontant = AjoutMontant::where('id_projet', $this->projet->id)
