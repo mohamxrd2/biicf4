@@ -124,10 +124,10 @@ class finacementProjetAccorde extends Command
 
                 projets_accordé::create([
                     'emprunteur_id' => $projet->id_user, // Assurez-vous que la relation est bien définie
-                    'investisseurs' => json_encode($resultatsInvestisseurs), // Convertir les investisseurs en JSON
+                    'investisseurs' => !empty($resultatsInvestisseurs) ? json_encode($resultatsInvestisseurs) : null, // Convertir les investisseurs en JSON
                     'montant' => $montantTotal,
                     'montan_restantt' => $montantTotal, // Assurez-vous que ce champ existe dans la table 'projets'
-                    'action' => json_encode($actionsData),
+                    'action' =>  !empty($actionsData) ? json_encode($actionsData) : null,
                     'taux_interet' => $projet->taux,
                     'date_debut' => $debut,
                     'date_fin' => $durer,
