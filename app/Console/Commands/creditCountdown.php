@@ -86,32 +86,50 @@ class creditCountdown extends Command
                             'type_financement' => $credit->type_financement,
                         ];
 
-                        // Log avant d'envoyer la notification
-                        Log::info('Envoi de la notification pour le credit.', ['id_invest' => $id_invest]);
-
                         // Récupérer l'utilisateur (investisseur)
+                        Log::info('Début du traitement pour l\'investisseur.', ['id_invest' => $id_invest]);
                         $owner = User::find($id_invest);
+                        if (!$owner) {
+                            Log::warning('Utilisateur introuvable.', ['id_invest' => $id_invest]);
+                        }
 
                         // Récupérer la liste des investisseurs
                         $investisseurs = $credit->id_investisseurs;
+                        Log::info('Liste initiale des investisseurs récupérée.', ['investisseurs' => $investisseurs]);
 
                         // Assurez-vous que $investisseurs est bien un tableau
                         if (!is_array($investisseurs)) {
+                            Log::warning('La liste des investisseurs n\'est pas un tableau. Initialisation à un tableau vide.');
                             $investisseurs = []; // Si ce n'est pas un tableau, initialiser à un tableau vide
                         }
 
                         // Exclure l'investisseur courant ($id_invest)
+                        Log::info('Exclusion de l\'investisseur courant.', ['id_invest' => $id_invest]);
                         $investisseurs = array_filter($investisseurs, function ($investisseur) use ($id_invest) {
                             return $investisseur != $id_invest; // Comparer l'ID et exclure l'investisseur courant
                         });
 
-
                         // Réindexer les clés
                         $investisseurs = array_values($investisseurs);
+                        Log::info('Liste des investisseurs après exclusion et réindexation.', ['investisseurs' => $investisseurs]);
 
                         // Récupérer les informations sur le montant
                         $gelement = gelement::where('reference_id', $ID)->first();
-                        $montant = $gelement ? $gelement->amount : 0; // Si aucune donnée trouvée, montant = 0
+                        if ($gelement) {
+                            $montant = $gelement->amount;
+                            Log::info('Montant récupéré pour le gelement.', ['reference_id' => $ID, 'amount' => $montant]);
+                        } else {
+                            $montant = 0;
+                            Log::warning('Aucun gelement trouvé pour la référence.', ['reference_id' => $ID]);
+                        }
+
+                        // Dernier log pour vérifier la fin du traitement
+                        Log::info('Fin du traitement pour l\'investisseur.', [
+                            'id_invest' => $id_invest,
+                            'investisseurs_final' => $investisseurs,
+                            'montant' => $montant
+                        ]);
+
 
 
                         // Vérifier que l'utilisateur existe avant d'envoyer la notification
