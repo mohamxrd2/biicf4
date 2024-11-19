@@ -95,27 +95,23 @@ class creditCountdown extends Command
                         // Récupérer la liste des investisseurs
                         $investisseurs = $credit->id_investisseurs;
 
-                        // Assurez-vous que $investisseurs est un tableau
-                        if (is_string($investisseurs)) {
-                            // Exemple si c'est une chaîne JSON
-                            $investisseurs = json_decode($investisseurs, true);
-                        } elseif (is_string($investisseurs)) {
-                            // Exemple si c'est une chaîne CSV
-                            $investisseurs = explode(',', $investisseurs);
+                        // Assurez-vous que $investisseurs est bien un tableau
+                        if (!is_array($investisseurs)) {
+                            $investisseurs = []; // Si ce n'est pas un tableau, initialiser à un tableau vide
                         }
 
                         // Exclure l'investisseur courant ($id_invest)
                         $investisseurs = array_filter($investisseurs, function ($investisseur) use ($id_invest) {
-                            return $investisseur != $id_invest; // Utilisez != au lieu de !== si $investisseurs contient des chaînes
+                            return $investisseur != $id_invest; // Comparer l'ID et exclure l'investisseur courant
                         });
+
 
                         // Réindexer les clés
                         $investisseurs = array_values($investisseurs);
 
+                        // Récupérer les informations sur le montant
                         $gelement = gelement::where('reference_id', $ID)->first();
-
-                        $montant =  $gelement->amount;
-
+                        $montant = $gelement ? $gelement->amount : 0; // Si aucune donnée trouvée, montant = 0
 
 
                         // Vérifier que l'utilisateur existe avant d'envoyer la notification
@@ -128,21 +124,17 @@ class creditCountdown extends Command
                             // Log après l'envoi de la notification
                             Log::info('Notification envoyée.', ['notification_details' => $details]);
 
-                            foreach($investisseurs as $investisseur){
+                            foreach ($investisseurs as $investisseur) {
                                 $userWallet = Wallet::where('user_id', $investisseur)->first();
 
                                 if ($userWallet) {
 
-                               $userWallet->increment('balance', $montant);
+                                    $userWallet->increment('balance', $montant);
 
 
-                                // Créer la transaction
-                                $this->createTransactionNew($credit->id_user, $investisseur, 'Réception', 'COC', $montant, $referenceId, 'Rechargement SOS');
-
+                                    // Créer la transaction
+                                    $this->createTransactionNew($credit->id_user, $investisseur, 'Réception', 'COC', $montant, $referenceId, 'Rechargement SOS');
                                 }
-
-
-
                             }
 
 

@@ -21,7 +21,7 @@
             @php
                 // Récupérer les données actuelles
                 $montantTotal = $notification->data['montant'];
-                $taux = $demandeCredit->taux ?? ($projet->taux ?? 0);
+                $taux = $notification->data['taux'];
 
                 $montantInterret = $montantTotal * (1 + $taux / 100);
 
@@ -94,11 +94,9 @@
                         @else
                             <!-- Bouton Approuver -->
                             <button id="approveButton"
-                                @if ($this->demandeCredit)
-                                   wire:click="approuver({{ $montantTotal }})"
+                                @if ($this->demandeCredit) wire:click="approuver({{ $montantTotal }})"
                                 @else
-                                   wire:click="approuver2({{ $montantTotal }})"
-                                @endif
+                                   wire:click="approuver2({{ $montantTotal }})" @endif
                                 class="w-full py-3 bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-medium"
                                 wire:loading.attr="disabled">
                                 <span wire:loading.remove>Approuver</span>
