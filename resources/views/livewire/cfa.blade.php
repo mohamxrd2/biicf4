@@ -60,8 +60,7 @@
                     @php
                         $pourcentageRemboursement =
                             $credit->montant > 0
-                                ? (($credit->montant - $credit->montan_restantt) / $credit->montant) *
-                                    100
+                                ? (($credit->montant - $credit->montan_restantt) / $credit->montant) * 100
                                 : 0;
                     @endphp
                     <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
@@ -102,51 +101,53 @@
 
             <div class="grid gap-4">
                 <!-- Credit Card -->
-                {{-- @foreach ($projets as $projet)
-                    @php
-                        // Calculer le pourcentage de remboursement pour chaque crédit
-                        $pourcentageRemboursementprojets =
-                            $projet->montant > 0
-                                ? (($projet->montant - $projet->montan_restantt) / $projet->montant) * 100
-                                : 0;
-                    @endphp
-                    <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                        d="M3 11a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm1-6h16a1 1 0 011 1v3H3V6a1 1 0 011-1z" />
-                                </svg>
-                                <h3 class="font-semibold text-gray-700">{{ $projet->description }} XXXXXXX
-                                </h3>
-                            </div>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 font-semibold rounded">ID Projet :
-                                00{{ $projet->id }}</span>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Date Debut :
-                                {{ $projet->date_debut->format('d/m/Y') }}</span>
-                            <span class="bg-blue-50 text-red-600 text-xs px-2 py-1 rounded">Date limite :
-                                {{ $projet->date_fin->format('d/m/Y') }}</span>
-                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">Statut:
-                                {{ $projet->statut }}</span>
+                @foreach ($projets as $projet)
+                @php
+                    // Calculer le pourcentage de remboursement pour chaque projet
+                    $pourcentageRemboursement = $projet->montant > 0
+                        ? (($projet->montant - $projet->montan_restantt) / $projet->montant) * 100
+                        : 0;
+                @endphp
+
+                <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M3 11a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm1-6h16a1 1 0 011 1v3H3V6a1 1 0 011-1z" />
+                            </svg>
+                            <h3 class="font-semibold text-gray-700">{{ $projet->description }}</h3>
                         </div>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm text-gray-600">
-                                <span>Montant</span>
-                                <span>{{ $projet->montant }} FCFA</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="{{ $pourcentageRemboursementprojets == 100 ? 'bg-green-600' : 'bg-blue-600' }} h-2 rounded-full"
-                                    style="width: {{ $pourcentageRemboursementprojets }}%;"></div>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-500">
-                                <span>Pourcentage remboursé:
-                                    {{ number_format($pourcentageRemboursementprojets, 2) }}%</span>
-                                <span>Montant restant: {{ $projet->montan_restantt }} FCFA</span>
-                            </div>
+                        <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 font-semibold rounded">
+                            ID Projet : 00{{ $projet->id }}
+                        </span>
+                        <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">
+                            Date Début : {{ $projet->date_debut->format('d/m/Y') }}
+                        </span>
+                        <span class="bg-blue-50 text-red-600 text-xs px-2 py-1 rounded">
+                            Date Limite : {{ $projet->date_fin->format('d/m/Y') }}
+                        </span>
+                        <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">
+                            Statut : {{ $projet->statut }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Montant</span>
+                            <span>{{ number_format($projet->montant, 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="{{ $pourcentageRemboursement == 100 ? 'bg-green-600' : 'bg-blue-600' }} h-2 rounded-full"
+                                 style="width: {{ $pourcentageRemboursement }}%;"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Pourcentage remboursé : {{ number_format($pourcentageRemboursement, 2) }}%</span>
+                            <span>Montant restant : {{ number_format($projet->montan_restantt, 0, ',', ' ') }} FCFA</span>
                         </div>
                     </div>
-                @endforeach --}}
+                </div>
+            @endforeach
+
 
             </div>
         </div>

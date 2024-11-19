@@ -385,15 +385,6 @@ class DetailsCredit extends Component
     }
     public function confirmer2()
     {
-
-        // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-        $montant = !empty($this->montant) ? floatval($this->montant) : floatval($this->demandeCredit->montant);
-        // dd($montant);
-        if ($montant <= 0) {
-            session()->flash('error', 'Veuillez saisir un montant valide.');
-            return;
-        }
-
         // Utilisation d'une transaction pour garantir la cohérence des données
         DB::beginTransaction();
 
@@ -421,15 +412,10 @@ class DetailsCredit extends Component
                 $coi->save();
             }
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->demandeCredit->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->demandeCredit->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
 
-
-
-            // Committer la transaction
             DB::commit();
 
-            // Message de succès
-            session()->flash('success', 'Le montant a été ajouté avec succès.');
         } catch (\Exception $e) {
             // Annuler la transaction en cas d'erreur
             DB::rollBack();
@@ -529,7 +515,7 @@ class DetailsCredit extends Component
     {
 
         return AjoutMontant::create([
-            'montant' => $this->montant ?? $this->demandeCredit->montant,
+            'montant' => $this->montant,
             'id_invest' => Auth::id(),
             'id_emp' => $this->demandeCredit->id_user,
             'id_demnd_credit' => $this->demandeCredit->id,

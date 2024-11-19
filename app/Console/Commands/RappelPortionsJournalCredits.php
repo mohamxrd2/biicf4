@@ -103,21 +103,18 @@ class RappelPortionsJournalCredits extends Command
                             $credit->statut = "remboursé";
 
 
-                            $this->remboursementCredit($credit, $wallet,);
+                            $this->remboursementCredit($credit, $wallet);
                         }
 
 
                         $credit->save();
 
-                        $reference_id = $this->generateIntegerReference();
 
                         Log::info("Début de la transaction pour l'utilisateur ID: " . $credit->emprunteur_id);
 
-
-
                         $this->remboursement(
                             $credit->id,
-                            $reference_id,
+                            $this->generateIntegerReference(),
                             $credit->emprunteur_id,
                             $credit->emprunteur_id,
                             $montantTotal,
@@ -178,7 +175,6 @@ class RappelPortionsJournalCredits extends Command
                 if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
                     $investisseursIds[] = $investisseur['investisseur_id'];
 
-                    // Calcul du montant total financé avec les intérêts
                     $montantAvecInteret = $investisseur['montant_finance'] + ($investisseur['montant_finance'] * $credit->taux_interet) / 100;
 
                     // Stocker le montant financé augmenté des intérêts dans le tableau

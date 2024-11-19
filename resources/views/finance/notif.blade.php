@@ -3,12 +3,6 @@
 @section('title', 'Notification')
 
 @section('content')
-
-
-
-
-
-
     <section class="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
         <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
             <div class="mx-auto max-w-5xl">
@@ -48,7 +42,7 @@
                     </div>
                 </div>
                 <div class="mt-6 flow-root sm:mt-8">
-                    
+
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
                         @livewire('notif-finance')
                         @livewire('notif-finance-projet')

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Events\AjoutMontantF;
 use App\Events\CommentSubmittedTaux;
 use App\Events\DebutDeNegociation;
 use App\Events\OldestCommentUpdated;
@@ -47,6 +48,8 @@ class DetailProjet extends Component
     public $commentTauxList = [];
     public $dateFin;
     public $timer;
+    public $wallet;
+    public $coi;
 
     protected $listeners = ['compteReboursFini'];
     public function mount($id)
@@ -64,10 +67,18 @@ class DetailProjet extends Component
         $userId = Auth::id();
         // $this->action = 0; // Valeur par défaut
 
-        $wallet = Wallet::where('user_id', $userId)->first();
-        $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+        $this->wallet = Wallet::where('user_id', $userId)->first();
+        $this->coi = $this->wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
 
-        $this->solde = $coi ? $coi->Solde : 0;
+        $this->solde = $this->coi ? $this->coi->Solde : 0;
+        // Vérifier que l'utilisateur possède un wallet
+        if (!$this->wallet) {
+            Log::error('Wallet introuvable pour l\'utilisateur ID: ' . Auth::id());
+            session()->flash('error', 'Votre portefeuille est introuvable.');
+            return;
+        }
+
+
 
         $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
             ->distinct()
@@ -85,7 +96,7 @@ class DetailProjet extends Component
         $this->sommeInvestieActions = AjoutAction::where('id_projet', $this->projet->id)
             ->sum('nombreActions');
 
-        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon projet->montant
+        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon this->projet->montant
         $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
 
         if ($montant > 0) {
@@ -110,13 +121,13 @@ class DetailProjet extends Component
 
 
 
-        // Récupérer la somme totale de tous les montants ajoutés pour ce projet par tous les utilisateurs
+        // Récupérer la somme totale de tous les montants ajoutés pour ce this->projet par tous les utilisateurs
         $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
 
-        // Vérifier si la somme totale atteint ou dépasse le montant du projet
+        // Vérifier si la somme totale atteint ou dépasse le montant du this->projet
         $this->montantVerifie = $totalAjoute >= $montant;
 
-        // Vérifier si un investisseur a payé la totalité du projet
+        // Vérifier si un investisseur a payé la totalité du this->projet
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
             ->select('id_invest')
             ->groupBy('id_invest')
@@ -124,11 +135,11 @@ class DetailProjet extends Component
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
 
         // Log de l'investisseur qui a payé tout
-        Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
+        Log::info('Investisseur qui a payé tout pour le this->projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
 
 
 
-        // Vérifier si le nombre d'action du projet est atteint
+        // Vérifier si le nombre d'action du this->projet est atteint
         $this->montantVerifieAction = AjoutAction::where('id_projet', $this->projet->id)
             ->where('nombreActions', $this->projet->nombreActions)
             ->exists();
@@ -141,7 +152,7 @@ class DetailProjet extends Component
     // Méthode déclenchée lorsque le compte à rebours est terminé
     public function compteReboursFini()
     {
-        // Mettre à jour l'attribut 'finish' du projet
+        // Mettre à jour l'attribut 'finish' du this->projet
         $this->projet->update([
             'count' => true,
             $this->dispatch(
@@ -155,12 +166,6 @@ class DetailProjet extends Component
             'formSubmitted',
             'Temps écoule, Négociation terminé.'
         );
-        // $close = true; // Votre logique d'éligibilité ici
-
-        // if ($close) {
-        //     $this->dispatch('submittion', $close,);
-        // }
-
     }
 
     #[On('echo:comments,CommentSubmittedTaux')]
@@ -188,8 +193,7 @@ class DetailProjet extends Component
 
     public function confirmer()
     {
-        // Log du début de la méthode
-        Log::info('Démarrage de la méthode confirmer pour l\'utilisateur ID: ' . Auth::id());
+
 
         // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
         $montant = floatval($this->montant);
@@ -200,85 +204,51 @@ class DetailProjet extends Component
             return;
         }
 
-        // Récupérer le projet
-        $projet = $this->projet;
 
-        // Vérifiez si le projet et le demandeur existent
-        if (!$projet || !$projet->demandeur || !$projet->demandeur->id) {
-            Log::error('Projet ou demandeur introuvable pour l\'utilisateur ID: ' . Auth::id());
-            session()->flash('error', 'Le projet ou le demandeur est introuvable.');
-            return;
-        }
-
-        // Log du projet et demandeur
-        Log::info('Projet trouvé, ID du projet: ' . $projet->id . ', ID du demandeur: ' . $projet->demandeur->id);
-
-        // Récupérer le wallet de l'investisseur
-        $wallet = Wallet::where('user_id', Auth::id())->first();
-
-        // Récupérer le wallet du demandeur
-        $walletDemandeur = Wallet::where('user_id', $this->projet->id_user)->first();
-
-        // Vérifier que l'utilisateur possède un wallet
-        if (!$wallet) {
-            Log::error('Wallet introuvable pour l\'utilisateur ID: ' . Auth::id());
-            session()->flash('error', 'Votre portefeuille est introuvable.');
-            return;
-        }
-
-        // Vérifier que le solde du wallet est suffisant
-        if ($wallet->coi->Solde < $montant) {
-            Log::warning('Solde insuffisant pour l\'utilisateur ID: ' . Auth::id() . ', Solde: ' . $wallet->coi->Solde . ', Montant requis: ' . $montant);
-            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
-            return;
-        }
 
         // Début de la transaction
         DB::beginTransaction();
 
         try {
-            // Log avant l'ajout du montant
-            Log::info('Ajout du montant pour l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $montant);
 
             // Sauvegarder le montant dans la table `ajout_montant`
             $ajoumontant = AjoutMontant::create([
                 'montant' => $montant,
                 'id_invest' => Auth::id(),
-                'id_emp' => $projet->demandeur->id,
-                'id_projet' => $projet->id,
+                'id_emp' => $this->projet->demandeur->id,
+                'id_projet' => $this->projet->id,
             ]);
 
             // Log après l'ajout du montant
             Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
 
             // Mettre à jour le solde du COI
-            $coi = $wallet->coi;
+            $coi = $this->wallet->coi;
             if ($coi) {
                 $coi->Solde -= $montant;
                 $coi->save();
                 Log::info('Solde COI mis à jour pour l\'utilisateur ID: ' . Auth::id() . ', Nouveau solde COI: ' . $coi->Solde);
             }
 
-            // // Mettre à jour ou créer un enregistrement dans la table CFA du demandeur
-            // $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
-            // if ($cfa) {
-            //     $cfa->Solde += $montant;
-            //     $cfa->save();
-            //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
-            // }
+            // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon this->projet->montant
+            $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ?
+                $this->projet->Portion_obligt : $this->projet->montant;
+            $this->verifierInvestisseurQuiAPayeTout();
+            $this->mettreAJourProprietes();
+            $this->debutNegociationSiMontantTotalAtteint();
 
-            // Générer une référence de transaction
-            $reference_id = $this->generateIntegerReference();
-            Log::info('Référence de transaction générée: ' . $reference_id);
+            if ($this->pourcentageInvesti == 100 && $this->investisseurQuiAPayeTout) {
+                $this->createTransaction(Auth::id(), $this->projet->id_user, 'Gele', $this->montant, $this->generateIntegerReference(),  'Gelement pour negociation financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+            } else {
+                $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $this->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+            }
 
-            // Créer deux transactions
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
-            // $this->createTransaction(Auth::id(), $this->projet->id_user, 'Réception', $montant, $reference_id, 'réception de financement d\'un projet', 'effectué', $cfa->type_compte);
-            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
+            broadcast(new AjoutMontantF($ajoumontant))->toOthers();
+
+
 
             // Committer la transaction
             DB::commit();
-            Log::info('Transaction committée avec succès pour l\'utilisateur ID: ' . Auth::id());
         } catch (\Exception $e) {
             // Rollback en cas d'erreur
             DB::rollBack();
@@ -293,75 +263,69 @@ class DetailProjet extends Component
         // Réinitialiser le montant saisi et les indicateurs
         $this->montant = '';
         $this->insuffisant = false;
+    }
 
-        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon projet->montant
-        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
+    private function debutNegociationSiMontantTotalAtteint()
+    {
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ?
+            $this->projet->Portion_obligt : $this->projet->montant;
 
-        // Rafraîchir les propriétés du composant
-        $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
-        $this->sommeRestante = $montant - $this->sommeInvestie;
-        $this->pourcentageInvesti = ($this->sommeInvestie / $montant) * 100;
+        // passage a la negociation de taux lorsque cest une seule personne qui tt
+        if ($this->investisseurQuiAPayeTout) {
 
+            $this->projet->update([
+                'status' => 'negociation',
+            ]);
+
+            // gelement le montant dans la table `gelement`
+            gelement::create([
+                'id_wallet' => $this->wallet->id,
+                'amount' => $montant,
+                'reference_id' => $this->projet->id,
+            ]);
+
+            // Déclencher l'événement `DebutDeNegociation`
+            broadcast(new DebutDeNegociation($this->projet, $this->investisseurQuiAPayeTout));
+            $this->dispatch('DebutDeNegociation', $this->projet, $this->investisseurQuiAPayeTout);
+        }
         // Vérifier si le pourcentage investi est de 100% ou plus
-        if ($this->pourcentageInvesti == 100) {
+        if ($this->pourcentageInvesti == 100 && !$this->investisseurQuiAPayeTout) {
             $this->projet->update([
                 'count' => true
             ]);
-        } else {
-            $this->projet->update([
-                'count' => false
-            ]);
         }
-        // Log de mise à jour des sommes investies
-        Log::info('Somme investie mise à jour pour le projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
-
-        // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
-            ->distinct()
-            ->count('id_invest');
-
-        // Récupérer la somme totale de tous les montants ajoutés pour ce projet par tous les utilisateurs
-        $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
-
-        // Vérifier si la somme totale atteint ou dépasse le montant du projet
-        $this->montantVerifie = $totalAjoute >= $montant;
-
-        // Vérifier si un investisseur a payé la totalité du projet
+    }
+    private function verifierInvestisseurQuiAPayeTout()
+    {
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
+        // Vérifier si un investisseur a payé la totalité du this->projet
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_projet', $this->projet->id)
             ->select('id_invest')
             ->groupBy('id_invest')
             ->havingRaw('SUM(montant) >= ?', [$montant])
             ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
 
+    }
+    private function mettreAJourProprietes()
+    {
+        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon this->projet->montant
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
+        // Rafraîchir les propriétés du composant
+        $this->sommeInvestie = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
+        $this->sommeRestante = $montant - $this->sommeInvestie;
+        $this->pourcentageInvesti = ($this->sommeInvestie / $montant) * 100;
 
-        // Si un investisseur a payé le montant total, déclencher l'événement
-        if ($this->investisseurQuiAPayeTout) {
-            // Déclencher l'événement `DebutDeNegociation`
-            broadcast(new DebutDeNegociation($this->projet, $this->investisseurQuiAPayeTout));
-            $this->dispatch('DebutDeNegociation', $this->projet, $this->investisseurQuiAPayeTout);
-        } elseif (!$this->investisseurQuiAPayeTout) {
-            // Si l'investisseur a payé une partie, mais pas la totalité, effectuer une autre action
-            // Par exemple, envoyer une notification ou enregistrer une progression partielle
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique',  $this->projet->id)
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
 
-            if (!$existingCountdown) {
-                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-                Countdown::create([
-                    'user_id' => Auth::id(),
-                    'userSender' => $this->projet->demandeur->id,
-                    // 'start_time' => $this->dateFin,
-                    'start_time' => now(),
-                    'difference' => 'projet_compo',
-                    'code_unique' =>  $this->projet->id,
-                ]);
-            }
-        }
-        // Log de l'investisseur qui a payé tout
-        Log::info('Investisseur qui a payé tout pour le projet ID: ' . $this->projet->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
+        // Mettre à jour le nombre d'investisseurs distincts
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_projet', $this->projet->id)
+            ->distinct()
+            ->count('id_invest');
+
+        // Récupérer la somme totale de tous les montants ajoutés pour ce this->projet par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_projet', $this->projet->id)->sum('montant');
+
+        // Vérifier si la somme totale atteint ou dépasse le montant du this->projet
+        $this->montantVerifie = $totalAjoute >= $montant;
     }
 
     public function confirmerAction()
@@ -388,18 +352,18 @@ class DetailProjet extends Component
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
-        // Récupérer le projet
+        // Récupérer le this->projet
         $projet = $this->projet;
 
-        // Vérifiez si le projet et le demandeur existent
-        if (!$projet || !$projet->demandeur || !$projet->demandeur->id) {
+        // Vérifiez si le this->projet et le demandeur existent
+        if (!$this->projet || !$this->projet->demandeur || !$this->projet->demandeur->id) {
             Log::error('Projet ou demandeur introuvable pour l\'utilisateur ID: ' . Auth::id());
-            session()->flash('error', 'Le projet ou le demandeur est introuvable.');
+            session()->flash('error', 'Le this->projet ou le demandeur est introuvable.');
             return;
         }
 
-        // Log du projet et demandeur
-        Log::info('Projet trouvé, ID du projet: ' . $projet->id . ', ID du demandeur: ' . $projet->demandeur->id);
+        // Log du this->projet et demandeur
+        Log::info('Projet trouvé, ID du this->projet: ' . $this->projet->id . ', ID du demandeur: ' . $this->projet->demandeur->id);
 
         // Récupérer le wallet de l'investisseur
         $wallet = Wallet::where('user_id', Auth::id())->first();
@@ -433,8 +397,8 @@ class DetailProjet extends Component
                 'nombreActions' => $actions,
                 'montant' => $montant,
                 'id_invest' => Auth::id(),
-                'id_emp' => $projet->demandeur->id,
-                'id_projet' => $projet->id,
+                'id_emp' => $this->projet->demandeur->id,
+                'id_projet' => $this->projet->id,
             ]);
 
             // Log après l'ajout du montant
@@ -453,7 +417,7 @@ class DetailProjet extends Component
             // if ($cfa) {
             //     $cfa->Solde += $montant;
             //     $cfa->save();
-            //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
+            //     Log::info('Solde CFA mis à jour pour le demandeur ID: ' . $this->projet->id_user . ', Nouveau solde CFA: ' . $cfa->Solde);
             // }
 
             // Générer une référence de transaction
@@ -493,20 +457,20 @@ class DetailProjet extends Component
         $this->pourcentageInvestiAction  = ($this->sommeInvestieActions / $this->projet->nombreActions) * 100;
 
         // Log de mise à jour des sommes investies
-        Log::info('Somme investie mise à jour pour le projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
+        Log::info('Somme investie mise à jour pour le this->projet ID: ' . $this->projet->id . ', Somme investie: ' . $this->sommeInvestie);
 
         // Mettre à jour le nombre d'investisseurs distincts
         $this->nombreInvestisseursDistinctAction = AjoutAction::where('id_projet', $this->projet->id)
             ->distinct()
             ->count('id_invest');
 
-        // Vérifier si le nombre d'action du projet est atteint
+        // Vérifier si le nombre d'action du this->projet est atteint
         $this->montantVerifieAction = AjoutAction::where('id_projet', $this->projet->id)
             ->where('nombreActions', $this->projet->nombreActions)
             ->exists();
 
         // Log final
-        Log::info('Montant vérifié pour le projet ID: ' . $this->projet->id . ', Montant atteint: ' . ($this->montantVerifie ? 'Oui' : 'Non'));
+        Log::info('Montant vérifié pour le this->projet ID: ' . $this->projet->id . ', Montant atteint: ' . ($this->montantVerifie ? 'Oui' : 'Non'));
     }
 
 
@@ -517,18 +481,13 @@ class DetailProjet extends Component
             'tauxTrade' => 'required|numeric|min:0',
         ]);
 
-        // Vérification de l'objet projet
-        if (!$this->projet || !$this->projet->id) {
-            session()->flash('error', 'Le projet est introuvable.');
-            return;
-        }
+
 
         $user = auth()->user();
 
-        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon projet->montant
+        // Calculer le pourcentage investi en utilisant Portion_obligt si elle existe, sinon this->projet->montant
         $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
 
-        $userWallet = Wallet::where('user_id', $user->id)->first();
 
 
         // Vérifier si c'est la première soumission pour chaque utilisateur connecté
@@ -537,16 +496,14 @@ class DetailProjet extends Component
             ->first();
 
         if (!$ajoutMontant) {
-            // Vérifier si un wallet Coi existe et si le solde est suffisant
-            $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
-
             // Vérifier si le wallet existe et si le solde est insuffisant par rapport au montant requis
-            if ($coiWallet && $coiWallet->Solde < $montant) {
+            if ($this->coi && $this->coi->Solde < $montant) {
                 // Si le solde est insuffisant, afficher un message d'erreur et arrêter l'exécution
-                session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->projet->montant . ' CFA.');
+                session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $montant  . ' CFA.');
                 return;  // Arrêter l'exécution de la fonction
             }
-            // Appeler la fonction confirmer si c'est la première soumission
+
+            // Si le solde est suffisant, appeler la fonction confirmer2
             $this->confirmer2();
         }
 
@@ -557,81 +514,43 @@ class DetailProjet extends Component
     public function confirmer2()
     {
         // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-        $montant = floatval($this->projet->montant);
+        $montant = isset($this->projet->Portion_obligt) && $this->projet->Portion_obligt > 0 ? $this->projet->Portion_obligt : $this->projet->montant;
 
-        if (empty($this->projet->montant) || !is_numeric($montant) || $montant <= 0) {
-            Log::warning('Montant invalide saisi par l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $this->projet->montant);
+        if ($montant <= 0) {
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
 
-        // Récupérer le projet
-        $projet = $this->projet;
-
-        // Vérifiez si le projet et le demandeur existent
-        if (!$projet || !$projet->demandeur || !$projet->demandeur->id) {
-            Log::error('Projet ou demandeur introuvable pour l\'utilisateur ID: ' . Auth::id());
-            session()->flash('error', 'Le projet ou le demandeur est introuvable.');
-            return;
-        }
-
-        // Log du projet et demandeur
-        Log::info('Projet trouvé, ID du projet: ' . $projet->id . ', ID du demandeur: ' . $projet->demandeur->id);
-
-        // Récupérer le wallet de l'investisseur
-        $wallet = Wallet::where('user_id', Auth::id())->first();
-
-        // Vérifier que l'utilisateur possède un wallet
-        if (!$wallet) {
-            Log::error('Wallet introuvable pour l\'utilisateur ID: ' . Auth::id());
-            session()->flash('error', 'Votre portefeuille est introuvable.');
-            return;
-        }
-
-
-
-        // Début de la transaction
         DB::beginTransaction();
 
         try {
-            // Log avant l'ajout du montant
-            Log::info('Ajout du montant pour l\'utilisateur ID: ' . Auth::id() . ', Montant: ' . $montant);
-
 
             // Sauvegarder le montant dans la table `ajout_montant`
-            $ajoumontant = AjoutMontant::create([
+            AjoutMontant::create([
                 'montant' => $montant,
                 'id_invest' => Auth::id(),
-                'id_emp' => $projet->demandeur->id,
-                'id_projet' => $projet->id,
+                'id_emp' => $this->projet->id_user,
+                'id_projet' => $this->projet->id,
             ]);
 
             // gelement le montant dans la table `gelement`
-            $gelement = gelement::create([
-                'id_wallet' => $wallet->id,
+            gelement::create([
+                'id_wallet' => $this->wallet->id,
                 'amount' => $montant,
                 'reference_id' => $this->projet->id,
             ]);
 
-            // Log après l'ajout du montant
-            Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
 
             // Mettre à jour le solde du COI
-            $coi = $wallet->coi;
+            $coi = $this->wallet->coi;
             if ($coi) {
                 $coi->Solde -= $montant;
                 $coi->save();
-                Log::info('Solde COI mis à jour pour l\'utilisateur ID: ' . Auth::id() . ', Nouveau solde COI: ' . $coi->Solde);
             }
 
-            // Générer une référence de transaction
-            $reference_id = $this->generateIntegerReference();
-            // Créer deux transactions
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id, 'financement de crédit d\'un projet', 'effectué', $coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Gele', $montant, $this->generateIntegerReference(), 'financement de crédit d\'un this->projet', 'effectué', $coi->type_compte);
 
-            // Committer la transaction
             DB::commit();
-            Log::info('Transaction committée avec succès pour l\'utilisateur ID: ' . Auth::id());
         } catch (\Exception $e) {
             // Rollback en cas d'erreur
             DB::rollBack();
@@ -655,7 +574,8 @@ class DetailProjet extends Component
     protected function ElementcommentForm()
     {
 
-        // Insérer dans la table commentTaux
+        // Utilisation d'une transaction pour garantir la cohérence des données
+        DB::beginTransaction();
         try {
             $commentTaux = CommentTaux::create([
                 'taux' => $this->tauxTrade,
@@ -668,10 +588,13 @@ class DetailProjet extends Component
             $this->tauxTrade = '';
             broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
 
-
+            // Committer la transaction
+            DB::commit();
             // Optionnel: Ajouter une notification ou un message de succès
             session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
         } catch (\Exception $e) {
+            // Annuler la transaction en cas d'erreur
+            DB::rollBack();
             session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
         }
 
@@ -728,7 +651,7 @@ class DetailProjet extends Component
         $dateActuelle = now();
         // $joursRestants = $dateActuelle->diffInDays($this->dateFin);
         $joursRestants = $dateActuelle->diffInDays($this->projet->created_at);
-        return max(0, $joursRestants); // Retournez 0 si le projet est déjà terminé
+        return max(0, $joursRestants); // Retournez 0 si le this->projet est déjà terminé
     }
 
     public function render()

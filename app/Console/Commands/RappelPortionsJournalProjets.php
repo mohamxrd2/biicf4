@@ -47,7 +47,7 @@ class RappelPortionsJournalProjets extends Command
             Log::info('Projet ID : ' . $projet->id . ' - Emprunteur ID : ' . $projet->emprunteur_id);
 
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
-            if ($dateDuJour <= $projet->date_fin) {
+            if ($dateDuJour >= $projet->date_debut || $dateDuJour <= $projet->date_fin) {
                 Log::info("Traitement du projet ID : " . $projet->id . '$projet->date_debut : ' . $projet->date_debut . ' - $projet->date_fin : ' . $projet->date_fin);
 
 
@@ -89,7 +89,6 @@ class RappelPortionsJournalProjets extends Command
                         $wallet->balance -= $montantASoustraire;
                         $wallet->save();
 
-                        $crp = Crp::where('id_wallet', $wallet->id)->first();
                         if ($crp) {
                             $crp->Solde += $montantASoustraire;
                             $crp->save();
@@ -102,21 +101,18 @@ class RappelPortionsJournalProjets extends Command
                         if ($projet->montan_restantt == 0) {
                             $projet->statut = "remboursé";
 
-                            $this->remboursementCredit($projet, $wallet,);
+                            $this->remboursementCredit($projet, $wallet);
                         }
 
 
                         $projet->save();
 
-                        $reference_id = $this->generateIntegerReference();
 
                         Log::info("Début de la transaction pour l'utilisateur ID: " . $projet->emprunteur_id);
 
-
-
                         $this->remboursement(
                             $projet->id,
-                            $reference_id,
+                            $this->generateIntegerReference(),
                             $projet->emprunteur_id,
                             $projet->emprunteur_id,
                             $montantTotal,
@@ -140,7 +136,7 @@ class RappelPortionsJournalProjets extends Command
                         if (!$emprunteur) {
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $projet->id);
                         }
-                        $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
+                        $message = 'Le solde de votre compte est insuffisant. Penalité de 10%, Veuillez recharger votre compte pour effectuer cette opération.';
                         Notification::send($emprunteur, new PortionJournaliere($projet, $portionCapital, $portionInteret, $message));
 
                         // Après l'envoi de la notification
@@ -175,7 +171,11 @@ class RappelPortionsJournalProjets extends Command
                 // Vérifier que l'ID de l'investisseur et le montant financé sont définis, puis les ajouter aux tableaux
                 if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
                     $investisseursIds[] = $investisseur['investisseur_id'];
-                    $investisseursMontants[$investisseur['investisseur_id']] = $investisseur['montant_finance'];
+
+                    $montantAvecInteret = $investisseur['montant_finance'] + ($investisseur['montant_finance'] * $projet->taux_interet) / 100;
+
+                    // Stocker le montant financé augmenté des intérêts dans le tableau
+                    $investisseursMontants[$investisseur['investisseur_id']] = $montantAvecInteret;
                 }
             }
         }
@@ -249,13 +249,12 @@ class RappelPortionsJournalProjets extends Command
                     ]);
                 }
 
-                $reference_id = $this->generateIntegerReference();
                 $this->createTransaction(
                     $projet->emprunteur_id,
                     $id,
                     'Envoie',
                     $projet->montant,
-                    $reference_id,
+                    $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
                     $crp->type_compte
@@ -266,7 +265,7 @@ class RappelPortionsJournalProjets extends Command
                     $id,
                     'Réception',
                     $projet->montant,
-                    $reference_id,
+                    $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
                     $crp->type_compte

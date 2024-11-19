@@ -57,10 +57,6 @@ class DetailsGagnant extends Component
             $this->crediScore = CrediScore::where('id_user', $this->userInPromir->id)->first();
         }
 
-        // Récupérer l'ID de la demande de credi du userId
-        // $credit_id = $this->notification->data['credit_id'];
-        // $this->demandeCredit = DemandeCredi::find($credit_id)->first();
-
         // Récupérer l'ID soit du crédit soit du projet
         $credit_id = $this->notification->data['credit_id'] ?? null;
         $projet_id = $this->notification->data['projet_id'] ?? null;
@@ -116,31 +112,32 @@ class DetailsGagnant extends Component
             // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
             $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
 
-            if ($coi) {
-                // Vérifie si le solde est suffisant pour le débit
-                if ($coi->Solde >= $montant) {
-                    $coi->Solde -= $montant; // Débiter le montant du solde du COI
-                    $coi->save();
-                } else {
-                    // Retourne un message ou gère le cas où le solde est insuffisant
-                    session()->flash('error', 'Solde insuffisant dans le COI.');
-                    // Arrête le processus si le solde est insuffisant
-                    return;
-                }
-            } else {
-                // Gérer le cas où le compte COI n'existe pas ou n'est pas trouvé
-                session()->flash('error', 'Compte COI introuvable.');
+            // Vérifier si le id_wallet existe dans la table `gelements`
+            $gelement = gelement::where('status', 'Pending')
+                ->where('id_wallet', $wallet->id)
+                ->where('reference_id', $this->notification->data['projet_id'])
+                ->first();
+
+            if (!$gelement) {
+                throw new \Exception('Gélément introuvable.');
             }
 
+            // Vérifier si le `reference_id` correspond au `code_unique` dans la table Countdown
+            $countdown = Countdown::where('code_unique', $gelement->reference_id)->exists();
+            if (!$countdown) {
+                throw new \Exception('Référence invalide.');
+            }
 
             // Mettre à jour ou créer un enregistrement dans la table CFA
             $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
-            // Mettre à jour ou créer un enregistrement dans la table CFA
-
             if ($cfa) {
-                // Si le compte CFA existe, on additionne le montant
-                $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
+                $cfa->Solde += $montant;
                 $cfa->save();
+            } else {
+                $cfa = Cfa::create([
+                    'id_wallet' => $walletDemandeur->id,
+                    'Solde' => $montant,
+                ]);
             }
 
             //  Calculer la portion journalière en fonction du montant et de la durée.
@@ -218,7 +215,14 @@ class DetailsGagnant extends Component
             session()->flash('error', 'Montant invalide.');
             return;
         }
+        // Récupérer la demande de crédit et le wallet de l'utilisateur (investisseur)
+        $projet = $this->projet;
 
+        // Vérifiez si la demande de crédit et l'ID de la demande existent
+        if (!$projet) {
+            session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
+            return;
+        }
         // Récupérer le wallet de l'utilisateur connecté
         $wallet = Wallet::where('user_id', Auth::id())->first();
         $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
@@ -228,19 +232,20 @@ class DetailsGagnant extends Component
             return;
         }
 
-        // Vérifier que le solde du COI est suffisant
-        $coi = $wallet->coi; // Assurez-vous que la relation `coi` est définie dans le modèle Wallet
-
 
         // Utilisation d'une transaction pour garantir la cohérence des données
         DB::beginTransaction();
 
         try {
+
+            // Vérifier que le solde du COI est suffisant
+            $coi = $wallet->coi; // Assurez-vous que la relation `coi` est définie dans le modèle Wallet
+
             // Vérifier si le id_wallet existe dans la table `gelements`
-            $gelement = gelement::where('status', 'Pending')
+            ($gelement = gelement::where('status', 'Pending')
                 ->where('id_wallet', $wallet->id)
                 ->where('reference_id', $this->notification->data['projet_id'])
-                ->first();
+                ->first());
 
             if (!$gelement) {
                 throw new \Exception('Gélément introuvable.');
