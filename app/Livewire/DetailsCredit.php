@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Events\AjoutMontantF;
 use App\Events\CommentSubmittedTaux;
 use App\Events\DebutDeNegociation;
 use App\Models\AjoutMontant;
@@ -11,6 +12,7 @@ use App\Models\CommentTaux;
 use App\Models\Countdown;
 use App\Models\CrediScore;
 use App\Models\credits;
+use App\Models\credits_groupé;
 use App\Models\DemandeCredi;
 use App\Models\gelement;
 use App\Models\remboursements;
@@ -50,6 +52,9 @@ class DetailsCredit extends Component
     public $pourcentageInvesti = 0;
     public $commentTauxList = [];
     public $tauxTrade;
+    public $wallet;
+    public $coi;
+    public $user_connecte;
 
 
 
@@ -64,24 +69,35 @@ class DetailsCredit extends Component
         $userNumber = $this->userDetails->phone;
 
         // Récupérer l'ID de l'utilisateur connecté
-        $user_connecte = Auth::id();
-        $wallet = Wallet::where('user_id', $user_connecte)->first();
-        $this->solde = $wallet ? $wallet->balance : 0;
+        $this->user_connecte = Auth::id();
+        $this->wallet = Wallet::where('user_id', Auth::id())->first();
 
-        // Récupérer les credits où 'count' est égal à true et dont la date de fin est passée
+        // Vérifier que l'utilisateur possède un wallet
+        if (!$this->wallet) {
+            session()->flash('error', 'Votre portefeuille est introuvable.');
+            return;
+        }
 
+        $this->solde = $this->wallet ? $this->wallet->coi->Solde : 0;
 
         // Récupérer l'ID de la demande de credi du userId
         $demandeId = $this->notification->data['demande_id'];
         $this->demandeCredit = DemandeCredi::where('demande_id', $demandeId)->first();
 
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', operator: $this->demandeCredit->id)
-            ->distinct()
-            ->count('id_invest');
+        //Récupérer l'objet COI associé
+        $this->coi = $this->wallet->coi; // L'objet `coi`, supposant qu'il est une relation avec le wallet
 
-        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->sum('montant'); // Somme des montants investis
+        // Vérifier que l'objet COI existe
+        if (!$this->coi) {
+            session()->flash('error', 'Votre compte COI est introuvable.');
+            return;
+        }
 
+        // Vérifier que le solde est suffisant
+        if ($this->coi->Solde < $this->montant) {
+            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
+            return;
+        }
 
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
@@ -91,23 +107,6 @@ class DetailsCredit extends Component
             // Vérifier si un score de crédit existe pour cet utilisateur
             $this->crediScore = CrediScore::where('id_user', $this->userInPromir->id)->first();
         }
-
-
-        // Calculer le pourcentage investi
-        if ($this->demandeCredit->montant > 0) {
-            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
-        } else {
-            $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
-        }
-
-        // Calculer la somme restante à investir
-        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
-
-        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
-        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
-
-        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
-        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
 
         // Vérifier si un investisseur a payé la totalité du demandeCredit
         $this->investisseurQuiAPayeTout = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
@@ -120,6 +119,7 @@ class DetailsCredit extends Component
         Log::info('Investisseur qui a payé tout pour le demandeCredit ID: ' . $this->demandeCredit->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
 
         $this->listenTaux();
+        $this->updatedMontant();
     }
 
     // Méthode déclenchée lorsque le compte à rebours est terminé
@@ -134,17 +134,11 @@ class DetailsCredit extends Component
             )
         ]);
 
-        // Optionnel : Vous pouvez également émettre un événement pour informer l'utilisateur
+        //Vous pouvez également émettre un événement pour informer l'utilisateur
         $this->dispatch(
             'formSubmitted',
             'Temps écoule, Négociation terminé.'
         );
-        // $close = true; // Votre logique d'éligibilité ici
-
-        // if ($close) {
-        //     $this->dispatch('submittion', $close,);
-        // }
-
     }
 
     #[On('echo:comments,CommentSubmittedTaux')]
@@ -155,10 +149,28 @@ class DetailsCredit extends Component
             ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
             ->get();
     }
+
+    #[On('echo:ajout-montant,AjoutMontantF')]
     public function updatedMontant()
     {
-        // Vérifier si le montant saisi dépasse le solde
-        $this->insuffisant = !empty($this->montant) && $this->montant > $this->solde;
+        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->sum('montant'); // Somme des montants investis
+        // Calculer la somme restante à investir
+        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Montant total - Somme investie
+        // Calculer le pourcentage investi
+        if ($this->demandeCredit->montant > 0) {
+            $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Calculer le pourcentage investi
+        } else {
+            $this->pourcentageInvesti = 0; // Si le montant est 0, le pourcentage est 0
+        }
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', operator: $this->demandeCredit->id)
+            ->distinct()
+            ->count('id_invest');
+        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
+
+        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
+        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
     }
 
     #[On('echo:debut-negociation,DebutDeNegociation')]
@@ -170,64 +182,37 @@ class DetailsCredit extends Component
 
     public function confirmer()
     {
-
-        // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-        $montant = !empty($this->montant) ? floatval($this->montant) : floatval($this->demandeCredit->montant);
-        // dd($montant);
-        if ($montant <= 0) {
+        if ($this->montant <= 0) {
             session()->flash('error', 'Veuillez saisir un montant valide.');
             return;
         }
-        $user = auth()->user();
 
-
-        $wallet = Wallet::where('user_id', Auth::id())->first();
-        // Récupérer le wallet de l'utilisateur demandeur
-        $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
-
-        // Vérifier que l'utilisateur possède un wallet
-        if (!$wallet) {
-            session()->flash('error', 'Votre portefeuille est introuvable.');
-            return;
-        }
-
-        // Vérifier que le solde du wallet est suffisant
-        if ($wallet->balance < $montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
-            return;
-        }
 
         // Utilisation d'une transaction pour garantir la cohérence des données
         DB::beginTransaction();
 
         try {
+            // Sauvegarde du montant dans AjoutMontant
+            $ajoumontant = $this->ajouterMontant();
 
-            // Sauvegarder le montant dans la table `ajout_montant`
-            $ajoumontant = AjoutMontant::create([
-                'montant' => $montant,
-                'id_invest' => Auth::id(),
-                'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
-                'id_demnd_credit' => $this->demandeCredit->id,
-            ]);
+            // Mise à jour du solde du COI
+            $this->mettreAJourSoldeCoi($this->coi);
+            // Vérification de l'investisseur qui a payé la totalité
+            $this->verifierInvestisseurQuiAPayeTout();
 
-            // Log après l'ajout du montant
-            Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
+            // Mise à jour du pourcentage et des autres propriétés
+            $this->mettreAJourProprietes();
 
+            // Si le montant total est atteint, déclenchement de l'événement
+            $this->debutNegociationSiMontantTotalAtteint();
 
-            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
-            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
-            if ($coi) {
-                $coi->Solde -= $montant; // Débiter le montant du solde du COI
-                $coi->save();
+            if ($this->pourcentageInvesti == 100 && $this->investisseurQuiAPayeTout) {
+                $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->montant, $this->generateIntegerReference(),  'Gelement pour negociation financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+            } else {
+                $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
             }
 
-
-
-            // if (!$ajoutMontant) {
-            $reference_id = $this->generateIntegerReference();
-
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué', $coi->type_compte);
-
+            broadcast(new AjoutMontantF($ajoumontant))->toOthers();
 
             // Committer la transaction
             DB::commit();
@@ -240,54 +225,9 @@ class DetailsCredit extends Component
             session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
             return;
         }
-
-        // Message de succès
-        session()->flash('success', 'Le montant a été ajouté avec succès.');
-
         // Réinitialiser le montant saisi et le drapeau de vérification de solde insuffisant
         $this->montant = '';
         $this->insuffisant = false;
-
-        // Rafraîchir les propriétés du composant
-        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant'); // Met à jour la somme investie
-        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie; // Met à jour la somme restante
-        $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100; // Met à jour le pourcentage investi
-        // Vérifier si le pourcentage est égal à 100
-        if ($this->pourcentageInvesti == 100) {
-            // Récupérer toutes les demandes ayant le même 'demande_id'
-            $demandesAvecLeMemeId = DemandeCredi::where('demande_id', $this->demandeCredit->demande_id)->get();
-
-            // Mettre à jour le champ 'count' à true pour toutes les demandes récupérées
-            foreach ($demandesAvecLeMemeId as $demande) {
-                $demande->update([
-                    'count' => true,
-                ]);
-            }
-        }
-        // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->distinct()
-            ->count('id_invest');
-        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
-        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
-
-        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
-        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
-
-        // Vérifier si un investisseur a payé la totalité du demandeCredit
-        $this->investisseurQuiAPayeTout = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->select('id_invest')
-            ->groupBy('id_invest')
-            ->havingRaw('SUM(montant) >= ?', [$this->demandeCredit->montant])
-            ->value('id_invest'); // Récupérer l'ID de l'investisseur qui a payé tout, s'il existe
-        // Si un investisseur a payé le montant total, déclencher l'événement
-        if ($this->investisseurQuiAPayeTout) {
-            // Déclencher l'événement `DebutDeNegociation`
-            broadcast(new DebutDeNegociation($this->demandeCredit, $this->investisseurQuiAPayeTout));
-            $this->dispatch('DebutDeNegociation', $this->demandeCredit, $this->investisseurQuiAPayeTout);
-        }
-        // Log de l'investisseur qui a payé tout
-        Log::info('Investisseur qui a payé tout pour le demandeCredit ID: ' . $this->demandeCredit->id . ', Investisseur ID: ' . $this->investisseurQuiAPayeTout);
     }
     public function approuver($montant)
     {
@@ -300,28 +240,18 @@ class DetailsCredit extends Component
             return;
         }
 
-        // Récupérer la demande de crédit et le wallet de l'utilisateur (investisseur)
-        $demandeCredit = $this->demandeCredit;
 
-        // Vérifiez si la demande de crédit et l'ID de la demande existent
-        if (!$demandeCredit || !$this->notification->data['demande_id']) {
-            session()->flash('error', 'La demande de crédit ou le demandeur est introuvable.');
-            return;
-        }
-
-        // Récupérer le wallet de l'utilisateur connecté
-        $wallet = Wallet::where('user_id', Auth::id())->first();
         // Récupérer le wallet de l'utilisateur demandeur
         $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
 
         // Vérifier que l'utilisateur possède un wallet
-        if (!$wallet) {
+        if (!$walletDemandeur) {
             session()->flash('error', 'Votre portefeuille est introuvable.');
             return;
         }
 
         // Vérifier que le solde du wallet est suffisant
-        if ($wallet->balance < $montant) {
+        if ($this->coi->Solde < $montant) {
             session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
             return;
         }
@@ -331,14 +261,11 @@ class DetailsCredit extends Component
 
         try {
 
-            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
-            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
-
-            if ($coi) {
+            if ($this->coi) {
                 // Vérifie si le solde est suffisant pour le débit
-                if ($coi->Solde >= $montant) {
-                    $coi->Solde -= $montant; // Débiter le montant du solde du COI
-                    $coi->save();
+                if ($this->coi->Solde >= $montant) {
+                    $this->coi->Solde -= $montant; // Débiter le montant du solde du COI
+                    $this->coi->save();
                 } else {
                     // Retourne un message ou gère le cas où le solde est insuffisant
                     session()->flash('error', 'Solde insuffisant dans le COI.');
@@ -367,36 +294,44 @@ class DetailsCredit extends Component
             $durer = Carbon::parse($this->demandeCredit->duree);
             $jours = $debut->diffInDays($durer);
 
-            $montantTotal = $montant * (1 + $demandeCredit->taux / 100);
+            $montantTotal = $montant * (1 + $this->demandeCredit->taux / 100);
             $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
 
+            $resultatsInvestisseurs = [
+                [
+                    'credit_id' => $this->demandeCredit->id,
+                    'investisseur_id' => Auth::id(),
+                    'montant_finance' => $montant,
+                ],
+            ];
+
             // Mettre à jour ou créer un enregistrement dans la table credits
-            $credit = credits::create([
+            $creditGrp_id = credits_groupé::create([
                 'emprunteur_id' => $this->userId,
-                'investisseurs' => [Auth::id()],
+                'investisseurs' => json_encode($resultatsInvestisseurs),
                 'montant' => $montantTotal,
-                'montant_restant' => $montantTotal,
-                'taux_interet' => $demandeCredit->taux,
-                'date_debut' => $demandeCredit->date_fin,
-                'date_fin' => $demandeCredit->duree,
+                'montan_restantt' => $montantTotal,
+                'taux_interet' => $this->demandeCredit->taux,
+                'date_debut' => $this->demandeCredit->date_fin,
+                'date_fin' => $this->demandeCredit->duree,
                 'portion_journaliere' => $portion_journaliere,
-                'statut' => 'en_cours',
+                'statut' => 'en cours',
+                'description' => $this->demandeCredit->objet_financement,
             ]);
+
             // Création du remboursement associé
             Remboursements::create([
-                'credit_id' => $credit->id,  // Associe le remboursement au crédit créé
+                'creditGrp_id' => $creditGrp_id->id,  // Associe le remboursement au crédit créé
                 'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
                 'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
-                'montant_interet' => $demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
-                'date_remboursement' => $demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
+                'montant_interet' => $this->demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
+                'date_remboursement' => $this->demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
                 'statut' => 'en cours',  // Statut du remboursement
-                'description' => $demandeCredit->objet_financement,  // Statut du remboursement
+                'description' => $this->demandeCredit->objet_financement,  // Statut du remboursement
             ]);
 
-            $reference_id = $this->generateIntegerReference();
-
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'Financement  de Crédit d\'achat',  'effectué', $coi->type_compte);
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $reference_id,  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $this->generateIntegerReference(),  'Financement  de Crédit d\'achat',  'effectué', $this->coi->type_compte);
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $this->generateIntegerReference(),  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
 
 
             // Mettre à jour l'état de la notification en approuvé
@@ -427,27 +362,14 @@ class DetailsCredit extends Component
             'tauxTrade' => 'required|numeric|min:0',
         ]);
 
-        // Vérification de l'objet demandeCredit
-        if (!$this->demandeCredit || !$this->demandeCredit->id) {
-            session()->flash('error', 'Le demandeCredit est introuvable.');
-            return;
-        }
-
-        $user = auth()->user();
-
-        $userWallet = Wallet::where('user_id', $user->id)->first();
-
         // Vérifier si c'est la première soumission pour chaque utilisateur connecté
         $ajoutMontant = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->where('id_invest', $user->id)
+            ->where('id_invest', $this->user_connecte)
             ->first();
 
         if (!$ajoutMontant) {
-            // Vérifier si un wallet Coi existe et si le solde est suffisant
-            $coiWallet = Coi::where('id_wallet', $userWallet->id)->first();
-
             // Vérifier si le wallet existe et si le solde est insuffisant par rapport au montant requis
-            if ($coiWallet && $coiWallet->Solde < $this->demandeCredit->montant) {
+            if ($this->coi && $this->coi->Solde < $this->demandeCredit->montant) {
                 // Si le solde est insuffisant, afficher un message d'erreur et arrêter l'exécution
                 session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->demandeCredit->montant . ' CFA.');
                 return;  // Arrêter l'exécution de la fonction
@@ -463,71 +385,37 @@ class DetailsCredit extends Component
     }
     public function confirmer2()
     {
-
-        // Vérifier que le montant est valide, non vide, numérique et supérieur à zéro
-        $montant = !empty($this->montant) ? floatval($this->montant) : floatval($this->demandeCredit->montant);
-        // dd($montant);
-        if ($montant <= 0) {
-            session()->flash('error', 'Veuillez saisir un montant valide.');
-            return;
-        }
-        $user = auth()->user();
-
-
-        $wallet = Wallet::where('user_id', Auth::id())->first();
-
-        // Vérifier que l'utilisateur possède un wallet
-        if (!$wallet) {
-            session()->flash('error', 'Votre portefeuille est introuvable.');
-            return;
-        }
-
-        // Vérifier que le solde du wallet est suffisant
-        if ($wallet->balance < $montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
-            return;
-        }
-
         // Utilisation d'une transaction pour garantir la cohérence des données
         DB::beginTransaction();
 
         try {
-
-
-            // Sauvegarder le montant dans la table `ajout_montant`
-            $ajoumontant = AjoutMontant::create([
-                'montant' => $montant,
+            // Sauvegarde du montant dans AjoutMontant
+            AjoutMontant::create([
+                'montant' => $this->demandeCredit->montant,
                 'id_invest' => Auth::id(),
-                'id_emp' => $this->demandeCredit->id_user, // Assurez-vous que cet ID existe
+                'id_emp' => $this->demandeCredit->id_user,
                 'id_demnd_credit' => $this->demandeCredit->id,
             ]);
+
             // gelement le montant dans la table `gelement`
-            $gelement = gelement::create([
-                'id_wallet' => $wallet->id,
-                'amount' => $montant,
+            gelement::create([
+                'id_wallet' => $this->wallet->id,
+                'amount' => $this->demandeCredit->montant,
                 'reference_id' => $this->demandeCredit->demande_id,
             ]);
-            // Log après l'ajout du montant
-            Log::info('Montant ajouté avec succès pour l\'utilisateur ID: ' . Auth::id() . ', ID de l\'ajout montant: ' . $ajoumontant->id);
 
 
             // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
-            $coi = $wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
+            $coi = $this->wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
             if ($coi) {
-                $coi->Solde -= $montant; // Débiter le montant du solde du COI
+                $coi->Solde -= $this->demandeCredit->montant; // Débiter le montant du solde du COI
                 $coi->save();
             }
 
-            $reference_id = $this->generateIntegerReference();
+            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->demandeCredit->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
 
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué', $coi->type_compte);
-
-
-            // Committer la transaction
             DB::commit();
 
-            // Message de succès
-            session()->flash('success', 'Le montant a été ajouté avec succès.');
         } catch (\Exception $e) {
             // Annuler la transaction en cas d'erreur
             DB::rollBack();
@@ -547,7 +435,8 @@ class DetailsCredit extends Component
     }
     protected function ElementcommentForm()
     {
-
+        // Utilisation d'une transaction pour garantir la cohérence des données
+        DB::beginTransaction();
         // Insérer dans la table commentTaux
         try {
 
@@ -562,10 +451,13 @@ class DetailsCredit extends Component
             $this->tauxTrade = '';
             broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
 
-
+            // Committer la transaction
+            DB::commit();
             // Optionnel: Ajouter une notification ou un message de succès
             session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
         } catch (\Exception $e) {
+            // Annuler la transaction en cas d'erreur
+            DB::rollBack();
             session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
         }
 
@@ -589,7 +481,7 @@ class DetailsCredit extends Component
                 'userSender' => $this->userId,
                 // 'start_time' => $this->dateFin,
                 'start_time' => now(),
-                'difference' => 'projet_taux',
+                'difference' => 'credit_taux',
                 'code_unique' =>  $this->demandeCredit->demande_id,
             ]);
         }
@@ -619,7 +511,81 @@ class DetailsCredit extends Component
     }
 
 
+    private function ajouterMontant()
+    {
 
+        return AjoutMontant::create([
+            'montant' => $this->montant,
+            'id_invest' => Auth::id(),
+            'id_emp' => $this->demandeCredit->id_user,
+            'id_demnd_credit' => $this->demandeCredit->id,
+        ]);
+    }
+
+    private function mettreAJourSoldeCoi($coi)
+    {
+        $coi->Solde -= $this->montant;
+        $coi->save();
+    }
+
+    private function verifierInvestisseurQuiAPayeTout()
+    {
+        $this->investisseurQuiAPayeTout = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->select('id_invest')
+            ->groupBy('id_invest')
+            ->havingRaw('SUM(montant) >= ?', [$this->demandeCredit->montant])
+            ->value('id_invest');
+    }
+
+    private function mettreAJourProprietes()
+    {
+        $this->sommeInvestie = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
+        $this->sommeRestante = $this->demandeCredit->montant - $this->sommeInvestie;
+        $this->pourcentageInvesti = ($this->sommeInvestie / $this->demandeCredit->montant) * 100;
+
+        // Mettre à jour le nombre d'investisseurs distincts
+        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+            ->distinct()
+            ->count('id_invest');
+        // Récupérer la somme totale de tous les montants ajoutés pour ce demandeCredit par tous les utilisateurs
+        $totalAjoute = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)->sum('montant');
+
+        // Vérifier si la somme totale atteint ou dépasse le montant du demandeCredit
+        $this->montantVerifie = $totalAjoute >= $this->demandeCredit->montant;
+    }
+
+    private function debutNegociationSiMontantTotalAtteint()
+    {
+        // passage a la negociation de taux lorsque cest une seule personne qui tt
+        if ($this->pourcentageInvesti == 100 && $this->investisseurQuiAPayeTout) {
+
+            $this->demandeCredit->update([
+                'status' => 'negociation',
+            ]);
+            // gelement le montant dans la table `gelement`
+            gelement::create([
+                'id_wallet' => $this->wallet->id,
+                'amount' => $this->montant,
+                'reference_id' => $this->demandeCredit->demande_id,
+            ]);
+
+
+
+            // Si un investisseur a payé le montant total, déclencher l'événement
+            if ($this->investisseurQuiAPayeTout) {
+                // Déclencher l'événement `DebutDeNegociation`
+                broadcast(new DebutDeNegociation($this->demandeCredit, $this->investisseurQuiAPayeTout));
+                $this->dispatch('DebutDeNegociation', $this->demandeCredit, $this->investisseurQuiAPayeTout);
+            }
+        }
+        // ici cest la partir du grouper normal
+        if ($this->pourcentageInvesti == 100 && !$this->investisseurQuiAPayeTout) {
+
+            $this->demandeCredit->update([
+                'count' => true,
+            ]);
+        }
+    }
 
     public function refuser()
     {
@@ -635,8 +601,8 @@ class DetailsCredit extends Component
     }
     public function joursRestants()
     {
-        $dateFin = \Carbon\Carbon::parse($this->demandeCredit->date_fin);
-        $dateActuelle = now();
+        $dateFin = Carbon::parse($this->demandeCredit->date_fin);
+        $dateActuelle = Carbon::parse($this->demandeCredit->date_debut);
         $joursRestants = $dateActuelle->diffInDays($dateFin);
         return max(0, $joursRestants); // Retournez 0 si le demandeCredit est déjà terminé
     }

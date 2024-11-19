@@ -149,7 +149,7 @@
             doit être supérieur ou égal à la
             somme restante</p>
 
-        <button id="confirmer"
+        <button id="confirmerButton"
             class="w-full py-3 bg-purple-600 hover:bg-purple-700 transition-colors rounded-md text-white font-medium mt-4"
             wire:click="confirmer" wire:loading.attr="disabled">
             <span wire:loading.remove>

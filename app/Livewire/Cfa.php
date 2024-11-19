@@ -15,20 +15,20 @@ use Livewire\Component;
 class Cfa extends Component
 {
 
-    public $credits; // Propriété publique pour stocker les crédits
-    public $creditsGroupe; // Propriété publique pour stocker les crédits
-    public $projets; // Propriété publique pour stocker les crédits
-    public $totalCredits; // Propriété publique pour stocker les crédits
-    public $totalCreditsGroupe; // Propriété publique pour stocker les crédits
-    public $totalCreditsRembourses; // Propriété publique pour stocker les crédits
-    public $totalCreditsRemboursesGroupe; // Propriété publique pour stocker les crédits
-    public $totalprojets; // Propriété publique pour stocker les crédits
-    public $totalprojetsRembourses; // Propriété publique pour stocker les crédits
+    public $credits;
+    public $totalCredits;
+    public $totalCreditsRembourses;
+    public $pourcentageRemboursement;
+    public $pourcentageRemboursementParCredit;
+
+    public $projets;
+    public $totalProjets;
+    public $totalProjetsRembourses;
+    public $pourcentageRemboursementProjets;
+    public $pourcentageRemboursementParProjet;
+
     public $transacCount;
     public $transactions;
-    public $pourcentageRemboursement;
-    public $pourcentageRemboursementGroupe;
-    public $pourcentageRemboursementprojets;
 
     public function mount()
     {
@@ -40,57 +40,76 @@ class Cfa extends Component
     {
         $userId = Auth::id();
 
-        // Récupérer les projets associés à cet utilisateur; Si un utilisateur a des projets associés, les récupérer
+        // Récupérer les projets associés à cet utilisateur
         $this->projets = projets_accordé::where('emprunteur_id', $userId)->get();
 
-        $this->totalprojets = $this->projets->sum('montant');
-        $this->totalprojetsRembourses = $this->projets->sum(function ($projet) {
-            return $projet->montant - $projet->montant_restant;
-        });
+        // Initialiser les totaux pour calculs globaux
+        $this->totalProjets = 0;
+        $this->totalProjetsRembourses = 0;
+        $this->pourcentageRemboursementParProjet = [];
 
-        // Calcul du pourcentage de remboursement
-        if ($this->totalprojets > 0) {
-            $this->pourcentageRemboursementprojets = ($this->totalprojetsRembourses / $this->totalprojets) * 100;
-        } else {
-            $this->pourcentageRemboursementprojets = 0; // éviter la division par zéro
+        // Calculs pour chaque projet
+        foreach ($this->projets as $projet) {
+            // Calculer le montant remboursé pour ce projet
+            $montantRembourse = $projet->montant - $projet->montan_restantt;
+
+            // Ajouter les montants au total global
+            $this->totalProjets += $projet->montant;
+            $this->totalProjetsRembourses += $montantRembourse;
+
+            // Calculer le pourcentage de remboursement
+            $pourcentageRemboursement = $projet->montant > 0
+                ? ($montantRembourse / $projet->montant) * 100
+                : 0; // Éviter la division par zéro
+
+            // Stocker le pourcentage pour ce projet
+            $this->pourcentageRemboursementParProjet[$projet->id] = $pourcentageRemboursement;
         }
 
-        // Récupérer les crédits associés à cet utilisateur; Si un utilisateur a des crédits associés, les récupérer
-        // Récupérer les crédits associés à cet utilisateur
-        $this->credits = credits::where('emprunteur_id', $userId)->get();
+        // Calcul global du pourcentage de remboursement
+        $this->pourcentageRemboursementProjets = $this->totalProjets > 0
+            ? ($this->totalProjetsRembourses / $this->totalProjets) * 100
+            : 0; // Éviter la division par zéro
 
-        // Calculer le montant total des crédits et le montant total remboursé
-        $this->totalCredits = $this->credits->sum('montant');
-        $this->totalCreditsRembourses = $this->credits->sum(function ($credit) {
-            return $credit->montant - $credit->montant_restant;
-        });
 
-        // Calcul du pourcentage de remboursement global
+
+        // Récupérer les crédits associés
+        $this->credits = credits_groupé::where('emprunteur_id', $userId)->get();
+
+        // Initialiser les totaux pour calcul global, si nécessaire
+        $this->totalCredits = 0;
+        $this->totalCreditsRembourses = 0;
+
+        // Stocker les pourcentages de remboursement par crédit
+        $this->pourcentageRemboursementParCredit = [];
+
+        // Parcourir les crédits pour calculer les montants et les pourcentages individuellement
+        foreach ($this->credits as $credit) {
+            // Calculer le montant total remboursé pour ce crédit
+            $montantRembourse = $credit->montant - $credit->montan_restantt;
+
+            // Ajouter au total global pour calculs agrégés (si nécessaire)
+            $this->totalCredits += $credit->montant;
+            $this->totalCreditsRembourses += $montantRembourse;
+
+            // Calculer le pourcentage pour ce crédit
+            $pourcentageRemboursement = $credit->montant > 0
+                ? ($montantRembourse / $credit->montant) * 100
+                : 0; // Éviter la division par zéro
+
+            // Stocker le pourcentage pour ce crédit
+            $this->pourcentageRemboursementParCredit[$credit->id] = $pourcentageRemboursement;
+        }
+
+        // Si besoin, calculer un pourcentage global (par exemple, la moyenne)
         if ($this->totalCredits > 0) {
             $this->pourcentageRemboursement = ($this->totalCreditsRembourses / $this->totalCredits) * 100;
         } else {
-            $this->pourcentageRemboursement = 0; // éviter la division par zéro
+            $this->pourcentageRemboursement = 0;
         }
 
-        // Récupérer les crédits associés à cet utilisateur; Si un utilisateur a des crédits G associés, les récupérer
-        $this->creditsGroupe = credits_groupé::where('emprunteur_id', $userId)->get();
 
-
-        // Calculer le montant total des crédits et le montant total remboursé
-        $this->totalCreditsGroupe = $this->credits->sum('montant');
-        $this->totalCreditsRemboursesGroupe = $this->credits->sum(function ($creditsGroupe) {
-            return $creditsGroupe->montant - $creditsGroupe->montan_restantt;
-        });
-
-
-        // Calcul du pourcentage de remboursement global
-        if ($this->totalCreditsGroupe > 0) {
-            $this->pourcentageRemboursementGroupe = ($this->totalCreditsRemboursesGroupe / $this->totalCreditsGroupe) * 100;
-        } else {
-            $this->pourcentageRemboursementGroupe = 0; // éviter la division par zéro
-        }
-
-        // Récupérer les transactions impliquant l'utilisateur authentifié
+        // RECUPERER les transactions impliquant l'utilisateur authentifié
         $this->transactions = transactions_remboursement::with(['emprunteur', 'investisseur']) // Remplacer par les relations
             ->where(function ($query) use ($userId) {
                 $query->where('emprunteur_id', $userId)
@@ -98,14 +117,11 @@ class Cfa extends Component
             })
             ->orderBy('created_at', 'DESC')
             ->get();
-        // Log::info('Transactions involving authenticated user:', ['transactions' => $this->transactions]);
 
         $this->transacCount = transactions_remboursement::where(function ($query) use ($userId) {
             $query->where('emprunteur_id', $userId)
                 ->orWhere('investisseur_id', $userId);
         })->count();
-
-        Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $this->transacCount]);
     }
 
     public function render()

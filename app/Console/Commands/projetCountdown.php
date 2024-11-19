@@ -33,7 +33,7 @@ class projetCountdown extends Command
                 $code_unique = $countdown->code_unique;
 
                 // Log pour le traitement d'un countdown spécifique
-                Log::info('Traitement du countdown', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
+                Log::info('Traitement du countdown', context: ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
 
                 // Retrouver l'enregistrement avec le taux le plus bas, et en cas d'égalité, prendre le plus ancien
                 $lowestTauxComment = CommentTaux::with('investisseur')

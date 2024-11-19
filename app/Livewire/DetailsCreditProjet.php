@@ -155,7 +155,7 @@ class DetailsCreditProjet extends Component
                 'investisseur_id' => Auth::id(),
                 'montant_finance' => $montant, // Montant total financé par cet investisseur
             ];
-            
+
             // Mettre à jour ou créer un enregistrement dans la table credits
             projets_accordé::create([
                 'emprunteur_id' => $this->userId,
@@ -180,10 +180,9 @@ class DetailsCreditProjet extends Component
                 'description' => $this->projet->name,  // Statut du remboursement
             ]);
 
-            $reference_id = $this->generateIntegerReference();
 
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $reference_id,  'financement  de credit d\'achat',  'effectué');
-            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $reference_id,  'reception de financement  de credit d\'achat',  'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Envoie', $montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué');
+            $this->createTransaction(Auth::id(), $this->projet->id_user, 'Reception', $montant, $this->generateIntegerReference(),  'reception de financement  de credit d\'achat',  'effectué');
 
             // Mettre à jour l'état de la notification en approuvé
             $this->notification->update(['reponse' => 'approved']);
@@ -236,7 +235,7 @@ class DetailsCreditProjet extends Component
     }
     public function joursRestants()
     {
-        $dateFin = \Carbon\Carbon::parse($this->notification->data['duree']);
+        $dateFin = Carbon::parse($this->projet->date_fin);
         $dateActuelle = now();
         $joursRestants = $dateActuelle->diffInDays($dateFin);
         return max(0, $joursRestants); // Retournez 0 si le projet est déjà terminé

@@ -7,9 +7,10 @@ use App\Events\PortionUpdated;
 use App\Models\Cfa;
 use App\Models\Coi;
 use App\Models\credits;
+use App\Models\credits_groupé;
 use App\Models\Crp;
 use App\Models\portions_journalieres;
-use App\Models\remboursements;
+use App\Models\projets_accordé;
 use App\Models\Transaction;
 use App\Models\transactions_remboursement;
 use App\Models\User;
@@ -39,25 +40,16 @@ class RappelPortionsJournalCredits extends Command
         Log::info('Date du jour : ' . $dateDuJour);
 
         // Récupérer tous les crédits
-        $credits = credits::where('statut', 'en_cours')->get();
+        $credits = credits_groupé::where('statut', 'en cours')->get();
         Log::info('Nombre de credits avec statut "en cours" : ' . $credits->count());
 
         foreach ($credits as $credit) {
-            Log::info('Le crédit avec ID ' . $credit->id);
+            Log::info('Credit ID : ' . $credit->id . ' - Emprunteur ID : ' . $credit->emprunteur_id);
 
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
-            if ($dateDuJour == $credit->date_debut || $dateDuJour <= $credit->date_fin) {
+            if ($dateDuJour >= $credit->date_debut || $dateDuJour <= $credit->date_fin) {
                 Log::info('Le crédit avec ID ' . $credit->id . ' est actif aujourd\'hui.');
 
-                // Vérifier si la portion a déjà été enregistrée pour cette date
-                $existingPortion = portions_journalieres::where('id_user', $credit->emprunteur_id)
-                    ->where('date_portion', $dateDuJour)
-                    ->first();
-
-                if (!$existingPortion) {
-                    Log::warning("Aucune portion trouvée.");
-                    continue;
-                }
 
                 $portionCapital = $credit->montant;
                 $portionInteret = $credit->taux_interet;
@@ -79,7 +71,6 @@ class RappelPortionsJournalCredits extends Command
                     continue;
                 }
 
-
                 DB::beginTransaction();
                 try {
                     $balanceSuffisante = $wallet->balance >= $montantTotal;
@@ -93,7 +84,7 @@ class RappelPortionsJournalCredits extends Command
                         }
 
                         // Calculer le montant réel à soustraire (ne pas dépasser le montant restant du crédit)
-                        $montantASoustraire = min($montantTotal, $credit->montant_restant);
+                        $montantASoustraire = min($montantTotal, $credit->montan_restantt);
 
                         // Mettre à jour le solde du wallet et du CRP avec le montant ajusté
                         $wallet->balance -= $montantASoustraire;
@@ -105,169 +96,25 @@ class RappelPortionsJournalCredits extends Command
                         }
 
                         // Soustraire le montant ajusté du montant restant dans le crédit
-                        $credit->montant_restant -= $montantASoustraire;
+                        $credit->montan_restantt -= $montantASoustraire;
 
                         // Vérifier si le crédit est totalement remboursé
-                        if ($credit->montant_restant == 0) {
+                        if ($credit->montan_restantt == 0) {
                             $credit->statut = "remboursé";
 
-                            // Récupérer l'attribut investisseurs
-                            $investisseurs = $credit->investisseurs;
 
-                            // Initialiser un tableau pour stocker les IDs des investisseurs
-                            $investisseursIds = [];
-
-                            // Vérifier si investisseurs est un tableau simple
-                            if (is_array($investisseurs)) {
-                                $investisseursIds = $investisseurs;
-                            } elseif (is_string($investisseurs)) {
-                                // Si c'est une chaîne JSON, on la décode
-                                $investisseursIds = json_decode($investisseurs, true);
-
-                                // Vérifier que le décodage a bien fonctionné
-                                if (!is_array($investisseursIds)) {
-                                    Log::error('Échec du décodage JSON de l\'attribut investisseurs.');
-                                    $investisseursIds = [];
-                                }
-                            } else {
-                                Log::error('Les investisseurs ne sont ni un tableau, ni une chaîne JSON.');
-                            }
-
-
-
-                            // Log des IDs des investisseurs
-                            Log::info('Liste des IDs des investisseurs : ' . implode(', ', $investisseursIds));
-
-                            // Log des montants financés par investisseur
-                            DB::beginTransaction();
-                            try {
-                                foreach ($investisseursIds as $id) {
-                                    // Log de l'opération
-                                    Log::info("Investisseur ID $id a financé : $credit->montant");
-
-                                    // Mise à jour de la table CRP
-                                    $crp = Crp::where('id_wallet', $wallet->id)->first();
-                                    if ($crp) {
-                                        // Vérifie si le solde est suffisant
-                                        if ($crp->Solde >= $credit->montant) {
-                                            $ancienSoldeCrp = $crp->Solde;
-                                            $crp->Solde -= $credit->montant;
-                                            $crp->save();
-
-                                            // Log de la mise à jour
-                                            Log::info('Mise à jour de la table CRP', [
-                                                'id_wallet' => $wallet->id,
-                                                'ancien_solde' => $ancienSoldeCrp,
-                                                'nouveau_solde' => $crp->Solde,
-                                                'montant_débité' => $credit->montant
-                                            ]);
-                                        } else {
-                                            $emprunteur = User::find($credit->emprunteur_id);
-                                            Log::info('emprunteur ID : ' . $id);
-                                            if (!$emprunteur) {
-                                                throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
-                                            }
-                                            $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
-
-                                            Notification::send($emprunteur, new PortionJournaliere($credit, $emprunteur, $emprunteur, $message));
-
-                                            // Log si le solde est insuffisant
-                                            Log::warning('Solde insuffisant dans CRP pour effectuer la déduction', [
-                                                'id_wallet' => $wallet->id,
-                                                'solde_actuel' => $crp->Solde,
-                                                'montant_requis' => $credit->montant
-                                            ]);
-                                            // Optionnel : Lever une exception ou retourner une erreur
-                                            throw new Exception("Solde insuffisant pour effectuer cette opération.");
-                                        }
-                                    } else {
-                                        Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [
-                                            'id_wallet' => $wallet->id
-                                        ]);
-                                    }
-
-
-                                    $walletInvestisseurs = Wallet::where('user_id', $id)->first();
-                                    Log::info('wallet de l\'investisseur', [
-                                        'id_wallet' => $walletInvestisseurs->id,
-
-                                    ]);
-
-                                    // Mise à jour de la table COI
-                                    $coi = Coi::where('id_wallet', $walletInvestisseurs->id)->first();
-                                    if ($coi) {
-                                        $coi->Solde += $credit->montant;
-                                        $coi->save();
-                                    }
-                                    // Log de la mise à jour
-                                    Log::info('Mise à jour de la table COI', [
-                                        'id_wallet' => $walletInvestisseurs->id,
-                                        'nouveau_solde' => $coi->Solde,
-                                        'montant_débité' => $credit->montant
-                                    ]);
-
-                                    $reference_id = $this->generateIntegerReference();
-                                    $this->createTransaction(
-                                        $credit->emprunteur_id,
-                                        $id,
-                                        'Envoie',
-                                        $credit->montant,
-                                        $reference_id,
-                                        'Remboursement de financement',
-                                        'effectué',
-                                        $crp->type_compte
-                                    );
-
-                                    $this->createTransaction(
-                                        $credit->emprunteur_id,
-                                        $id,
-                                        'Réception',
-                                        $credit->montant,
-                                        $reference_id,
-                                        'Remboursement de financement',
-                                        'effectué',
-                                        $coi->type_compte
-                                    );
-
-                                    $credit->statut = "payé";
-
-                                    // 2. Récupérer les remboursements associés
-                                    $remboursements = remboursements::where('credit_id', $credit->id);
-
-                                    // Mettre à jour le statut en "remboursé"
-                                    $remboursements->credit->status = 'remboursé';
-                                    
-                                    // Vous pourriez ajouter ici la logique d'envoi
-                                    // Récupérer l'emprunteur associé au crédit
-                                    $investisseur = User::find($id);
-                                    Log::info('investisseur: ' . $id);
-                                    if (!$investisseur) {
-                                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
-                                    }
-
-                                    $message = 'Payement de credit effectué avec success.';
-                                    Notification::send($investisseur, new remboursement($message));
-                                }
-                                DB::commit();
-                            } catch (Exception $e) {
-                                // Annulation de toutes les modifications en cas d'erreur
-                                DB::rollback();
-                                Log::error("Erreur lors du traitement des transactions: " . $e->getMessage());
-                                throw $e;
-                            }
-
-
+                            $this->remboursementCredit($credit, $wallet);
                         }
+
 
                         $credit->save();
 
-                        $reference_id = $this->generateIntegerReference();
 
-
+                        Log::info("Début de la transaction pour l'utilisateur ID: " . $credit->emprunteur_id);
 
                         $this->remboursement(
                             $credit->id,
-                            $reference_id,
+                            $this->generateIntegerReference(),
                             $credit->emprunteur_id,
                             $credit->emprunteur_id,
                             $montantTotal,
@@ -275,6 +122,7 @@ class RappelPortionsJournalCredits extends Command
                             $dateDuJour,
                             'effectué'
                         );
+
 
 
                         Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret));
@@ -290,8 +138,7 @@ class RappelPortionsJournalCredits extends Command
                         if (!$emprunteur) {
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
                         }
-
-                        $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
+                        $message = 'Le solde de votre compte est insuffisant. Penalité de 10%, Veuillez recharger votre compte pour effectuer cette opération.';
                         Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret, $message));
 
                         // Après l'envoi de la notification
@@ -308,6 +155,146 @@ class RappelPortionsJournalCredits extends Command
             }
         }
     }
+
+
+    protected function remboursementCredit($credit, $wallet)
+    {
+        // Décoder les investisseurs depuis le JSON
+        $investisseursJson = $credit->investisseurs; // Chaîne JSON
+
+        // Décodage du JSON en tableau PHP
+        $decodedInvestisseurs = json_decode($investisseursJson, true);
+
+        // Initialiser des tableaux pour stocker les IDs des investisseurs et leurs montants financés
+        $investisseursIds = [];
+        $investisseursMontants = [];
+
+        if (is_array($decodedInvestisseurs)) {
+            foreach ($decodedInvestisseurs as $investisseur) {
+                // Vérifier que l'ID de l'investisseur et le montant financé sont définis, puis les ajouter aux tableaux
+                if (isset($investisseur['investisseur_id'], $investisseur['montant_finance'])) {
+                    $investisseursIds[] = $investisseur['investisseur_id'];
+
+                    $montantAvecInteret = $investisseur['montant_finance'] + ($investisseur['montant_finance'] * $credit->taux_interet) / 100;
+
+                    // Stocker le montant financé augmenté des intérêts dans le tableau
+                    $investisseursMontants[$investisseur['investisseur_id']] = $montantAvecInteret;
+                }
+            }
+        }
+
+        // Log des IDs des investisseurs
+        Log::info('Liste des IDs des investisseurs : ' . implode(', ', $investisseursIds));
+
+        DB::beginTransaction();
+        try {
+            // Mise à jour de la table CRP
+            $crp = Crp::where('id_wallet', $wallet->id)->first();
+            if ($crp) {
+                // Vérifie si le solde est suffisant
+                if ($crp->Solde >= $credit->montant) {
+                    $ancienSoldeCrp = $crp->Solde;
+                    $crp->Solde -= $credit->montant;
+                    $crp->save();
+
+                    // Log de la mise à jour
+                    Log::info('Mise à jour de la table CRP', [
+                        'id_wallet' => $wallet->id,
+                        'ancien_solde' => $ancienSoldeCrp,
+                        'nouveau_solde' => $crp->Solde,
+                        'montant_débité' => $credit->montant
+                    ]);
+                } else {
+                    $emprunteur = User::find($credit->emprunteur_id);
+                    Log::info('emprunteur ID : ' . $emprunteur);
+                    if (!$emprunteur) {
+                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
+                    }
+                    $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
+
+                    Notification::send($emprunteur, new PortionJournaliere($credit, $emprunteur, $emprunteur, $message));
+
+                    // Log si le solde est insuffisant
+                    Log::warning('Solde insuffisant dans CRP pour effectuer la déduction', [
+                        'id_wallet' => $wallet->id,
+                        'solde_actuel' => $crp->Solde,
+                        'montant_requis' => $credit->montant
+                    ]);
+                    // Optionnel : Lever une exception ou retourner une erreur
+                    throw new Exception("Solde insuffisant pour effectuer cette opération.");
+                }
+            } else {
+                Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [
+                    'id_wallet' => $wallet->id
+                ]);
+            }
+            foreach ($investisseursMontants as $id => $montant) {
+                // Log de l'opération
+                Log::info("Investisseur ID $id a financé : $montant");
+
+                // Mise à jour de la table COI
+                $walletInvestisseurs = Wallet::where('user_id', $id)->first();
+                Log::info('wallet de l\'investisseur', [
+                    'id_wallet' => $walletInvestisseurs->id,
+
+                ]);
+
+                // Mise à jour de la table COI
+                $coi = Coi::where('id_wallet', $walletInvestisseurs->id)->first();
+                if ($coi) {
+                    $coi->Solde += $montant;
+                    $coi->save();
+                    // Log de la mise à jour
+                    Log::info('Mise à jour de la table CRP', [
+                        'id_wallet' => $walletInvestisseurs->id,
+                        'nouveau_solde' => $coi->Solde,
+                        'montant_débité' => $montant
+                    ]);
+                }
+
+
+                $this->createTransaction(
+                    $credit->emprunteur_id,
+                    $id,
+                    'Envoie',
+                    $montant,
+                    $this->generateIntegerReference(),
+                    'Remboursement de financement',
+                    'effectué',
+                    $crp->type_compte
+                );
+
+                $this->createTransaction(
+                    $credit->emprunteur_id,
+                    $id,
+                    'Réception',
+                    $montant,
+                    $this->generateIntegerReference(),
+                    'Remboursement de financement',
+                    'effectué',
+                    $coi->type_compte
+                );
+
+                $credit->statut = "payé";
+
+                // Envoi de la notification
+                $investisseur = User::find($id);
+                Log::info('Investisseur ID : ' . $id);
+                if (!$investisseur) {
+                    throw new Exception("Investisseur non trouvé pour le crédit ID : " . $credit->id);
+                }
+
+                $message = 'Paiement de crédit effectué avec succès.';
+                Notification::send($investisseur, new remboursement($message));
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            // Annulation de toutes les modifications en cas d'erreur
+            DB::rollback();
+            Log::error("Erreur lors du traitement des transactions: " . $e->getMessage());
+            throw $e;
+        }
+    }
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
     {
         $transaction = new Transaction();
@@ -319,12 +306,14 @@ class RappelPortionsJournalCredits extends Command
         $transaction->description = $description;
         $transaction->status = $status;
         $transaction->type_compte = $type_compte;
+
         $transaction->save();
     }
+
     protected function remboursement(int $creditId, int $reference_id, int $emprunteurId, int $investisseurId, float $montant, float $interet, string $date, string $status): void
     {
         $transaction = new transactions_remboursement();
-        $transaction->credit_id = $creditId;
+        $transaction->creditGrp_id = $creditId;
         $transaction->reference_id = $reference_id;
         $transaction->emprunteur_id = $emprunteurId;
         $transaction->investisseur_id = $investisseurId;

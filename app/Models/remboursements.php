@@ -33,6 +33,10 @@ class remboursements extends Model
     {
         return $this->belongsTo(credits::class, 'credit_id');
     }
+    public function creditgrp()
+    {
+        return $this->belongsTo(credits_groupé::class, 'creditGrp_id');
+    }
     public function user()
     {
         return $this->belongsTo(User::class, 'id_user');

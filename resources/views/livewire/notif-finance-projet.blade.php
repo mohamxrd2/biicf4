@@ -3,28 +3,7 @@
 
     <div class="divide-y divide-gray-200 dark:divide-gray-700">
         @foreach ($notifications as $notification)
-            @php
-                // Récupérer l'ID de l'utilisateur depuis les données de la notification
-                $userId = $notification->data['user_id'] ?? $notification->data['id_emp'];
 
-                // Vérifier si l'utilisateur existe dans la table "users"
-$userDetails = App\Models\User::find($userId);
-
-if ($userDetails) {
-    // Récupérer le numéro de téléphone de l'utilisateur
-                    $userNumber = $userDetails->phone;
-
-                    // Vérifier si le numéro de téléphone existe dans la table "user_promir"
-                    $userInPromir = App\Models\UserPromir::where('numero', $userNumber)->first();
-
-                    if ($userInPromir) {
-                        // Récupérer le score de crédit de l'utilisateur
-        $crediScore = App\Models\CrediScore::where('id_user', $userInPromir->id)->first();
-                    }
-                }
-
-            @endphp
-d
             <div class="flex flex-wrap items-center gap-y-4 py-6">
                 <dl class="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                     <dt class="text-base font-medium text-gray-500 dark:text-gray-400">Projet ID:</dt>

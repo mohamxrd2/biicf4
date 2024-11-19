@@ -20,13 +20,12 @@ class DemandeCredi extends Model
         'id_user',
         'demande_id',
         'objet_financement',
-        'id_investisseur',
+        'id_investisseurs',
         'date_debut',
         'date_fin',
-        'heure_debut',
-        'heure_fin',
         'status',
         'count',
+        'status',
     ];
 
     // Relation avec le modèle User

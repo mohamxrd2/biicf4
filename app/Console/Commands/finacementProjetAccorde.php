@@ -41,8 +41,9 @@ class finacementProjetAccorde extends Command
 
         // Récupérer les projets où 'count' est égal à true et dont la date de fin est passée
         $projets = Projet::where('count', true)
-            ->whereDate('durer', '<', $dateActuelle)
+            ->whereDate('date_fin', '<', $dateActuelle)
             ->where('etat', 'en cours')
+            ->where('type_financement', 'groupé')
             ->get();
 
         Log::info('Projets récupérés: ' . $projets->count() . ' projets');
@@ -54,9 +55,6 @@ class finacementProjetAccorde extends Command
         // Parcourir les projets sélectionnés pour remplir la nouvelle table
         foreach ($projets as $projet) {
             Log::info('Traitement du projet ID: ' . $projet->id);
-            // Mise à jour de l'état du projet
-            $projet = Projet::findOrFail($projet->id); // Vérifie que le projet existe
-            $projet->update(['etat' => 'terminer']);  // Met à jour l'état du projet
 
             // Enregistre une confirmation dans les logs
             Log::info('Projet mis à jour avec succès', [
@@ -84,19 +82,23 @@ class finacementProjetAccorde extends Command
                 // Log des informations sur chaque investisseur et son montant total financé
                 Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
+
             //////\\\\\
-            // Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
+
+            //Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
             $actions = AjoutAction::where('id_projet', $projet->id)
                 ->select('id_invest', DB::raw('SUM(montant) as total_montant'), DB::raw('SUM(nombreActions) as nombre_actions'))
                 ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
                 ->get();
 
-            Log::info('Investissements associés au action ID ' . $actions->id . ': ' . $actions->count() . ' investisseurs (somme totale par investisseur)');
+            Log::info('Investissements associés aux actions pour le projet ID ' . $projet->id . ': ' . $actions->count() . ' investisseurs (somme totale par investisseur)');
 
             // Si des actions existent, les ajouter à un tableau JSON
             if ($actions->count() > 0) {
 
                 foreach ($actions as $action) {
+                    Log::info('Investisseur ID: ' . $action->id_invest . ' a financé un total de ' . $action->total_montant . ' avec ' . $action->nombre_actions . ' actions pour le projet ID: ' . $projet->id);
+
                     // Ajouter chaque action au tableau avec des informations pertinentes
                     $actionsData[] = [
                         'projet_id' => $projet->id,
@@ -104,12 +106,7 @@ class finacementProjetAccorde extends Command
                         'montant_finance' => $action->total_montant,
                         'nombreActions' => $action->nombre_actions,
                     ];
-
-                    // Log des informations sur chaque action prise pour le projet
-                    Log::info('Action ID: ' . $action->id . ' prise pour le projet ID: ' . $projet->id);
                 }
-            } else {
-                Log::info('Aucune action trouvée pour le projet ID: ' . $projet->id);
             }
 
             // Insertion dans la table projets_accordés
@@ -142,6 +139,11 @@ class finacementProjetAccorde extends Command
             } catch (Exception $e) {
                 Log::error('Erreur lors de l\'insertion du projet ID ' . $projet->id . ' dans la table projets_accordés: ' . $e->getMessage());
             }
+
+            // Mise à jour de l'état du projet
+            $projet = Projet::findOrFail($projet->id); // Vérifie que le projet existe
+            $projet->update(['etat' => 'terminer']);  // Met à jour l'état du projet
+
         }
 
         // Log de fin de traitement

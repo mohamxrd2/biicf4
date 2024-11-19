@@ -15,25 +15,27 @@ class Kernel extends ConsoleKernel
     {
         if (App::environment('local')) {
             //En local, exécuter la commande toutes les minutes
-            // $schedule->command('check:countdowns')->everyMinute();
-            // $schedule->command('app:appeloffre')->everyMinute();
-            // $schedule->command('app:ajout-qoffre')->everyMinute();
-            // $schedule->command('app:credit-countdown')->everyMinute();
-            // $schedule->command('app:projet-countdown')->everyMinute();
-            // $schedule->command('app:rappel-journalieres-credits')->everyMinute();
-            // $schedule->command('app:rappel-journalieres-credits-groupé')->everyMinute();
+            $schedule->command('check:countdowns')->everyMinute();
+            $schedule->command('app:appeloffre')->everyMinute();
+            $schedule->command('app:ajout-qoffre')->everyMinute();
+            $schedule->command('app:credit-countdown')->everyMinute();
+            $schedule->command('app:projet-countdown')->everyMinute();
+            $schedule->command('app:rappel-journalieres-credits')->everyMinute();
             $schedule->command('app:rappel-journalieres-projets')->everyMinute();
-            // $schedule->command('app:finacementProjetAccorde')->everyMinute();
-            // $schedule->command('app:finacementCreditsGroupe')->everyMinute();
+            $schedule->command('app:finacementProjetAccorde')->everyMinute();
+            $schedule->command('app:finacementCredits')->everyMinute();
 
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');
-
             $schedule->command('app:appeloffre')->cron('* * * * *');
             $schedule->command('app:ajout-qoffre')->cron('* * * * *');
+            $schedule->command('app:credit-countdown')->cron('* * * * *');
             $schedule->command('app:projet-countdown')->cron('* * * * *');
-            $schedule->command('app:projet-groupe')->cron('* * * * *');
+            $schedule->command('app:rappel-journalieres-credits')->cron('* * * * *');
+            $schedule->command('app:rappel-journalieres-projets')->cron('* * * * *');
+            $schedule->command('app:finacementProjetAccorde')->cron('* * * * *');
+            $schedule->command('app:finacementCredits')->cron('* * * * *');
         }
     }
     /**

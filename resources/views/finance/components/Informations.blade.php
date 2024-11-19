@@ -75,13 +75,13 @@
                 </p>
             </div>
 
+        
             <div>
-                <p class="text-gray-600 font-medium">heure fin:
+                <p class="text-gray-600 font-medium">Taux du crédit:
                 </p>
-                <p class="text-gray-800">{{ $demandeCredit->heure_fin ?? $projet->heure_fin  }}
+                <p class="text-gray-800">{{ $demandeCredit->taux ?? $projet->taux }} %
                 </p>
             </div>
-
             <div class="p-4 bg-white rounded-lg shadow-md">
                 <p class="text-gray-700 font-semibold text-lg mb-1">Montant Total :</p>
                 <p class="text-gray-900 font-bold text-xl">
@@ -89,12 +89,6 @@
             </div>
 
 
-            <div>
-                <p class="text-gray-600 font-medium">Taux du crédit:
-                </p>
-                <p class="text-gray-800">{{ $demandeCredit->taux ?? $projet->taux }} %
-                </p>
-            </div>
 
         </div>
     </div>
