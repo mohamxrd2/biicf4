@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comment_taux', function (Blueprint $table) {
-            $table->id();
-            $table->decimal('taux', 5, 2); // Taux
-            $table->string('code_unique'); // Code unique
-            $table->foreignId('id_invest')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (investisseur)
-            $table->foreignId(column: 'id_emp')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (emprunteur)
+        // Schema::create('comment_taux', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->decimal('taux', 5, 2); // Taux
+        //     $table->string('code_unique'); // Code unique
+        //     $table->foreignId('id_invest')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (investisseur)
+        //     $table->foreignId(column: 'id_emp')->constrained('users')->onDelete('cascade'); // Clé étrangère vers la table users (emprunteur)
 
-            $table->timestamps();
-        });
+        //     $table->timestamps();
+        // });
     }
 
     /**

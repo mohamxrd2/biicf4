@@ -1,18 +1,18 @@
 <div>
-    <div class="flex flex-col justify-center items-center text-center bg-gray-200 p-4 rounded-lg mb-6">
+    <div class="flex flex-col items-center justify-center p-4 mb-6 text-center bg-gray-200 rounded-lg">
         <h1 class="text-lg font-bold">DETAILS DE LA DEMANDE DE FINANCEMENT</h1>
     </div>
     @if (isset($projet->montant) && !isset($projet->Portion_action) && !isset($projet->Portion_obligt))
         @if ($investisseurQuiAPayeTout)
             @include('finance.components.entete2')
         @endif
-        <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
+        <div class="flex flex-col w-full mb-8 overflow-hidden md:flex-row">
             <!-- Images Section -->
-            <div class="w-full md:w-1/2 md:h-auto flex flex-col space-y-6">
+            <div class="flex flex-col w-full space-y-6 md:w-1/2 md:h-auto">
                 <!-- Main Image -->
-                <div class="relative max-w-md lg:max-w-lg mx-auto shadow-lg rounded-lg overflow-hidden">
+                <div class="relative max-w-md mx-auto overflow-hidden rounded-lg shadow-lg lg:max-w-lg">
                     <img id="mainImage"
-                        class="w-full object-cover transition duration-300 ease-in-out transform hover:scale-105"
+                        class="object-cover w-full transition duration-300 ease-in-out transform hover:scale-105"
                         src="{{ asset($images[0]) }}" alt="Main Product Image" />
                 </div>
 
@@ -22,7 +22,7 @@
                         @if ($image)
                             <!-- Vérifie si l'image existe -->
                             <img onclick="changeImage('{{ asset($image) }}')"
-                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-200 rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-105 hover:border-gray-400"
+                                class="object-cover w-20 h-20 transition-transform duration-200 ease-in-out transform border-2 border-gray-200 rounded-lg cursor-pointer hover:scale-105 hover:border-gray-400"
                                 src="{{ asset($image) }}" alt="Thumbnail">
                         @endif
                     @endforeach
@@ -30,7 +30,7 @@
             </div>
 
             <!-- Contenu du projet -->
-            <div class="md:px-4 flex flex-col w-full md:w-1/2 ">
+            <div class="flex flex-col w-full md:px-4 md:w-1/2 ">
                 @if ($pourcentageInvesti < 100)
                     <!-- Le projet n'est pas encore entièrement financé -->
                     @include('finance.components.Obligation')
@@ -60,10 +60,10 @@
                                 {{-- duree --}}
                                 <div x-data="countdownTimer({{ json_encode($projet->date_fin) }})" class="flex flex-col">
                                     <div
-                                        class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
+                                        class="flex items-center justify-between p-1 border border-gray-300 rounded-lg shadow-md">
                                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
                                         <div id="countdown" x-show="projetDurer"
-                                            class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
+                                            class="flex items-center px-4 py-2 font-bold text-red-600 bg-red-200 rounded-lg">
                                             @if (!$projet->count)
                                                 <div x-text="jours">--</div>j
                                                 <span>:</span>
@@ -78,16 +78,16 @@
 
                                     <!-- Afficher les messages d'erreur -->
                                     @if (session()->has('error'))
-                                        <div class="bg-red-500 text-white p-2 mt-2 rounded-md">
+                                        <div class="p-2 mt-2 text-white bg-red-500 rounded-md">
                                             {{ session('error') }}
                                         </div>
                                     @endif
 
-                                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
+                                    <div class="flex flex-col items-center lg:space-y-4 lg:pb-8 max-lg:w-full sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
                                         uk-sticky="media: 1024; end: #js-oversized; offset: 80">
 
                                         <div
-                                            class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
+                                            class="w-full text-sm font-medium bg-white shadow-sm rounded-xl border1 dark:bg-dark2">
                                             <div
                                                 class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
 
@@ -97,13 +97,13 @@
                                                     <div class="flex flex-col space-y-2">
                                                         @foreach ($commentTauxList as $comment)
                                                             <div
-                                                                class="flex items-center gap-3 relative rounded-xl bg-gray-200 p-2">
+                                                                class="relative flex items-center gap-3 p-2 bg-gray-200 rounded-xl">
                                                                 <img src="{{ asset($comment->investisseur->photo) }}"
                                                                     alt="Profile Picture"
-                                                                    class="w-9 h-9 mt-1 rounded-full overflow-hidden object-cover">
+                                                                    class="object-cover mt-1 overflow-hidden rounded-full w-9 h-9">
                                                                 <div class="flex-1">
                                                                     <p
-                                                                        class="text-base text-black font-medium inline-block dark:text-white">
+                                                                        class="inline-block text-base font-medium text-black dark:text-white">
                                                                         {{ $comment->investisseur->name }}
                                                                         <!-- Afficher le nom de l'investisseur -->
                                                                     </p>
@@ -119,8 +119,8 @@
                                                         @endforeach
                                                     </div>
                                                 @else
-                                                    <div class="flex h-full justify-center items-center">
-                                                        <p class="text-md text-center text-gray-600">Aucun commentaire
+                                                    <div class="flex items-center justify-center h-full">
+                                                        <p class="text-center text-gray-600 text-md">Aucun commentaire
                                                             sur le taux
                                                             disponible.</p>
                                                     </div>
@@ -136,16 +136,16 @@
                                                     @if (!$projet->count)
                                                         <input type="number" id="tauxTrade" name="tauxTrade"
                                                             wire:model="tauxTrade"
-                                                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                                            class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                                             placeholder="Faire une offre..." oninput="validateTaux()"
                                                             required>
                                                         @error('tauxTrade')
                                                             <span class="text-red-500">{{ $message }}</span>
                                                         @enderror
                                                         <button type="submit" id="submitBtnAppel"
-                                                            class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
+                                                            class="relative justify-center p-2 text-white bg-blue-600 rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
                                                             <span wire:loading.remove>
-                                                                <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
+                                                                <svg class="inline-block w-5 h-5 rotate-90 rtl:-rotate-90"
                                                                     aria-hidden="true"
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     fill="currentColor" viewBox="0 0 18 20">
@@ -154,7 +154,7 @@
                                                                 </svg>
                                                             </span>
                                                             <span wire:loading>
-                                                                <svg class="w-5 h-5 animate-spin inline-block"
+                                                                <svg class="inline-block w-5 h-5 animate-spin"
                                                                     xmlns="http://www.w3.org/2000/svg" fill="none"
                                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -163,7 +163,7 @@
                                                                 </svg>
                                                             </span>
                                                         </button>
-                                                        <div id="errorMessage" class="text-red-500 mt-2 hidden"></div>
+                                                        <div id="errorMessage" class="hidden mt-2 text-red-500"></div>
                                                     @endif
                                                 </div>
                                             </form>
@@ -172,9 +172,9 @@
 
                                         </div>
 
-                                        <div class="w-full flex justify-center">
+                                        <div class="flex justify-center w-full">
                                             <span id="prixTradeError"
-                                                class="text-red-500 text-sm hidden text-center py-3"></span>
+                                                class="hidden py-3 text-sm text-center text-red-500"></span>
                                         </div>
                                     </div>
 
@@ -192,23 +192,23 @@
                 @endif
             </div>
         </div>
-        <h3 class="text-xl font-semibold text-gray-600 mt-2 mb-6">
+        <h3 class="mt-2 mb-6 text-xl font-semibold text-gray-600">
             Description du projet
         </h3>
         <p class="text-gray-500">
             {{ $projet->description }}
         </p>
-    @elseif (isset($projet->Portion_action) || (isset($projet->Portion_action) && isset($projet->Portion_obligt)))z
+    @elseif (isset($projet->Portion_action) || (isset($projet->Portion_action) && isset($projet->Portion_obligt)))
         @if ($investisseurQuiAPayeTout)
             @include('finance.components.entete2')
         @endif
-        <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
+        <div class="flex flex-col w-full mb-8 overflow-hidden md:flex-row">
             <!-- Images Section -->
-            <div class="w-full md:w-1/2 md:h-auto flex flex-col space-y-6">
+            <div class="flex flex-col w-full space-y-6 md:w-1/2 md:h-auto">
                 <!-- Main Image -->
-                <div class="relative max-w-md lg:max-w-lg mx-auto shadow-lg rounded-lg overflow-hidden">
+                <div class="relative max-w-md mx-auto overflow-hidden rounded-lg shadow-lg lg:max-w-lg">
                     <img id="mainImage"
-                        class="w-full object-cover transition duration-300 ease-in-out transform hover:scale-105"
+                        class="object-cover w-full transition duration-300 ease-in-out transform hover:scale-105"
                         src="{{ asset($images[0]) }}" alt="Main Product Image" />
                 </div>
 
@@ -218,14 +218,14 @@
                         @if ($image)
                             <!-- Vérifie si l'image existe -->
                             <img onclick="changeImage('{{ asset($image) }}')"
-                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-200 rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-105 hover:border-gray-400"
+                                class="object-cover w-20 h-20 transition-transform duration-200 ease-in-out transform border-2 border-gray-200 rounded-lg cursor-pointer hover:scale-105 hover:border-gray-400"
                                 src="{{ asset($image) }}" alt="Thumbnail">
                         @endif
                     @endforeach
                 </div>
             </div>
             <!-- Contenu du projet -->
-            <div class="md:px-4 flex flex-col w-full md:w-1/2 ">
+            <div class="flex flex-col w-full md:px-4 md:w-1/2 ">
                 @if ($pourcentageInvesti < 100)
                     <!-- Le projet n'est pas encore entièrement financé -->
                     @include('finance.components.Action&Obligation')
@@ -255,10 +255,10 @@
 
                                 <div x-data="countdownTimer({{ json_encode($projet->date_fin) }})" class="flex flex-col">
                                     <div
-                                        class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
+                                        class="flex items-center justify-between p-1 border border-gray-300 rounded-lg shadow-md">
                                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
                                         <div id="countdown" x-show="projetDurer"
-                                            class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
+                                            class="flex items-center px-4 py-2 font-bold text-red-600 bg-red-200 rounded-lg">
                                             @if (!$projet->count)
                                                 <div x-text="jours">--</div>j
                                                 <span>:</span>
@@ -273,16 +273,16 @@
 
                                     <!-- Afficher les messages d'erreur -->
                                     @if (session()->has('error'))
-                                        <div class="bg-red-500 text-white p-2 mt-2 rounded-md">
+                                        <div class="p-2 mt-2 text-white bg-red-500 rounded-md">
                                             {{ session('error') }}
                                         </div>
                                     @endif
 
-                                    <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
+                                    <div class="flex flex-col items-center lg:space-y-4 lg:pb-8 max-lg:w-full sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
                                         uk-sticky="media: 1024; end: #js-oversized; offset: 80">
 
                                         <div
-                                            class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
+                                            class="w-full text-sm font-medium bg-white shadow-sm rounded-xl border1 dark:bg-dark2">
                                             <div
                                                 class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
 
@@ -292,13 +292,13 @@
                                                     <div class="flex flex-col space-y-2">
                                                         @foreach ($commentTauxList as $comment)
                                                             <div
-                                                                class="flex items-center gap-3 relative rounded-xl bg-gray-200 p-2">
+                                                                class="relative flex items-center gap-3 p-2 bg-gray-200 rounded-xl">
                                                                 <img src="{{ asset($comment->investisseur->photo) }}"
                                                                     alt="Profile Picture"
-                                                                    class="w-9 h-9 mt-1 rounded-full overflow-hidden object-cover">
+                                                                    class="object-cover mt-1 overflow-hidden rounded-full w-9 h-9">
                                                                 <div class="flex-1">
                                                                     <p
-                                                                        class="text-base text-black font-medium inline-block dark:text-white">
+                                                                        class="inline-block text-base font-medium text-black dark:text-white">
                                                                         {{ $comment->investisseur->name }}
                                                                         <!-- Afficher le nom de l'investisseur -->
                                                                     </p>
@@ -315,8 +315,8 @@
                                                         @endforeach
                                                     </div>
                                                 @else
-                                                    <div class="flex h-full justify-center items-center">
-                                                        <p class="text-md text-center text-gray-600">Aucun commentaire
+                                                    <div class="flex items-center justify-center h-full">
+                                                        <p class="text-center text-gray-600 text-md">Aucun commentaire
                                                             sur le taux
                                                             disponible.</p>
                                                     </div>
@@ -332,16 +332,16 @@
                                                     @if (!$projet->count)
                                                         <input type="number" id="tauxTrade" name="tauxTrade"
                                                             wire:model="tauxTrade"
-                                                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                                            class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                                             placeholder="Faire une offre..." oninput="validateTaux()"
                                                             required>
                                                         @error('tauxTrade')
                                                             <span class="text-red-500">{{ $message }}</span>
                                                         @enderror
                                                         <button type="submit" id="submitBtnAppel"
-                                                            class="justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600 relative">
+                                                            class="relative justify-center p-2 text-white bg-blue-600 rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
                                                             <span wire:loading.remove>
-                                                                <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block"
+                                                                <svg class="inline-block w-5 h-5 rotate-90 rtl:-rotate-90"
                                                                     aria-hidden="true"
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     fill="currentColor" viewBox="0 0 18 20">
@@ -350,7 +350,7 @@
                                                                 </svg>
                                                             </span>
                                                             <span wire:loading>
-                                                                <svg class="w-5 h-5 animate-spin inline-block"
+                                                                <svg class="inline-block w-5 h-5 animate-spin"
                                                                     xmlns="http://www.w3.org/2000/svg" fill="none"
                                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round"
@@ -359,7 +359,7 @@
                                                                 </svg>
                                                             </span>
                                                         </button>
-                                                        <div id="errorMessage" class="text-red-500 mt-2 hidden"></div>
+                                                        <div id="errorMessage" class="hidden mt-2 text-red-500"></div>
                                                     @endif
                                                 </div>
                                             </form>
@@ -368,9 +368,9 @@
 
                                         </div>
 
-                                        <div class="w-full flex justify-center">
+                                        <div class="flex justify-center w-full">
                                             <span id="prixTradeError"
-                                                class="text-red-500 text-sm hidden text-center py-3"></span>
+                                                class="hidden py-3 text-sm text-center text-red-500"></span>
                                         </div>
                                     </div>
 
@@ -390,25 +390,25 @@
         </div>
 
         @if (!$investisseurQuiAPayeTout)
-            <h3 class="text-xl font-semibold text-gray-600 mt-2 mb-6">
+            <h3 class="mt-2 mb-6 text-xl font-semibold text-gray-600">
                 Description du projet
             </h3>
-            <p class="text-gray-500 p-4 bg-white rounded-lg shadow-md">
+            <p class="p-4 text-gray-500 bg-white rounded-lg shadow-md">
                 {{ $projet->description }}
             </p>
         @else
             <div class="flex flex-col md:flex-row">
                 <div class="flex flex-col w-full md:w-1/2">
-                    <h3 class="text-xl font-semibold text-gray-600 mt-2 mb-6">
+                    <h3 class="mt-2 mb-6 text-xl font-semibold text-gray-600">
                         Description du projet
                     </h3>
-                    <p class="text-gray-500 p-4 bg-white rounded-lg shadow-md">
+                    <p class="p-4 text-gray-500 bg-white rounded-lg shadow-md">
                         {{ $projet->description }}
                     </p>
                 </div>
 
                 @if ($projet->id_user != Auth::id() && $montantVerifie)
-                    <div class="w-full md:w-1/2 mt-4 px-6">
+                    <div class="w-full px-6 mt-4 md:w-1/2">
                         @include('finance.components.Action&Obligation')
                     </div>
                 @endif
