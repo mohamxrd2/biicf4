@@ -92,19 +92,32 @@ class creditCountdown extends Command
                         }
 
                         // Récupérer la liste des investisseurs
+                        // Récupérer la liste des investisseurs
                         $investisseurs = $credit->id_investisseurs;
-                        Log::info('Liste initiale des investisseurs récupérée.', ['investisseurs' => $investisseurs]);
 
-                        // Assurez-vous que $investisseurs est bien un tableau
+                        // Décoder les investisseurs si c'est une chaîne JSON
+                        if (is_string($investisseurs)) {
+                            Log::info('Décodage de la liste des investisseurs JSON.', ['investisseurs_brut' => $investisseurs]);
+                            $investisseurs = json_decode($investisseurs, true);
+
+                            if (json_last_error() !== JSON_ERROR_NONE) {
+                                Log::error('Erreur lors du décodage JSON des investisseurs.', ['erreur' => json_last_error_msg()]);
+                                $investisseurs = []; // Si une erreur survient, on initialise un tableau vide pour éviter les erreurs
+                            }
+                        }
+
+                        // Vérifier si la liste est maintenant un tableau
                         if (!is_array($investisseurs)) {
-                            Log::warning('La liste des investisseurs n\'est pas un tableau. Initialisation à un tableau vide.');
-                            $investisseurs = []; // Si ce n'est pas un tableau, initialiser à un tableau vide
+                            Log::warning('La liste des investisseurs n\'est pas un tableau valide après tentative de décodage.');
+                            $investisseurs = []; // Initialiser un tableau vide si nécessaire
+                        } else {
+                            Log::info('Liste initiale des investisseurs récupérée et décodée.', ['investisseurs' => $investisseurs]);
                         }
 
                         // Exclure l'investisseur courant ($id_invest)
                         Log::info('Exclusion de l\'investisseur courant.', ['id_invest' => $id_invest]);
                         $investisseurs = array_filter($investisseurs, function ($investisseur) use ($id_invest) {
-                            return $investisseur != $id_invest;
+                            return $investisseur != $id_invest; // Utiliser != pour éviter un problème de comparaison
                         });
 
                         // Réindexer les clés
@@ -128,8 +141,6 @@ class creditCountdown extends Command
                             'montant' => $montant
                         ]);
 
-
-
                         // Vérifier que l'utilisateur existe avant d'envoyer la notification
                         if ($owner) {
                             $referenceId = $this->generateIntegerReference();
@@ -143,7 +154,6 @@ class creditCountdown extends Command
 
                             // Mise à jour des portefeuilles des autres investisseurs
                             foreach ($investisseurs as $investisseur) {
-                               
                                 $userWallet = Wallet::where('user_id', $investisseur)->first();
 
                                 if ($userWallet) {
@@ -173,12 +183,6 @@ class creditCountdown extends Command
                                     Log::warning('Portefeuille non trouvé pour un investisseur.', ['user_id' => $investisseur]);
                                 }
                             }
-
-                            // Mise à jour de l'état du countdown
-                            $countdown->update(['notified' => true]);
-                            Log::info('Countdown mis à jour après notification.', ['countdown_id' => $countdown->id]);
-                        } else {
-                            Log::warning('Aucun utilisateur trouvé pour l\'investisseur principal.', ['id_invest' => $id_invest]);
                         }
                     }
                 }
