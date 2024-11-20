@@ -227,7 +227,7 @@ class AddProjetFinance extends Component
                 'Portion_action' => $this->portionActions,
                 'Portion_obligt' => !empty($this->portionObligations) ? (int)$this->portionObligations : NULL,
                 'nombreActions' => $this->nombreActions,
-                'etat' => 'negocier',
+                'etat' => 'en cours',
             ]);
 
             // Gestion des photos en appelant la méthode handlePhotoUpload

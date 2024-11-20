@@ -174,8 +174,8 @@ class Demandecredit extends Component
                         'user_id' => auth()->id(),
                     ]);
                 }
-                // Récupérer les IDs des investisseurs dans un tableau
-                $investisseurIds = $investisseurs->pluck('id')->toArray();
+                // Récupérer les IDs des utilisateurs associés
+                $userIds = $investisseurs->pluck('user.id')->toArray();
 
                 $demande = DemandeCredi::create([
                     'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
@@ -185,7 +185,7 @@ class Demandecredit extends Component
                     'type_financement' => $this->financementType,
                     'bailleur' => $this->bailleur,
                     'id_user' => auth()->id(), // Utilisateur connecté
-                    'id_investisseurs' =>  json_encode($investisseurIds), // Utilise l'id de l'investisseur actuel
+                    'id_investisseurs' =>  json_encode($userIds), // Utilise l'id de l'investisseur actuel
                     'date_debut' => now()->format('Y-m-d H:i:s'),
                     'date_fin' => $this->endDate,
                     'taux' => $this->roi, // Le taux de retour sur investissement
