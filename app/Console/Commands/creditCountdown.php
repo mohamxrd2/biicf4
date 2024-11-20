@@ -50,34 +50,32 @@ class creditCountdown extends Command
                 if ($lowestTauxComment) {
                     Log::info('Commentaire avec le taux le plus bas récupéré.', [
                         'comment_taux_id' => $lowestTauxComment->id,
-                        'taux' => $lowestTauxComment->taux
+                        'taux' => $lowestTauxComment->taux,
                     ]);
 
-                    // Assurez-vous que cette condition est correcte et qu'elle n'est pas juste une expression inutile
                     if ($countdown->difference === 'credit_taux') {
-                        // Log pour signaler que le countdown est prêt pour une notification
-                        Log::info('Préparation des détails de la notification.', ['countdown' => $countdown->id]);
+                        Log::info('Préparation des détails de la notification.', [
+                            'countdown_id' => $countdown->id,
+                        ]);
 
                         $taux = $lowestTauxComment->taux;
                         $id_invest = $lowestTauxComment->id_invest;
                         $id_emp = $lowestTauxComment->id_emp;
-                        $ID = $lowestTauxComment->code_unique; // ID du credit récupéré
+                        $ID = $lowestTauxComment->code_unique;
 
-                        // Recherche d'un credit dans la table 'DemandeCredi' où 'demande_id' correspond au 'code_unique'
-                        $credit = DemandeCredi::where('demande_id', $ID)->first(); // Récupérer le premier credit qui correspond
+                        // Recherche du crédit associé
+                        $credit = DemandeCredi::where('demande_id', $ID)->first();
 
-                        // Vérifier si un credit a été trouvé
                         if ($credit) {
-                            // Vous pouvez maintenant accéder aux données de $credit
-                            Log::info('Projet trouvé : ' . $credit->id);
+                            Log::info('Crédit trouvé.', ['credit_id' => $credit->id]);
                         } else {
-                            // Si aucun credit n'est trouvé
-                            Log::error('Aucun credit trouvé pour code_unique : ' . $ID);
+                            Log::error('Aucun crédit trouvé pour code_unique.', ['code_unique' => $ID]);
+                            return; // Arrêter l'exécution si aucun crédit n'est trouvé
                         }
 
                         // Définir les détails de la notification
                         $details = [
-                            'taux' => $taux ?? null,
+                            'taux' => $taux,
                             'id_invest' => $id_invest,
                             'id_emp' => $id_emp,
                             'credit_id' => $credit->id,
@@ -86,62 +84,84 @@ class creditCountdown extends Command
                             'type_financement' => $credit->type_financement,
                         ];
 
-                        // Log avant d'envoyer la notification
-                        Log::info('Envoi de la notification pour le credit.', ['id_invest' => $id_invest]);
+                        Log::info('Détails de la notification préparés.', ['details' => $details]);
 
-                        // Récupérer l'utilisateur (investisseur)
-                        $owner = User::find($id_invest);
-
-                        // Récupérer la liste des investisseurs
+                        // Récupération des investisseurs
                         $investisseurs = $credit->id_investisseurs;
 
-                        // Assurez-vous que $investisseurs est bien un tableau
-                        if (!is_array($investisseurs)) {
-                            $investisseurs = []; // Si ce n'est pas un tableau, initialiser à un tableau vide
-                        }
-
-                        // Exclure l'investisseur courant ($id_invest)
+                       if(!is_array($investisseurs)){
+                        $investisseurs = [];
+                       }
+                        // Exclure l'investisseur courant
                         $investisseurs = array_filter($investisseurs, function ($investisseur) use ($id_invest) {
-                            return $investisseur != $id_invest; // Comparer l'ID et exclure l'investisseur courant
+                            return $investisseur != $id_invest;
                         });
-
-
-                        // Réindexer les clés
                         $investisseurs = array_values($investisseurs);
 
-                        // Récupérer les informations sur le montant
+                        Log::info('Investisseurs après exclusion de l\'investisseur courant.', ['investisseurs' => $investisseurs]);
+
+                        // Récupération de l'élément associé au crédit
                         $gelement = gelement::where('reference_id', $ID)->first();
-                        $montant = $gelement ? $gelement->amount : 0; // Si aucune donnée trouvée, montant = 0
 
+                        if (!$gelement) {
+                            Log::error('Aucun élément trouvé pour le crédit.', ['reference_id' => $ID]);
+                            return;
+                        }
 
-                        // Vérifier que l'utilisateur existe avant d'envoyer la notification
+                        $montant = $gelement->amount;
+                        Log::info('Montant récupéré pour distribution.', ['montant' => $montant]);
+
+                        // Récupération de l'investisseur principal
+                        $owner = User::find($id_invest);
+
                         if ($owner) {
-
                             $referenceId = $this->generateIntegerReference();
 
+                            // Envoi de la notification
                             Notification::send($owner, new GagnantProjetNotifications($details));
+                            Log::info('Notification envoyée à l\'investisseur principal.', [
+                                'user_id' => $id_invest,
+                                'notification_details' => $details,
+                            ]);
 
-                            // Log après l'envoi de la notification
-                            Log::info('Notification envoyée.', ['notification_details' => $details]);
-
+                            // Mise à jour des portefeuilles des autres investisseurs
                             foreach ($investisseurs as $investisseur) {
+                               
                                 $userWallet = Wallet::where('user_id', $investisseur)->first();
 
                                 if ($userWallet) {
-
                                     $userWallet->increment('balance', $montant);
+                                    Log::info('Portefeuille mis à jour.', [
+                                        'user_id' => $investisseur,
+                                        'montant_ajouté' => $montant,
+                                    ]);
 
-
-                                    // Créer la transaction
-                                    $this->createTransactionNew($credit->id_user, $investisseur, 'Réception', 'COC', $montant, $referenceId, 'Rechargement SOS');
+                                    // Création de la transaction
+                                    $this->createTransactionNew(
+                                        $credit->id_user,
+                                        $investisseur,
+                                        'Réception',
+                                        'COC',
+                                        $montant,
+                                        $referenceId,
+                                        'Restitution d\'argent'
+                                    );
+                                    Log::info('Transaction créée.', [
+                                        'from' => $credit->id_user,
+                                        'to' => $investisseur,
+                                        'montant' => $montant,
+                                        'reference' => $referenceId,
+                                    ]);
+                                } else {
+                                    Log::warning('Portefeuille non trouvé pour un investisseur.', ['user_id' => $investisseur]);
                                 }
                             }
 
-
-                            // Mettre à jour l'état du countdown après la notification
+                            // Mise à jour de l'état du countdown
                             $countdown->update(['notified' => true]);
+                            Log::info('Countdown mis à jour après notification.', ['countdown_id' => $countdown->id]);
                         } else {
-                            Log::warning('Aucun utilisateur trouvé avec cet ID.', ['id_invest' => $id_invest]);
+                            Log::warning('Aucun utilisateur trouvé pour l\'investisseur principal.', ['id_invest' => $id_invest]);
                         }
                     }
                 }
