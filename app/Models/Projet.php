@@ -33,6 +33,8 @@ class Projet extends Model
         'Portion_obligt',
         'nombreActions',
         'etat',
+        'bailleur', // Nouveau champ pour le bailleur
+        'id_investisseur', // Nouveau champ pour les investisseurs
     ];
 
 

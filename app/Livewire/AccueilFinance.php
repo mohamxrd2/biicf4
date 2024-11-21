@@ -2,9 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Models\AjoutMontant; // Assurez-vous d'importer le modèle AjoutMontant
 use App\Models\Projet;
-use Livewire\Component;
+use Livewire\Component; // Assurez-vous d'importer le modèle AjoutMontant
+use App\Models\AjoutMontant;
+use Illuminate\Support\Facades\Auth;
 
 class AccueilFinance extends Component
 {
@@ -22,6 +23,7 @@ class AccueilFinance extends Component
         $this->projets = Projet::with('demandeur')
             ->whereIn('type_financement', ['groupé', 'négocié']) // Utiliser whereIn pour les deux types de financement
             ->where('statut', 'approuvé') // Ajouter la condition pour le statut
+            ->whereJsonContains('id_investisseur', Auth::id()) // Vérifier si l'ID de l'utilisateur connecté est dans le champ JSON 'id_investisseur'
             ->take($this->nombreProjets)
             ->get()
             ->map(function ($projet) {
