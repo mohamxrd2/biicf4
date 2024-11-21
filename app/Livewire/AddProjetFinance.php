@@ -177,24 +177,25 @@ class AddProjetFinance extends Component
 
     // Fonction pour soumettre le formulaire
     public function submit()
-    {
-        // Vérification pour éviter les soumissions multiples
-        if ($this->isSubmitting) {
-            return;
-        }
+{
+    // Vérification pour éviter les soumissions multiples
+    if ($this->isSubmitting) {
+        Log::warning('Tentative de soumission multiple détectée.');
+        return;
+    }
 
-        // Validation des champs
-        $this->validate();
+    // Validation des champs
+    $this->validate();
 
-        if ($this->type_financement === 'négocié' && $this->portionActions && !$this->portionObligations) {
-            $this->dispatch(
-                'formSubmitted',
-                ' Le type de financement négocié avec uniquement des actions nest pas autorisé.'
-            );
-            return; // Stoppe la fonction
-        }
+    if ($this->type_financement === 'négocié' && $this->portionActions && !$this->portionObligations) {
+        $this->dispatch('formSubmitted', 'Le type de financement négocié avec uniquement des actions n\'est pas autorisé.');
+        Log::error('Type de financement négocié invalide : uniquement des actions spécifiées.');
+        return;
+    }
 
-
+    try {
+        // Indicateur de soumission en cours
+        $this->isSubmitting = true;
 
         // Calcul du retour sur investissement (montant * taux / 100)
         $tauxInteret = ($this->montant * $this->taux) / 100;
@@ -203,91 +204,124 @@ class AddProjetFinance extends Component
         $montantTotal = $this->montant + $tauxInteret;
 
         // Calcul de la somme allouée aux actions (montant - obligations)
-        $actions = (int)$this->montant - (int)$this->portionObligations ?? 0;
+        $actions = (int)$this->montant - (int)($this->portionObligations ?? 0);
 
         // Calculer le nombre d'actions
         $this->nombreActions = $this->portionActions > 0 ? floor($actions / $this->portionActions) : 0;
 
-        // Indicateur de soumission en cours
-        $this->isSubmitting = true;
+        Log::info('Calculs financiers terminés.', [
+            'tauxInteret' => $tauxInteret,
+            'montantTotal' => $montantTotal,
+            'actions' => $actions,
+            'nombreActions' => $this->nombreActions
+        ]);
 
-        try {
+        // Trouver les investisseurs correspondants
+        $investisseurs = Investisseur::where(function ($query) {
+            $montant = $this->montant;
 
-            $projet = Projet::create([
-                'name' => $this->name,
-                'montant' => $this->montant,
-                'taux' => $this->taux,
-                'description' => $this->description,
-                'categorie' => $this->categorie,
-                'type_financement' => $this->type_financement,
-                'statut' => $this->statut, // Assurez-vous que le statut soit défini ici
-                'durer' => $this->durer,
-                'date_fin' => $this->durerFin,
-                'id_user' => auth()->id(), // ID de l'utilisateur connecté
-                'Portion_action' => $this->portionActions,
-                'Portion_obligt' => !empty($this->portionObligations) ? (int)$this->portionObligations : NULL,
-                'nombreActions' => $this->nombreActions,
-                'etat' => 'en cours',
-            ]);
+            $query->orWhere(function ($subQuery) use ($montant) {
+                $subQuery->where('tranche', '1-500.000')
+                    ->whereRaw('? between 1 and 500000', [$montant]);
+            });
 
-            // Gestion des photos en appelant la méthode handlePhotoUpload
-            $this->handlePhotoUpload($projet, 'photo1');
-            $this->handlePhotoUpload($projet, 'photo2');
-            $this->handlePhotoUpload($projet, 'photo3');
-            $this->handlePhotoUpload($projet, 'photo4');
-            $this->handlePhotoUpload($projet, 'photo5');
+            $query->orWhere(function ($subQuery) use ($montant) {
+                $subQuery->where('tranche', '500.001-1.000.000')
+                    ->whereRaw('? between 500001 and 1000000', [$montant]);
+            });
 
-            // Sauvegarder les chemins des photos dans le projet
-            $projet->save();
-            $this->dispatch(
-                'formSubmitted',
-                'Demande de financement envoyé avec success'
-            );
+            $query->orWhere(function ($subQuery) use ($montant) {
+                $subQuery->where('tranche', '1.000.001-5.000.000')
+                    ->whereRaw('? between 1000001 and 5000000', [$montant]);
+            });
 
-            // Réinitialiser le formulaire et les erreurs
-            $this->resetForm();
-            $this->resetErrorBag();
+            $query->orWhere(function ($subQuery) use ($montant) {
+                $subQuery->where('tranche', '5.000.001-10.000.000')
+                    ->whereRaw('? between 5000001 and 10000000', [$montant]);
+            });
 
-            // Récupérer l'ID du projet nouvellement ajouté
-            $projetId = $projet->id;
+            $query->orWhere(function ($subQuery) use ($montant) {
+                $subQuery->where('tranche', '10.000.001-50.000.000')
+                    ->whereRaw('? between 10000001 and 50000000', [$montant]);
+            });
 
-            if ($this->user_id) {
-                // Recherche de l'investisseur par user_id
-                $investor = Investisseur::where('user_id', $this->user_id)->first();
-                // Récupère l'id de l'investisseur
-                $investorId = $investor->id ?? null; // ou $investor->id_investisseur selon ton schéma
-                Log::info('Investor found.', ['investor_id' => $investorId]);
-                // Récupération des informations du projet
-                $data = [
-                    'id_projet' => $projetId,
-                    'montant' => $projet->montant,
-                    'duree' => $projet->durer,  // Corriger 'durer' en 'duree'
-                    'type_financement' => $projet->type_financement,
-                    'user_id' => auth()->id(),
-                    'id_investisseur' => $investorId,  // Utilise l'id de l'investisseur récupéré
-                ];
+            $query->orWhere(function ($subQuery) use ($montant) {
+                $subQuery->where('tranche', '50.000.001 et plus')
+                    ->whereRaw('? >= 50000001', [$montant]);
+            });
+        })->pluck('user_id');
 
-                $owner = User::find($this->user_id);
+        Log::info('Investisseurs trouvés.', ['investisseurs' => $investisseurs]);
 
-                Notification::send($owner, new DemandeCreditProjetNotification($data));
+        // Création du projet
+        $projet = Projet::create([
+            'name' => $this->name,
+            'montant' => $this->montant,
+            'taux' => $this->taux,
+            'description' => $this->description,
+            'categorie' => $this->categorie,
+            'type_financement' => $this->type_financement,
+            'statut' => 'en attente',
+            'durer' => $this->durer,
+            'date_fin' => $this->durerFin,
+            'id_user' => auth()->id(),
+            'Portion_action' => $this->portionActions,
+            'Portion_obligt' => !empty($this->portionObligations) ? (int)$this->portionObligations : null,
+            'nombreActions' => $this->nombreActions,
+            'etat' => 'en cours',
+        ]);
 
-                $this->successMessage = 'Demande de financement envoyée avec succès.';
+        Log::info('Projet créé avec succès.', ['projet' => $projet]);
 
-                $this->dispatch(
-                    'formSubmitted',
-                    'Demande de financement envoyé avec success'
-                );
-            }
-
-            $this->successMessage = 'Demande de financement envoyée avec succès.';
-        } catch (\Exception $e) {
-            // Si une erreur survient, réinitialiser l'indicateur de soumission
-            $this->addError('submitError', 'Une erreur est survenue lors de la soumission : ' . $e->getMessage());
+        // Associer les investisseurs si nécessaire
+        if (in_array($this->type_financement, ['groupé', 'négocié'])) {
+            $projet->bailleur = $this->bailleur_groupé;
+            $projet->id_investisseur = $investisseurs;
         }
 
-        // Réinitialiser l'indicateur de soumission
-        $this->isSubmitting = false;
+        // Gestion des photos
+        $this->handlePhotoUpload($projet, 'photo1');
+        $this->handlePhotoUpload($projet, 'photo2');
+        $this->handlePhotoUpload($projet, 'photo3');
+        $this->handlePhotoUpload($projet, 'photo4');
+        $this->handlePhotoUpload($projet, 'photo5');
+
+        Log::info('Photos téléchargées et associées au projet.');
+
+        // Notification à l'investisseur
+        if ($this->user_id) {
+            $investor = Investisseur::where('user_id', $this->user_id)->first();
+            $investorId = $investor->id ?? null;
+
+            $data = [
+                'id_projet' => $projet->id,
+                'montant' => $projet->montant,
+                'duree' => $projet->durer,
+                'type_financement' => $projet->type_financement,
+                'user_id' => auth()->id(),
+                'id_investisseur' => $investorId,
+            ];
+
+            $owner = User::find($this->user_id);
+
+            Notification::send($owner, new DemandeCreditProjetNotification($data));
+            Log::info('Notification envoyée à l\'investisseur.', ['data' => $data]);
+        }
+
+        $this->successMessage = 'Demande de financement envoyée avec succès.';
+        $this->dispatch('formSubmitted', 'Demande de financement envoyée avec succès.');
+
+        // Réinitialisation du formulaire
+        $this->resetForm();
+        $this->resetErrorBag();
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de la soumission du projet.', ['error' => $e->getMessage()]);
+        $this->addError('submitError', 'Une erreur est survenue lors de la soumission : ' . $e->getMessage());
+    } finally {
+        $this->isSubmitting = false; // Réinitialiser l'indicateur de soumission
     }
+}
+
 
     // Fonction pour réinitialiser les champs du formulaire
     public function resetForm()
