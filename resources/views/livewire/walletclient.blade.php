@@ -1051,7 +1051,7 @@
                                                         <div class="flex justify-between">
                                                             <span class="text-gray-600">Destinataire :</span>
                                                             <span
-                                                                class="font-semibold text-gray-900">{{ strtoupper($transaction->receiverUser->name) }}</span>
+                                                                class="font-semibold text-gray-900">{{ strtoupper($transaction->receiverUser->name ?? 'Admin') }}</span>
                                                         </div>
                                                         <div class="flex justify-between">
                                                             <span class="text-gray-600">Expéditeur :</span>
