@@ -1,49 +1,10 @@
 <div>
     @if ($showSection)
         <div class="relative md:static  bg-white rounded-lg shadow-lg">
-            <ol
-                class="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base  p-5">
-                <li
-                    class="after:border-1 flex items-center text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                    <span
-                        class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                        <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                            width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                        Details
-                    </span>
-                </li>
-
-                <li
-                    class="after:border-1 flex items-center text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                    <span
-                        class="flex items-center after:mx-2  after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                        <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                            width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                        Achat
-                    </span>
-                </li>
-
-                <li>
-                    <span
-                        class="flex items-center after:mx-2 text-blue-600 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                        <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                            width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                        Crédit
-                    </span>
-                </li>
-            </ol>
-
-            {{-- <h2 class="mb-4 text-xl text-center font-bold text-gray-900 dark:text-white">Formulaire De Demande Crédit
-            </h2> --}}
+            <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+                <h1 class="text-lg font-bold"><i class="fas fa-file-alt"></i> Demande de Crédit</h1>
+                <span class="text-sm">Ref: 2024-11-21-{{ $referenceCode }}</span>
+            </div>
             <form wire:submit.prevent="submit">
                 @if ($messages && count($messages) > 0)
                     <div class="m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
@@ -60,79 +21,13 @@
                     <!-- Titre -->
                     <div class="sm:col-span-2">
                         @if ($showSection)
-                            <label for="name"
-                                class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">
-                                ID Demande : {{ $referenceCode }}</label>
                             <label for="brand"
-                                class="block mb-3 text-lg font-semibold text-gray-900 dark:text-white">
-                                Objet du financement: Demande de crédit pour Achat du produit
+                                class="block mb-3 text-lg font-extrabold text-gray-900 dark:text-white">
+                                Objet Du Financement: Achat du produit
                                 {{ $nameProd }}</label>
-                            <div class="hidden">
-                                <p>Montant Plafond pour ce produit : {{ $montantmax }} FCFA</p>
-                                <p>Prix Plafond pour ce produit : {{ $sommedemnd }} FCFA</p>
-                                <p>Quantité Plafond pour ce produit : {{ $quantiteMax }} </p>
-                                <p>Quantité Minimale pour ce produit : {{ $quantiteMin }} </p>
-                            </div>
                         @endif
                     </div>
 
-                    <!-- Montant recherché -->
-                    <div class="w-full">
-                        <label for="quantitInput" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Entrez la quantité que vous voulez acheté?
-                        </label>
-                        <input type="number" id="quantitInput" placeholder="Déterminera la somme dont vous avez besoin"
-                            wire:model="quantite"
-                            class="bg-gray-50 lg:col-span-2 sm:col-span-2 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                            data-min="{{ $quantiteMin }}" data-max="{{ $quantiteMax }}"
-                            data-price="{{ $montantmax }}" oninput="updateMontantTotalCredit()" required>
-                        @error('quantite')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="roi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Retour sur investissement (%)
-                        </label>
-                        <input type="number" id="roi" wire:model="roi"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                            placeholder="12%" oninput="updateMontantTotalCredit()" required>
-                        @error('roi')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <p id="error_Message" class="text-sm text-center text-red-500 hidden"></p>
-
-                    <div class="sm:col-span-2">
-                        <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
-                            <dl class="flex items-center justify-between gap-4 py-3">
-                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Montant recherché
-                                </dt>
-                                <dd class="text-base font-medium text-gray-900 dark:text-white" id="montantMax">0 FCFA
-                                </dd>
-                                <input type="hidden" name="montantMax" id="montant_total">
-                            </dl>
-
-                            <dl class="flex items-center justify-between gap-4 py-3">
-                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Retour sur
-                                    investissement/ Taux d'intérêt</dt>
-                                <dd class="text-base font-medium text-gray-900 dark:text-white" id="tauxInteret">0 FCFA
-                                </dd>
-                                <input type="hidden" name="tauxInteret" id="taux_interet" required>
-                            </dl>
-
-                            <dl class="flex items-center justify-between gap-4 py-3">
-                                <dt class="text-base font-bold text-gray-900 dark:text-white">Crédit Total</dt>
-                                <dd class="text-base font-bold text-purple-600 dark:text-white" id="creditotal">0 FCFA
-                                </dd>
-                                <input type="hidden" name="creditotal" id="credi_total">
-                            </dl>
-                            <dl class="flex items-center justify-between gap-4 py-3">
-                            </dl>
-                        </div>
-                    </div>
 
                     <!-- Type de financement -->
                     <div x-data="{ typeFinancement: '' }" class="flex flex-col space-y-4 sm:col-span-2">
@@ -169,8 +64,8 @@
                                         <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg"
                                             wire:click="selectUser('{{ $user->id }}', '{{ $user->username }}')">
                                             <div class="flex">
-                                                <img class="w-5 h-5 mr-2 rounded-full"
-                                                    src="{{ asset($user->photo) }}" alt="">
+                                                <img class="w-5 h-5 mr-2 rounded-full" src="{{ asset($user->photo) }}"
+                                                    alt="">
                                                 <div class="flex justify-between items-center w-full">
                                                     <span>{{ $user->username }} ({{ $user->name }})</span>
                                                 </div>
@@ -200,6 +95,37 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Montant recherché -->
+                    <div class="w-full">
+                        <label for="quantitInput" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Quelle quantitée voulez-vous acheter?
+                        </label>
+                        <input type="number" id="quantitInput" placeholder="" wire:model="quantite"
+                            class="bg-gray-50 lg:col-span-2 sm:col-span-2 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                            data-min="{{ $quantiteMin }}" data-max="{{ $quantiteMax }}"
+                            data-price="{{ $montantmax }}" oninput="updateMontantTotalCredit()" required>
+                        @error('quantite')
+                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="roi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Retour sur investissement (%)
+                        </label>
+                        <input type="number" id="roi" wire:model="roi"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                            placeholder="12%" oninput="updateMontantTotalCredit()" required>
+                        
+
+                    </div>
+
+                    <p id="error_Message" class="text-sm text-center text-red-500 hidden"></p>
+
+
+
+
                     <div class="sm:col-span-2">
 
                     </div>
@@ -209,8 +135,8 @@
 
                         <div>
                             <label for="Datefin"
-                            class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Date
-                            limite d'attente</label>
+                                class="block mb-2 text-xl font-semibold text-gray-900 dark:text-white">Date
+                                limite d'attente</label>
                             <input type="datetime-local" wire:model="endDate" id="Datefin"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 oninput="updateDate()" required>
@@ -221,8 +147,9 @@
 
                             <div class="">
                                 <label for="duration"
-                                    class="block mb-2 text-xl font-extrabold underline text-gray-900 dark:text-white">Durée
-                                    du crédit (Délais de remboursement)</label>
+                                    class="block mb-2 text-lg font-semibold text-gray-900 dark:text-white">Date limite
+                                    de remboursement
+                                </label>
                                 <input type="datetime-local" wire:model="duration" id="Periode"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                     oninput="updateDate()" required>
@@ -233,7 +160,41 @@
 
 
 
+                    <div class="sm:col-span-2">
+                        <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
+                            <dl class="flex items-center justify-between gap-4 py-3">
+                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Montant recherché
+                                </dt>
+                                <dd class="text-base font-medium text-gray-900 dark:text-white" id="montantMax">0 FCFA
+                                </dd>
+                                <input type="hidden" name="montantMax" id="montant_total">
+                            </dl>
 
+                            <dl class="flex items-center justify-between gap-4 py-3">
+                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Retour sur
+                                    investissement/ Taux d'intérêt</dt>
+                                <dd class="text-base font-medium text-gray-900 dark:text-white" id="tauxInteret">0
+                                    FCFA
+                                </dd>
+                                <input type="hidden" name="tauxInteret" id="taux_interet" required>
+                            </dl>
+
+                            <dl class="flex items-center justify-between gap-4 py-3">
+                                <dt class="text-base font-bold text-gray-900 dark:text-white">Crédit Total</dt>
+                                <dd class="text-base font-bold text-purple-600 dark:text-white" id="creditotal">0 FCFA
+                                </dd>
+                                <input type="hidden" name="creditotal" id="credi_total">
+                            </dl>
+                            <dl class="flex items-center justify-between gap-4 py-3">
+                            </dl>
+                        </div>
+                    </div>
+                    <p class="bg-gray-100 sm:col-span-2 w-full text-gray-700 p-4 rounded-md shadow-md">
+                        En soumettant ce formulaire, je certifie que les informations fournies sont exactes et
+                        complètes.
+                        J'autorise la plateforme à effectuer toutes les vérifications nécessaires concernant ces
+                        informations.
+                    </p>
 
                     <!-- Soumission du formulaire -->
                     <div class="sm:col-span-2">

@@ -1,5 +1,5 @@
 <div>
-
+    
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect">
         @if (session('error'))
             <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-800 dark:bg-gray-800 dark:text-red-400">
@@ -55,8 +55,10 @@
                     <!-- Champ de quantité -->
                     <div class="mb-4">
                         <h2 class="text-lg font-bold mb-2">Quantité du produit</h2>
-                        <input id="quantity" type="number" x-model="quantity" min="1"
-                            class="w-64 p-2 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+                        <input id="quantityInput" type="number" x-model="quantity" min="1" name="quantité"
+                            class="w-64 p-2 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                            data-min="{{ $produit->qteProd_min }}" data-max="{{ $produit->qteProd_max }}"
+                            oninput="updateMontantTotalDirect()" required/>
                     </div>
 
                     <!-- Champ de localisation -->
@@ -122,8 +124,8 @@
                                 'bg-gray-100 text-gray-600': selectedOption !== 'Take Away'
                             }">
                             <!-- Icône de retrait -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 3l18 18M9 17l6-6 4 4V6H5v11l4-4 5 5z" />
                             </svg>
@@ -138,9 +140,6 @@
                         </div>
                     </button>
                 </div>
-
-
-
 
                 <div class="flex flex-col space-y-4">
                     <div class="grid grid-cols-2 gap-4">

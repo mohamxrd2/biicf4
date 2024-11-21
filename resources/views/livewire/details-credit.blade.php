@@ -1,4 +1,84 @@
 <div>
+    <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails de la Demande de Crédit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #555;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .section p {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Détails de la Demande de Crédit</h1>
+
+        <div class="section">
+            <h2>Informations sur le Demandeur</h2>
+            <p><strong>Nom :</strong> Jean Dupont</p>
+            <p><strong>Email :</strong> jean.dupont@example.com</p>
+            <p><strong>Téléphone :</strong> +33 6 12 34 56 78</p>
+        </div>
+
+        <div class="section">
+            <h2>Détails du Projet</h2>
+            <p><strong>Nom du Projet :</strong> Expansion de l'entreprise XYZ</p>
+            <p><strong>Description :</strong> Ce projet vise à étendre les opérations de l'entreprise XYZ dans de nouveaux marchés internationaux.</p>
+            <p><strong>Montant du Crédit Demandé :</strong> 500,000 €</p>
+        </div>
+
+        <div class="section">
+            <h2>Informations Financières</h2>
+            <p><strong>Revenus Annuels :</strong> 1,200,000 €</p>
+            <p><strong>Dettes Existantes :</strong> 200,000 €</p>
+            <p><strong>Score de Crédit :</strong> 750</p>
+        </div>
+
+        <div class="section">
+            <h2>Documents Fournis</h2>
+            <ul>
+                <li>Plan d'affaires</li>
+                <li>États financiers des trois dernières années</li>
+                <li>Rapport de crédit</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Statut de la Demande</h2>
+            <p><strong>Statut :</strong> En cours d'examen</p>
+        </div>
+    </div>
+</body>
+</html>
     <!-- Image du demandeCredit -->
     <div class="flex flex-col justify-center items-center text-center bg-gray-200 p-4 rounded-lg mb-6">
         <h1 class="text-lg font-bold">DETAILS DE LA DEMANDE DE CREDIT</h1>
