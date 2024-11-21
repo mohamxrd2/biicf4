@@ -55,6 +55,7 @@ class DetailsCredit extends Component
     public $wallet;
     public $coi;
     public $user_connecte;
+    public $timeFin;
 
 
 
@@ -98,7 +99,8 @@ class DetailsCredit extends Component
             session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
             return;
         }
-
+        // Date du plus ancien commentaire
+        $this->timeFin = $this->demandeCredit->date_fin->timezone('UTC')->toIso8601String();
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
         $this->userInPromir = UserPromir::where('numero', $userNumber)->first();
@@ -415,7 +417,6 @@ class DetailsCredit extends Component
             $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->demandeCredit->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
 
             DB::commit();
-
         } catch (\Exception $e) {
             // Annuler la transaction en cas d'erreur
             DB::rollBack();

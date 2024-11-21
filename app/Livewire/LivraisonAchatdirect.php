@@ -119,7 +119,7 @@ class LivraisonAchatdirect extends Component
                 'code_unique' => $validatedData['code_livr'],
             ]);
             // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-            dd(broadcast(new OldestCommentUpdated(now()->toIso8601String())));
+            broadcast(new OldestCommentUpdated(now()->toIso8601String()));
             $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
         }
 
