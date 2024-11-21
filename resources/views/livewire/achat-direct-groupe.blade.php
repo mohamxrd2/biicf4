@@ -62,8 +62,7 @@
                     <!-- Champ de localisation -->
                     <div>
                         <h2 class="text-lg font-bold mb-2">Adresse de livraison</h2>
-                        <input id="location" type="text" x-model="location"
-                            placeholder="Entrez votre localisation"
+                        <input id="location" type="text" x-model="location" placeholder="Entrez votre localisation"
                             class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
                     </div>
                 </div>
@@ -229,120 +228,92 @@
                             </select> --}}
 
                             <div x-show="selectedOption === 'Take Away'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
-                                <div class="p-6 bg-white border rounded-lg shadow-sm max-w-md">
-                                    <h2 class="text-lg font-bold mb-4">Choisir l'horaire de retrait</h2>
+                                <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
+                                    <h2 class="text-lg font-bold mb-4">Choisir l'horaire de debut</h2>
 
                                     <!-- Date de retrait -->
                                     <div class="mb-4">
-                                      <label for="pickup-date" class="block text-sm font-medium text-gray-700 mb-2">Date de retrait</label>
-                                      <div class="relative">
-                                        <input
-                                          id="pickup-date"
-                                          type="date"
-                                          class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                          placeholder="jj/mm/aaaa"
-                                        />
-                                        <div class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-400">
-                                          <!-- Icône du calendrier -->
-                                          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m2 0a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2m14 0v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7m0 0h16" />
-                                          </svg>
+                                        <label for="pickup-date"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                        <div class="relative">
+                                            <input type="date" id="datePickerStart" name="dateTot"
+                                                wire:model="dateTot"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                         </div>
-                                      </div>
                                     </div>
 
                                     <!-- Heure de retrait -->
                                     <div class="mb-4">
-                                      <label for="pickup-time" class="block text-sm font-medium text-gray-700 mb-2">Heure de retrait</label>
-                                      <div class="relative">
-                                        <input
-                                          id="pickup-time"
-                                          type="time"
-                                          class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                          placeholder="--:--"
-                                        />
-                                        <div class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-400">
-                                          <!-- Icône de l'horloge -->
-                                          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2m6-10a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                          </svg>
+                                        <label for="pickup-time"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Heure de
+                                            retrait</label>
+                                        <div class="relative">
+                                            <input type="time" id="timePickerStart" name="timeStart"
+                                                wire:model="timeStart"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+
                                         </div>
-                                      </div>
                                     </div>
 
                                     <!-- Période -->
                                     <div>
-                                      <label for="pickup-period" class="block text-sm font-medium text-gray-700 mb-2">Période</label>
-                                      <select
-                                        id="pickup-period"
-                                        class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                      >
-                                        <option>Choisir la période</option>
-                                        <option>Matin</option>
-                                        <option>Après-midi</option>
-                                        <option>Soir</option>
-                                      </select>
+                                        <label for="pickup-period"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Période</label>
+                                        <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
+                                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                                            <option value="" selected>Choisir la période</option>
+                                            <option value="Matin">Matin</option>
+                                            <option value="Après-midi">Après-midi</option>
+                                            <option value="Soir">Soir</option>
+                                            <option value="Nuit">Nuit</option>
+                                        </select>
                                     </div>
-                                  </div>
-
-                                <div class="col-span-1">
-
-                                    <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Date
-                                        au
-                                        plus
-                                        tôt</label>
-                                    <input type="datetime-local" id="datePickerStart" name="dateTot"
-                                        wire:model="dateTot"
-                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-
                                 </div>
+                                <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
+                                    <h2 class="text-lg font-bold mb-4">Choisir l'horaire de fin</h2>
 
-                                <div class="col-span-1">
-                                    <!-- Date de fin -->
-                                    <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Date au
-                                        plus
-                                        tard</label>
-                                    <input type="datetime-local" id="datePickerEnd" name="dateTard"
-                                        wire:model="dateTard"
-                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-                                <div class="col-span-1">
-                                    <label for="dayPeriod"
-                                        class="block text-sm text-gray-700 dark:text-gray-300">Période
-                                    </label>
-                                    <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
-                                        class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                                        <option value="" selected>Choisir la période</option>
-                                        <option value="Matin">Matin</option>
-                                        <option value="Après-midi">Après-midi</option>
-                                        <option value="Soir">Soir</option>
-                                        <option value="Nuit">Nuit</option>
-                                    </select>
-                                </div>
+                                    <!-- Date de retrait -->
+                                    <div class="mb-4">
+                                        <label for="pickup-date"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Date de
+                                            retrait</label>
+                                        <div class="relative">
+                                            <input type="date" id="datePickerEnd" name="dateTard"
+                                                wire:model="dateTard"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        </div>
+                                    </div>
 
-                                <!-- Nouvelle heure -->
-                                <div class="col-span-1">
-                                    <label for="dayPeriod"
-                                        class="block text-sm text-gray-700 dark:text-gray-300">Période
-                                    </label>
-                                    <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
-                                        class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                                        <option value="" selected>Choisir la période</option>
-                                        <option value="Matin">Matin</option>
-                                        <option value="Après-midi">Après-midi</option>
-                                        <option value="Soir">Soir</option>
-                                        <option value="Nuit">Nuit</option>
-                                    </select>
-                                </div>
+                                    <!-- Heure de retrait -->
+                                    <div class="mb-4">
+                                        <label for="pickup-time"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Heure de
+                                            retrait</label>
+                                        <div class="relative">
+                                            <input type="time" id="timePickerEnd" name="timeEnd"
+                                                wire:model="timeEnd"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        </div>
+                                    </div>
 
+                                    <!-- Période -->
+                                    <div>
+                                        <label for="pickup-period"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Période</label>
+                                        <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
+                                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                                            <option value="" selected>Choisir la période</option>
+                                            <option value="Matin">Matin</option>
+                                            <option value="Après-midi">Après-midi</option>
+                                            <option value="Soir">Soir</option>
+                                            <option value="Nuit">Nuit</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         @endif
 
                     </div>
-
-
-
-
 
                     <input type="hidden" name="userTrader" wire:model.defer="userTrader">
                     <input type="hidden" name="nameProd" wire:model.defer="nameProd">
@@ -368,7 +339,8 @@
                     <div class="flow-root">
                         <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
                             <dl class="flex items-center justify-between gap-4 py-3">
-                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Montant de l'achat</dt>
+                                <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Montant de l'achat
+                                </dt>
                                 <dd class="text-base font-medium text-gray-900 dark:text-white">0</dd>
                             </dl>
 
