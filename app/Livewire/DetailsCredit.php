@@ -100,7 +100,7 @@ class DetailsCredit extends Component
             return;
         }
         // Date du plus ancien commentaire
-        $this->timeFin = $this->demandeCredit->date_fin;
+        $this->timeFin = Carbon::parse($this->demandeCredit->date_fin);
 
         // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
         $this->userInPromir = UserPromir::where('numero', $userNumber)->first();
