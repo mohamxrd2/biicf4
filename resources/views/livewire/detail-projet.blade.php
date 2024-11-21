@@ -58,7 +58,7 @@
 
                             @if ($montantVerifie)
                                 {{-- duree --}}
-                                <div x-data="countdownTimer({{ json_encode($timeFin) }})" class="flex flex-col">
+                                <div x-data="countdownTimer({{ json_encode($projet->date_fin) }})" class="flex flex-col">
                                     <div
                                         class="flex items-center justify-between p-1 border border-gray-300 rounded-lg shadow-md">
                                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
@@ -253,7 +253,7 @@
 
                             @if ($montantVerifie)
 
-                                <div x-data="countdownTimer({{ json_encode($timeFin) }})" class="flex flex-col">
+                                <div x-data="countdownTimer({{ json_encode($projet->date_fin) }})" class="flex flex-col">
                                     <div
                                         class="flex items-center justify-between p-1 border border-gray-300 rounded-lg shadow-md">
                                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>

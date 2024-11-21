@@ -37,7 +37,7 @@
                     @endphp
 
 
-                    <div x-data="countdownTimer({{ json_encode($demandeCredit->date_fin) }})" class="flex flex-col">
+                    <div x-data="countdownTimer({{ json_encode($timeFin) }})" class="flex flex-col">
                         <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
                             <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
                             <div id="countdown" x-show="projetDurer"
@@ -306,7 +306,7 @@
                 @endphp
 
 
-                <div x-data="countdownTimer({{ json_encode($demandeCredit->date_fin) }})" class="flex flex-col">
+                <div x-data="countdownTimer({{ json_encode($timeFin) }})" class="flex flex-col">
                     <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
                         <div id="countdown" x-show="projetDurer"
