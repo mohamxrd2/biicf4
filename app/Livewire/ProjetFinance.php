@@ -45,7 +45,15 @@ class ProjetFinance extends Component
         $this->calculInteret = $this->remboursements->sum(function ($remboursement) {
             return ($remboursement->montant_capital * $remboursement->montant_interet) / 100;
         });
-            }
+
+        // Calcule le total des interet
+        if (
+            isset($this->remboursements->creditgrp) &&
+            $this->remboursements->creditgrp->statut === 'payé'
+        ) {
+            $this->remboursement->update(['statut' => 'remboursé']);
+        }
+    }
     public function render()
     {
         return view('livewire.projet-finance');

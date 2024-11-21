@@ -16,6 +16,58 @@
             {{ session('error') }}
         </div>
     @endif
+    <div class="p-4 max-w-md mx-auto">
+
+        <!-- Mode de réception -->
+        <div class="mb-4">
+            <h2 class="text-lg font-bold mb-2">Mode de réception</h2>
+            <!-- Option Livraison -->
+            <div class="flex items-center p-4 border rounded-lg mb-2">
+                <input type="radio" id="livraison" name="modeReception" class="mr-4" />
+                <div>
+                    <label for="livraison" class="font-medium">Livraison à domicile</label>
+                    <p class="text-sm text-gray-500">Livré chez vous apres négociation</p>
+                </div>
+                <span class="ml-auto text-sm font-bold">Pas</span>
+            </div>
+            <!-- Option Retrait -->
+            <div class="flex items-center p-4 border-2 border-blue-500 rounded-lg">
+                <input type="radio" id="retrait" name="modeReception" class="mr-4" checked />
+                <div>
+                    <label for="retrait" class="font-medium">Retrait en magasin</label>
+                    <p class="text-sm text-gray-500">Disponible dans la période choisi</p>
+                </div>
+                <span class="ml-auto text-sm font-bold text-blue-500">Gratuit</span>
+            </div>
+        </div>
+
+        <!-- Choisir l'horaire de retrait -->
+        <div>
+            <h2 class="text-lg font-bold mb-2">Choisir l'horaire de retrait</h2>
+            <div class="space-y-4">
+                <!-- Date de retrait -->
+                <div>
+                    <label for="date" class="block text-sm font-medium mb-1">Date de retrait</label>
+                    <input type="date" id="date" class="w-full p-2 border rounded-md text-gray-700"
+                        placeholder="jj/mm/aaaa" />
+                </div>
+                <!-- Heure de retrait -->
+                <div>
+                    <label for="heure" class="block text-sm font-medium mb-1">Heure de retrait</label>
+                    <input type="time" id="heure" class="w-full p-2 border rounded-md text-gray-700"
+                        placeholder="--:--" />
+                </div>
+                <!-- Période -->
+                <div>
+                    <label for="periode" class="block text-sm font-medium mb-1">Période</label>
+                    <select id="periode" class="w-full p-2 border rounded-md text-gray-700">
+                        <option value="">Choisir la période</option>
+                        <!-- Ajouter d'autres options ici -->
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -72,7 +124,7 @@
                         <img id="mainImage" class="w-full dark:hidden rounded-lg shadow-md"
                             src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Main Product Image" />
                     </div>
-                
+
                     <!-- Thumbnail Images -->
                     <div class="flex justify-center space-x-4">
                         <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd1) }}')"
@@ -89,7 +141,7 @@
                             src="{{ asset('post/all/' . $produit->photoProd4) }}" alt="Thumbnail 4">
                     </div>
                 </div>
-                
+
 
                 <!-- Product Info Section -->
                 <div class="mt-6   sm:mt-8 lg:mt-0 sm:p-6">
@@ -106,13 +158,13 @@
                         <div class="flex items-center gap-2 mt-2 sm:mt-0">
                             <div class="flex items-center gap-1">
                                 <!-- SVGs for rating stars (repeated for all stars) -->
-                                <svg class="w-4 h-4 text-yellow-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                    fill="currentColor">
+                                <svg class="w-4 h-4 text-yellow-300" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24" fill="currentColor">
                                     <path
                                         d=" M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397
-                                                                                        8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
-                                                                                        2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
-                                                                                        3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                                                                8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
+                                                                                                2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
+                                                                                                3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
                                 </svg>
                                 <!-- Repeat for additional stars -->
                             </div>

@@ -1,4 +1,5 @@
 <div>
+    
     <div class="container py-4 ">
 
         <div class="bg-gray-100 p-8 min-h-screen">
@@ -31,7 +32,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-gray-600">Rendement Attendu</p>
-                        <p class="text-2xl font-semibold text-gray-800">{{ $interet }}%({{ $calculInteret }}FCFA)</p>
+                        <p class="text-2xl font-semibold text-gray-800">{{ $calculInteret }}FCFA</p>
                     </div>
                 </div>
                 <div class="bg-white shadow rounded-lg p-6 flex items-center">

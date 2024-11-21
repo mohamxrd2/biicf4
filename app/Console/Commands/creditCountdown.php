@@ -168,10 +168,12 @@ class creditCountdown extends Command
                                         'montant' => $montant,
                                         'reference' => $referenceId,
                                     ]);
+                                    // Mettre à jour l'état du countdown après la notification
                                 } else {
                                     Log::warning('Portefeuille non trouvé pour un investisseur.', ['user_id' => $investisseur]);
                                 }
                             }
+                            $countdown->update(['notified' => true]);
                         }
                     }
                 }
