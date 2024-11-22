@@ -1,6 +1,123 @@
 <div id="search-input">
 
 
+    <!-- En-tête -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4">
+            <h1 class="text-3xl font-bold text-gray-800">Catalogue Produits & Services</h1>
+        </div>
+    </header>
+
+    <!-- Section de recherche -->
+    <section class="mt-4 shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <form wire:submit.prevent="search" class="max-w-2xl mx-auto">
+                <label for="default-search"
+                    class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                <div class="relative">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <input type="search" id="default-search" wire:model="keyword"
+                            class="block w-full p-4 ps-10 text-sm sm:text-[12px] text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-purple-600 focus:border-purple-600 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Recherche de produit ou service..." required />
+
+                    </div>
+
+                </div>
+
+                <div class="grid grid-cols-4 gap-3 mt-2">
+                    <div class="col-span-1">
+                        <select wire:model="zone_economique" name="zoneEco" type="text"
+                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                            placeholder="Zone Economique">
+                            <option disabled selected>Zone economique</option>
+                            <option value="proximite">Proximité</option>
+                            <option value="locale">Locale</option>
+                            <option value="departementale">Departementale</option>
+                            <option value="nationale">Nationale</option>
+                            <option value="sous_regionale">Sous Régionale</option>
+                            <option value="continentale">Continentale</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1">
+                        <select wire:model="type" name="type"
+                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
+                            <option selected>Type</option>
+                            <option>Produit</option>
+                            <option>Service</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1">
+
+                        <div class="mb-4">
+                            <!-- Quantité  -->
+                            <input wire:model="qte" name="qte" type="number"
+                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                placeholder="Quantité ">
+                        </div>
+                    </div>
+                    <div class="col-span-1">
+
+                        <div class="mb-4">
+                            <!-- prix unitaire -->
+                            <input wire:model="prix" name="prix" type="number"
+                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                placeholder="Prix unitaire">
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal footer -->
+                <div class="flex items-center space-x-4 rounded-b p-4 dark:border-gray-600 md:p-5">
+                    <button data-modal-hide="static-modal" type="submit"
+                        class="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-900"
+                        data-modal-hide="filterModal">
+                        Montrer les résultats
+                    </button>
+
+                    <button type="reset"
+                        class="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-900">
+                        Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Section des produits -->
+    <section class="container mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            @foreach ($produits as $produit)
+                <!-- Exemple de produit -->
+                <a href="{{ route('biicf.postdet', $produit->id) }}">
+                    <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg">
+                        <img src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                            alt="{{ $produit->name }}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="text-lg font-bold text-gray-800">Produit 1</h3>
+                            <p class="text-gray-600 mt-2">Description courte du produit.</p>
+                            <div class="mt-4 flex items-center justify-between">
+                                <span class="text-gray-800 font-bold">50€</span>
+                                <button
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300">
+                                    Détails
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </section>
+
+    </body>
+
+    </html>
 
     <section class="bg-gray-50 py-8 antialiased dark:bg-gray-900 md:py-12 rounded-lg">
         <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
@@ -60,8 +177,8 @@
                         Filtres
                         <svg class="-me-0.5 ms-2 h-4 w-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                             width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m19 9-7 7-7-7" />
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="m19 9-7 7-7-7" />
                         </svg>
                     </button>
 
@@ -82,8 +199,9 @@
                                         data-modal-hide="static-modal">
                                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                             fill="none" viewBox="0 0 14 14">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                            <path stroke="currentColor" stroke-linecap="round"
+                                                stroke-linejoin="round" stroke-width="2"
+                                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                                         </svg>
                                         <span class="sr-only">Close modal</span>
                                     </button>
@@ -91,8 +209,8 @@
                                 <!-- Modal body -->
                                 <div class="p-4 md:p-5 space-y-4">
                                     <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-                                        <ul class="-mb-px flex flex-wrap text-center text-sm font-medium" id="myTab"
-                                            data-tabs-toggle="#myTabContent" role="tablist">
+                                        <ul class="-mb-px flex flex-wrap text-center text-sm font-medium"
+                                            id="myTab" data-tabs-toggle="#myTabContent" role="tablist">
                                             <li class="mr-1" role="presentation">
                                                 <button class="inline-block pb-2 pr-1" id="brand-tab"
                                                     data-tabs-target="#brand" type="button" role="tab"

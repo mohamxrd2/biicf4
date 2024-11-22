@@ -4,72 +4,6 @@
 
 @section('content')
 
-    @if (session('success'))
-        <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <!-- Afficher les messages d'erreur -->
-    @if (session('error'))
-        <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
-            {{ session('error') }}
-        </div>
-    @endif
-    <div class="p-4 max-w-md mx-auto">
-
-        <!-- Mode de réception -->
-        <div class="mb-4">
-            <h2 class="text-lg font-bold mb-2">Mode de réception</h2>
-            <!-- Option Livraison -->
-            <div class="flex items-center p-4 border rounded-lg mb-2">
-                <input type="radio" id="livraison" name="modeReception" class="mr-4" />
-                <div>
-                    <label for="livraison" class="font-medium">Livraison à domicile</label>
-                    <p class="text-sm text-gray-500">Livré chez vous apres négociation</p>
-                </div>
-                <span class="ml-auto text-sm font-bold">Pas</span>
-            </div>
-            <!-- Option Retrait -->
-            <div class="flex items-center p-4 border-2 border-blue-500 rounded-lg">
-                <input type="radio" id="retrait" name="modeReception" class="mr-4" checked />
-                <div>
-                    <label for="retrait" class="font-medium">Retrait en magasin</label>
-                    <p class="text-sm text-gray-500">Disponible dans la période choisi</p>
-                </div>
-                <span class="ml-auto text-sm font-bold text-blue-500">Gratuit</span>
-            </div>
-        </div>
-
-        <!-- Choisir l'horaire de retrait -->
-        <div>
-            <h2 class="text-lg font-bold mb-2">Choisir l'horaire de retrait</h2>
-            <div class="space-y-4">
-                <!-- Date de retrait -->
-                <div>
-                    <label for="date" class="block text-sm font-medium mb-1">Date de retrait</label>
-                    <input type="date" id="date" class="w-full p-2 border rounded-md text-gray-700"
-                        placeholder="jj/mm/aaaa" />
-                </div>
-                <!-- Heure de retrait -->
-                <div>
-                    <label for="heure" class="block text-sm font-medium mb-1">Heure de retrait</label>
-                    <input type="time" id="heure" class="w-full p-2 border rounded-md text-gray-700"
-                        placeholder="--:--" />
-                </div>
-                <!-- Période -->
-                <div>
-                    <label for="periode" class="block text-sm font-medium mb-1">Période</label>
-                    <select id="periode" class="w-full p-2 border rounded-md text-gray-700">
-                        <option value="">Choisir la période</option>
-                        <!-- Ajouter d'autres options ici -->
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
 
     <!-- Carousel wrapper -->
     <section id="checkoutSection" class="bg-white md:py-16 dark:bg-gray-900 antialiased rounded-lg shadow-lg">
@@ -102,17 +36,7 @@
                 </span>
             </li>
 
-            <li>
-                <span
-                    class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                    <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                        width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                    Crédit
-                </span>
-            </li>
+          
         </ol>
 
         <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0 ">

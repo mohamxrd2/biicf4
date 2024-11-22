@@ -23,6 +23,7 @@ class AchatDirect extends Model
         'date_tot',
         'date_tard',
         'dayPeriod',
+        'dayPeriodFin',
         'userTrader',
         'userSender',
         'idProd',

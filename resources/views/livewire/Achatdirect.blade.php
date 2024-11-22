@@ -1,10 +1,11 @@
 <div class="container px-4 py-6 mx-auto">
+    
+
     <div class="overflow-hidden bg-white rounded-lg shadow-md">
         <div class="p-6 border-b border-gray-200">
-            <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande @if ($notification->type_achat == 'Take Away')
+            <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande
+                @if ($notification->type_achat == 'Take Away')
                     Take Away
-                @elseif ($notification->type_achat == 'Reservation')
-                    Reservation
                 @else
                     Avec livraison
                 @endif
@@ -141,7 +142,8 @@
                 Voir le produit
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-5 h-5 ml-2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
                 </svg>
             </a>
 
@@ -161,7 +163,7 @@
                     <button wire:click="refuser" id="btn-refuser" type="submit"
                         class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
                 @else
-                    <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...'}" x-cloak>
+                    <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...' }" x-cloak>
                         <!-- Buttons to open modal and refuse -->
                         <button @click="isOpen = true"
                             class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
@@ -222,9 +224,11 @@
 
                                                 <!-- Textarea and action buttons -->
                                                 <div x-show="open" class="mt-4">
-                                                    <form wire:submit.prevent="accepter" enctype="multipart/form-data">
+                                                    <form wire:submit.prevent="accepter"
+                                                        enctype="multipart/form-data">
 
-                                                        <textarea wire:model="textareaValue" x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded" rows="6" required>
+                                                        <textarea wire:model="textareaValue" x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded"
+                                                            rows="6" required>
                                                         </textarea>
 
                                                         <!-- Champ de téléchargement de fichier -->
@@ -233,11 +237,10 @@
 
                                                         <div class="flex justify-end mt-2 space-x-2">
                                                             <button @click="open = false"
-
                                                                 class="px-4 py-2 text-gray-800 bg-gray-200 rounded hover:bg-gray-300">
                                                                 Annuler
                                                             </button>
-                                                            <button type="submit" 
+                                                            <button type="submit"
                                                                 class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">
                                                                 <span wire:loading.remove>Envoyer</span>
                                                                 <span wire:loading>En cours...</span>

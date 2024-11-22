@@ -60,6 +60,7 @@ class AchatDirectGroupe extends Component
     public $timeStart;
     public $timeEnd;
     public $dayPeriod = "";
+    public $dayPeriodFin = "";
 
     public function mount($id)
     {
@@ -86,6 +87,7 @@ class AchatDirectGroupe extends Component
 
     public function AchatDirectForm()
     {
+
         $validated = $this->validate([
             'quantité' => 'required|integer',
             'localite' => 'required|string|max:255',
@@ -95,6 +97,7 @@ class AchatDirectGroupe extends Component
             'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
+            'dayPeriodFin' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
             'userTrader' => 'required|exists:users,id',
             'nameProd' => 'required|string',
             'userSender' => 'required|exists:users,id',
@@ -134,16 +137,16 @@ class AchatDirectGroupe extends Component
             return;
         }
 
+        // Commencez une transaction de base de données
+        DB::beginTransaction();
         try {
-            // Commencez une transaction de base de données
-            DB::beginTransaction();
+            // Mettre à jour le solde du portefeuille
+            $userWallet->decrement('balance', $montantTotal);
 
-            // Utilisez `selectedSpec` pour obtenir la spécification sélectionnée
-            // $selectedSpec = $this->selectedSpec;
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
 
-            // Assurez-vous que `selectedSpec` est bien défini
-            // $specificites = !empty($selectedSpec) ? $selectedSpec : null;
-
+            // Mettre à jour la table de AchatDirectModel de fond
             $achat = AchatDirectModel::create([
                 'nameProd' => $validated['nameProd'],
                 'quantité' => $validated['quantité'],
@@ -154,6 +157,7 @@ class AchatDirectGroupe extends Component
                 'timeStart' => $validated['timeStart'],
                 'timeEnd' => $validated['timeEnd'],
                 'dayPeriod' => $validated['dayPeriod'],
+                'dayPeriodFin' => $validated['dayPeriodFin'],
                 'userTrader' => $validated['userTrader'],
                 'userSender' => $validated['userSender'],
                 'specificite' => $this->produit->specification,
@@ -162,15 +166,6 @@ class AchatDirectGroupe extends Component
                 'code_unique' => $this->code_unique,
 
             ]);
-
-
-            // Mettre à jour le solde du portefeuille
-            $userWallet->decrement('balance', $montantTotal);
-
-            // Générer une référence de transaction
-            $reference_id = $this->generateIntegerReference();
-            Log::info('Référence de transaction générée: ' . $reference_id);
-
             // Mettre à jour la table de gelement de fond
             gelement::create([
                 'id_wallet' => $userWallet->id,
@@ -180,9 +175,6 @@ class AchatDirectGroupe extends Component
 
             // Créer deux transactions
             $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Gele Pour ' . 'Achat de ' . $validated['nameProd'], 'effectué', 'COC');
-            // $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Réception de fond', 'effectué', $cfa->type_compte);
-            Log::info('Transactions créées avec succès pour l\'utilisateur ID: ' . Auth::id());
-
 
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
@@ -199,14 +191,12 @@ class AchatDirectGroupe extends Component
                 $notification->update(['type_achat' => $selectedOption]);
             }
 
-            // $user = User::find($userId);
             $this->reset(['quantité', 'localite']);
 
+            // Émettre un événement après la soumission
+            $this->dispatch('formSubmitted', 'Achat Affectué Avec Success');
             // Valider la transaction de base de données
             DB::commit();
-
-            // Émettre un événement après la soumission
-            $this->dispatch('formSubmitted', 'achat effectué avec success');
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'achat direct.', [
                 'error' => $e->getMessage(),

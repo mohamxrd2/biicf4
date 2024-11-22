@@ -1,100 +1,48 @@
 <div class="max-w-5xl mx-auto">
 
+
     <!-- Barre du haut avec timer -->
     <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
         <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
 
-        <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
-            <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
-
-            <div id="countdown" x-show="oldestCommentDate"
-                class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
-                <div x-text="hours">--</div>
-                <span>:</span>
-                <div x-text="minutes">--</div>
-                <span>:</span>
-                <div x-text="seconds">--</div>
+        <div x-data="countdownTimer({{ json_encode($oldestCommentDate) }})" class="flex items-center space-x-2">
+            <div class="flex items-center justify-between p-1 border border-gray-300 rounded-lg shadow-md">
+                <div  class="text-xl font-medium">Temps restant</div>
+                <div id="countdown"
+                    class="flex items-center px-4 py-2 font-bold text-red-600 bg-red-200 rounded-lg">
+                    <div x-text="jours">--</div>j
+                    <span>:</span>
+                    <div x-text="hours">--</div>h
+                    <span>:</span>
+                    <div x-text="minutes">--</div>m
+                    <span>:</span>
+                    <div x-text="seconds">--</div>s
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="grid lg:grid-cols-2 sm:grid-cols-1 gap-4">
-
-        <div class="grid gap-4">
-            <div class="grid grid-rows-2 gap-4">
-                <!-- Section offre en bas -->
-                <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                    uk-sticky="media: 1024; end: #js-oversized; offset: 80">
-
-                    <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
-
-                        <!-- comments -->
-                        <div
-                            class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-
-                            @foreach ($comments as $comment)
-                                <div class="flex items-center gap-3 relative">
-                                    <img src="{{ asset($comment['photoUser']) }}" alt=""
-                                        class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-                                    <div class="flex-1">
-                                        <p class=" text-base text-black font-medium inline-block dark:text-white">
-                                            {{ $comment['nameUser'] }}</p>
-                                        <p class="text-sm mt-0.5">
-                                            {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
-
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <form wire:submit.prevent="commentFormLivr">
-
-                            <div
-                                class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                                <input type="hidden" name="code_livr" wire:model="code_livr">
-                                <input type="hidden" name="quantite" wire:model="quantite">
-                                <input type="hidden" name="idProd" wire:model="idProd">
-                                <input type="hidden" name="userSender" wire:model="userSender">
-                                <input type="hidden" name="id_trader" wire:model="id_trader">
-                                <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd">
-                                <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                    placeholder="Faire une offre..." required>
-
-                                <button type="submit" id="submitBtnAppel"
-                                    class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                    <!-- Button Text and Icon -->
-                                    <span wire:loading.remove>
-                                        <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
-                                            <path
-                                                d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                        </svg>
-                                    </span>
-                                    <!-- Loading Spinner -->
-                                    <span wire:loading>
-                                        <svg class="w-5 h-5 animate-spin inline-block"
-                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                        </svg>
-                                        </svg>
-                                </button>
-                            </div>
-                        </form>
-
-                    </div>
-
+    <div class="flex">
+        @php
+            $idProd = App\Models\ProduitService::find($notification->data['idProd']);
+            $continent = $idProd ? $idProd->continent : null;
+            $sous_region = $idProd ? $idProd->sous_region : null;
+            $pays = $idProd ? $idProd->pays : null;
+            $departement = $idProd ? $idProd->zonecoServ : null;
+            $ville = $idProd ? $idProd->villeServ : null;
+            $commune = $idProd ? $idProd->comnServ : null;
+        @endphp
+        <div class="flex-none gap-4 w-96">
+            <!-- Informations sur le produit -->
+            <div class="p-6 border-r bg-white border-gray-200">
+                <!-- Image -->
+                <div class="mb-6">
+                    <img src="{{ asset('post/all/' . $notification->data['photoProd1']) }}" alt="Smart Watch Pro X1"
+                        class="w-full rounded-lg object-cover" />
                 </div>
-                <!-- Section images à gauche -->
 
-                @if ($notification->data['photoProd1'])
-                    <img class="h-52 w-auto  rounded-lg" style="margin-left: 6rem;"
-                        src="{{ asset('post/all/' . $notification->data['photoProd1']) }}" alt="">
-                @endif
+                <!-- Nom du produit -->
                 <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
-                    class="mb-3 text-blue-700 hover:underline flex items-center">
+                    class="text-blue-700 hover:underline flex items-center">
                     Voir le produit
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="ml-2 w-5 h-5">
@@ -102,62 +50,48 @@
                             d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
                     </svg>
                 </a>
-            </div>
-        </div>
-        <div class="grid gap-4 h-96">
-            @php
-                $idProd = App\Models\ProduitService::find($notification->data['idProd']);
-                $continent = $idProd ? $idProd->continent : null;
-                $sous_region = $idProd ? $idProd->sous_region : null;
-                $pays = $idProd ? $idProd->pays : null;
-                $departement = $idProd ? $idProd->zonecoServ : null;
-                $ville = $idProd ? $idProd->villeServ : null;
-                $commune = $idProd ? $idProd->comnServ : null;
-            @endphp
-            <!-- Section détails  à droite -->
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-                <h2 class="text-3xl font-semibold mb-2">{{ $idProd->name }}</h2>
+                <h1 class="text-2xl font-bold mb-4">{{ $idProd->name }}</h1>
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Quantité</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['quantite'] }}</p>
-                </div>
+                <!-- Détails principaux -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            📦
+                        </div>
+                        <span>Quantité : {{ $notification->data['quantite'] }} unités </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            📦
+                        </div>
+                        <span>Conditionnement du colis: {{ $notification->data['textareaContent'] }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            📦
+                        </div>
+                        <span>Lieu de livraison: {{ $notification->data['localite'] }}</span>
+                    </div>
+                    <span class="font-semibold">Date prévue de récupération :</span>
+                    @if (isset($notification->data['dateTot']) && isset($notification->data['dateTard']))
+                        {{ $notification->data['dateTot'] }} - {{ $notification->data['dateTard'] }}
+                    @else
+                        Non spécifiée
+                    @endif
+                    {{-- <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            💶
+                        </div>
+                        <span>Prix de référence: 900€/unité</span>
+                    </div> --}}
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Conditionnement du colis</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['textareaContent'] }}</p>
-                </div>
-
-                <div class="w-full py-4 border-b-2">
-                    <p class="text-md font-semibold mb-2">Lieu de récuperation / position geographique du produit</p>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
-                            <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
-                            <p class="text-md">{{ $continent }}</p>
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            ⏱️
                         </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Sous-région :</p>
-                            <p class="text-md">{{ $sous_region }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Pays :</p>
-                            <p class="text-md">{{ $pays }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Département :</p>
-                            <p class="text-md">{{ $departement }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Ville :</p>
-                            <p class="text-md">{{ $ville }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Commune :</p>
-                            <p class="text-md">{{ $commune }}</p>
-                        </div>
+                        <span>Délai de livraison: 10 jours</span>
                     </div>
                 </div>
-
                 @php
                     $userSenderId = $notification->data['userSender'];
 
@@ -175,147 +109,150 @@
                     $ville = $userSender ? $userSender->ville : null;
                     $commune = $userSender ? $userSender->commune : null;
                 @endphp
+                <!-- Spécifications -->
+                <div class="mt-6">
+                    <h2 class="font-semibold mb-2">Lieu de récupération:</h2>
+                    <ul class="list-disc list-inside space-y-1 text-gray-600">
+                        <li>{{ $continent }}, {{ $sous_region }}, {{ $pays }}, {{ $departement }},
+                            {{ $ville }}, {{ $commune }}</li>
+                        <li>{{ $departement }},
+                            {{ $ville }}, {{ $commune }}</li>
+                    </ul>
+                </div>
+                <!-- Spécifications -->
+                <div class="mt-6">
+                    <h2 class="font-semibold mb-2">Position géographique du client:</h2>
+                    <ul class="list-disc list-inside space-y-1 text-gray-600">
+                        <li>{{ $continent }}, {{ $sous_region }}, {{ $pays }}</li>
+                        <li> {{ $departement }},
+                            {{ $ville }}, {{ $commune }}
+                        </li>
 
-                <div class="w-full py-4 border-b-2">
-                    <p class="text-md font-semibold mb-2">Position geographique du client</p>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
-                            <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
-                            <p class="text-md">{{ $continent }}</p>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1  w-64">
+            <!-- Discussion de négociation -->
+            <div class="bg-white shadow-lg rounded-lg p-4">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center">Discussion de négociation</h3>
+                <p class="text-sm text-gray-500 mb-4">3 participants</p>
+                <!-- comments -->
+                <div
+                    class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
+                    @foreach ($comments as $comment)
+                        <!-- Message du Fournisseur C -->
+                        <div class="bg-gray-50 p-3 rounded-lg mb-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-sm">Fournisseur C</span>
+                                <span class="text-xs text-gray-400">10:30</span>
+                            </div>
+                            <p class="text-sm mb-2">Je peux faire <span>800€ </span> la livraison.</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-bold">850€</span>
+                                <div class="flex space-x-2">
+                                    <button
+                                        class="flex items-center gap-2 text-green-500 hover:text-green-600 font-medium py-2 px-4 bg-green-50 rounded-lg shadow-sm hover:shadow-md transition-all">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.588 4.89a1 1 0 00.95.69h5.127c.969 0 1.371 1.24.588 1.81l-4.15 3.02a1 1 0 00-.364 1.118l1.588 4.89c.3.921-.755 1.688-1.54 1.118l-4.15-3.02a1 1 0 00-1.176 0l-4.15 3.02c-.785.57-1.838-.197-1.539-1.118l1.588-4.89a1 1 0 00-.364-1.118L2.792 9.317c-.783-.57-.38-1.81.588-1.81h5.127a1 1 0 00.95-.69l1.588-4.89z" />
+                                        </svg>
+                                        Meilleure offre
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Sous-région :</p>
-                            <p class="text-md">{{ $sous_region }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Pays :</p>
-                            <p class="text-md">{{ $pays }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Département :</p>
-                            <p class="text-md">{{ $departement }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Ville :</p>
-                            <p class="text-md">{{ $ville }}</p>
-                        </div>
-                        <div>
-                            <p class="text-md font-medium text-gray-600">Commune :</p>
-                            <p class="text-md">{{ $commune }}</p>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Lieu de livraison</p>
-                    <p class="text-md font-medium text-gray-600">{{ $notification->data['localite'] }}</p>
-                </div>
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <p class="text-md font-semibold">Contact fournisseur</p>
-                    <p class="text-md font-medium text-gray-600">{{ $idProd->user->phone }}</p>
-                </div>
+                <!-- Champ pour Proposer un Nouveau Prix -->
+                <div class="bg-gray-100 p-4 rounded-lg mt-4">
+                    <h4 class="text-sm font-bold mb-2">Proposer un nouveau prix</h4>
+                    <form wire:submit.prevent="commentFormLivr">
 
+                        <div
+                            class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                            <input type="hidden" name="code_livr" wire:model="code_livr">
+                            <input type="hidden" name="quantite" wire:model="quantite">
+                            <input type="hidden" name="idProd" wire:model="idProd">
+                            <input type="hidden" name="userSender" wire:model="userSender">
+                            <input type="hidden" name="id_trader" wire:model="id_trader">
+                            <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd">
+                            <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                placeholder="Faire une offre..." required>
 
-                <div class="w-full flex justify-between items-center py-4  border-b-2">
-                    <span class="text-md font-semibold">Date prévue de récupération:</span>
-                    <span>
-                        @if (isset($notification->data['dateTot']) && isset($notification->data['dateTard']))
-                            {{ $notification->data['dateTot'] }} - {{ $notification->data['dateTard'] }}
-                        @else
-                            Non spécifiée
-                        @endif
-                    </span>
+                            <button type="submit" id="submitBtnAppel"
+                                class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                <!-- Button Text and Icon -->
+                                <span wire:loading.remove>
+                                    <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
+                                        <path
+                                            d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                    </svg>
+                                </span>
+                                <!-- Loading Spinner -->
+                                <span wire:loading>
+                                    <svg class="w-5 h-5 animate-spin inline-block" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                    </svg>
+                                    </svg>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
         </div>
-
     </div>
+
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('countdownTimer', (oldestCommentDate, comments) => ({
-                oldestCommentDate: oldestCommentDate ? new Date(oldestCommentDate) : null,
+            Alpine.data('countdownTimer', (oldestcomment) => ({
+                oldestcomment: oldestcomment ? new Date(oldestcomment) : null,
+                jours: '--',
                 hours: '--',
                 minutes: '--',
                 seconds: '--',
-                comments: comments || [],
-                startDate: null,
                 interval: null,
-                isCountdownActive: false, // Nouvelle variable pour suivre l'état du compte à rebours
 
                 init() {
-                    console.log('Initialisation du compteur', this.oldestCommentDate);
-
-                    if (this.oldestCommentDate) {
-                        this.startDate = new Date(this.oldestCommentDate);
-                        this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                    if (this.oldestcomment) {
+                        this.updateCountdown();
                         this.startCountdown();
                     }
-
-                    Echo.channel('oldest-comment')
-                        .listen('OldestCommentUpdated', (e) => {
-                            console.log('Événement OldestCommentUpdated reçu', e);
-                            if (e.oldestCommentDate) {
-                                const newDate = new Date(e.oldestCommentDate);
-
-                                // Ne redémarre que si la nouvelle date est différente
-                                if (!this.oldestCommentDate || this.oldestCommentDate.getTime() !==
-                                    newDate.getTime()) {
-                                    this.oldestCommentDate = newDate;
-                                    this.startDate = new Date(this.oldestCommentDate);
-                                    this.startDate.setMinutes(this.startDate.getMinutes() + 2);
-                                    this.startCountdown();
-
-                                    // Émettre une requête Livewire pour rafraîchir les données
-                                    // Livewire.dispatch('refreshCountdown');
-                                    // console.log('done livewire refresh')
-
-                                    location.reload();
-                                } else {
-                                    console.log(
-                                        'Le compte à rebours est déjà à jour, aucun redémarrage nécessaire.'
-                                    );
-                                }
-                            } else {
-                                console.error('oldestCommentDate est null ou incorrect !', e);
-                            }
-                        });
                 },
 
-
                 startCountdown() {
-                    if (this.isCountdownActive) {
-                        console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
-                        return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
-                    }
-
-                    if (this.interval) {
-                        clearInterval(this.interval);
-                    }
-                    this.updateCountdown();
-                    this.interval = setInterval(this.updateCountdown.bind(this), 1000);
-                    this.isCountdownActive = true; // Marque le compte à rebours comme actif
+                    this.interval = setInterval(() => {
+                        this.updateCountdown();
+                    }, 1000);
                 },
 
                 updateCountdown() {
-                    const currentDate = new Date();
-                    const difference = 0;
+                    const now = new Date();
+                    const difference = this.oldestcomment - now;
 
                     if (difference <= 0) {
-                        clearInterval(this.interval);
                         this.endCountdown();
                         return;
                     }
 
+                    this.jours = Math.floor(difference / (1000 * 60 * 60 * 24));
                     this.hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     this.minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                     this.seconds = Math.floor((difference % (1000 * 60)) / 1000);
                 },
 
                 endCountdown() {
+                    clearInterval(this.interval);
+                    this.jours = this.hours = this.minutes = this.seconds = '00';
                     document.getElementById('countdown').innerText = "Temps écoulé !";
-
                 },
             }));
         });

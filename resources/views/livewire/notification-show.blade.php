@@ -1,6 +1,6 @@
 <div>
 
-    {{-- Achat Direct --}}
+    {{-- Achat Direct debut --}}
     @if ($notification->type === 'App\Notifications\AchatBiicf')
         @livewire('Achatdirect', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')
@@ -11,6 +11,11 @@
         @livewire('command-verif-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAd')
         @livewire('mainleve-ad', ['id' => $id])
+        {{-- Achat Direct fin --}}
+
+
+
+
         {{-- Appel Offre Direct --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
         <div class="p-6 bg-white rounded-lg shadow-md">
@@ -1658,7 +1663,7 @@
 
 
 
-        
+
 
     @endif
 </div>
