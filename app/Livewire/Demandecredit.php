@@ -158,6 +158,7 @@ class Demandecredit extends Component
                 // Récupérer l'ID de l'investisseur qui soumet
                 $submitterId = Auth::id(); // ou $this->investisseur_id selon ton contexte
 
+
                 // Récupérer les investisseurs en excluant celui qui soumet
                 $investisseurs = Investisseur::where('invest_type', $this->bailleur)
                     ->with('user') // Assure-toi que la relation "user" est définie dans le modèle Investisseur
@@ -195,15 +196,57 @@ class Demandecredit extends Component
 
                 // Envoi de la notification aux investisseurs concernés
                 foreach ($investisseurs as $investisseur) {
-                    // Récupérer l'utilisateur associé à l'investisseur
-                    $investisseurUser = $investisseur->user;
+                    // Récupérer 'user_id' de chaque investisseur
+                    $userId = $investisseur->user_id;
 
-                    if ($investisseurUser) {
-                        Notification::send($investisseurUser, new DemandeCreditNotification($demande));
+                    // Rechercher l'investisseur en fonction de 'user_id'
+                    $investissement = Investisseur::where('user_id', $userId)->first();
+
+                    if ($investissement) {
+                        Log::info("Traitement de l'investisseur avec user_id : {$userId}");
+
+                        if ($investissement->tranche) {
+                            // Initialisation des bornes
+                            $borneInferieure = null;
+                            $borneSuperieure = null;
+
+                            // Nettoyer et diviser la tranche
+                            $trancheCleaned = str_replace('.', '', $investissement->tranche); // Supprimer les points
+                            $parts = explode('-', $trancheCleaned);
+
+                            // Déterminer les bornes
+                            $borneInferieure = isset($parts[0]) ? (int) $parts[0] : null; // Borne inférieure
+                            $borneSuperieure = isset($parts[1]) ? (int) $parts[1] : null; // Borne supérieure
+
+                            Log::info("Tranche pour l'investisseur avec user_id {$userId} : Borne inférieure = {$borneInferieure}, Borne supérieure = {$borneSuperieure}");
+
+                            // Vérifier si le crédit total se trouve dans la tranche
+                            if (
+                                $borneInferieure !== null && $borneSuperieure !== null &&
+                                $creditTotal >= $borneInferieure && $creditTotal <= $borneSuperieure
+                            ) {
+                                // Récupérer l'utilisateur associé à l'investisseur
+                                $investisseurUser = $investissement->user;
+
+                                if ($investisseurUser) {
+                                    // Envoyer la notification
+                                    Notification::send($investisseurUser, new DemandeCreditNotification($demande));
+                                    Log::info("Notification envoyée à l'utilisateur ID : {$investisseurUser->id} pour l'investisseur avec user_id : {$userId}");
+                                } else {
+                                    // Log si aucun utilisateur n'est associé
+                                    Log::warning("Aucun utilisateur trouvé pour l'investisseur avec user_id : {$userId}");
+                                }
+                            } else {
+                                Log::info("Le crédit total ({$creditTotal}) ne correspond pas à la tranche de l'investisseur avec user_id : {$userId}");
+                            }
+                        } else {
+                            Log::warning("Tranche non valide ou absente pour l'investisseur avec user_id : {$userId}");
+                        }
                     } else {
-                        Log::warning('No user found for investor ID: ' . $investisseur->id);
+                        Log::error("Investisseur non trouvé avec user_id : {$userId}");
                     }
                 }
+
                 // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
                 $this->dispatch('formSubmitted', 'Demandes de crédit envoyées avec succès');
 

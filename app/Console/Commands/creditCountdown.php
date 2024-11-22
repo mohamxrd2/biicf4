@@ -91,28 +91,17 @@ class creditCountdown extends Command
                             Log::warning('Utilisateur introuvable.', ['id_invest' => $id_invest]);
                         }
 
-                        // Récupérer la liste des investisseurs
-                        // Récupérer la liste des investisseurs
-                        $investisseurs = $credit->id_investisseurs;
+                        // Décoder la liste des investisseurs
+                        $investisseurs = json_decode($credit->id_investisseurs, true);
 
-                        // Décoder les investisseurs si c'est une chaîne JSON
-                        if (is_string($investisseurs)) {
-                            Log::info('Décodage de la liste des investisseurs JSON.', ['investisseurs_brut' => $investisseurs]);
-                            $investisseurs = json_decode($investisseurs, true);
-
-                            if (json_last_error() !== JSON_ERROR_NONE) {
-                                Log::error('Erreur lors du décodage JSON des investisseurs.', ['erreur' => json_last_error_msg()]);
-                                $investisseurs = []; // Si une erreur survient, on initialise un tableau vide pour éviter les erreurs
-                            }
-                        }
-
-                        // Vérifier si la liste est maintenant un tableau
+                        // Vérifier si le décodage a produit un tableau valide
                         if (!is_array($investisseurs)) {
-                            Log::warning('La liste des investisseurs n\'est pas un tableau valide après tentative de décodage.');
-                            $investisseurs = []; // Initialiser un tableau vide si nécessaire
+                            Log::warning('La liste des investisseurs n\'est pas un tableau valide.', ['id_investisseurs' => $credit->id_investisseurs]);
+                            $investisseurs = []; // Initialiser un tableau vide en cas de problème
                         } else {
-                            Log::info('Liste initiale des investisseurs récupérée et décodée.', ['investisseurs' => $investisseurs]);
+                            Log::info('Liste des investisseurs décodée avec succès.', ['investisseurs' => $investisseurs]);
                         }
+
 
                         // Exclure l'investisseur courant ($id_invest)
                         Log::info('Exclusion de l\'investisseur courant.', ['id_invest' => $id_invest]);

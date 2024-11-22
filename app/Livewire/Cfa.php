@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\credits;
 use App\Models\credits_groupé;
+use App\Models\Investisseur;
 use App\Models\projets_accordé;
 use App\Models\transactions_remboursement;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,7 @@ class Cfa extends Component
 
     public function mount()
     {
+        
         $this->refreshData();
     }
 

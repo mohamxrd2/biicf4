@@ -37,7 +37,7 @@
                     @endphp
 
 
-                    <div x-data="countdownTimer({{ json_encode($demandeCredit->date_fin) }})" class="flex flex-col">
+                    <div x-data="countdownTimer({{ json_encode($timeFin) }})" class="flex flex-col">
                         <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
                             <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
                             <div id="countdown" x-show="projetDurer"
@@ -306,7 +306,7 @@
                 @endphp
 
 
-                <div x-data="countdownTimer({{ json_encode($demandeCredit->date_fin) }})" class="flex flex-col">
+                <div x-data="countdownTimer({{ json_encode($timeFin) }})" class="flex flex-col">
                     <div class="border flex items-center justify-between border-gray-300 rounded-lg p-1 shadow-md">
                         <div x-show="projetDurer" class="text-xl font-medium">Temps restant</div>
                         <div id="countdown" x-show="projetDurer"
@@ -668,6 +668,29 @@
         </script>
     @endif
 </div>
+<script>
+    /////////VALIDATAUX DU TAUX//
+
+    const tauxPresent = @json($demandeCredit->taux); // Le taux déjà présent
+    const tauxTradeInput = document.getElementById('tauxTrade');
+    const submitBtn = document.getElementById('submitBtnAppel');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Fonction de validation du taux
+    function validateTaux() {
+        if (parseFloat(tauxTradeInput.value) >= parseFloat(tauxPresent)) {
+            errorMessage.innerText = `Le taux ne peut pas être supérieur à ${tauxPresent}.`;
+            errorMessage.classList.remove('hidden');
+            submitBtn.disabled = true;
+            return false;
+        } else {
+            errorMessage.classList.add('hidden');
+            submitBtn.disabled = false;
+            return true;
+        }
+    }
+    /////////VALIDATAUX DU TAUX//
+</script>
 <script>
     document.addEventListener('livewire:init', function() {
         Livewire.on('refreshPage', () => {
