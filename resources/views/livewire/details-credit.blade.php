@@ -3,6 +3,8 @@
     <div class="flex flex-col justify-center items-center text-center bg-gray-200 p-4 rounded-lg mb-6">
         <h1 class="text-lg font-bold">DETAILS DE LA DEMANDE DE CREDIT</h1>
     </div>
+
+
     @if (
         $investisseurQuiAPayeTout ||
             ($demandeCredit->type_financement === 'négocié' &&
@@ -11,8 +13,6 @@
             $demandeCredit->type_financement === 'négocié')
         @include('finance.components.entete')
     @endif
-
-
     <div class="flex flex-col md:flex-row mb-8 w-full overflow-hidden">
         <!-- information Section -->
         @include('finance.components.Informations')
@@ -480,15 +480,7 @@
 
                     </div>
                 </div>
-                <div class="flex py-2 mt-2 items-center">
-                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                        <img class="h-full w-full border-2 border-white rounded-full dark:border-gray-800 object-cover"
-                            src="{{ asset($userDetails->photo) }}" alt="">
-                    </div>
-                    <div class="ml-2 text-sm font-semibold">
-                        <span class="font-medium text-gray-500 mr-2">De</span>{{ $userDetails->name }}
-                    </div>
-                </div>
+
                 <div class="mt-4">
 
                     @if (session()->has('success'))

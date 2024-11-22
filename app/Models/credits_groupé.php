@@ -20,6 +20,7 @@ class credits_groupé extends Model
         'date_debut',
         'date_fin',
         'portion_journaliere',
+        'comission',
         'statut',
         'description',
     ];

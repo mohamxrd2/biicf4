@@ -296,8 +296,10 @@ class DetailsCredit extends Component
             $durer = Carbon::parse($this->demandeCredit->duree);
             $jours = $debut->diffInDays($durer);
 
-            $montantTotal = $montant * (1 + $this->demandeCredit->taux / 100);
-            $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
+            $montantComission = $montant * 0.01;
+            $montantTotal = ($montant * (1 + $this->demandeCredit->taux / 100)) + $montantComission;
+            $portion_journaliere = ($jours > 0) ? ($montantTotal + $montantComission) / $jours : 0;
+
 
             $resultatsInvestisseurs = [
                 [
@@ -317,6 +319,7 @@ class DetailsCredit extends Component
                 'date_debut' => $this->demandeCredit->date_fin,
                 'date_fin' => $this->demandeCredit->duree,
                 'portion_journaliere' => $portion_journaliere,
+                'comission' => $montantComission,
                 'statut' => 'en cours',
                 'description' => $this->demandeCredit->objet_financement,
             ]);

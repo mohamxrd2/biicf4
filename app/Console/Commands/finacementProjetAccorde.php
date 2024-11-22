@@ -12,6 +12,7 @@ use App\Models\Crp;
 use App\Models\portions_journalieres;
 use App\Models\Projet;
 use App\Models\projets_accordé;
+use App\Models\remboursements;
 use App\Models\Transaction;
 use App\Models\transactions_remboursement;
 use App\Models\User;
@@ -83,8 +84,6 @@ class finacementProjetAccorde extends Command
                 Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
 
-            //////\\\\\
-
             //Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
             $actions = AjoutAction::where('id_projet', $projet->id)
                 ->select('id_invest', DB::raw('SUM(montant) as total_montant'), DB::raw('SUM(nombreActions) as nombre_actions'))
@@ -117,8 +116,9 @@ class finacementProjetAccorde extends Command
                 $jours = $debut->diffInDays($durer);
                 Log::info('nbre date:' . $jours);
 
-                $montantTotal = $projet->montant  * (1 + $projet->taux / 100);
-                $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
+                $montantComission = $projet->montant  * 0.01;
+                $montantTotal = ($projet->montant  * (1 + $projet->taux / 100)) + $montantComission;
+                $portion_journaliere = ($jours > 0) ? ($montantTotal + $montantComission)  / $jours : 0;
 
                 Log::info('projet user ID: ' . $projet->id_user);
 
@@ -132,12 +132,28 @@ class finacementProjetAccorde extends Command
                     'date_debut' => $debut,
                     'date_fin' => $durer,
                     'portion_journaliere' => $portion_journaliere,
+                    'comission' => $montantComission,
                     'statut' => 'en cours',
+                    'description' => $projet->name,
                 ]);
 
                 Log::info('Projet ID: ' . $projet->id . ' inséré dans la table projets_accordés');
             } catch (Exception $e) {
                 Log::error('Erreur lors de l\'insertion du projet ID ' . $projet->id . ' dans la table projets_accordés: ' . $e->getMessage());
+            }
+
+            // Parcourir les investissements pour chaque investisseur dans le projet
+            foreach ($investissements as $investissement) {
+                remboursements::create([
+                    'projet_id' => $projet->id,  // Associe le remboursement au crédit créé
+                    'id_user' => $investissement->id_invest,  // Associe le remboursement au crédit créé
+                    'montant_capital' => $investissement->total_montant,
+                    'montant_interet' => $projet->taux,
+                    'date_remboursement' => $projet->duree,
+                    'statut' => 'en cours',  // Statut du remboursement
+                    'description' => $projet->objet_financement,  // Statut du remboursement
+                ]);
+                Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
 
             // Mise à jour de l'état du projet

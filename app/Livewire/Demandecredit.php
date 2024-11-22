@@ -88,18 +88,22 @@ class Demandecredit extends Component
     }
     public function submit()
     {
+        $this->validate([
+            'roi' => 'required|numeric',
+            'quantite' => 'required|numeric',
+            'financementType' => 'required|string',
+            'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
+            'bailleur' => 'nullable|string',
+            'endDate' => 'required|date',
+            'duration' => 'required|date',
+        ]);
         try {
 
-            $this->validate([
-                'roi' => 'required|numeric',
-                'quantite' => 'required|numeric',
-                'financementType' => 'required|string',
-                'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
-                'bailleur' => 'nullable|string',
-                'endDate' => 'required|date',
-                'duration' => 'required|date',
-            ]);
 
+            if ($this->roi < 5) {
+                session()->flash('messages', ['Le retour sur investissement doit être supérieur à 5.']);
+                return; // Stoppe l'exécution de la fonction
+            }
 
             // Calculs
             $montantMax = $this->montantmax * (is_nan($this->quantite) ? 0 : $this->quantite);
@@ -144,7 +148,7 @@ class Demandecredit extends Component
                 // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
                 $this->dispatch(
                     'formSubmitted',
-                    'Demande de crédit envoyé avec success'
+                    'Demande de Fiancement envoyé avec success'
                 );
 
                 $owner = User::find($this->user_id);

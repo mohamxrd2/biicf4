@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Events\NotificationSent;
 use App\Events\PortionUpdated;
+use App\Models\Admin;
 use App\Models\Cfa;
 use App\Models\Coi;
 use App\Models\credits;
@@ -201,30 +202,15 @@ class RappelPortionsJournalProjets extends Command
                         'nouveau_solde' => $crp->Solde,
                         'montant_débité' => $projet->montant
                     ]);
-                } else {
-                    $emprunteur = User::find($projet->emprunteur_id);
-                    Log::info('emprunteur ID : ' . $emprunteur);
-                    if (!$emprunteur) {
-                        throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $projet->id);
-                    }
-                    $message = 'Le solde de votre compte est insuffisant. Veuillez recharger votre compte pour effectuer cette opération.';
-
-                    Notification::send($emprunteur, new PortionJournaliere($projet, $emprunteur, $emprunteur, $message));
-
-                    // Log si le solde est insuffisant
-                    Log::warning('Solde insuffisant dans CRP pour effectuer la déduction', [
-                        'id_wallet' => $wallet->id,
-                        'solde_actuel' => $crp->Solde,
-                        'montant_requis' => $projet->montant
-                    ]);
-                    // Optionnel : Lever une exception ou retourner une erreur
-                    throw new Exception("Solde insuffisant pour effectuer cette opération.");
                 }
             } else {
                 Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [
                     'id_wallet' => $wallet->id
                 ]);
             }
+
+            $montantTotalInvestisseurs = array_sum($investisseursMontants); // Total envoyé aux investisseurs
+
             foreach ($investisseursMontants as $id => $montant) {
                 // Log de l'opération
                 Log::info("Investisseur ID $id a financé : $montant");
@@ -282,6 +268,52 @@ class RappelPortionsJournalProjets extends Command
 
                 $message = 'Paiement de crédit effectué avec succès.';
                 Notification::send($investisseur, new remboursement($message));
+            }
+
+            // Calcul du montant restant
+            $montantRestant = $projet->montant - $montantTotalInvestisseurs;
+            // Vérifier si le montant restant est égal à la commission
+            if ($montantRestant == $projet->comission) {
+                // Récupérer l'ID de l'administrateur
+                $admin = Admin::find(1); // Supposons que le rôle admin est défini
+                if ($admin) {
+                    $walletAdmin = Wallet::where('admin_id', $admin->id)->first();
+                    if ($walletAdmin) {
+                        // Ajouter le montant restant à l'administrateur
+                        $walletAdmin->balance += $montantRestant;
+                        $walletAdmin->save();
+
+                        // Log de la mise à jour
+                        Log::info('Montant restant envoyé à l\'administrateur', [
+                            'admin_id' => $admin->id,
+                            'montant' => $montantRestant
+                        ]);
+
+                        // Créer une transaction vers l'administrateur
+                        $this->createTransactionAdmin(
+                            $projet->emprunteur_id,
+                            $admin->id,
+                            'Envoie',
+                            $montantRestant,
+                            $this->generateIntegerReference(),
+                            'Commision de la plateforme',
+                            'effectué',
+                            'COI'
+                        );
+
+                        // Créer une transaction vers l'administrateur
+                        $this->createTransactionAdmin(
+                            $projet->emprunteur_id,
+                            $admin->id,
+                            'Réception',
+                            $montantRestant,
+                            $this->generateIntegerReference(),
+                            'Remboursement de financement',
+                            'effectué',
+                            'COI'
+                        );
+                    }
+                }
             }
             DB::commit();
         } catch (Exception $e) {
