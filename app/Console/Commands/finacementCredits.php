@@ -88,8 +88,9 @@ class finacementCredits extends Command
                 $jours = $debut->diffInDays($durer);
                 Log::info('nbre date:' . $jours);
 
-                $montantTotal = $credit->montant  * (1 + $credit->taux / 100);
-                $portion_journaliere = $jours > 0 ? $montantTotal  / $jours : 0;
+                $montantComission = $credit->montant  * 0.01;
+                $montantTotal = $credit->montant  * (1 + $credit->taux / 100) + $montantComission;
+                $portion_journaliere =($jours > 0) ? ($montantTotal + $montantComission)  / $jours : 0;
 
                 Log::info('credit user ID: ' . $credit->id_user);
 

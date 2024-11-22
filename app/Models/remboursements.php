@@ -12,6 +12,7 @@ class remboursements extends Model
     protected $table = 'remboursements';
 
     protected $fillable = [
+        'projet_id',
         'credit_id',
         'creditGrp_id',
         'id_user',

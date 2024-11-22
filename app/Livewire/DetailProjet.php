@@ -177,6 +177,8 @@ class DetailProjet extends Component
             ->orderBy('created_at', 'asc')
             ->get();
     }
+
+    #[On('echo:ajout-montant,AjoutMontantF')]
     public function updatedMontant()
     {
         // Vérifier si le montant saisi dépasse le solde

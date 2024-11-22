@@ -300,15 +300,16 @@ class RappelPortionsJournalCredits extends Command
                             'Envoie',
                             $montantRestant,
                             $this->generateIntegerReference(),
-                            'Remboursement de financement',
+                            'Commision de la plateforme',
                             'effectué',
                             'COI'
                         );
+
                         // Créer une transaction vers l'administrateur
                         $this->createTransactionAdmin(
                             $credit->emprunteur_id,
                             $admin->id,
-                            'Reception',
+                            'Réception',
                             $montantRestant,
                             $this->generateIntegerReference(),
                             'Remboursement de financement',
