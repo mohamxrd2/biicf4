@@ -7,9 +7,8 @@
 
         <div x-data="countdownTimer({{ json_encode($oldestCommentDate) }})" class="flex items-center space-x-2">
             <div class="flex items-center justify-between p-1 border border-gray-300 rounded-lg shadow-md">
-                <div  class="text-xl font-medium">Temps restant</div>
-                <div id="countdown"
-                    class="flex items-center px-4 py-2 font-bold text-red-600 bg-red-200 rounded-lg">
+                <div class="text-xl font-medium">Temps restant</div>
+                <div id="countdown" class="flex items-center px-4 py-2 font-bold text-red-600 bg-red-200 rounded-lg">
                     <div x-text="jours">--</div>j
                     <span>:</span>
                     <div x-text="hours">--</div>h
@@ -21,23 +20,23 @@
             </div>
         </div>
     </div>
-    <div class="flex">
-        @php
-            $idProd = App\Models\ProduitService::find($notification->data['idProd']);
-            $continent = $idProd ? $idProd->continent : null;
-            $sous_region = $idProd ? $idProd->sous_region : null;
-            $pays = $idProd ? $idProd->pays : null;
-            $departement = $idProd ? $idProd->zonecoServ : null;
-            $ville = $idProd ? $idProd->villeServ : null;
-            $commune = $idProd ? $idProd->comnServ : null;
-        @endphp
-        <div class="flex-none gap-4 w-96">
-            <!-- Informations sur le produit -->
-            <div class="p-6 border-r bg-white border-gray-200">
-                <!-- Image -->
-                <div class="mb-6">
+
+    <div class="bg-gray-100 min-h-screen">
+        <div class="flex gap-8">
+            <!-- Carte produit -->
+            <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 h-fit">
+                @php
+                    $idProd = App\Models\ProduitService::find($notification->data['idProd']);
+                    $continent = $idProd ? $idProd->continent : null;
+                    $sous_region = $idProd ? $idProd->sous_region : null;
+                    $pays = $idProd ? $idProd->pays : null;
+                    $departement = $idProd ? $idProd->zonecoServ : null;
+                    $ville = $idProd ? $idProd->villeServ : null;
+                    $commune = $idProd ? $idProd->comnServ : null;
+                @endphp
+                <div class="mb-4">
                     <img src="{{ asset('post/all/' . $notification->data['photoProd1']) }}" alt="Smart Watch Pro X1"
-                        class="w-full rounded-lg object-cover" />
+                        class="w-full h-48 object-cover rounded-lg bg-gray-100" />
                 </div>
 
                 <!-- Nom du produit -->
@@ -131,28 +130,41 @@
                     </ul>
                 </div>
             </div>
-        </div>
-        <div class="flex-1  w-64">
-            <!-- Discussion de négociation -->
-            <div class="bg-white shadow-lg rounded-lg p-4">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center">Discussion de négociation</h3>
-                <p class="text-sm text-gray-500 mb-4">3 participants</p>
-                <!-- comments -->
-                <div
-                    class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
-                    @foreach ($comments as $comment)
-                        <!-- Message du Fournisseur C -->
-                        <div class="bg-gray-50 p-3 rounded-lg mb-3">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="font-bold text-sm">Fournisseur C</span>
-                                <span class="text-xs text-gray-400">10:30</span>
-                            </div>
-                            <p class="text-sm mb-2">Je peux faire <span>800€ </span> la livraison.</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-lg font-bold">850€</span>
-                                <div class="flex space-x-2">
+
+            <!-- Discussion -->
+            <div class="flex-1  w-64">
+                <!-- Discussion de négociation -->
+                <div class="bg-white shadow-lg rounded-lg p-4">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">Discussion de négociation</h3>
+                    <p class="text-sm text-gray-500 mb-4">3 participants</p>
+                    <!-- comments -->
+                    <div
+                        class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
+                        @foreach ($comments as $comment)
+                            <!-- Message du Fournisseur C -->
+                            <div class="bg-white p-4 rounded-lg shadow-md mb-4">
+                                <div class="flex items-start gap-3">
+                                    <!-- Photo utilisateur -->
+                                    <img src="{{ asset($comment['photoUser']) }}" alt="Profile Picture"
+                                        class="w-10 h-10 rounded-full object-cover" />
+                                    <div class="flex-1">
+                                        <!-- Informations utilisateur -->
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="font-semibold text-gray-800 text-sm">Fournisseur C</span>
+                                            <span class="text-xs text-gray-400">10:30</span>
+                                        </div>
+                                        <!-- Message -->
+                                        <p class="text-sm text-gray-600">
+                                            Je peux faire <span class="text-green-500 font-semibold">800€</span> avec la
+                                            livraison.
+                                        </p>
+                                    </div>
+                                </div>
+                                <!-- Offre et bouton -->
+                                <div class="flex justify-between items-center mt-4">
+                                    <span class="text-lg font-bold text-gray-800">850€</span>
                                     <button
-                                        class="flex items-center gap-2 text-green-500 hover:text-green-600 font-medium py-2 px-4 bg-green-50 rounded-lg shadow-sm hover:shadow-md transition-all">
+                                        class="flex items-center gap-2 text-green-500 hover:text-green-600 font-medium py-2 px-4 bg-green-50 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-400"
                                             viewBox="0 0 20 20" fill="currentColor">
                                             <path
@@ -162,55 +174,56 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
+
+
+                    <!-- Champ pour Proposer un Nouveau Prix -->
+                    <div class="bg-gray-100 p-4 rounded-lg mt-4">
+                        <h4 class="text-sm font-bold mb-2">Proposer un nouveau prix</h4>
+                        <form wire:submit.prevent="commentFormLivr">
+
+                            <div
+                                class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
+                                <input type="hidden" name="code_livr" wire:model="code_livr">
+                                <input type="hidden" name="quantite" wire:model="quantite">
+                                <input type="hidden" name="idProd" wire:model="idProd">
+                                <input type="hidden" name="userSender" wire:model="userSender">
+                                <input type="hidden" name="id_trader" wire:model="id_trader">
+                                <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd">
+                                <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                    class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                    placeholder="Faire une offre..." required>
+
+                                <button type="submit" id="submitBtnAppel"
+                                    class=" justify-center p-2 bg-purple-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
+                                    <!-- Button Text and Icon -->
+                                    <span wire:loading.remove>
+                                        <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                            viewBox="0 0 18 20">
+                                            <path
+                                                d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+                                        </svg>
+                                    </span>
+                                    <!-- Loading Spinner -->
+                                    <span wire:loading>
+                                        <svg class="w-5 h-5 animate-spin inline-block"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                        </svg>
+                                        </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-
-                <!-- Champ pour Proposer un Nouveau Prix -->
-                <div class="bg-gray-100 p-4 rounded-lg mt-4">
-                    <h4 class="text-sm font-bold mb-2">Proposer un nouveau prix</h4>
-                    <form wire:submit.prevent="commentFormLivr">
-
-                        <div
-                            class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                            <input type="hidden" name="code_livr" wire:model="code_livr">
-                            <input type="hidden" name="quantite" wire:model="quantite">
-                            <input type="hidden" name="idProd" wire:model="idProd">
-                            <input type="hidden" name="userSender" wire:model="userSender">
-                            <input type="hidden" name="id_trader" wire:model="id_trader">
-                            <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd">
-                            <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                placeholder="Faire une offre..." required>
-
-                            <button type="submit" id="submitBtnAppel"
-                                class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                <!-- Button Text and Icon -->
-                                <span wire:loading.remove>
-                                    <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
-                                        <path
-                                            d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                    </svg>
-                                </span>
-                                <!-- Loading Spinner -->
-                                <span wire:loading>
-                                    <svg class="w-5 h-5 animate-spin inline-block" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                    </svg>
-                                    </svg>
-                            </button>
-                        </div>
-                    </form>
-                </div>
             </div>
-
         </div>
     </div>
-
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('countdownTimer', (oldestcomment) => ({

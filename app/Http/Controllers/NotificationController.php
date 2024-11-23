@@ -50,6 +50,5 @@ class NotificationController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de la récupération de la notification: ' . $e->getMessage());
         }
-
     }
 }

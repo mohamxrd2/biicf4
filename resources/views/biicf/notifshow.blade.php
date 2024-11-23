@@ -9,7 +9,7 @@
 
     <div class=" mx-auto">
 
-        <livewire:notification-show :id="$id" :lazy="true"/>
+        <livewire:notification-show :id="$id"/>
 
     </div>
 
