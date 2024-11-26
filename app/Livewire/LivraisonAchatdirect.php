@@ -93,8 +93,6 @@ class LivraisonAchatdirect extends Component
                 'Temps écoule, Négociation terminé.'
             )
         ]);
-
-
     }
     public function commentFormLivr()
     {
@@ -160,15 +158,6 @@ class LivraisonAchatdirect extends Component
         }
     }
 
-
-    protected function generateIntegerReference(): int
-    {
-        // Récupère l'horodatage en millisecondes
-        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
-
-        // Retourne l'horodatage comme entier
-        return (int) $timestamp;
-    }
 
     public function render()
     {

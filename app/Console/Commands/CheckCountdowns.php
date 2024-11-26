@@ -129,7 +129,7 @@ class CheckCountdowns extends Command
                         }
                     }
                     // Vérifier le type de notification à envoyer
-                    if ($countdown->difference === 'single') {
+                    if ($countdown->difference === 'appOffre') {
                         // $Adetails = [
                         //     'code_unique' => $countdown->code_unique,
                         //     'prixTrade' => $price,
@@ -147,7 +147,7 @@ class CheckCountdowns extends Command
                         //     'timeEnd' => $timeEnd ?? null,
                         //     'dayPeriod' => $dayPeriod ?? null,
                         // ];
-                        Log::info('Envoi de la notification pour type "single".', ['user_id' => $commentToUse->user->id]);
+                        Log::info('Envoi de la notification pour type "appOffre".', ['user_id' => $commentToUse->user->id]);
                         // Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
 
                         $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();

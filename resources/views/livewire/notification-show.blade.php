@@ -20,11 +20,6 @@
 
         {{-- Appel Offre Direct --}}
     @elseif ($notification->type === 'App\Notifications\AppelOffre')
-        <div class="p-6 bg-white rounded-lg shadow-md">
-            <h1 class="mb-2 text-xl font-semibold text-center">Negociation de l'offre sur
-                <span class="text-3xl">{{ $notification->data['productName'] }}</span>
-            </h1>
-        </div>
         @livewire('appeloffre', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
         @livewire('appeloffreterminer', ['id' => $id])
@@ -1102,16 +1097,13 @@
                     </div>
 
                     <div class="flex flex-col">
-                        <p class="mb-3 text-md">Nom du client: <span
-                                class="font-semibold "></span>
+                        <p class="mb-3 text-md">Nom du client: <span class="font-semibold "></span>
                         </p>
                         {{-- <p class="mb-3 text-md">Adress du client: <span
                                 class="font-semibold ">{{ $client->address }}</span></p> --}}
-                        <p class="mb-3 text-md">Contact du client: <span
-                                class="font-semibold "></span></p>
+                        <p class="mb-3 text-md">Contact du client: <span class="font-semibold "></span></p>
                         {{-- <p class="mb-3 text-md">Engin du client : <span class="font-semibold ">Moto</span></p> --}}
-                        <p class="mb-3 text-md">Produit à recuperer: <span
-                                class= "font-semibold "></span></p>
+                        <p class="mb-3 text-md">Produit à recuperer: <span class= "font-semibold "></span></p>
                     </div>
 
 
