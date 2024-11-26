@@ -205,8 +205,9 @@ class NotificationShow extends Component
     public $id_sos;
 
     public $receipt;
+    public $achatdirect;
 
-    
+
 
 
 
@@ -227,23 +228,23 @@ class NotificationShow extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
 
         $this->amountDeposit = $this->notification->data['amount'] ?? null;
-        $this->roiDeposit = $this->notification->data['roi']?? null;
-        $this->userDeposit = User::find($this->notification->data['user_id']?? null);
+        $this->roiDeposit = $this->notification->data['roi'] ?? null;
+        $this->userDeposit = User::find($this->notification->data['user_id'] ?? null);
 
         $userCennecedid = Auth::user()->id;
 
         $this->userConnected = User::find($userCennecedid);
 
-        $this->id_sos = $this->notification->data['id_sos']?? null;
+        $this->id_sos = $this->notification->data['id_sos'] ?? null;
 
-        $this->operatorRecu = $this->notification->data['operator']?? null;
+        $this->operatorRecu = $this->notification->data['operator'] ?? null;
 
-        $this->phonenumberRecu = $this->notification->data['phonenumber']?? null;
+        $this->phonenumberRecu = $this->notification->data['phonenumber'] ?? null;
 
         // Vérifiez si la demande existe déjà dans la table RechargeSos
         $this->existingRequest = RechargeSos::where('id_sos', $this->id_sos)->first();
 
-        
+
 
 
         $this->montantTotal = $this->notification->data['montantTotal'] ?? null;
@@ -317,22 +318,41 @@ class NotificationShow extends Component
 
         $this->matine_client = $this->notification->data['matine'] ?? null;
         //pour la facture
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification'
-            || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
-            || $this->notification->type === 'App\Notifications\AppelOffreTerminerGrouper'
-            || $this->notification->type === 'App\Notifications\AppelOffre'
-            || $this->notification->type === 'App\Notifications\OffreNotifGroup'
-            || $this->notification->type === 'App\Notifications\NegosTerminer'
-            || $this->notification->type === 'App\Notifications\OffreNegosNotif'
-            || $this->notification->type === 'App\Notifications\OffreNegosDone'
-            || $this->notification->type === 'App\Notifications\AOGrouper'
-            ||  $this->notification->type === 'App\Notifications\OffreNotif'
-            || $this->notification->type === 'App\Notifications\Retrait')
-            || $this->notification->type === 'App\Notifications\DepositSos' 
-            || $this->notification->type == 'App\Notifications\DepositRecu'
-            || $this->notification->type === 'App\Notifications\DepositSend'
-            ? null
-            : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null) ?? null;
+        // Vérifier si le type de notification est dans la liste spécifiée
+        $excludedTypes = [
+            'App\Notifications\AppelOffreGrouperNotification',
+            'App\Notifications\AppelOffreGrouperNotification',
+            'App\Notifications\AppelOffreTerminer',
+            'App\Notifications\AppelOffreTerminerGrouper',
+            'App\Notifications\AppelOffre',
+            'App\Notifications\OffreNotifGroup',
+            'App\Notifications\NegosTerminer',
+            'App\Notifications\OffreNegosNotif',
+            'App\Notifications\OffreNegosDone',
+            'App\Notifications\AOGrouper',
+            'App\Notifications\OffreNotif',
+            'App\Notifications\Retrait',
+            'App\Notifications\DepositSos',
+            'App\Notifications\DepositRecu',
+            'App\Notifications\DepositSend',
+            'App\Notifications\Confirmation',
+            'App\Notifications\AchatBiicf'
+
+        ];
+
+        // Si le type de notification est dans les exclusions, produitfat est null
+        if (in_array($this->notification->type, $excludedTypes)) {
+            $this->produitfat = null;
+        } else {
+            // Sinon, récupérer les informations associées à l'achat direct
+            $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
+
+            if ($this->achatdirect) {
+                $this->produitfat = ProduitService::find($this->achatdirect->idProd);
+            } else {
+                $this->produitfat = null;
+            }
+        }
 
         // $this->produitfat = ProduitService::find($this->notification->data['idProd']) ?? null;
         $this->idProd = $this->notification->data['idProd'] ?? null;
@@ -344,10 +364,7 @@ class NotificationShow extends Component
         $this->livreur = User::find($this->notification->data['id_livreur'] ?? null);
 
         $this->client = User::find($this->notification->data['id_client'] ?? null);
-        //achat direct dans notif show
-        // $this->nameProd = $this->produit->name;
-        // $this->userTrader = $this->produit->user->id;
-        // $this->idProd = $this->produit->id;
+
 
         $this->userWallet = Wallet::where('user_id', $this->user)->first();
         // $this->prixArticleNegos = $this->notification->data['quantite'] * $this->namefourlivr->prix;
@@ -453,14 +470,13 @@ class NotificationShow extends Component
         $this->resetForm();
     }
 
-   
+
 
     public function resetForm()
     {
         $this->operator = "";
         $this->phonenumber = $this->userConnected->phone;
         $this->receipt = "";
-
     }
 
 
@@ -727,7 +743,7 @@ class NotificationShow extends Component
         try {
             // Marquer la notification comme acceptée
             Log::info("Début de l'acceptation de la demande avec ID notification : " . $this->notification->id);
-            
+
             // Validation des données
             $this->validate([
                 'amountDeposit' => 'required|numeric|min:1',
@@ -746,16 +762,16 @@ class NotificationShow extends Component
                 'phonenumber.required' => 'Veuillez entrer un numéro de téléphone.',
                 'phonenumber.numeric' => 'Le numéro de téléphone doit être un nombre.',
             ]);
-            
+
             // Vérifier les valeurs après validation
             Log::info("Montant: $this->amountDeposit, ROI: $this->roiDeposit, Opérateur: $this->operator, Téléphone: $this->phonenumber");
-    
+
             if ($this->existingRequest) {
                 // Si la demande existe, afficher un message d'erreur
                 session()->flash('error', 'La demande est expirée. Un utilisateur a déjà accepté la demande.');
                 return; // Sortir de la méthode
             }
-            
+
             // Insertion des données dans la table RechargeSos
             RechargeSos::create([
                 'userdem' => $this->notification->data['user_id'],
@@ -767,16 +783,16 @@ class NotificationShow extends Component
                 'id_sos' => $this->id_sos,
                 'statut' => 'accepté',
             ]);
-    
+
             $investWallet = Wallet::where('user_id', Auth::id())->first();
-    
+
             if (!$investWallet) {
                 session()->flash('error', 'Wallet non trouvé pour l’utilisateur.');
                 return;
             }
-    
+
             $investCoi = Coi::where('id_wallet', $investWallet->id)->first();
-    
+
             if (!$investCoi) {
                 session()->flash('error', 'Coi non trouvé pour le wallet.');
                 return;
@@ -795,15 +811,15 @@ class NotificationShow extends Component
                 session()->flash('error', 'Coi non trouvé pour le wallet.');
                 return;
             }
-    
+
             // Décrémenter le solde
             $investCoi->decrement('Solde', $this->amountDeposit);
 
             $demCfa->increment('Solde', $this->amountDeposit);
-    
+
             // Générer un ID de référence
             $referenceId = $this->generateIntegerReference();
-    
+
             // Créer la transaction
             $this->createTransactionNew(Auth::id(), Auth::id(), 'Gele', 'COI', $this->amountDeposit, $referenceId, 'Rechargement SOS');
 
@@ -820,13 +836,12 @@ class NotificationShow extends Component
             ];
 
             Notification::send(User::find($this->notification->data['user_id']), new DepositRecu($data));
-    
+
             // Message de succès et réinitialisation du formulaire
             session()->flash('success', 'La demande de dépôt a été acceptée et enregistrée avec succès.');
             $this->resetForm();
-            
+
             $this->notification->update(['reponse' => 'Accepté']);
-            
         } catch (\Exception $e) {
             // Enregistrer l'erreur dans les logs
             Log::error('Erreur lors de l’acceptation de la demande de dépôt : ' . $e->getMessage());
@@ -838,11 +853,10 @@ class NotificationShow extends Component
     {
         session()->flash('success', 'La demande de dépôt a été refusé et enregistrée avec succès.');
         $this->resetForm();
-        
-        $this->notification->update(['reponse' => 'Refusé']);
 
+        $this->notification->update(['reponse' => 'Refusé']);
     }
-    
+
     protected function createTransactionNew(int $senderId, int $receiverId, string $type, string $type_compte, float $amount, int $reference_id, string $description)
     {
 
@@ -881,7 +895,7 @@ class NotificationShow extends Component
             'user_id' => Auth::id(),
             'amount' => $this->amountDeposit,
             'roi' => $this->roiDeposit,
-           'receipt' => $receiptPath,
+            'receipt' => $receiptPath,
         ];
 
 
@@ -894,7 +908,6 @@ class NotificationShow extends Component
         $this->resetForm(); // Réinitialiser le formulaire
 
         session()->flash('success', 'Le reçu a été envoyé avec succès.');
-
     }
 
     public function montantRecu()
@@ -921,7 +934,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'Recu']);
 
         session()->flash('success', 'L\'argent à été recu');
-
     }
 
     public function nonrecu()
@@ -951,7 +963,6 @@ class NotificationShow extends Component
         $this->notification->update(['reponse' => 'Non recu']);
 
         session()->flash('success', 'L\'argent à n\'a pas été recu');
-
     }
 
     protected function handlePhotoUpload($photoField)
@@ -1326,21 +1337,31 @@ class NotificationShow extends Component
 
         session()->flash('message', 'Livraison marquée comme livrée.');
     }
+
+    public function getCodeVerifProperty()
+    {
+        // Nettoie le code en enlevant les espaces blancs
+        return trim($this->code_verif);
+    }
+
     public function verifyCode()
     {
+        // Validation du code de vérification
         $this->validate([
-            'code_verif' => 'required|string|size:10',
+            'code_verif' => 'required|string|size:4', // Taille de 4 caractères
         ], [
             'code_verif.required' => 'Le code de vérification est requis.',
-            'code_verif.string' => 'Le code de vérification doit être une chaîne de caractères.',
-            'code_verif.size' => 'Le code de vérification doit être exactement de 10 caractères.',
+            'code_verif.string' => 'Le code de vérification doit être une chaîne.',
+            'code_verif.size' => 'Le code de vérification doit être exactement de 4 caractères.',
         ]);
-        if ($this->code_verif === $this->notification->data['code_unique']) {
+        if (trim($this->code_verif) === trim($this->notification->data['CodeVerification'])) {
             session()->flash('succes', 'Code valide.');
         } else {
             session()->flash('error', 'Code invalide.');
         }
+
     }
+
 
 
     public function acceptColis()
@@ -1490,13 +1511,13 @@ class NotificationShow extends Component
 
         $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
 
-        
+
 
         $referenceId = $this->generateIntegerReference();
 
         $this->createTransactionNew($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Réception', 'COC', $montantTotal, $referenceId, 'Refus de recupération de ' . $produit->name);
 
-        
+
 
         $this->createTransactionNew($this->notification->data['id_client'], $$this->notification->data['id_livreur'], 'Réception', 'COC', $this->notification->data['prixTrade'], $referenceId, 'Réception pour livraison de ' . $produit->name);
 

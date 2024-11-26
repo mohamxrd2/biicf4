@@ -1,5 +1,9 @@
 <div class="container px-4 py-6 mx-auto">
-    
+
+
+
+
+
 
     <div class="overflow-hidden bg-white rounded-lg shadow-md">
         <div class="p-6 border-b border-gray-200">
@@ -12,6 +16,8 @@
             </h1>
         </div>
         <div class="p-6">
+
+
             <!-- Détails de la Commande -->
             <div class="p-4 mb-6 rounded-lg shadow-sm bg-gray-50">
                 <h2 class="mb-2 text-lg font-semibold text-gray-700">Informations de la Commande</h2>
@@ -27,13 +33,13 @@
                         <span>{{ Auth::user()->name }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">date prevue de recuperation:</span>
-                        <span>{{ $notification->data['date_tot'] }} - {{ $notification->data['date_tard'] }}</span>
+                        <span>{{ $achatdirect->date_tot }} - {{ $achatdirect->date_tard }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">periode:</span>
-                        <span>{{ $notification->data['dayPeriod'] }}</span>
+                        <span>{{ $achatdirect->dayPeriod }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">heure prevue de recuperation:</span>
-                        <span>{{ $notification->data['timeStart'] }} - {{ $notification->data['timeEnd'] }}</span>
+                        <span>{{ $achatdirect->timeStart }} - {{ $achatdirect->timeEnd }}</span>
                     </li>
                     <li class="flex justify-between py-1">
                         <span class="font-medium">Statut:</span>
@@ -56,96 +62,73 @@
                 </ul>
             </div>
 
-            <!-- Liste des Produits -->
-            <div class="p-4 rounded-lg shadow-sm bg-gray-50">
-                <h2 class="mb-2 text-lg font-semibold text-gray-700">Éléments de la Commande</h2>
-                <p class="my-3 text-sm text-gray-500">Vous serez débité de 10% sur le prix de la marchandise
+            <!-- details de la commande -->
+            <div class="p-6 rounded-lg ">
+                <h2 class="mb-4 text-xl font-bold text-gray-800">Éléments de la Commande</h2>
+                <p class="mb-6 text-sm text-gray-600">
+                    Vous serez débité de <strong>10%</strong> sur le prix de la marchandise.
                 </p>
 
-                <!-- Tableau pour écrans moyens et plus grands -->
-                <div class="hidden md:block">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr class="text-left text-gray-600 bg-gray-100">
-                                <th class="px-4 py-2">Produit ou Service</th>
-                                <th class="px-4 py-2">Quantité</th>
-                                <th class="px-4 py-2">Lieu de livraison</th>
-                                <th class="px-4 py-2">Spécificité</th>
-                                <th class="px-4 py-2">Prix de la commande</th>
-                                <th class="px-4 py-2">Somme finale</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr>
-                                <td class="px-4 py-2">{{ $notification->data['nameProd'] }}</td>
-                                <td class="px-4 py-2">{{ $notification->data['quantité'] }}</td>
-                                <td class="px-4 py-2">{{ $notification->data['localite'] }}</td>
-                                <td class="px-4 py-2">{{ $notification->data['specificite'] }}</td>
-                                <td class="px-4 py-2">
-                                    {{ isset($notification->data['montantTotal']) ? number_format($notification->data['montantTotal'], 2, ',', '.') : 'N/A' }}
-                                </td>
-                                @php
-                                    $prixArtiche = $notification->data['montantTotal'] ?? 0;
-                                    $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
-                                @endphp
-                                <td class="px-4 py-2">{{ number_format($sommeRecu, 2, ',', '.') }} Fcfa</td>
-                            </tr>
-                            <!-- Ajoutez d'autres lignes de produits si nécessaire -->
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Informations sur le produit/service -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="mt-6">
+                        <h2 class="text-lg font-semibold text-gray-800">Produit / Service commandé</h2>
+                        <div class="mt-2 space-y-4">
+                            <!-- Exemple de produit/service -->
+                            <div class="flex items-center">
+                                <img src="{{ $achatdirect->photoProd ? asset('post/all/' . $achatdirect->photoProd) : asset('img/noimg.jpeg') }}"
+                                    alt="Image produit" class="w-20 h-20 object-cover rounded-lg">
+                                <div class="ml-4 flex-1">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-2">Commande avec livraison</h3>
+                                    <p class="text-sm text-gray-600">
+                                        <strong>Lieu de livraison :</strong> {{ $achatdirect->localite }}
+                                    </p>
+                                    <p class="mt-2 text-sm text-gray-600">
+                                        <strong>Conditionnement :</strong> {{ $produits->condProd }}
+                                    </p>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="text-sm font-medium text-gray-900">Produit : {{ $produits->name }}
+                                    </h3>
+                                    <p class="mt-2 text-sm text-gray-600">
+                                        <strong>Quantité demandée :</strong> {{ $achatdirect->quantité }}
+                                    </p>
+                                    <p class="mt-1 text-sm text-gray-600">
+                                        <strong>Prix Unitaire :</strong> {{ $produits->prix }} FCFA
+                                    </p>
+                                </div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
+                                    FCFA</div>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Liste pour petits écrans -->
-                <div class="block md:hidden">
-                    <div class="space-y-4">
-                        <div class="flex flex-col">
-                            <div class="font-semibold text-gray-700">Produit ou Service:</div>
-                            <div class="text-gray-800">{{ $notification->data['nameProd'] }}</div>
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="font-semibold text-gray-700">Quantité:</div>
-                            <div class="text-gray-800">{{ $notification->data['quantité'] }}</div>
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="font-semibold text-gray-700">Lieu de livraison:</div>
-                            <div class="text-gray-800">{{ $notification->data['localite'] }}</div>
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="font-semibold text-gray-700">Spécificité:</div>
-                            <div class="text-gray-800">{{ $notification->data['specificite'] }}</div>
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="font-semibold text-gray-700">Prix de la commande:</div>
-                            <div class="text-gray-800">
-                                {{ isset($notification->data['montantTotal']) ? number_format($notification->data['montantTotal'], 2, ',', '.') : 'N/A' }}
-                                Fcfa
+                    <!-- Résumé de la commande -->
+                    <div class="mt-6">
+                        <h2 class="text-lg font-semibold text-gray-800">Résumé de la commande</h2>
+                        <div class="mt-2 space-y-1 text-sm text-gray-600">
+                            <div class="flex justify-between">
+                                <span>Sous-total :</span>
+                                <span>{{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
+                                    FCFA</span>
                             </div>
 
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="font-semibold text-gray-700">Somme finale:</div>
-                            @php
-                                $prixArtiche = $notification->data['montantTotal'] ?? 0;
-                                $sommeRecu = $prixArtiche - $prixArtiche * 0.1;
-                            @endphp
-                            <div class="text-gray-800">
-                                {{ number_format($sommeRecu, 2, ',', '.') }} Fcfa
+                            <div class="flex justify-between">
+                                <span>frais de service :</span>
+                                <span>10% </span>
+                            </div>
+                            <div class="flex justify-between font-medium text-gray-900">
+                                <span>Prix après frais de service :</span>
+                                <span>{{ number_format($achatdirect->montantTotal - $achatdirect->montantTotal * 0.1, 2, ',', '.') }}
+                                    FCFA</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
 
-
-            <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
-                class="flex items-center my-3 text-blue-700 hover:underline">
-                Voir le produit
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-5 h-5 ml-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                </svg>
-            </a>
 
             <div class="flex flex-col justify-end gap-4 mt-6 md:flex-row">
                 @if ($notification->reponse == 'accepte' || $notification->reponse == 'refuser')
@@ -190,22 +173,8 @@
                                         <p class="text-gray-800">
                                             @if ($nombreLivr)
                                                 <div>
-                                                    {{-- <h3>Détails de la commande</h3> --}}
-                                                    {{-- <p><strong>ID de client :</strong> {{ $Idsender }}</p>
-                                                    <p><strong>Continent du client :</strong>
-                                                        {{ $clientContinent }}</p>
-                                                    <p><strong>Sous-Region du client :</strong>
-                                                        {{ $clientSous_Region }}</p>
-                                                    <p><strong>Pays du client :</strong> {{ $clientPays }}
-                                                    </p>
-                                                    <p><strong>Departement du client :</strong>
-                                                        {{ $clientDepartement }}</p>
-                                                    <p><strong>Commune du client :</strong>{{ $clientCommune }}
-                                                    </p> --}}
-                                                    <p><strong>Le nombre total de livreurs disponible
-                                                            :</strong>{{ $livreursCount }}</p>
-
-
+                                                    <p><strong>Le nombre total de livreurs
+                                                            disponible:</strong>{{ $livreursCount }}</p>
                                                 </div>
                                             @else
                                                 Aucun livreur disponible dans la zone
@@ -224,15 +193,14 @@
 
                                                 <!-- Textarea and action buttons -->
                                                 <div x-show="open" class="mt-4">
-                                                    <form wire:submit.prevent="accepter"
-                                                        enctype="multipart/form-data">
+                                                    <form wire:submit.prevent="accepter" enctype="multipart/form-data">
 
                                                         <textarea wire:model="textareaValue" x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded"
                                                             rows="6" required>
                                                         </textarea>
 
                                                         <!-- Champ de téléchargement de fichier -->
-                                                        <input type="file" wire:model="photoProd1" class="mt-2"
+                                                        <input type="file" wire:model="photoProd" class="mt-2"
                                                             required />
 
                                                         <div class="flex justify-end mt-2 space-x-2">

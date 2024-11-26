@@ -21,6 +21,7 @@ use App\Models\NotificationLog;
 use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
 use App\Notifications\AchatGroupBiicf;
+use App\Notifications\Confirmation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -137,7 +138,7 @@ class AchatDirectGroupe extends Component
             return;
         }
 
-        // Commencez une transaction de base de données
+        // // Commencez une transaction de base de données
         DB::beginTransaction();
         try {
             // Mettre à jour le solde du portefeuille
@@ -173,12 +174,22 @@ class AchatDirectGroupe extends Component
                 'reference_id' => $reference_id,
             ]);
 
-            // Créer deux transactions
+            // Mettre à jour la table de AchatDirectModel de fond
+            $achatUser = [
+
+                'nameProd' => $validated['nameProd'],
+                'idProd' => $validated['idProd'],
+                'idAchat' => $achat->id,
+                'title' => 'Confirmation de commande',
+                'description' => 'La commande a été envoyéé avec success.',
+            ];
+
+            // Créer  transactions
             $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Gele Pour ' . 'Achat de ' . $validated['nameProd'], 'effectué', 'COC');
 
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
-            Notification::send($owner, new AchatBiicf($achat));
+            Notification::send($owner, new AchatBiicf($achatUser));
 
             // Après l'envoi de la notification
             event(new NotificationSent($owner));
@@ -193,11 +204,24 @@ class AchatDirectGroupe extends Component
 
             $this->reset(['quantité', 'localite']);
 
+
+
+            $userConnecte = Auth::user(); // Récupérer l'utilisateur connecté
+
+            if ($userConnecte instanceof User) { // Vérifier que c'est un utilisateur valide
+
+                //Envoyer une notification au propriétaire ($owner)
+                Notification::send($userConnecte, new Confirmation($achatUser));
+
+                // Déclencher un événement pour signaler l'envoi de la notification
+                event(new NotificationSent($userConnecte));
+            }
             // Émettre un événement après la soumission
             $this->dispatch('formSubmitted', 'Achat Affectué Avec Success');
             // Valider la transaction de base de données
             DB::commit();
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Erreur lors de l\'achat direct.', [
                 'error' => $e->getMessage(),
                 'userId' => $userId,

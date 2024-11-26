@@ -229,10 +229,22 @@
                                 @php
                                     // Extraire les noms distincts et les user_id distincts
                                     $distinctNames = $group->pluck('name')->unique();
+                                    $distinctquatiteMin = $group->pluck('qteProd_min')->unique();
+                                    $distinctquatiteMax = $group->pluck('qteProd_max')->unique();
                                     $distinctTypes = $group->pluck('type')->unique();
-                                    $distinctCondProds = $group->pluck('condProd')->unique();
+                                    $distinctCondProds = $group
+                                        ->pluck('condProd')
+                                        ->map(function ($item) {
+                                            return trim($item);
+                                        })
+                                        ->unique();
                                     $distinctFormatProds = $group->pluck('formatProd')->unique();
-                                    $distinctSpecifications = $group->pluck('specification')->unique();
+                                    $distinctSpecifications = $group
+                                        ->pluck('specification')
+                                        ->map(function ($item) {
+                                            return trim($item);
+                                        })
+                                        ->unique();
                                     $distinctParticularites = $group->pluck('Particularite')->unique();
                                     $type = $group->pluck('type')->unique()->implode(', ');
                                     $distinctUserIds = $group->pluck('user_id')->unique();
@@ -240,95 +252,111 @@
                                     $lowestPrice = $group->pluck('prix')->min(); // Trouver le prix le plus bas
 
                                 @endphp
-                                <div
-                                    class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                                    <div class="flex items-start gap-4">
-                                        <div class="flex-1">
-                                            <h4 class="text-lg font-semibold text-black dark:text-white">
-                                                Reference du produit : {{ $filtre }}
-                                            </h4>
-                                            <h4 class="text-lg font-semibold text-black dark:text-white">
-                                                type : {{ $type }}
-                                            </h4>
+                                <div class="bg-white p-6 rounded-lg shadow-lg">
+                                    <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                                        <div>
+                                            <h2 class="text-lg font-semibold text-gray-800">Référence : <span
+                                                    class="text-blue-500">{{ $filtre }}</span>
+                                            </h2>
+                                            <p class="text-sm text-gray-600">Type : {{ $type }}</p>
                                             @foreach ($distinctNames as $name)
-                                                <p class="text-sm text-gray-700 dark:text-gray-300">
-                                                    Nom : {{ $name }}
-                                                </p>
+                                                <p class="text-sm text-gray-600">Nom : {{ $name }}</p>
                                             @endforeach
-                                            <div x-data="{ open: false }">
-                                                <!-- Bouton pour ouvrir le pop-up -->
-                                                <button @click="open = true"
-                                                    class="px-4 py-2 text-white bg-blue-500 rounded">
-                                                    Details
-                                                </button>
 
-                                                <!-- Pop-up -->
-                                                <div x-show="open"
-                                                    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-                                                    style="display: none;">
-                                                    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-                                                        <h2 class="mb-4 text-xl font-bold">Details Du Produit Recherché
-                                                        </h2>
-                                                        <p>Référence : {{ $filtre }}</p>
+                                        </div>
+                                        <span
+                                            class="px-3 py-1 text-sm font-medium text-yellow-600 bg-yellow-100 rounded-lg">
+                                            {{ $distinctUserCount }} Fournisseurs
+                                        </span>
+                                    </div>
 
-                                                        <!-- Afficher d'autres détails ici -->
-                                                        <p>Type : {{ $distinctTypes->join(', ') }}</p>
-                                                        <p>Condition : {{ $distinctCondProds->join(', ') }}</p>
-                                                        <p>Format : {{ $distinctFormatProds->join(', ') }}</p>
-                                                        <p>Spécification : {{ $distinctSpecifications->join(', ') }}</p>
+                                    <div class="mt-6 flex items-center space-x-4">
+                                        <div x-data="{ open: false }">
+                                            <!-- Bouton pour ouvrir le pop-up -->
+                                            <button @click="open = true"
+                                                class="px-4 py-2 text-white rounded-lg bg-blue-500">
+                                                Details
+                                            </button>
 
-                                                        <p>Particularité : {{ $distinctParticularites->join(', ') }}</p>
+                                            <!-- Pop-up -->
+                                            <div x-show="open"
+                                                class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                                                style="display: none;">
+                                                <div
+                                                    class="w-full max-w-md p-6 bg-white rounded-lg shadow-xl transition-transform transform hover:scale-105">
+                                                    <!-- Titre -->
+                                                    <h2 class="mb-4 text-2xl font-bold text-gray-800 border-b pb-2">📋
+                                                        Details du Produit</h2>
+
+                                                    <!-- Contenu -->
+                                                    <div class="space-y-2 text-gray-600">
+                                                        <p><span class="font-medium text-gray-800">Référence :</span>
+                                                            {{ $filtre }}</p>
+                                                        <p><span class="font-medium text-gray-800">Type :</span>
+                                                            {{ $distinctTypes->join(', ') }}</p>
+                                                        <p><span class="font-medium text-gray-800">Conditionnement :</span>
+                                                            {{ $distinctCondProds->join(', ') }}</p>
+                                                        <p><span class="font-medium text-gray-800">Format :</span>
+                                                            {{ $distinctFormatProds->join(', ') }}</p>
+                                                        <p><span class="font-medium text-gray-800">Spécification :</span>
+                                                            {{ $distinctSpecifications->join(', ') }}</p>
+                                                        <p><span class="font-medium text-gray-800">Particularité :</span>
+                                                            {{ $distinctParticularites->join(', ') }}</p>
+                                                        <p><span class="font-medium text-gray-800">Quantité Traité :</span>
+                                                            [ {{ $distinctquatiteMin->join(', ') }} -
+                                                            {{ $distinctquatiteMax->join(', ') }} ]</p>
+                                                    </div>
+
+                                                    <!-- Bouton -->
+                                                    <div class="mt-6 text-right">
                                                         <button @click="open = false"
-                                                            class="px-4 py-2 text-white bg-red-500 rounded">
+                                                            class="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300">
                                                             Fermer
                                                         </button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <div
-                                                class="flex items-center p-2 text-xs text-yellow-600 rounded bg-yellow-100/60">
-                                                <p class="mr-1 font-semibold">{{ $distinctUserCount }}</p>
-                                                <span>Fournisseurs</span>
-                                            </div>
-                                        </div>
 
-                                    </div>
-                                    @if ($distinctUserCount <= 1)
-                                        <p class="mt-2 text-sm text-red-600">
-                                            Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour
-                                            effectuer
-                                            l'appel d'offre.
-                                        </p>
-                                    @endif
-                                    <form action="{{ route('biicf.form') }}" method="POST">
-                                        @csrf
-                                        <div class="w-full mt-4 text-center">
+                                            </div>
+                                        </div>
+                                        <form action="{{ route('biicf.form') }}" method="POST">
+                                            @csrf
                                             <input type="hidden" name="distinctSpecifications"
                                                 value="{{ $distinctSpecifications->join(', ') }}">
 
                                             <input type="hidden" name="name" value="{{ $name }}">
                                             <input type="hidden" name="type" value="{{ $type }}">
-                                            <input type="hidden" name="appliedZoneValue"
-                                                value="{{ $appliedZoneValue }}">
                                             <input type="hidden" name="lowestPricedProduct"
                                                 value="{{ $lowestPrice }}">
                                             <input type="hidden" name="reference" value="{{ $filtre }}">
+                                            <input type="hidden" name="appliedZoneValue"
+                                                value="{{ $appliedZoneValue }}">
+                                            <input type="hidden" name="distinctCondProds"
+                                                value="{{ $distinctCondProds->join(', ') }}">
+                                            <input type="hidden" name="distinctquatiteMin"
+                                                value="{{ $distinctquatiteMin->join(', ') }}">
+                                            <input type="hidden" name="distinctquatiteMax"
+                                                value="{{ $distinctquatiteMax->join(', ') }}">
                                             @foreach ($distinctUserIds as $userId)
                                                 <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                             @endforeach
 
-                                            <button class="px-3 py-2 text-white bg-purple-600 rounded-xl" type="submit"
-                                                @if ($distinctUserCount <= 1) disabled @endif>
+                                            <button
+                                                class="px-4 py-2 text-white bg-purple-500 rounded-lg shadow hover:bg-purple-600"
+                                                type="submit" @if ($distinctUserCount <= 1) disabled @endif>
                                                 @if ($distinctUserCount <= 1)
                                                     Fournisseur insuffisant
                                                 @else
                                                     Faire un appel d'offre
                                                 @endif
                                             </button>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </div>
+                                    @if ($distinctUserCount <= 1)
+                                        <p class="mt-2 text-sm text-red-600">
+                                            Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour effectuer
+                                            l'appel d'offre.
+                                        </p>
+                                    @endif
                                 </div>
                             @endforeach
                         @endif
@@ -351,71 +379,70 @@
                                 $lowestPrice = $group->pluck('prix')->min(); // Trouver le prix le plus bas
 
                             @endphp
-
-                            <div
-                                class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex-1">
-                                        <h4 class="text-lg font-semibold text-black dark:text-white">
-                                            Référence : {{ $reference }}
-                                        </h4>
-                                        <h4 class="text-lg font-semibold text-black dark:text-white">
-                                            type : {{ $type }}
-                                        </h4>
+                            <!-- Contenu 1 -->
+                            <div class="bg-white p-6 rounded-lg shadow-lg">
+                                <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                                    <div>
+                                        <h2 class="text-lg font-semibold text-gray-800">Référence : <span
+                                                class="text-blue-500">{{ $reference }}</span>
+                                        </h2>
+                                        <p class="text-sm text-gray-600">Type : {{ $type }}</p>
                                         @foreach ($distinctNames as $name)
-                                            <p class="text-sm text-gray-700 dark:text-gray-300">
-                                                Nom : {{ $name }}
-                                            </p>
+                                            <p class="text-sm text-gray-600">Nom : {{ $name }}</p>
                                         @endforeach
-                                        <div x-data="{ open: false }">
-                                            <!-- Bouton pour ouvrir le pop-up -->
-                                            <button @click="open = true" class="px-4 py-2 text-white bg-blue-500 rounded">
-                                                Details
-                                            </button>
 
-                                            <!-- Pop-up -->
-                                            <div x-show="open"
-                                                class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-                                                style="display: none;">
-                                                <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-                                                    <h2 class="mb-4 text-xl font-bold">Titre du Pop-up</h2>
-                                                    <p>Référence : {{ $reference }}</p>
+                                    </div>
+                                    <span class="px-3 py-1 text-sm font-medium text-yellow-600 bg-yellow-100 rounded-lg">
+                                        {{ $distinctUserCount }} Fournisseurs
+                                    </span>
+                                </div>
 
-                                                    <!-- Afficher d'autres détails ici -->
-                                                    <p>Type : {{ $distinctTypes->join(', ') }}</p>
-                                                    <p>Condition : {{ $distinctCondProds->join(', ') }}</p>
-                                                    <p>Format : {{ $distinctFormatProds->join(', ') }}</p>
-                                                    <p>Spécification : {{ $distinctSpecifications->join(', ') }}</p>
+                                <div class="mt-6 flex items-center space-x-4">
+                                    <div x-data="{ open: false }">
+                                        <!-- Bouton pour ouvrir le pop-up -->
+                                        <button @click="open = true" class="px-4 py-2 text-white rounded-lg bg-blue-500">
+                                            Details
+                                        </button>
 
-                                                    <p>Particularité : {{ $distinctParticularites->join(', ') }}</p>
+                                        <!-- Pop-up -->
+                                        <div x-show="open"
+                                            class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                                            style="display: none;">
+                                            <div
+                                                class="w-full max-w-md p-6 bg-white rounded-lg shadow-xl transition-transform transform hover:scale-105">
+                                                <!-- Titre -->
+                                                <h2 class="mb-4 text-2xl font-bold text-gray-800 border-b pb-2">📋 Details
+                                                    du Produit</h2>
+
+                                                <!-- Contenu -->
+                                                <div class="space-y-2 text-gray-600">
+                                                    <p><span class="font-medium text-gray-800">Référence :</span>
+                                                        {{ $reference }}</p>
+                                                    <p><span class="font-medium text-gray-800">Type :</span>
+                                                        {{ $distinctTypes->join(', ') }}</p>
+                                                    <p><span class="font-medium text-gray-800">Conditionnement :</span>
+                                                        {{ $distinctCondProds->join(', ') }}</p>
+                                                    <p><span class="font-medium text-gray-800">Format :</span>
+                                                        {{ $distinctFormatProds->join(', ') }}</p>
+                                                    <p><span class="font-medium text-gray-800">Spécification :</span>
+                                                        {{ $distinctSpecifications->join(', ') }}</p>
+                                                    <p><span class="font-medium text-gray-800">Particularité :</span>
+                                                        {{ $distinctParticularites->join(', ') }}</p>
+                                                </div>
+
+                                                <!-- Bouton -->
+                                                <div class="mt-6 text-right">
                                                     <button @click="open = false"
-                                                        class="px-4 py-2 text-white bg-red-500 rounded">
+                                                        class="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300">
                                                         Fermer
                                                     </button>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                    </div>
-                                    <div class="flex items-center">
-                                        <div
-                                            class="flex items-center p-2 text-xs text-yellow-600 rounded bg-yellow-100/60">
-                                            <p class="mr-1 font-semibold">{{ $distinctUserCount }}</p>
-                                            <span>Fournisseurs</span>
                                         </div>
                                     </div>
-                                </div>
-
-                                @if ($distinctUserCount <= 1)
-                                    <p class="mt-2 text-sm text-red-600">
-                                        Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour effectuer
-                                        l'appel d'offre.
-                                    </p>
-                                @endif
-
-                                <form action="{{ route('biicf.form') }}" method="POST">
-                                    @csrf
-                                    <div class="w-full mt-4 text-center">
+                                    <form action="{{ route('biicf.form') }}" method="POST">
+                                        @csrf
                                         <input type="hidden" name="distinctSpecifications"
                                             value="{{ $distinctSpecifications->join(', ') }}">
 
@@ -427,16 +454,23 @@
                                             <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                         @endforeach
 
-                                        <button class="px-3 py-2 text-white bg-purple-600 rounded-xl" type="submit"
-                                            @if ($distinctUserCount <= 1) disabled @endif>
+                                        <button
+                                            class="px-4 py-2 text-white bg-purple-500 rounded-lg shadow hover:bg-purple-600"
+                                            type="submit" @if ($distinctUserCount <= 1) disabled @endif>
                                             @if ($distinctUserCount <= 1)
                                                 Fournisseur insuffisant
                                             @else
                                                 Faire un appel d'offre
                                             @endif
                                         </button>
-                                    </div>
-                                </form>
+                                    </form>
+                                </div>
+                                @if ($distinctUserCount <= 1)
+                                    <p class="mt-2 text-sm text-red-600">
+                                        Il n'y a pas assez de fournisseurs ({{ $distinctUserCount }}) pour effectuer
+                                        l'appel d'offre.
+                                    </p>
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -534,8 +568,7 @@
         </div>
     </div>
 
-    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
 
 
 

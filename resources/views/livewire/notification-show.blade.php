@@ -11,6 +11,8 @@
         @livewire('command-verif-ad', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\mainleveAd')
         @livewire('mainleve-ad', ['id' => $id])
+    @elseif ($notification->type === 'App\Notifications\Confirmation')
+        @livewire('confirmation-notif', ['id' => $id])
         {{-- Achat Direct fin --}}
 
 
@@ -1050,8 +1052,7 @@
             <h2 class="mb-4 text-xl font-semibold">Vérification Du Client</h2>
 
 
-            <form wire:submit.prevent="verifyCode" method="POST">
-                @csrf
+            <form wire:submit.prevent="verifyCode">
                 <div class="flex w-full">
                     <input type="text" name="code_verif" wire:model.defer="code_verif"
                         placeholder="Entrez le code de livraison"
@@ -1096,21 +1097,21 @@
                 <div class="flex-col w-full ">
                     <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
 
-                        <img src="{{ asset($client->photo) }}" alt="photot" class="">
+                        {{-- <img src="{{ asset($client->photo) }}" alt="photot" class=""> --}}
 
                     </div>
 
                     <div class="flex flex-col">
                         <p class="mb-3 text-md">Nom du client: <span
-                                class="font-semibold ">{{ $client->name }}</span>
+                                class="font-semibold "></span>
                         </p>
                         {{-- <p class="mb-3 text-md">Adress du client: <span
                                 class="font-semibold ">{{ $client->address }}</span></p> --}}
                         <p class="mb-3 text-md">Contact du client: <span
-                                class="font-semibold ">{{ $client->phone }}</span></p>
+                                class="font-semibold "></span></p>
                         {{-- <p class="mb-3 text-md">Engin du client : <span class="font-semibold ">Moto</span></p> --}}
                         <p class="mb-3 text-md">Produit à recuperer: <span
-                                class= "font-semibold ">{{ $produitfat->name }}</span></p>
+                                class= "font-semibold "></span></p>
                     </div>
 
 

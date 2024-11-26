@@ -4,8 +4,10 @@ namespace App\Console\Commands;
 
 use App\Models\Comment;
 use App\Models\Countdown;
+use App\Models\User;
 use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
+use App\Notifications\Confirmation;
 use App\Notifications\CountdownNotification;
 use App\Notifications\CountdownNotificationAd;
 use App\Notifications\CountdownNotificationAg;
@@ -44,6 +46,7 @@ class CheckCountdowns extends Command
             $lowestPriceComment = Comment::with('user')
                 ->where('code_unique', $code_unique)
                 ->orderBy('prixTrade', 'asc')
+                ->orderBy('created_at', 'asc') // En cas d'égalité, prendre le plus ancien
                 ->first();
             // Log::info('Commentaire avec le prix le plus bas récupéré.', ['lowestPriceComment_id' => $lowestPriceComment->id ?? null]);
 
@@ -68,34 +71,28 @@ class CheckCountdowns extends Command
                     $senderId = $commentToUse->id_sender;
                     $id_prod = $commentToUse->id_prod;
                     $quantiteC = $commentToUse->quantiteC;
-                    $localite = $commentToUse->localite;
-                    $specificite = $commentToUse->specificite;
-                    $nameprod = $commentToUse->nameprod;
-                    $id_sender = $commentToUse->id_sender;
-                    $prixProd = $commentToUse->prixProd;
-                    $type = $commentToUse->type;
-                    $date_tot = $commentToUse->date_tot;
-                    $date_tard = $commentToUse->date_tard;
-                    $timeStart = $commentToUse->timeStart;
-                    $timeEnd = $commentToUse->timeEnd;
-                    $dayPeriod = $commentToUse->dayPeriod;
+                    // $localite = $commentToUse->localite;
+                    // $specificite = $commentToUse->specificite;
+                    // $nameprod = $commentToUse->nameprod;
+                    // $id_sender = $commentToUse->id_sender;
+                    // $prixProd = $commentToUse->prixProd;
+                    // $type = $commentToUse->type;
+                    // $date_tot = $commentToUse->date_tot;
+                    // $date_tard = $commentToUse->date_tard;
+                    // $timeStart = $commentToUse->timeStart;
+                    // $timeEnd = $commentToUse->timeEnd;
+                    // $dayPeriod = $commentToUse->dayPeriod;
 
                     // Décoder le JSON id_sender
-                    $decodedSenderIds = json_decode($id_sender, true);
-                    $montotal = $quantiteC * $price;
+                    // $decodedSenderIds = json_decode($id_sender, true);
+                    // $montotal = $quantiteC * $price;
 
                     // Définir les détails de la notification
                     $details = [
-                        'sender_name' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
                         'code_unique' => $countdown->code_unique,
                         'prixTrade' => $price,
-                        'fournisseur' => $senderId,
                         'livreur' => $traderId,
-                        'idProd' => $id_prod,
-                        'quantiteC' => $quantiteC,
-                        'prixProd' => $prixProd,
-                        'date_tot' => $date_tot,
-                        'date_tard' => $date_tard,
+                        'achat_id' => $countdowns->achat_id,
                     ];
 
 
@@ -104,13 +101,13 @@ class CheckCountdowns extends Command
                         'prixTrade' => $price,
                         'id_trader' => $traderId,
                         'quantiteC' => $quantiteC,
-                        'localite' => $localite,
-                        'specificite' => $specificite,
-                        'nameprod' => $nameprod,
-                        'id_sender' => $decodedSenderIds,
-                        'montantTotal' => $montotal,
-                        'date_tot' => $date_tot,
-                        'date_tard' => $date_tard,
+                        // 'localite' => $localite,
+                        // 'specificite' => $specificite,
+                        // 'nameprod' => $nameprod,
+                        // 'id_sender' => $decodedSenderIds,
+                        // 'montantTotal' => $montotal,
+                        // 'date_tot' => $date_tot,
+                        // 'date_tard' => $date_tard,
                     ];
                     //lier a apple offre
 
@@ -133,25 +130,25 @@ class CheckCountdowns extends Command
                     }
                     // Vérifier le type de notification à envoyer
                     if ($countdown->difference === 'single') {
-                        $Adetails = [
-                            'code_unique' => $countdown->code_unique,
-                            'prixTrade' => $price,
-                            'id_trader' => $traderId,
-                            'quantiteC' => $quantiteC,
-                            'localite' => $localite,
-                            'specificite' => $specificite,
-                            'nameprod' => $nameprod,
-                            'id_sender' => $decodedSenderIds,
-                            'montantTotal' => $montotal,
-                            'reference' => $reference,
-                            'date_tot' => $date_tot,
-                            'date_tard' => $date_tard,
-                            'timeStart' => $timeStart ?? null,
-                            'timeEnd' => $timeEnd ?? null,
-                            'dayPeriod' => $dayPeriod ?? null,
-                        ];
+                        // $Adetails = [
+                        //     'code_unique' => $countdown->code_unique,
+                        //     'prixTrade' => $price,
+                        //     'id_trader' => $traderId,
+                        //     'quantiteC' => $quantiteC,
+                        //     'localite' => $localite,
+                        //     'specificite' => $specificite,
+                        //     'nameprod' => $nameprod,
+                        //     'id_sender' => $decodedSenderIds,
+                        //     'montantTotal' => $montotal,
+                        //     'reference' => $reference,
+                        //     'date_tot' => $date_tot,
+                        //     'date_tard' => $date_tard,
+                        //     'timeStart' => $timeStart ?? null,
+                        //     'timeEnd' => $timeEnd ?? null,
+                        //     'dayPeriod' => $dayPeriod ?? null,
+                        // ];
                         Log::info('Envoi de la notification pour type "single".', ['user_id' => $commentToUse->user->id]);
-                        Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
+                        // Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
 
                         $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
                         if ($notification) {
@@ -171,13 +168,29 @@ class CheckCountdowns extends Command
                             $notification->update(['type_achat' => 'OFG']);
                         }
                     } else  if ($countdown->difference === 'ad') {
-                        Log::info('Envoi d\'une autre notification ou action par défaut.');
-                        Notification::send($countdown->sender, new CountdownNotificationAd($details));
+                        $clientId = User::find( $countdown->achat->userSender);
+                        Log::info('id.', ['id user' => $clientId->id ?? null]);
 
+                        Notification::send($clientId, new CountdownNotificationAd($details));
+                        // Récupération de l'utilisateur (trader) avec une vérification
+                        $gagnantId = User::find($traderId);
+
+                        if ($gagnantId) {
+                            $livreurdetails = [
+                                'idAchat' => $countdown->id_achat,
+                                'idProd' => $id_prod,
+                                'code_unique' => $countdown->code_unique,
+                                'title' => 'Gagnant de la negociation',
+                                'description' => 'La négociation est terminée->',
+                            ];
+
+                            // Envoi de la notification au trader
+                            Notification::send($gagnantId, new Confirmation($livreurdetails));
+                        } else {
+                            Log::error("Utilisateur introuvable pour l'ID : $traderId");
+                        }
                     } else  if ($countdown->difference === 'ap') {
-                        Log::info('Envoi d\'une autre notification ou action par défaut.');
                         Notification::send($countdown->sender, new CountdownNotificationAp($details));
-
                     } else if ($countdown->difference === 'ag') {
                         $data = [
                             'sender_name' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
@@ -187,11 +200,11 @@ class CheckCountdowns extends Command
                             'livreur' => $traderId,
                             'idProd' => $id_prod,
                             'quantiteC' => $quantiteC,
-                            'prixProd' => $prixProd,
-                            'date_tot' => $date_tot,
-                            'date_tard' => $date_tard,
-                            'nameprod' => $nameprod,
-                            'specificite' => $specificite,
+                            // 'prixProd' => $prixProd,
+                            // 'date_tot' => $date_tot,
+                            // 'date_tard' => $date_tard,
+                            // 'nameprod' => $nameprod,
+                            // 'specificite' => $specificite,
                         ];
                         Log::info('Envoi d\'une autre notification ou action par défaut.');
                         Notification::send($countdown->sender, new CountdownNotificationAg($data));

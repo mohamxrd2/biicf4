@@ -24,6 +24,11 @@ class CommandVerifAd extends Component
     public $id;
     public $idProd;
     public $totalPrice;
+    public $id_client;
+    public $fournisseur;
+    public $livreur;
+    public $produit;
+    public $userWallet;
 
 
     public function mount($id)
@@ -31,6 +36,16 @@ class CommandVerifAd extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
+
+        $this->id_client = Auth::user()->id;
+        $user = User::find($this->id_client);
+        $this->userWallet = Wallet::where('user_id', $this->id_client)->first();
+
+        $this->fournisseur = User::find($this->notification->data['fournisseur']);
+
+        $this->livreur = User::find($this->notification->data['livreur']);
+
+        $this->produit = ProduitService::find($this->notification->data['idProd']);
     }
 
     public function mainleve()
@@ -120,61 +135,67 @@ class CommandVerifAd extends Component
 
     public function refuseVerif()
     {
-        $id_client = Auth::user()->id;
-        Log::info('le id du client', ['id_client' => $id_client]);
-        $user = User::find($id_client);
-        $userWallet = Wallet::where('user_id', $id_client)->first();
 
-        $fournisseur = User::find($this->notification->data['fournisseur']);
-        Log::info('le id du fournisseur', ['fournisseur' => $fournisseur]);
-
-        $livreur = User::find($this->notification->data['livreur']);
-        Log::info('le id du livreur', ['livreur' => $livreur]);
-
-        $produit = ProduitService::find($this->notification->data['idProd']);
-
-
-
-        if (!$userWallet) {
-            Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $id_client]);
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
-        }
-
-        if ($this->notification->type_achat == 'reserv/take') {
-
-
-            // Notification::send($fournisseur, new colisaccept($data));
-
-            $userWallet = Wallet::where('user_id', $id_client)->first();
-
-            // $requiedAmount = $this->totalPrice - $this->totalPrice * 0.1;
-
-            if (!$userWallet) {
-                Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $id_client]);
+        try {
+            if (!$this->userWallet) {
+                Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $this->id_client]);
                 session()->flash('error', 'Portefeuille introuvable.');
                 return;
             }
-            Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
-            // Déduire le montant requis du portefeuille de l'utilisateur
-            $userWallet->increment('balance',  $this->totalPrice);
-            Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
 
-            // ///$this->createTransaction($user->id, $fournisseur->id, 'Reception', $this->totalPrice);
+            // Envoi des notifications
+            Notification::send($this->livreur, new RefusAchat('Le produit a été refusé'));
+            Notification::send($this->fournisseur, new RefusAchat('Le produit a été refusé'));
 
-             $reference_id = $this->generateIntegerReference();
+            // Mise à jour de la notification
+            $this->notification->update(['reponse' => 'mainleveRefusé']);
 
-             $this->createTransaction($user->id, $fournisseur->id, 'Réception',  $this->totalPrice, $reference_id, 'Refus  d\'achat de ' . $produit->name , 'effectué', 'COC');
-
-             Notification::send($fournisseur , new RefusAchat('Le produit à été refusé'));
-        } else {
-            Notification::send($livreur , new RefusAchat('Le produit à été refusé'));
-
-            Notification::send($fournisseur , new RefusAchat('Le produit à été refusé'));
+            session()->flash('success', 'L\'action a été effectuée avec succès.');
+        } catch (\Exception $e) {
+            // Consigne l'erreur dans les logs pour investigation
+            Log::error('Erreur lors de l\'opération', [
+                'message' => $e->getMessage(),
+                'userId' => $this->id_client,
+                'exception' => $e
+            ]);
+            // Affiche un message d'erreur à l'utilisateur
+            session()->flash('error', 'Une erreur est survenue lors de l\'opération. Veuillez réessayer.');
+            return;
         }
 
 
-        $this->notification->update(['reponse' => 'mainleveRefusé']);
+        // if ($this->notification->type_achat == 'reserv/take') {
+
+
+        //     // Notification::send($fournisseur, new colisaccept($data));
+
+        //     $userWallet = Wallet::where('user_id', $id_client)->first();
+
+        //     // $requiedAmount = $this->totalPrice - $this->totalPrice * 0.1;
+
+        //     if (!$userWallet) {
+        //         Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $id_client]);
+        //         session()->flash('error', 'Portefeuille introuvable.');
+        //         return;
+        //     }
+        //     Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
+        //     // Déduire le montant requis du portefeuille de l'utilisateur
+        //     $userWallet->increment('balance',  $this->totalPrice);
+        //     Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
+
+        //     // ///$this->createTransaction($user->id, $fournisseur->id, 'Reception', $this->totalPrice);
+
+        //      $reference_id = $this->generateIntegerReference();
+
+        //      $this->createTransaction($user->id, $fournisseur->id, 'Réception',  $this->totalPrice, $reference_id, 'Refus  d\'achat de ' . $produit->name , 'effectué', 'COC');
+
+        //      Notification::send($fournisseur , new RefusAchat('Le produit à été refusé'));
+        // } else {
+
+
+        // }
+
+
     }
 
 

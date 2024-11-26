@@ -1,58 +1,29 @@
 <div>
-
-    <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect">
-        @if (session('error'))
-            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-800 dark:bg-gray-800 dark:text-red-400">
-                <span class="font-medium text-white">{{ session('error') }}</span>
+    <form wire:submit.prevent>
+        @if ($errors->has('formError'))
+            <div class="text-red-600">
+                {{ $errors->first('formError') }}
             </div>
         @endif
         <div x-data="{ selectedOption: @entangle('selectedOption'), quantité: 1, localite: '' }">
 
             <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
-                <ol
-                    class="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base mb-5 p-5">
-                    <li
-                        class="after:border-1 flex items-center text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                        <span
-                            class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                            <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            Details
-                        </span>
-                    </li>
 
-                    <li
-                        class="after:border-1 flex items-center text-blue-600 text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                        <span
-                            class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                            <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            Achat
-                        </span>
-                    </li>
-                </ol>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Champ de quantité -->
+
                     <div class="mb-4">
                         <h2 class="text-lg font-bold mb-2">Quantité du produit</h2>
                         <input id="quantityInput" type="number" wire:model="quantité" x-model="quantité" min="1"
                             name="quantité"
                             class="w-full p-2 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            data-min="{{ $produit->qteProd_min }}" data-max="{{ $produit->qteProd_max }}"
+                            data-min="{{ $distinctquatiteMin }}" data-max="{{ $distinctquatiteMax }}"
                             oninput="updateMontantTotalDirect()" required />
                     </div>
 
                     <!-- Champ de localisation -->
                     <div>
                         <h2 class="text-lg font-bold mb-2">Adresse de livraison</h2>
-                        <input id="location" type="text" wire:model="localite" x-model="localite"
+                        <input id="location" type="text" wire:model='localite' x-model="localite"
                             placeholder="Entrez votre localisation"
                             class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
                     </div>
@@ -64,12 +35,32 @@
                     <h4 class="font-semibold text-gray-800">Résumé :</h4>
                     <p class="text-gray-700">
                         Vous avez sélectionné <span class="font-bold" x-text="quantité"></span>
-                        {{ $produit->condProd }}(s).
+                        ({{ $distinctCondProds }}).
                     </p>
                     <p class="text-gray-700">
                         Localisation : <span class="font-bold" x-text="localite || 'Non renseignée'"></span>
                     </p>
+                    <p class="text-gray-700" data-price="{{ $lowestPricedProduct }}">
+                        Nom du Produit : <span class="font-bold">{{ $name }}</span>
+                    </p>
+                    <p class="text-gray-700" data-price="{{ $lowestPricedProduct }}">
+                        Prix Max : <span class="font-bold">{{ $lowestPricedProduct }} FCFA</span>
+                    </p>
+                    <p class="text-gray-700">
+                        reference : <span class="font-bold">{{ $reference }}</span>
+                    </p>
+                    <p class="text-gray-700">
+                        Quantité Traité : <span class="font-bold">[{{ $distinctquatiteMin }} -
+                            {{ $distinctquatiteMax }}]</span>
+                    </p>
+                    <p class="text-gray-700">
+                        Type : <span class="font-bold">{{ $type }}</span>
+                    </p>
+                    <p class="text-gray-700">
+                        Zone ciblée : <span class="font-bold">{{ $appliedZoneValue }}</span>
+                    </p>
                 </div>
+                <p id="errorMessage" class="text-sm text-center text-red-500 hidden"></p>
 
                 <!-- Mode de réception -->
                 <div class="mb-4">
@@ -318,16 +309,6 @@
 
                     </div>
 
-                    <input type="hidden" name="userTrader" wire:model.defer="userTrader">
-                    <input type="hidden" name="nameProd" wire:model.defer="nameProd">
-                    <input type="hidden" name="userSender" wire:model.defer="userSender">
-                    <input type="hidden" name="photoProd" wire:model.defer="photoProd">
-                    <input type="hidden" name="idProd" wire:model.defer="idProd">
-                    <input type="hidden" name="prix" wire:model.defer="prix">
-
-                    <p id="errorMessage" class="text-sm text-center text-red-500 hidden"></p>
-
-
                     <div class="text-center mt-3">
                         <button id="requestCreditButton" wire:click="requestCredit" wire:loading.attr="disabled"
                             class="hidden py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700">
@@ -366,124 +347,158 @@
                     </p>
                     <div class="text-center mt-3">
 
-                        <button type="submit" id="submitButton"
+                        <!-- Bouton pour l'envoi direct -->
+                        <button type="button" id="submitEnvoie"
                             class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                            wire:loading.attr="disabled" disabled>
+                            wire:click="submitEnvoie" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                             </svg>
-
-                            <span wire:loading.remove>Procéder au payement</span>
+                            <span wire:loading.remove>cliquez ici, Pour vous envoyer directement aux fournisseurs de
+                                votre zone</span>
                             <span wire:loading>Payement en cours...</span>
                         </button>
 
+                        <!-- Message pour les types de services -->
+                        @if ($type == 'Service')
+                            <p class="text-center text-gray-600">
+                                Le type est un service, il n'est pas possible de grouper avec les clients. Passez à une
+                                offre
+                                directe.
+                            </p>
+                        @elseif ($appliedZoneValue)
+                            <!-- Bouton pour le regroupement -->
+                            <button type="button" id="submitGroupe"
+                                class="py-2 px-3 mt-4 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-green-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
+                                wire:click="submitGroupe" wire:loading.attr="disabled">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                </svg>
+                                <span wire:loading.remove>cliquez ici, Pour vous grouper avec d'autres acheteurs de
+                                    votre zone</span>
+                                <span wire:loading>Payement en cours...</span>
+                            </button>
+                        @else
+                            <!-- Message si la zone n'est pas sélectionnée -->
+                            <p class="text-center text-red-600">
+                                Veuillez sélectionner une zone économique pour pouvoir vous grouper avec d'autres
+                                acheteurs.
+                            </p>
+                        @endif
+
                     </div>
+
                 </div>
             </div>
         </div>
     </form>
+
+    <script>
+        function togglePeriodSelect() {
+            const timeInput = document.getElementById('timePickerStart');
+            const periodSelect = document.getElementById('dayPeriod');
+            const periodSelect2 = document.getElementById('dayPeriodFin');
+            periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+            periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+        }
+
+        function togglePeriodSelect2() {
+            const timeInput = document.getElementById('timePickerEnd');
+            const periodSelect = document.getElementById('dayPeriodFin');
+            const periodSelect2 = document.getElementById('dayPeriod');
+            periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+            periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+        }
+
+        function toggleTimeInput2() {
+            const timeInput = document.getElementById('timePickerEnd');
+            const timeInput2 = document.getElementById('timePickerStart');
+            const periodSelect = document.getElementById('dayPeriodFin');
+            timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+            timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+        }
+
+        function toggleTimeInput() {
+            const timeInput = document.getElementById('timePickerStart');
+            const timeInput2 = document.getElementById('timePickerEnd');
+            const periodSelect = document.getElementById('dayPeriod');
+            timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+            timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+        }
+    </script>
+    <script>
+        function toggleVisibility() {
+            const contentDiv = document.getElementById('toggleContent');
+
+            if (contentDiv.classList.contains('hidden')) {
+                contentDiv.classList.remove('hidden');
+                // Forcing reflow to enable   transition
+                contentDiv.offsetHeight;
+                contentDiv.classList.add('show');
+            } else {
+                contentDiv.classList.remove('show');
+                contentDiv.addEventListener('transitionend', () => {
+                    contentDiv.classList.add('hidden');
+                }, {
+                    once: true
+                });
+            }
+        }
+
+        // Fonction pour mettre à jour le montant total pour l'achat direct
+        function updateMontantTotalDirect() {
+            const quantityInput = document.getElementById('quantityInput');
+            const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
+            console.log(price); // Affiche le prix récupéré
+
+            const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
+            const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
+            const quantity = parseInt(quantityInput.value);
+            const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
+            const montantTotalElement = document.getElementById('montantTotal');
+            const errorMessageElement = document.getElementById('errorMessage');
+            const submitButton = document.getElementById('submitButton');
+            const montantTotalInput = document.getElementById('montant_total_input');
+            const requestCreditButton = document.getElementById('requestCreditButton');
+
+
+
+            const userBalance = {{ $wallet->balance }};
+
+            if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
+                errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
+                errorMessageElement.classList.remove('hidden');
+                montantTotalElement.innerText = '0 FCFA';
+                submitButton.disabled = true;
+                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+
+                requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit si autre erreur
+
+            } else if (montantTotal > userBalance) {
+                errorMessageElement.innerText =
+                    `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
+                errorMessageElement.classList.remove('hidden');
+                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+                submitButton.disabled = true;
+                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+                requestCreditButton.classList.remove('hidden'); // Afficher le bouton pour demander un crédit
+
+            } else {
+                errorMessageElement.classList.add('hidden');
+                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+                submitButton.disabled = false;
+                requestCreditButton.classList.add('hidden'); // Masquer le bouton si tout est correct
+
+            }
+
+
+
+        }
+    </script>
+
 </div>
-
-<script>
-    function togglePeriodSelect() {
-        const timeInput = document.getElementById('timePickerStart');
-        const periodSelect = document.getElementById('dayPeriod');
-        const periodSelect2 = document.getElementById('dayPeriodFin');
-        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-    }
-
-    function togglePeriodSelect2() {
-        const timeInput = document.getElementById('timePickerEnd');
-        const periodSelect = document.getElementById('dayPeriodFin');
-        const periodSelect2 = document.getElementById('dayPeriod');
-        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-    }
-
-    function toggleTimeInput2() {
-        const timeInput = document.getElementById('timePickerEnd');
-        const timeInput2 = document.getElementById('timePickerStart');
-        const periodSelect = document.getElementById('dayPeriodFin');
-        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-    }
-
-    function toggleTimeInput() {
-        const timeInput = document.getElementById('timePickerStart');
-        const timeInput2 = document.getElementById('timePickerEnd');
-        const periodSelect = document.getElementById('dayPeriod');
-        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-    }
-</script>
-<script>
-    function toggleVisibility() {
-        const contentDiv = document.getElementById('toggleContent');
-
-        if (contentDiv.classList.contains('hidden')) {
-            contentDiv.classList.remove('hidden');
-            // Forcing reflow to enable   transition
-            contentDiv.offsetHeight;
-            contentDiv.classList.add('show');
-        } else {
-            contentDiv.classList.remove('show');
-            contentDiv.addEventListener('transitionend', () => {
-                contentDiv.classList.add('hidden');
-            }, {
-                once: true
-            });
-        }
-    }
-
-    // Fonction pour mettre à jour le montant total pour l'achat direct
-    function updateMontantTotalDirect() {
-        const quantityInput = document.getElementById('quantityInput');
-        const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
-        const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
-        const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
-        const quantity = parseInt(quantityInput.value);
-        const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
-        const montantTotalElement = document.getElementById('montantTotal');
-        const errorMessageElement = document.getElementById('errorMessage');
-        const submitButton = document.getElementById('submitButton');
-        const montantTotalInput = document.getElementById('montant_total_input');
-        const requestCreditButton = document.getElementById('requestCreditButton');
-
-
-
-        const userBalance = {{ $userWallet->balance }};
-
-        if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
-            errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = '0 FCFA';
-            submitButton.disabled = true;
-            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-
-            requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit si autre erreur
-
-        } else if (montantTotal > userBalance) {
-            errorMessageElement.innerText =
-                `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            submitButton.disabled = true;
-            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-            requestCreditButton.classList.remove('hidden'); // Afficher le bouton pour demander un crédit
-
-        } else {
-            errorMessageElement.classList.add('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-            submitButton.disabled = false;
-            requestCreditButton.classList.add('hidden'); // Masquer le bouton si tout est correct
-
-        }
-
-
-
-    }
-</script>

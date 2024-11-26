@@ -2,12 +2,16 @@
 
 namespace App\Livewire;
 
+use App\Models\AchatDirect;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\commandVerif;
 use App\Notifications\commandVerifAd;
+use App\Notifications\Confirmation;
+use App\Notifications\mainleve;
+use App\Notifications\mainleveAd;
 use App\Notifications\VerifUser;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
@@ -21,156 +25,230 @@ class CountdownNotificationAd extends Component
 
     public $notification;
     public $id;
-    public $produitfat;
+    public $produit;
     public $userFour;
     public $totalPrice;
     public $user;
+    public $achatdirect;
+    public $livreur;
+    public $codeVerification;
+    public $fournisseur;
 
 
 
     public function mount($id)
     {
-        $this->notification = DatabaseNotification::findOrFail($id);
-        $this->userFour = User::find($this->notification->data['fournisseur'] ?? null);
-        $this->user = Auth::id(); // Initialisation de $user avec l'utilisateur authentifié
+        try {
+            $this->notification = DatabaseNotification::findOrFail($id);
+            $this->userFour = User::find($this->notification->data['fournisseur'] ?? null);
+            $this->user = Auth::id(); // Initialisation de $user avec l'utilisateur authentifié
+            $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
+            $this->codeVerification = $this->achatdirect->code_verification;
 
+            if (!$this->achatdirect) {
+                throw new Exception("AchatDirect introuvable avec l'ID fourni.");
+            }
 
+            $this->fournisseur = User::find($this->achatdirect->userTrader);
+            $this->livreur = User::find($this->notification->data['livreur']);
+            $this->produit = ProduitService::find($this->achatdirect->idProd);
 
+            if (!$this->produit) {
+                throw new Exception("ProduitService introuvable avec l'ID fourni.");
+            }
+        } catch (Exception $e) {
+            Log::error("Erreur dans mount : " . $e->getMessage());
+            session()->flash('error', 'Une erreur s\'est produite lors de la récupération des données.');
+        }
+    }
 
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification'
-            || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
-            || $this->notification->type === 'App\Notifications\AppelOffreTerminerGrouper'
-            || $this->notification->type === 'App\Notifications\AppelOffre'
-            || $this->notification->type === 'App\Notifications\OffreNotifGroup'
-            || $this->notification->type === 'App\Notifications\NegosTerminer'
-            || $this->notification->type === 'App\Notifications\OffreNegosNotif'
-            || $this->notification->type === 'App\Notifications\OffreNegosDone'
-            || $this->notification->type === 'App\Notifications\AOGrouper'
-            ||  $this->notification->type === 'App\Notifications\OffreNotif'
-            || $this->notification->type === 'App\Notifications\Retrait')
-            ? null
-            : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
+    public function FactureRefuser()
+    {
+        try {
+            // Vérification des données récupérées
+            if (!$this->livreur || !$this->achatdirect) {
+                throw new Exception("Données introuvables pour le livreur ou l'achat.");
+            }
+
+            $livreurdetails = [
+                'idAchat' => $this->achatdirect->id_achat,
+                'idProd' => $this->produit->id,
+                'code_unique' => $this->notification->data['code_unique'],
+                'title' => 'Facture Refusée',
+                'description' => 'Le prix de la livraison ne convient pas au client',
+            ];
+
+            // Envoi de la notification au fournisseur
+            if ($this->fournisseur) {
+                Notification::send($this->fournisseur, new Confirmation($livreurdetails));
+            } else {
+                Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id_achat);
+            }
+
+            // Envoi de la notification au livreur
+            if ($this->livreur) {
+                Notification::send($this->livreur, new Confirmation($livreurdetails));
+            } else {
+                Log::warning("Livreur introuvable pour la notification ID : " . $this->notification->id);
+            }
+
+            // Mise à jour de l'état de la notification
+            $this->notification->update(['reponse' => 'refuser']);
+            session()->flash('success', 'La facture a été refusée et les notifications ont été envoyées.');
+        } catch (Exception $e) {
+            Log::error("Erreur dans FactureRefuser : " . $e->getMessage());
+            session()->flash('error', 'Une erreur s\'est produite lors de l\'envoi des notifications.');
+        }
     }
 
     public function valider()
     {
-        // Déterminer le prix unitaire
-        $prixUnitaire = $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'];
-        Log::info('Prix unitaire déterminé', ['prixUnitaire' => $prixUnitaire]);
+        try {
+            $userWallet = Wallet::where('user_id', $this->user)->first();
 
-        $quantite = $this->notification->data['quantite'] ?? $this->notification->data['quantiteC'];
+            if (!$userWallet) {
+                Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $this->user]);
+                session()->flash('error', 'Portefeuille introuvable.');
+                return;
+            }
+            Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
 
-        // Calculer le prix total
-        $this->totalPrice = (int) ($quantite * $prixUnitaire + ($this->notification->data['prixTrade'] ?? 0));
-        Log::info('Prix total calculé', ['totalPrice' => $this->totalPrice]);
+            // Calcul du montant requis avec une réduction de 10%
+            $requiredAmount = $this->achatdirect->montantTotal - ($this->achatdirect->montantTotal * 0.1);
 
-        // Vérifier si l'utilisateur est authentifié
-        if (!$this->user) {
-            Log::error('Utilisateur non authentifié.');
-            session()->flash('error', 'Utilisateur non authentifié.');
-            return;
-        }
-
-        $userSender = User::find($this->user);
-
-        if (!$userSender) {
-            Log::error('Utilisateur non trouvé avec ID', ['userId' => $this->user]);
-            session()->flash('error', 'Utilisateur non authentifié.');
-            return;
-        }
-        Log::info('Utilisateur trouvé', ['userSender' => $userSender]);
-
-        $userWallet = Wallet::where('user_id', $userSender->id)->first();
-
-        if (!$userWallet) {
-            Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $userSender->id]);
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
-        }
-        Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
-
-        $requiredAmount = $this->totalPrice;
-
-        if ($userWallet->balance < $requiredAmount) {
-            Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
-            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-            return;
-        }
-
-        // Déduire le montant requis du portefeuille de l'utilisateur
-        //$userWallet->decrement('balance', $requiredAmount);
-        //Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
-
-        // $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
-
-        $reference_id = $this->generateIntegerReference();
-
-        $this->createTransaction($userSender->id, $this->notification->data['fournisseur'], 'Envoie', $requiredAmount, $reference_id, 'Debité pour achat', 'effectué', 'COC');
-
-
-        // Vérifiez si $this->userFour est défini
-        if (!isset($this->userFour) || !$this->userFour) {
-            Log::error('Livreur introuvable.');
-            session()->flash('error', 'Livreur introuvable.');
-            return;
-        }
-        Log::info('Vérification de userFour', ['userFour' => $this->userFour]);
-
-        // Préparer les données de notification
-        $data = [
-            'idProd' => $this->notification->data['idProd'],
-            'code_unique' =>  $this->notification->data['code_unique'],
-            'fournisseur' => $this->notification->data['fournisseur'],
-            'localité' => $this->localite ?? null,
-            'quantite' => $quantite,
-            'livreur' => $this->notification->data['livreur'] ?? null, // Assurez-vous que $this->userFour est défini
-            'prixTrade' => $this->notification->data['prixTrade'] ?? null,
-            'prixProd' => $this->notification->data['prixProd'] ?? $this->notification->data['prixTrade'],
-            'date_tot' => $this->notification->data['date_tot'],
-            'date_tard' => $this->notification->data['date_tard'],
-        ];
-
-        $user = [
-            'idProd' => $this->notification->data['idProd'],
-            'code_unique' => $this->notification->data['code_unique'],
-            'fournisseur' => $this->userFour->id ?? $this->notification->data['fournisseur'],
-            'localité' => $this->localite ?? null,
-            'quantite' => $quantite,
-            'id_client' => Auth::id(),
-            'prixProd' => $this->notification->data['prixProd'],
-            'date_tot' => $this->notification->data['date_tot'],
-            'date_tard' => $this->notification->data['date_tard'],
-        ];
-
-        $id_trader =  $this->notification->data['fournisseur'];
-        $traderUser = User::find($id_trader);
-
-        Log::info('Notification envoyée au userSender', ['userId' => $userSender->id, 'data' => $data]);
-
-        if ($this->notification->type_achat == 'reserv/take' || $this->notification->type == 'App\Notifications\AllerChercher') {
-            Notification::send($userSender, new commandVerifAd($data));
-
-            $notification = $userSender->notifications()->where('type', commandVerifAd::class)->latest()->first();
-
-            if ($notification) {
-                $notification->update(['type_achat' => 'reserv/take']);
+            if ($userWallet->balance < $requiredAmount) {
+                Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
+                session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
+                return;
             }
 
-            // Utilisez && pour vérifier que les deux conditions sont vraies
-            Notification::send($traderUser, new VerifUser($user));
-        } else {
-            Notification::send($userSender, new commandVerifAd($data));
+            $this->createTransaction(
+                $this->user,
+                $this->fournisseur->id ?? null,
+                'Envoie',
+                $requiredAmount,
+                $this->generateIntegerReference(),
+                'Debité pour achat',
+                'effectué',
+                'COC'
+            );
 
-            // Utilisez && pour vérifier que les deux conditions sont vraies
-            Notification::send($traderUser, new VerifUser($user));
+            // Générer et stocker le code de vérification
+            $this->codeVerification = random_int(1000, 9999);
+            $this->achatdirect->update([
+                'code_verification' => $this->codeVerification,
+            ]);
+
+            // Préparer les données pour le fournisseur
+            $dataFournisseur = [
+                'code_unique' => $this->achatdirect->code_unique,
+                'CodeVerification' => $this->codeVerification, // Utilisez cette propriété
+                'client' => $this->achatdirect->userSender,
+                'id_achat' => $this->achatdirect->id,
+            ];
+
+            if ($this->fournisseur) {
+                Notification::send($this->fournisseur, new VerifUser($dataFournisseur));
+            }
+            // Mettre à jour la notification et valider
+            $this->notification->update(['reponse' => 'accepter']);
+            Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
+
+            session()->flash('success', 'Validation effectuée avec succès.');
+        } catch (Exception $e) {
+            // Gérer les exceptions générales
+            Log::error('Erreur lors de la validation', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            session()->flash('error', 'Une erreur est survenue lors du processus de validation. Veuillez réessayer.');
+        }
+    }
+
+    public $quantite;
+    public $qualite;
+    public $diversite;
+
+
+
+    public function mainleve()
+    {
+        // Rassemblez les réponses dans un tableau
+        $responses = [
+            'Quantité' => $this->quantite,
+            'Qualité' => $this->qualite,
+            'Diversité' => $this->diversite,
+        ];
+
+        // Comptez le nombre de "oui"
+        $countYes = count(array_filter([$this->quantite, $this->qualite, $this->diversite], fn($value) => $value === 'oui'));
+
+        // Vérifiez la condition
+        if ($countYes < 2) {
+            session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
+            return;
         }
 
-        // Mettre à jour la notification et valider
-        $this->notification->update(['reponse' => 'valide']);
-        Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
+        // Générer deux codes distincts
+        $fournisseurCode = random_int(1000, 9999);
+        $livreurCode = random_int(1000, 9999);
 
-        session()->flash('success', 'Validation effectuée avec succès.');
+        // Préparer les données pour le fournisseur
+        $dataFournisseur = [
+            'code_unique' => $this->achatdirect->code_unique,
+            'fournisseurCode' => $fournisseurCode,
+            'livreurCode' => $livreurCode,
+            'livreur' => $this->notification->data['livreur'] ?? null,
+            'client' => $this->achatdirect->userSender ?? null,
+            'achat_id' => $this->achatdirect->id ?? null,
+            'title' => 'Preparation du colis',
+            'description' => 'Remettez le colis au livreur->',
+        ];
+        if ($this->fournisseur) {
+            Notification::send($this->fournisseur, new mainleveAd($dataFournisseur));
+            Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
+        } else {
+            Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
+        }
+
+        // Préparer les données pour le livreur
+        $dataLivreur = [
+            'code_unique' => $this->achatdirect->code_unique,
+            'livreurCode' => $livreurCode,
+            'fournisseurCode' => $fournisseurCode,
+            'fournisseur' => $this->fournisseur->id ?? null,
+            'client' => $this->achatdirect->userSender ?? null,
+            'achat_id' => $this->achatdirect->id ?? null,
+            'title' => 'Livraison a effectuer',
+            'description' => 'Deplacez vous pour aller chercher le colis->',
+        ];
+        if ($this->livreur) {
+            Notification::send($this->livreur, new mainleveAd($dataLivreur));
+            Log::info('Notification envoyée au livreur', ['livreurId' => $this->livreur->id, 'code' => $livreurCode]);
+        } else {
+            Log::warning("Livreur introuvable pour la notification ID : " . $this->notification->id);
+        }
+
+
+        $this->notification->update(['reponse' => 'mainleveclient']);
+
+        session()->flash('message', 'Livraison marquée comme livrée.');
     }
+
+
+    // if ($this->notification->type_achat == 'reserv/take' || $this->notification->type == 'App\Notifications\AllerChercher') {
+    //     Notification::send($userSender, new commandVerifAd($data));
+
+    //     $notification = $userSender->notifications()->where('type', commandVerifAd::class)->latest()->first();
+
+    //     if ($notification) {
+    //         $notification->update(['type_achat' => 'reserv/take']);
+    //     }
+
+    //     // Utilisez && pour vérifier que les deux conditions sont vraies
+    //     Notification::send($traderUser, new VerifUser($user));
+    // } else {
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();

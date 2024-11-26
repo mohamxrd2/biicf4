@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppelOffreUser;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Comment;
@@ -61,7 +62,7 @@ class AppelOffreController extends Controller
         Log::info('Results fetched', ['results_count' => $results->count()]);
 
         // Log references before grouping
-        Log::info('References before grouping', ['references' => $results->pluck('reference')->unique()]);
+        // Log::info('References before grouping', ['references' => $results->pluck('reference')->unique()]);
 
         // Group results by reference
         $groupedByReference = $results->groupBy('reference');
@@ -88,11 +89,11 @@ class AppelOffreController extends Controller
                     if ($userZone) {
                         $filtered = $groupedByReference->map(function ($group) use ($userZone) {
                             return $group->filter(function ($produit) use ($userZone) {
-                                return strtolower($produit->comnServ) === $userZone;
+                                return strtolower($produit->user->commune) === $userZone;
                             });
                         });
                         $appliedZoneValue = $userZone;
-                        Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userZone' => $userZone]);
+                        // Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userZone' => $userZone]);
                     }
                     break;
 
@@ -100,11 +101,11 @@ class AppelOffreController extends Controller
                     if ($userVille) {
                         $filtered = $groupedByReference->map(function ($group) use ($userVille) {
                             return $group->filter(function ($produit) use ($userVille) {
-                                return strtolower($produit->villeServ) === $userVille;
+                                return strtolower($produit->user->ville) === $userVille;
                             });
                         });
                         $appliedZoneValue = $userVille;
-                        Log::info('Filtre Locale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userVille' => $userVille]);
+                        // Log::info('Filtre Locale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userVille' => $userVille]);
                     }
                     break;
 
@@ -112,11 +113,11 @@ class AppelOffreController extends Controller
                     if ($userDepartement) {
                         $filtered = $groupedByReference->map(function ($group) use ($userDepartement) {
                             return $group->filter(function ($produit) use ($userDepartement) {
-                                return strtolower($produit->zonecoServ) === $userDepartement;
+                                return strtolower($produit->user->departe) === $userDepartement;
                             });
                         });
                         $appliedZoneValue = $userDepartement;
-                        Log::info('Filtre Département appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userDepartement' => $userDepartement]);
+                        // Log::info('Filtre Département appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userDepartement' => $userDepartement]);
                     }
                     break;
 
@@ -124,11 +125,11 @@ class AppelOffreController extends Controller
                     if ($userPays) {
                         $filtered = $groupedByReference->map(function ($group) use ($userPays) {
                             return $group->filter(function ($produit) use ($userPays) {
-                                return strtolower($produit->pays) === $userPays;
+                                return strtolower($produit->user->country) === $userPays;
                             });
                         });
                         $appliedZoneValue = $userPays;
-                        Log::info('Filtre Nationale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userPays' => $userPays]);
+                        // Log::info('Filtre Nationale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userPays' => $userPays]);
                     }
                     break;
 
@@ -136,11 +137,11 @@ class AppelOffreController extends Controller
                     if ($userSousRegion) {
                         $filtered = $groupedByReference->map(function ($group) use ($userSousRegion) {
                             return $group->filter(function ($produit) use ($userSousRegion) {
-                                return strtolower($produit->sous_region) === $userSousRegion;
+                                return strtolower($produit->user->sous_region) === $userSousRegion;
                             });
                         });
                         $appliedZoneValue = $userSousRegion;
-                        Log::info('Filtre Sous-régionale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userSousRegion' => $userSousRegion]);
+                        // Log::info('Filtre Sous-régionale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userSousRegion' => $userSousRegion]);
                     }
                     break;
 
@@ -148,23 +149,21 @@ class AppelOffreController extends Controller
                     if ($userContinent) {
                         $filtered = $groupedByReference->map(function ($group) use ($userContinent) {
                             return $group->filter(function ($produit) use ($userContinent) {
-                                return strtolower($produit->continent) === $userContinent;
+                                return strtolower($produit->user->continent) === $userContinent;
                             });
                         });
                         $appliedZoneValue = $userContinent;
-                        Log::info('Filtre Continentale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userContinent' => $userContinent]);
+                        // Log::info('Filtre Continentale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userContinent' => $userContinent]);
                     }
                     break;
 
                 default:
-                    Log::info('Zone économique non reconnue', ['zoneEconomique' => $normalizedZoneEconomique]);
+                    // Log::info('Zone économique non reconnue', ['zoneEconomique' => $normalizedZoneEconomique]);
                     break;
             }
         }
 
         // Vous pouvez maintenant utiliser la variable $appliedZoneValue pour connaître la valeur finale de la zone économique appliquée
-
-
 
         // Remove empty groups
         $filtered = $filtered->filter(function ($group) {
@@ -174,15 +173,13 @@ class AppelOffreController extends Controller
         // Log grouped user_ids by reference
         foreach ($filtered as $reference => $group) {
             $user_ids = $group->pluck('user_id')->unique();
-            Log::info('User IDs grouped by reference', [
-                'reference' => $reference,
-                'user_ids' => $user_ids->toArray()
-            ]);
+            // Log::info('User IDs grouped by reference', [
+            //     'reference' => $reference,
+            //     'user_ids' => $user_ids->toArray()
+            // ]);
         }
 
-
         // Proceed with using $filtered for further operations
-
 
         $resultCount = $results->count();
 
@@ -196,10 +193,6 @@ class AppelOffreController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-
-
-
-
         return view('biicf.searchAppelOffre', compact('filtered', 'groupedByReference', 'results', 'appliedZoneValue', 'resultCount', 'zoneEconomique', 'keyword', 'prodUsers', 'produitDims', 'prodUsersCount', 'lowestPricedProduct'));
     }
 
@@ -208,9 +201,12 @@ class AppelOffreController extends Controller
 
         $name = $request->input('name');
         $lowestPricedProduct = $request->input('lowestPricedProduct');
+        $distinctquatiteMin = $request->input('distinctquatiteMin');
+        $distinctquatiteMax = $request->input('distinctquatiteMax');
         $prodUsers = $request->input('prodUsers');
         $reference = $request->input('reference');
         $distinctSpecifications = $request->input('distinctSpecifications');
+        $distinctCondProds = $request->input('distinctCondProds');
         $appliedZoneValue = $request->input('appliedZoneValue');
         $type = $request->input('type');
 
@@ -218,9 +214,12 @@ class AppelOffreController extends Controller
         $prodUsers = is_array($prodUsers) ? $prodUsers : (is_object($prodUsers) ? $prodUsers->toArray() : []);
         $distinctSpecifications = is_array($distinctSpecifications) ? $distinctSpecifications : (is_string($distinctSpecifications) ? explode(',', $distinctSpecifications) : []);
 
+        $userId = Auth::id();
+        // Récupérer la balance pour un utilisateur donné
+        $wallet = Wallet::where('user_id', $userId)->first();
 
 
-        return view('biicf.formappel', compact('lowestPricedProduct', 'type', 'prodUsers', 'name', 'reference', 'distinctSpecifications', 'appliedZoneValue'));
+        return view('biicf.formappel', compact('wallet','lowestPricedProduct', 'distinctCondProds', 'type', 'prodUsers', 'distinctquatiteMax', 'distinctquatiteMin', 'name', 'reference', 'distinctSpecifications', 'appliedZoneValue'));
     }
 
     public function detailoffre(Request $request, $id)
@@ -358,7 +357,7 @@ class AppelOffreController extends Controller
             $userId = Auth::guard('web')->id();
 
             // Validation des données du formulaire
-            $request->validate([
+            dd($validatedData = $request->validate([
                 'productName' => 'required|string',
                 'quantity' => 'required|integer',
                 'payment' => 'required|string',
@@ -373,7 +372,7 @@ class AppelOffreController extends Controller
                 'localite' => 'nullable|string',
                 'image' => 'nullable',
                 'prodUsers' => 'required|array',
-            ]);
+            ]));
 
             $lowestPricedProduct = $request->input('lowestPricedProduct');
             $prodUsers = $request->input('prodUsers');
@@ -383,7 +382,28 @@ class AppelOffreController extends Controller
                 return redirect()->back()->with('error', 'Aucun utilisateur de produit spécifié.');
             }
 
+            // Sauvegarder l'image si elle est fournie
+            if ($request->hasFile('image')) {
+                $validatedData['image'] = $request->file('image')->store('appel_offres', 'public');
+            }
 
+            // Insérer dans la table `appel_offres`
+            $appelOffre = AppelOffreUser::create([
+                'product_name' => $validatedData['productName'],
+                'quantity' => $validatedData['quantity'],
+                'payment' => $validatedData['payment'],
+                'livraison' => $validatedData['Livraison'],
+                'date_tot' => $validatedData['dateTot'],
+                'date_tard' => $validatedData['dateTard'],
+                'time_start' => $validatedData['timeStart'],
+                'time_end' => $validatedData['timeEnd'],
+                'day_period' => $validatedData['dayPeriod'],
+                'specification' => $validatedData['specification'],
+                'reference' => $validatedData['reference'],
+                'localite' => $validatedData['localite'],
+                'image' => $validatedData['image'] ?? null, // Valeur par défaut si aucune image n'est fournie
+                'id_sender' => Auth::id(), // L'utilisateur connecté est le créateur
+            ]);
 
             // Générer un code unique une seule fois pour tous les utilisateurs
             $codeUnique = $this->genererCodeAleatoire(10);
@@ -402,8 +422,8 @@ class AppelOffreController extends Controller
             // Augmentation du solde du portefeuille du client
             $userWallet->decrement('balance', $totalCost);
 
-            // Création de la transaction
-            $this->createTransaction($userId, $userId, 'Gele', $totalCost);
+            // Créer  transactions
+            $this->createTransaction($userId, $userId, 'Gele', $totalCost, $this->generateIntegerReference(), 'Gele Pour ' . 'Achat de ' . $request->input('productName'), 'effectué', 'COC');
 
             // Boucle sur chaque utilisateur pour envoyer la notification
             foreach ($prodUsers as $prodUser) {
@@ -449,14 +469,7 @@ class AppelOffreController extends Controller
                     }
                 }
 
-                // // Vérification des clés nullables uniquement si elles sont présentes
-                // $nullableKeys = ['timeStart', 'timeEnd', 'dayPeriod'];
-                // foreach ($nullableKeys as $key) {
-                //     if (array_key_exists($key, $data) && $data[$key] === null) {
-                //         throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
 
-                //     }
-                // }
 
                 // Récupération de l'utilisateur destinataire
                 $owner = User::find($prodUser);
@@ -481,14 +494,26 @@ class AppelOffreController extends Controller
             return redirect()->route('biicf.appeloffre')->with('error', 'Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
         }
     }
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
         $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
         $transaction->save();
+    }
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
 
     public function formstoreGroupe(Request $request)
@@ -576,7 +601,7 @@ class AppelOffreController extends Controller
             $userWallet->decrement('balance', $totalCost);
 
             // Création de la transaction
-            $this->createTransaction($userId, $userId, 'Gele', $totalCost);
+            $this->createTransaction($userId, $userId, 'Gele', $totalCost, $this->generateIntegerReference(), 'Gele Pour ' . 'Achat de ' . $request->input('productName'), 'effectué', 'COC');
 
             // Récupérer les IDs des propriétaires des consommations similaires
             $idsProprietaires = Consommation::where('name', $offre->productName)

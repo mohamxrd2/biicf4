@@ -77,56 +77,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Projet 1 -->
                     @foreach ($produits as $produit)
-                        <div
-                            class="group bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                            <div class="relative overflow-hidden">
-                                <img src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                                    alt="{{ $produit->name }}"
-                                    class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110">
-                                <div
-                                    class="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300">
-                                </div>
-                            </div>
 
-                            <div class="p-6 transform transition-all duration-300">
-                                <a href="{{ route('biicf.postdet', $produit->id) }}"
-                                    class="text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-600">
-                                    {{ $produit->name }}
-                                </a>
-                                <p class="text-gray-600 mb-4">{{ number_format($produit->prix, 0, ',', ' ') }} XOF
-                                </p>
-                                <hr class="my-3">
-
-                                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline-block text-gray-400"
-                                        fill="currentColor" viewBox="0 0 24 24">
-                                        <path fill-rule="evenodd"
-                                            d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>{{ $produit->comnServ }}</span>
-                                    <span class="text-gray-500">&bull;</span>
-                                    <span>{{ $produit->villeServ }}</span>
-                                </div>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                    {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    @if ($produit->type == 'Produit')
-                                        <span
-                                            class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm transform transition hover:scale-105">Produit</span>
-                                    @else
-                                        <span
-                                            class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm transform transition hover:scale-105">Service</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                             <!-- Image produit -->
                             <div class="relative h-48">
-                                <img src="https://via.placeholder.com/300" alt="Titre du produit" class="w-full h-full object-cover" />
-                                <div class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-sm">
+                                <img src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}" alt="{{ $produit->name }}" class="w-full h-full object-cover" />
+                                <div class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-sm ">
                                     4.5 ★ <!-- Exemple de notation -->
                                 </div>
                             </div>
@@ -135,8 +91,8 @@
                             <div class="p-4">
                                 <!-- Titre et prix -->
                                 <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-lg font-semibold text-gray-800">Titre du produit</h3>
-                                    <span class="text-lg font-bold text-yellow-500">99,99 €</span>
+                                    <h3 class="text-lg font-semibold text-gray-800">{{ $produit->name }}</h3>
+                                    <span class="text-lg font-bold text-yellow-500">{{ number_format($produit->prix, 0, ',', ' ') }} XOF</span>
                                 </div>
 
                                 <!-- Localisation -->
@@ -147,16 +103,16 @@
                                             d="M12 2C8.134 2 5 5.134 5 9c0 3.866 7 13 7 13s7-9.134 7-13c0-3.866-3.134-7-7-7z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a2 2 0 100-4 2 2 0 000 4z" />
                                     </svg>
-                                    <span>Paris • France</span>
+                                    <span>{{ $produit->comnServ }} • {{ $produit->villeServ }}</span>
                                 </div>
 
                                 <!-- Temps et bouton -->
                                 <div class="flex justify-between items-center mt-4">
-                                    <span class="text-sm text-gray-500">Il y a 2 heures</span>
-                                    <button
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors duration-200">
+                                    <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}</span>
+                                    <a href="{{ route('biicf.postdet', $produit->id) }}"
+                                        class="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-yellow-500 transition-colors duration-200">
                                         Voir le produit
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </div>

@@ -27,15 +27,15 @@ class mainleveAd extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'idProd' => $this->main['idProd'],
             'code_unique' => $this->main['code_unique'],
-            'fournisseur' => $this->main['fournisseur'],
-            'quantite' => $this->main['quantite'],
-            'localité' => $this->main['localité'],
-            'id_client' => $this->main['id_client'],
-            'prixTrade' => $this->main['prixTrade'],
-            'prixProd' => $this->main['prixProd'],
-            'livreur' => $this->main['livreur'],
+            'fournisseur' => $this->main['fournisseur'] ?? null,
+            'livreur' => $this->main['livreur'] ?? null,
+            'fournisseurCode' => $this->main['fournisseurCode'] ?? null,
+            'livreurCode' => $this->main['livreurCode'] ?? null,
+            'client' => $this->main['client'],
+            'achat_id' => $this->main['achat_id'],
+            'title' => $this->main['title'],
+            'description' => $this->main['description'],
 
         ];
     }

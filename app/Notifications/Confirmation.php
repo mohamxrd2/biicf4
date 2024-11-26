@@ -7,34 +7,36 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AppelOffre extends Notification implements ShouldQueue
+class Confirmation extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private $achat;
+    protected $achat;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct($achat)
     {
-
-
         $this->achat = $achat;
     }
 
-
+    /**
+     * Canaux de notification.
+     */
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database']; // Ajouter 'mail' si vous souhaitez aussi envoyer un email
     }
 
+    /**
+     * Notification via Base de données.
+     */
     public function toDatabase($notifiable)
     {
         return [
-            'id_appelOffre' => $this->achat['id_appelOffre'] ?? null,
+            'achat_id' => $this->achat['idAchat'],
+            'idProd' => $this->achat['idProd'] ?? null,
             'code_unique' => $this->achat['code_unique'],
-            'difference' => $this->achat['difference'] ?? null,
+            'title' => $this->achat['title'],
+            'description' => $this->achat['description'],
         ];
     }
 }

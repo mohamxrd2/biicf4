@@ -28,14 +28,16 @@ class AchatDirect extends Model
         'userSender',
         'idProd',
         'specificite',
+        'count',
+        'code_verification',
     ];
 
-    public function userTrader()
+    public function userTraderI()
     {
         return $this->belongsTo(User::class, 'userTrader');
     }
 
-    public function userSender()
+    public function userSenderI()
     {
         return $this->belongsTo(User::class, 'userSender');
     }
