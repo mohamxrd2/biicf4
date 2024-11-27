@@ -201,13 +201,7 @@ class RappelPortionsJournalCredits extends Command
                     $crp->Solde -= $credit->montant;
                     $crp->save();
 
-                    // // Log de la mise à jour
-                    // Log::info('Mise à jour de la table CRP', [
-                    //     'id_wallet' => $wallet->id,
-                    //     'ancien_solde' => $ancienSoldeCrp,
-                    //     'nouveau_solde' => $crp->Solde,
-                    //     'montant_débité' => $credit->montant
-                    // ]);
+
                 }
             } else {
                 Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [

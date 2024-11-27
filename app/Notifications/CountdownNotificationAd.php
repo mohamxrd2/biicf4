@@ -31,6 +31,7 @@ class CountdownNotificationAd extends Notification implements ShouldQueue
             'prixTrade' => $this->details['prixTrade'] ?? null,
             'livreur' => $this->details['livreur'] ?? null,
             'achat_id' => $this->details['achat_id'] ?? null,
+            'prixFin' => $this->details['prixFin'] ?? null,
 
         ];
     }

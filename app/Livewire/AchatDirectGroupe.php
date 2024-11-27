@@ -75,7 +75,6 @@ class AchatDirectGroupe extends Component
         $this->photoProd = $this->produit->photoProd1;
         $this->idProd = $this->produit->id;
         $this->prix = $this->produit->prix;
-        $this->code_unique = $this->generateUniqueReference();
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
 
 
@@ -138,6 +137,12 @@ class AchatDirectGroupe extends Component
             return;
         }
 
+        ($codeUnique = $this->generateUniqueReference());
+        if (!$codeUnique) {
+            Log::error('Code unique non généré.');
+            throw new \Exception('Code unique non généré.');
+        }
+
         // // Commencez une transaction de base de données
         DB::beginTransaction();
         try {
@@ -164,7 +169,7 @@ class AchatDirectGroupe extends Component
                 'specificite' => $this->produit->specification,
                 'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
-                'code_unique' => $this->code_unique,
+                'code_unique' => $codeUnique, // Utiliser la variable vérifiée
 
             ]);
             // Mettre à jour la table de gelement de fond
@@ -176,7 +181,6 @@ class AchatDirectGroupe extends Component
 
             // Mettre à jour la table de AchatDirectModel de fond
             $achatUser = [
-
                 'nameProd' => $validated['nameProd'],
                 'idProd' => $validated['idProd'],
                 'idAchat' => $achat->id,
@@ -203,8 +207,6 @@ class AchatDirectGroupe extends Component
             }
 
             $this->reset(['quantité', 'localite']);
-
-
 
             $userConnecte = Auth::user(); // Récupérer l'utilisateur connecté
 

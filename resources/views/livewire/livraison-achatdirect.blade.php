@@ -20,9 +20,9 @@
     </div>
 
     <div class="bg-gray-100 min-h-screen">
-        <div class="flex gap-8">
+        <div class="flex flex-wrap gap-8 p-4">
             <!-- Carte produit -->
-            <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 h-fit">
+            <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 md:w-96 h-fit">
                 <div class="mb-4">
                     <img src="{{ asset('post/all/' . $notification->data['photoProd']) }}" alt="Smart Watch Pro X1"
                         class="w-full h-48 object-cover rounded-lg bg-gray-100" />
@@ -81,12 +81,12 @@
                     <h2 class="font-semibold mb-2">Lieu de récupération:</h2>
                     <ul class="list-disc list-inside space-y-1 text-gray-600">
                         <li>
-                            {{ $produit->continent }},
-                            {{ $produit->sous_region }},
-                            {{ $produit->pays }},
-                            {{ $produit->zonecoServ }},
-                            {{ $produit->villeServ }},
-                            {{ $produit->comnServ }}
+                            {{ $achatdirect->userSenderI->continent }},
+                            {{ $achatdirect->userSenderI->sous_region }},
+                            {{ $achatdirect->userSenderI->pays }},
+                            {{ $achatdirect->userSenderI->departe }},
+                            {{ $achatdirect->userSenderI->ville }},
+                            {{ $achatdirect->userSenderI->commune }}
                         </li>
                     </ul>
                 </div>
@@ -94,7 +94,7 @@
             </div>
 
             <!-- Discussion -->
-            <div class="flex-1 w-64">
+            <div class="flex-1 w-full md:w-auto">
                 <!-- Discussion de négociation -->
                 <div class="bg-white shadow-lg rounded-lg p-2">
 

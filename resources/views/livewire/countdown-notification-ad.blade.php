@@ -19,11 +19,15 @@
                 <div class="flex items-center justify-between border-b pb-4">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Détails de la commande</h1>
-                        <p class="mt-1 text-sm text-gray-500">Commande #{{ $notification->data['code_unique'] }}</p>
+                        <p class="mt-1 text-sm text-gray-500">Commande
+                            #{{ $notification->data['code_unique'] ?? $achatdirect->code_unique }}</p>
                     </div>
-                    <span class="px-4 py-1 text-sm font-medium bg-green-100 text-green-700 rounded-full">
-                        Statut : Livrée
+                    <span class="px-4 py-1 text-sm font-medium bg-yellow-100 text-yellow-700 rounded-full">
+                        Statut : en attente
                     </span>
+                    {{-- <span class="px-4 py-1 text-sm font-medium bg-green-100 text-green-700 rounded-full">
+                        Statut : effectué
+                    </span> --}}
                 </div>
 
                 <!-- Informations principales -->
@@ -38,15 +42,17 @@
                         </div>
                     </div>
                     @if ($notification->reponse == 'accepter')
-                        <!-- Informations sur le livreur -->
-                        <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
-                            <h2 class="text-lg font-semibold text-gray-800">Livreur</h2>
-                            <div class="mt-2 text-sm text-gray-600 space-y-1">
-                                <p><span class="font-medium">Nom : </span>{{ $livreur->name }}</p>
-                                <p><span class="font-medium">Email : </span>{{ $livreur->email }}</p>
-                                <p><span class="font-medium">Téléphone : </span>{{ $livreur->phone }}</p>
+                        @if ($notification->data['livreur'])
+                            <!-- Informations sur le livreur -->
+                            <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
+                                <h2 class="text-lg font-semibold text-gray-800">Livreur</h2>
+                                <div class="mt-2 text-sm text-gray-600 space-y-1">
+                                    <p><span class="font-medium">Nom : </span>{{ $livreur->name }}</p>
+                                    <p><span class="font-medium">Email : </span>{{ $livreur->email }}</p>
+                                    <p><span class="font-medium">Téléphone : </span>{{ $livreur->phone }}</p>
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
                         <!-- Informations sur le fournisseur -->
                         <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
@@ -93,8 +99,9 @@
                         </div>
                         <div class="flex justify-between text-sm text-gray-600">
                             <span>Frais de livraison :</span>
-                            <span>{{ number_format($notification->data['prixTrade'], 2, ',', '.') }}
+                            <span>{{ isset($notification->data['prixTrade']) ? number_format($notification->data['prixTrade'], 2, ',', '.') : 'N/A' }}
                                 FCFA</span>
+
                         </div>
                         <div class="flex justify-between font-medium text-gray-900">
                             <span>Total :</span>
@@ -229,7 +236,16 @@
                         <div class="flex space-x-2 mt-4">
                             <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
                                 <!-- Texte du bouton et icône -->
-                                Notif envoye
+                                Notification de refus envoyé
+
+                            </div>
+
+                        </div>
+                    @elseif($notification->reponse == 'mainleveclient')
+                        <div class="flex space-x-2 mt-4">
+                            <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
+                                <!-- Texte du bouton et icône -->
+                                Proceder a la recuperation de votre commande
 
                             </div>
 

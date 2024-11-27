@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\AchatDirect;
+use App\Models\ComissionAdmin;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
@@ -12,10 +13,12 @@ use App\Notifications\commandVerifAd;
 use App\Notifications\Confirmation;
 use App\Notifications\mainleve;
 use App\Notifications\mainleveAd;
+use App\Notifications\RefusAchat;
 use App\Notifications\VerifUser;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
@@ -66,7 +69,7 @@ class CountdownNotificationAd extends Component
     {
         try {
             // Vérification des données récupérées
-            if (!$this->livreur || !$this->achatdirect) {
+            if (!$this->achatdirect) {
                 throw new Exception("Données introuvables pour le livreur ou l'achat.");
             }
 
@@ -75,12 +78,12 @@ class CountdownNotificationAd extends Component
                 'idProd' => $this->produit->id,
                 'code_unique' => $this->notification->data['code_unique'],
                 'title' => 'Facture Refusée',
-                'description' => 'Le prix de la livraison ne convient pas au client',
+                'description' => 'Le prix de la facture ne convient pas au client',
             ];
 
             // Envoi de la notification au fournisseur
             if ($this->fournisseur) {
-                Notification::send($this->fournisseur, new Confirmation($livreurdetails));
+                Notification::send($this->fournisseur, new RefusAchat($livreurdetails));
             } else {
                 Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id_achat);
             }
@@ -103,6 +106,7 @@ class CountdownNotificationAd extends Component
 
     public function valider()
     {
+        DB::beginTransaction();
         try {
             $userWallet = Wallet::where('user_id', $this->user)->first();
 
@@ -114,7 +118,7 @@ class CountdownNotificationAd extends Component
             Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
 
             // Calcul du montant requis avec une réduction de 10%
-            $requiredAmount = $this->achatdirect->montantTotal - ($this->achatdirect->montantTotal * 0.1);
+            $requiredAmount = $this->notification->data['prixFin'];
 
             if ($userWallet->balance < $requiredAmount) {
                 Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
@@ -132,6 +136,124 @@ class CountdownNotificationAd extends Component
                 'effectué',
                 'COC'
             );
+
+            $roi = $this->achatdirect->montantTotal * 0.01 / 100;
+            $commissions = $roi - $roi * 0.01;
+
+            if ($this->fournisseur->parrain) {
+
+                $parrainLevel1 = User::find($this->fournisseur->parrain);
+                $parrainLevel1Wallet = Wallet::where('user_id', $parrainLevel1->id)->first();
+                if ($parrainLevel1Wallet) {
+                    $parrainLevel1Wallet->balance += $commissions * 0.01;
+                    $parrainLevel1Wallet->save();
+
+                    Log::info('Commission envoyée au parrain', [
+                        'parrain_id' => $parrainLevel1->id,
+                        'commissions' => $commissions * 0.01,
+                    ]);
+
+                    $this->createTransaction(
+                        $this->user,
+                        $parrainLevel1->id,
+                        'Commission',
+                        $commissions * 0.01,
+                        $this->generateIntegerReference(),
+                        'Commission de BICF',
+                        'effectué',
+                        'COC'
+                    );
+
+                    $commissions -= $commissions * 0.01;
+                }
+
+
+
+
+                if ($parrainLevel1->parrain) {
+
+                    $parrainLevel2 = User::find($parrainLevel1->parrain);
+                    $parrainLevel2Wallet = Wallet::where('user_id', $parrainLevel2->id)->first();
+
+                    if ($parrainLevel2Wallet) {
+                        $parrainLevel2Wallet->balance += $commissions * 0.01;
+                        $parrainLevel2Wallet->save();
+
+                        // Log de la mise à jour
+                        Log::info('Commission envoyée au deuxième parrain', [
+                            'parrain_id' => $parrainLevel2->id,
+                            'commissions' => $commissions * 0.01
+                        ]);
+
+                        // Créer une transaction vers le deuxième parrain
+                        $this->createTransaction(
+                            $this->user,
+                            $parrainLevel2->id,
+                            'Commission',
+                            $commissions * 0.01,
+                            $this->generateIntegerReference(),
+                            'Commission de BICF',
+                            'effectué',
+                            'COC'
+                        );
+
+                        $commissions = $commissions - $commissions * 0.01;
+                    }
+
+                    if ($parrainLevel2->parrain) {
+                        $parrainLevel3 = User::find($parrainLevel2->parrain);
+                        $parrainLevel3Wallet = Wallet::where('user_id', $parrainLevel3->id)->first();
+                        if ($parrainLevel3Wallet) {
+                            $parrainLevel3Wallet->balance += $commissions * 0.01;
+                            $parrainLevel3Wallet->save();
+
+                            // Log de la mise à jour
+                            Log::info('Commission envoyée au troisième parrain', [
+                                'parrain_id' => $parrainLevel3->id,
+                                'commissions' => $commissions * 0.01
+                            ]);
+
+                            // Créer une transaction vers le troisième parrain
+                            $this->createTransaction(
+                                $this->user,
+                                $parrainLevel3->id,
+                                'Commission',
+                                $commissions * 0.01,
+                                $this->generateIntegerReference(),
+                                'Commission de BICF',
+                                'effectué',
+                                'COC'
+                            );
+
+                            $commissions = $commissions - $commissions * 0.01;
+                        }
+                    }
+                }
+            }
+
+            // Envoyé commission a l'admin
+
+            $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
+            if ($adminWallet) {
+                $adminWallet->balance += $commissions;
+                $adminWallet->save();
+
+                Log::info('Commission envoyée à l\'admin', [
+                    'admin_id' => 1,
+                    'commissions' => $commissions,
+                ]);
+
+                $this->createTransactionAdmin(
+                    $this->user,
+                    1,
+                    'Commission',
+                    $commissions,
+                    $this->generateIntegerReference(),
+                    'Commission de BICF',
+                    'effectué',
+                    'commission'
+                );
+            }
 
             // Générer et stocker le code de vérification
             $this->codeVerification = random_int(1000, 9999);
@@ -153,6 +275,7 @@ class CountdownNotificationAd extends Component
             // Mettre à jour la notification et valider
             $this->notification->update(['reponse' => 'accepter']);
             Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
+            DB::commit();
 
             session()->flash('success', 'Validation effectuée avec succès.');
         } catch (Exception $e) {
@@ -174,81 +297,98 @@ class CountdownNotificationAd extends Component
 
     public function mainleve()
     {
-        // Rassemblez les réponses dans un tableau
-        $responses = [
-            'Quantité' => $this->quantite,
-            'Qualité' => $this->qualite,
-            'Diversité' => $this->diversite,
-        ];
+        DB::beginTransaction();
+        try {
+            // Rassemblez les réponses dans un tableau
+            $responses = [
+                'Quantité' => $this->quantite,
+                'Qualité' => $this->qualite,
+                'Diversité' => $this->diversite,
+            ];
 
-        // Comptez le nombre de "oui"
-        $countYes = count(array_filter([$this->quantite, $this->qualite, $this->diversite], fn($value) => $value === 'oui'));
+            // Comptez le nombre de "oui"
+            $countYes = count(array_filter([$this->quantite, $this->qualite, $this->diversite], fn($value) => $value === 'oui'));
 
-        // Vérifiez la condition
-        if ($countYes < 2) {
-            session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
-            return;
+            // Vérifiez la condition
+            if ($countYes < 2) {
+                session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
+                return;
+            }
+            // Générer deux codes distincts
+            $fournisseurCode = random_int(1000, 9999);
+            $livreurCode = random_int(1000, 9999);
+
+            if (!$this->livreur) {
+
+                // Préparer les données pour le fournisseur
+                $dataFournisseur = [
+                    'code_unique' => $this->achatdirect->code_unique,
+                    'idAchat' => $this->achatdirect->id ?? null,
+                    'title' => 'Commande récupérée avec succès',
+                    'description' => 'Votre commande a été récupérée avec succès. Merci de votre confiance !',
+
+                ];
+
+                if ($this->fournisseur) {
+                    Notification::send($this->fournisseur, new Confirmation($dataFournisseur));
+                    Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
+                } else {
+                    Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
+                }
+            } else {
+                // Préparer les données pour le fournisseur
+                $dataFournisseur = [
+                    'code_unique' => $this->achatdirect->code_unique,
+                    'fournisseurCode' => $fournisseurCode,
+                    'livreurCode' => $livreurCode,
+                    'livreur' => $this->notification->data['livreur'] ?? null,
+                    'client' => $this->achatdirect->userSender ?? null,
+                    'achat_id' => $this->achatdirect->id ?? null,
+                    'title' => 'Recuperation de la commande',
+                    'description' => 'Remettez le colis au livreur->',
+                ];
+
+                if ($this->fournisseur) {
+                    Notification::send($this->fournisseur, new mainleveAd($dataFournisseur));
+                    Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
+                } else {
+                    Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
+                }
+
+                // Préparer les données pour le livreur
+                $dataLivreur = [
+                    'code_unique' => $this->achatdirect->code_unique,
+                    'livreurCode' => $livreurCode,
+                    'fournisseurCode' => $fournisseurCode,
+                    'fournisseur' => $this->fournisseur->id ?? null,
+                    'client' => $this->achatdirect->userSender ?? null,
+                    'achat_id' => $this->achatdirect->id ?? null,
+                    'title' => 'Livraison a effectuer',
+                    'description' => 'Deplacez vous pour aller chercher le colis->',
+                ];
+                if ($this->livreur) {
+                    Notification::send($this->livreur, new mainleveAd($dataLivreur));
+                    Log::info('Notification envoyée au livreur', ['livreurId' => $this->livreur->id, 'code' => $livreurCode]);
+                } else {
+                    Log::warning("Livreur introuvable pour la notification ID : " . $this->notification->id);
+                }
+            }
+            $this->notification->update(['reponse' => 'mainleveclient']);
+
+            session()->flash('message', 'Livraison marquée comme livrée.');
+            DB::commit();
+
+        } catch (Exception $e) {
+            // Gérer les exceptions générales
+            Log::error('Erreur lors de la validation', [
+                'message' => $e->getMessage(),
+
+            ]);
+            session()->flash('error', 'Une erreur est survenue lors du processus de validation. Veuillez réessayer.');
         }
-
-        // Générer deux codes distincts
-        $fournisseurCode = random_int(1000, 9999);
-        $livreurCode = random_int(1000, 9999);
-
-        // Préparer les données pour le fournisseur
-        $dataFournisseur = [
-            'code_unique' => $this->achatdirect->code_unique,
-            'fournisseurCode' => $fournisseurCode,
-            'livreurCode' => $livreurCode,
-            'livreur' => $this->notification->data['livreur'] ?? null,
-            'client' => $this->achatdirect->userSender ?? null,
-            'achat_id' => $this->achatdirect->id ?? null,
-            'title' => 'Preparation du colis',
-            'description' => 'Remettez le colis au livreur->',
-        ];
-        if ($this->fournisseur) {
-            Notification::send($this->fournisseur, new mainleveAd($dataFournisseur));
-            Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
-        } else {
-            Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
-        }
-
-        // Préparer les données pour le livreur
-        $dataLivreur = [
-            'code_unique' => $this->achatdirect->code_unique,
-            'livreurCode' => $livreurCode,
-            'fournisseurCode' => $fournisseurCode,
-            'fournisseur' => $this->fournisseur->id ?? null,
-            'client' => $this->achatdirect->userSender ?? null,
-            'achat_id' => $this->achatdirect->id ?? null,
-            'title' => 'Livraison a effectuer',
-            'description' => 'Deplacez vous pour aller chercher le colis->',
-        ];
-        if ($this->livreur) {
-            Notification::send($this->livreur, new mainleveAd($dataLivreur));
-            Log::info('Notification envoyée au livreur', ['livreurId' => $this->livreur->id, 'code' => $livreurCode]);
-        } else {
-            Log::warning("Livreur introuvable pour la notification ID : " . $this->notification->id);
-        }
-
-
-        $this->notification->update(['reponse' => 'mainleveclient']);
-
-        session()->flash('message', 'Livraison marquée comme livrée.');
     }
 
 
-    // if ($this->notification->type_achat == 'reserv/take' || $this->notification->type == 'App\Notifications\AllerChercher') {
-    //     Notification::send($userSender, new commandVerifAd($data));
-
-    //     $notification = $userSender->notifications()->where('type', commandVerifAd::class)->latest()->first();
-
-    //     if ($notification) {
-    //         $notification->update(['type_achat' => 'reserv/take']);
-    //     }
-
-    //     // Utilisez && pour vérifier que les deux conditions sont vraies
-    //     Notification::send($traderUser, new VerifUser($user));
-    // } else {
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();

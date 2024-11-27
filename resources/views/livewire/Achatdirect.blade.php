@@ -9,7 +9,7 @@
         <div class="p-6 border-b border-gray-200">
             <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande
                 @if ($notification->type_achat == 'Take Away')
-                    Take Away
+                    Retrait au magasin
                 @else
                     Avec livraison
                 @endif
@@ -66,7 +66,7 @@
             <div class="p-6 rounded-lg ">
                 <h2 class="mb-4 text-xl font-bold text-gray-800">Éléments de la Commande</h2>
                 <p class="mb-6 text-sm text-gray-600">
-                    Vous serez débité de <strong>10%</strong> sur le prix de la marchandise.
+                    Vous serez débité de <strong>1%</strong> sur le prix de la marchandise.
                 </p>
 
                 <!-- Informations sur le produit/service -->
@@ -116,12 +116,11 @@
 
                             <div class="flex justify-between">
                                 <span>frais de service :</span>
-                                <span>10% </span>
+                                <span>1% </span>
                             </div>
                             <div class="flex justify-between font-medium text-gray-900">
-                                <span>Prix après frais de service :</span>
-                                <span>{{ number_format($achatdirect->montantTotal - $achatdirect->montantTotal * 0.1, 2, ',', '.') }}
-                                    FCFA</span>
+                                <span>Vous recevrez :</span>
+                                <span>{{ number_format($prixFin, 2, ',', '.') }} FCFA</span>
                             </div>
                         </div>
                     </div>
@@ -133,23 +132,21 @@
             <div class="flex flex-col justify-end gap-4 mt-6 md:flex-row">
                 @if ($notification->reponse == 'accepte' || $notification->reponse == 'refuser')
                     <div class="w-full p-2 bg-gray-300 border rounded-md">
-                        <p class="font-medium text-center text-md">Réponse envoyée</p>
+                        <p class="font-medium text-center text-md">Notification envoyée au client</p>
                     </div>
                 @elseif ($notification->type_achat == 'Take Away')
-                    <button wire:click="takeaway"
-                        class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
                     <button wire:click="refuser" id="btn-refuser" type="submit"
-                        class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
-                @elseif ($notification->type_achat == 'Reservation')
+                        class="px-4 py-2 text-white bg-gray-500 rounded hover:bg-red-700">Refuser</button>
                     <button wire:click="takeaway"
-                        class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
-                    <button wire:click="refuser" id="btn-refuser" type="submit"
-                        class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+                        class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Procéder a la
+                        confirmation</button>
+
                 @else
                     <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...' }" x-cloak>
                         <!-- Buttons to open modal and refuse -->
                         <button @click="isOpen = true"
-                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Accepter</button>
+                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Acheminement pour
+                            négociation</button>
                         <button wire:click="refuser" id="btn-refuser" type="submit"
                             class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
 
@@ -204,14 +201,14 @@
                                                             required />
 
                                                         <div class="flex justify-end mt-2 space-x-2">
+                                                            <button type="submit"
+                                                                class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">
+                                                                <span wire:loading.remove>Confirmer</span>
+                                                                <span wire:loading>En cours...</span>
+                                                            </button>
                                                             <button @click="open = false"
                                                                 class="px-4 py-2 text-gray-800 bg-gray-200 rounded hover:bg-gray-300">
                                                                 Annuler
-                                                            </button>
-                                                            <button type="submit"
-                                                                class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">
-                                                                <span wire:loading.remove>Envoyer</span>
-                                                                <span wire:loading>En cours...</span>
                                                             </button>
                                                         </div>
                                                     </form>

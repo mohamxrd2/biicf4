@@ -49,6 +49,7 @@ class Achatdirect extends Component
     public $textareaValue;
     public $produits;
     public $achatdirect;
+    public $prixFin;
 
 
 
@@ -57,6 +58,7 @@ class Achatdirect extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->produits = ProduitService::find($this->notification->data['idProd']);
         $this->achatdirect = ModelsAchatDirect::find($this->notification->data['idAchat']);
+        $this->prixFin = $this->achatdirect->montantTotal - $this->achatdirect->montantTotal * 0.01;
 
 
         $this->ciblageLivreurs();
@@ -147,8 +149,6 @@ class Achatdirect extends Component
                 session()->flash('error', 'Portefeuille introuvable.');
                 return;
             }
-
-
 
             // Téléchargez la photo
             $photoName = $this->handlePhotoUpload('photoProd');
@@ -247,6 +247,54 @@ class Achatdirect extends Component
         }
     }
 
+    public function takeaway()
+    {
+        DB::beginTransaction();
+
+        try {
+            // Vérifiez que notification et achatdirect sont définis
+            if (!$this->notification || !$this->achatdirect) {
+                Log::error('Notification ou achatdirect non défini.', [
+                    'notification' => $this->notification,
+                    'achatdirect' => $this->achatdirect,
+                ]);
+                session()->flash('error', 'Données manquantes pour traiter la demande.');
+                return;
+            }
+
+            // Préparer les détails pour la notification
+            $details = [
+                'prixFin' =>  $this->prixFin ?? null,
+                'code_unique' => $this->achatdirect->code_unique ?? null,
+                'achat_id' => $this->achatdirect->id ?? null,
+            ];
+
+            // Trouvez l'utilisateur expéditeur
+            $userSender = User::find($this->achatdirect->userSender);
+
+
+            // Envoi de la notification
+            Notification::send($userSender, new CountdownNotificationAd($details));
+            Log::info('Notification envoyée avec succès.', [
+                'userSenderId' => $userSender->id,
+                'details' => $details,
+            ]);
+
+            // Mettre à jour la notification originale
+            $this->notification->update(['reponse' => 'accepte', 'type_achat' => 'Take Away']);
+            Log::info('Notification originale mise à jour avec succès.', [
+                'notificationId' => $this->notification->id,
+            ]);
+            // Après l'envoi de la notification
+            event(new NotificationSent($userSender));
+            // Valider la transaction
+            DB::commit();
+        } catch (Exception $e) {
+            // Annuler la transaction si un élément est introuvable
+            DB::rollBack();
+            session()->flash('error', 'Un élément requis est introuvable : ' . $e->getMessage());
+        }
+    }
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
@@ -287,75 +335,8 @@ class Achatdirect extends Component
         return null; // Retourne null si aucun fichier valide
     }
 
-    public function takeaway()
-    {
-        // Log pour vérifier que la méthode est appelée
-        Log::info('Méthode takeaway appelée.', ['notification' => $this->notification]);
-
-        // Extraire les données correctement
-        $notificationData = $this->notification->data;
 
 
-        // Si la référence et l'ID du trader sont manquants, essayer de trouver le produit par ID direct
-        $produit = ProduitService::find($notificationData['idProd'] ?? null);
-
-        // Vérifier si le produit existe
-        if ($produit) {
-            $prixProd = $produit->prix;
-        } else {
-            Log::error('Produit non trouvé.', ['idProd' => $notificationData['idProd']]);
-            session()->flash('error', 'Produit non trouvé.');
-            return;
-        }
-
-        // À partir d'ici, tu peux utiliser $prixProd pour les étapes suivantes
-        $code_livr = isset($this->code_unique) ? $this->code_unique : $this->genererCodeAleatoire(10);
-
-        $details = [
-            'code_unique' => $code_livr,
-            'fournisseur' => $notificationData['userTrader'] ?? null, // Correction: Utiliser 'id_trader'
-            'idProd' => $notificationData['idProd'] ?? null,
-            'quantiteC' => $this->notification->data['quantité'] ?? null, // Correction: Utiliser 'quantite'
-            'prixProd' => $prixProd ?? null,
-        ];
-
-        // Log pour vérifier les détails avant l'envoi de la notification
-        Log::info('Détails de la notification préparés.', ['details' => $details]);
-
-        // Vérifiez si 'userSender' est présent, sinon utilisez 'id_sender'
-        $userSenderId = $notificationData['userSender'] ?? null;
-
-        if ($userSenderId) {
-            $userSender = User::find($userSenderId);
-            if ($userSender) {
-                Log::info('Utilisateur expéditeur trouvé.', ['userSenderId' => $userSender->id]);
-
-                // Envoi de la notification
-                Notification::send($userSender, new CountdownNotificationAd($details));
-                Log::info('Notification envoyée avec succès.', ['userSenderId' => $userSender->id, 'details' => $details]);
-
-                // Récupérez la notification pour mise à jour
-                $notification = $userSender->notifications()->where('type', CountdownNotificationAd::class)->latest()->first();
-
-                if ($notification) {
-                    // Mettez à jour le champ 'type_achat' dans la notification
-                    $notification->update(['type_achat' => 'reserv/take']);
-                }
-            } else {
-                Log::error('Utilisateur expéditeur non trouvé.', ['userSenderId' => $userSenderId]);
-                session()->flash('error', 'Utilisateur expéditeur non trouvé.');
-                return;
-            }
-        } else {
-            Log::error('Détails de notification non valides.', ['notification' => $this->notification]);
-            session()->flash('error', 'Détails de notification non valides.');
-            return;
-        }
-
-        // Mettre à jour la notification originale
-        $this->notification->update(['reponse' => 'accepte']);
-    }
-   
     public function render()
     {
         return view('livewire.Achatdirect');

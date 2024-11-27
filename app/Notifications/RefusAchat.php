@@ -27,7 +27,11 @@ class RefusAchat extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'code_unique' => $this->reason,
+            'achat_id' => $this->reason['idAchat'],
+            'idProd' => $this->reason['idProd'] ?? null,
+            'code_unique' => $this->reason['code_unique'] ?? null,
+            'title' => $this->reason['title'],
+            'description' => $this->reason['description'],
         ];
     }
 }

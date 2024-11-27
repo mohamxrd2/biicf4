@@ -40,7 +40,7 @@ class LivraisonAchatdirect extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->produit = ProduitService::find($this->idProd);
-        $this->achatdirect = AchatDirect::find($this->notification->data['idAchat']);
+        $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
         // Vérifier si 'code_unique' existe dans les données de notification
         $codeUnique = $this->notification->data['code_livr'];
 
@@ -103,7 +103,7 @@ class LivraisonAchatdirect extends Component
 
         DB::beginTransaction();
         try {
-            
+
             // Créer un commentaire
             $comment = Comment::create([
                 'prixTrade' => $validatedData['prixTrade'],
