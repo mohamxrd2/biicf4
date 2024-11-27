@@ -1,12 +1,12 @@
 <div>
-    
+
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect">
         @if (session('error'))
             <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-800 dark:bg-gray-800 dark:text-red-400">
                 <span class="font-medium text-white">{{ session('error') }}</span>
             </div>
         @endif
-        <div x-data="{ selectedOption: @entangle('selectedOption'), quantity: 1, location: '' }">
+        <div x-data="{ selectedOption: @entangle('selectedOption'), quantité: 1, localite: '' }">
 
             <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
                 <ol
@@ -37,46 +37,37 @@
                             Achat
                         </span>
                     </li>
-
-                    <li>
-                        <span
-                            class="flex items-center after:mx-2  after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                            <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            Crédit
-                        </span>
-                    </li>
                 </ol>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Champ de quantité -->
                     <div class="mb-4">
                         <h2 class="text-lg font-bold mb-2">Quantité du produit</h2>
-                        <input id="quantityInput" type="number" x-model="quantity" min="1" name="quantité"
-                            class="w-64 p-2 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        <input id="quantityInput" type="number" wire:model="quantité" x-model="quantité" min="1"
+                            name="quantité"
+                            class="w-full p-2 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
                             data-min="{{ $produit->qteProd_min }}" data-max="{{ $produit->qteProd_max }}"
-                            oninput="updateMontantTotalDirect()" required/>
+                            oninput="updateMontantTotalDirect()" required />
                     </div>
 
                     <!-- Champ de localisation -->
                     <div>
                         <h2 class="text-lg font-bold mb-2">Adresse de livraison</h2>
-                        <input id="location" type="text" x-model="location" placeholder="Entrez votre localisation"
+                        <input id="location" type="text" wire:model="localite" x-model="localite"
+                            placeholder="Entrez votre localisation"
                             class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
                     </div>
                 </div>
+
 
                 <!-- Résumé -->
                 <div class="mt-4 p-4 bg-blue-50 rounded-lg border">
                     <h4 class="font-semibold text-gray-800">Résumé :</h4>
                     <p class="text-gray-700">
-                        Vous avez sélectionné <span class="font-bold" x-text="quantity"></span> article(s).
+                        Vous avez sélectionné <span class="font-bold" x-text="quantité"></span>
+                        {{ $produit->condProd }}(s).
                     </p>
                     <p class="text-gray-700">
-                        Localisation : <span class="font-bold" x-text="location || 'Non renseignée'"></span>
+                        Localisation : <span class="font-bold" x-text="localite || 'Non renseignée'"></span>
                     </p>
                 </div>
 
@@ -84,7 +75,7 @@
                 <div class="mb-4">
                     <h2 class="text-lg font-bold mb-2">Mode de réception</h2>
                     <!-- Option: Livraison à domicile -->
-                    <button type="button" @click="selectedOption = 'Delivery'"
+                    <button type="button" wire:model="selectedOption" @click="selectedOption = 'Delivery'"
                         class="flex items-center p-4 rounded-lg border-2 transition-all w-full mb-4"
                         :class="{
                             'border-blue-500 bg-blue-50': selectedOption === 'Delivery',
@@ -96,23 +87,27 @@
                                 'bg-gray-100 text-gray-600': selectedOption !== 'Delivery'
                             }">
                             <!-- Icône de livraison -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 3l18 18M9 17l6-6 4 4V6H5v11l4-4 5 5z" />
+                                <rect x="1" y="3" width="15" height="13" rx="2" ry="2"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+                                <path d="M16 8h5l3 5v3h-8V8z" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round"></path>
+                                <circle cx="5.5" cy="18.5" r="2.5" stroke-width="2"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5" stroke-width="2"></circle>
                             </svg>
                         </div>
                         <div class="flex-1 text-left">
                             <h3 class="font-semibold text-gray-800">Livraison à domicile</h3>
-                            <p class="text-sm text-gray-500">Livré chez vous après négociation</p>
+                            <p class="text-sm text-gray-500">Livré chez vous après négociation des livreurs</p>
                         </div>
                         <div class="text-right">
-                            <span class="font-semibold text-blue-800">Pas Disponible</span>
+                            <span class="font-semibold text-blue-800">Prix apres confirmation</span>
                         </div>
                     </button>
 
                     <!-- Option: Retrait en magasin -->
-                    <button type="button" @click="selectedOption = 'Take Away'"
+                    <button type="button" wire:model="selectedOption" @click="selectedOption = 'Take Away'"
                         class="flex items-center p-4 rounded-lg border-2 transition-all w-full"
                         :class="{
                             'border-blue-500 bg-blue-50': selectedOption === 'Take Away',
@@ -124,11 +119,12 @@
                                 'bg-gray-100 text-gray-600': selectedOption !== 'Take Away'
                             }">
                             <!-- Icône de retrait -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 3l18 18M9 17l6-6 4 4V6H5v11l4-4 5 5z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
                             </svg>
+
                         </div>
                         <div class="flex-1 text-left">
                             <h3 class="font-semibold text-gray-800">Retrait en magasin</h3>
@@ -143,89 +139,8 @@
 
                 <div class="flex flex-col space-y-4">
                     <div class="grid grid-cols-2 gap-4">
-                        {{-- <input type="number" placeholder="quantité" id="quantityInput" name="quantité"
-                            wire:model.defer="quantité" class="col-span-1 border border-gray-300 rounded-lg p-2"
-                            data-min="{{ $produit->qteProd_min }}" data-max="{{ $produit->qteProd_max }}"
-                            oninput="updateMontantTotalDirect()" required>
-                        <input type="text" id="locationInput" name="localite" wire:model.defer="localite"
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-purple-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Lieu de livraison" required> --}}
-
 
                         @if ($type == 'Service')
-                            {{-- <select wire:model="selectedOption" name="type"
-                                class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                                <option selected>Type de livraison</option>
-                                @foreach ($optionsC as $option)
-                                    <option value="{{ $option }}">{{ $option }}</option>
-                                @endforeach
-                            </select> --}}
-                            <div class="flex items-center mb-3">
-                                <!-- Date de début -->
-                                <div class="w-1/2 mr-2 relative">
-                                    <label for="datePickerStart" class="block text-sm font-medium text-gray-700">Au
-                                        plus
-                                        tôt</label>
-                                    <input type="date" id="datePickerStart" name="dateTot" required
-                                        wire:model="dateTot"
-                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-
-                                <!-- Date de fin -->
-                                <div class="w-1/2 mr-2 relative">
-                                    <label for="datePickerEnd" class="block text-sm font-medium text-gray-700">Au plus
-                                        tard</label>
-                                    <input type="date" id="datePickerEnd" name="dateTard" required
-                                        wire:model="dateTard"
-                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-                            </div>
-                            <div class="flex items-center mb-3">
-                                <!-- Heure de début -->
-                                <div class="w-1/2 mr-2 relative">
-                                    <label for="timePickerStart" class="block text-sm font-medium text-gray-700">Heure
-                                        de
-                                        début</label>
-                                    <input type="time" id="timePickerStart" name="timeStart"
-                                        wire:model="timeStart"
-                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-
-                                <!-- Heure de fin -->
-                                <div class="w-1/2 mr-2 relative">
-                                    <label for="timePickerEnd" class="block text-sm font-medium text-gray-700">Heure
-                                        de
-                                        fin</label>
-                                    <input type="time" id="timePickerEnd" name="timeEnd" wire:model="timeEnd"
-                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-                            </div>
-
-                            <p class="text-center">OU</p>
-
-                            <!-- Sélecteur de période de la journée -->
-                            <div class="mb-3 w-full">
-                                <label for="dayPeriod" class="block text-sm text-gray-700 dark:text-gray-300">Période
-                                    de
-                                    la
-                                    journée</label>
-                                <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
-                                    class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                                    <option selected>Choisir la période</option>
-                                    <option value="Matin">Matin</option>
-                                    <option value="Après-midi">Après-midi</option>
-                                    <option value="Soir">Soir</option>
-                                    <option value="Soir">nuit</option>
-                                </select>
-                            </div>
-                        @else
-                            {{-- <select wire:model="selectedOption" name="type" x-model="selectedOption"
-                                class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
-                                <option value="">Type de livraison</option>
-                                <option value="Achat avec livraison">Achat avec livraison</option>
-                                <option value="Take Away">Take Away</option>
-                            </select> --}}
-
                             <div x-show="selectedOption === 'Take Away'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
                                 <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
                                     <h2 class="text-lg font-bold mb-4">Choisir l'horaire de debut</h2>
@@ -310,6 +225,95 @@
                                     </div>
                                 </div>
                             </div>
+                        @else
+                            <div x-show="selectedOption === 'Take Away'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
+                                <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
+                                    <h2 class="text-lg font-bold mb-4">Choisir l'horaire de debut</h2>
+
+                                    <!-- Date de retrait -->
+                                    <div class="mb-4">
+                                        <label for="pickup-date"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                        <div class="relative">
+                                            <input type="date" id="datePickerStart" name="dateTot"
+                                                min="{{ now()->addDay()->toDateString() }}" wire:model="dateTot"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        </div>
+                                    </div>
+
+                                    <!-- Heure de retrait -->
+                                    <div class="mb-4">
+                                        <label for="pickup-time"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Heure de
+                                            retrait</label>
+                                        <div class="relative">
+                                            <input type="time" id="timePickerStart" name="timeStart"
+                                                wire:model="timeStart"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                                oninput="togglePeriodSelect()">
+                                        </div>
+                                    </div>
+
+                                    <!-- Période -->
+                                    <div>
+                                        <label for="pickup-period"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Période</label>
+                                        <select id="dayPeriod" name="dayPeriod" wire:model="dayPeriod"
+                                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none"
+                                            onchange="toggleTimeInput()">
+                                            <option value="" selected>Choisir la période</option>
+                                            <option value="Matin">Matin</option>
+                                            <option value="Après-midi">Après-midi</option>
+                                            <option value="Soir">Soir</option>
+                                            <option value="Nuit">Nuit</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                                <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
+                                    <h2 class="text-lg font-bold mb-4">Choisir l'horaire de fin</h2>
+
+                                    <!-- Date de retrait -->
+                                    <div class="mb-4">
+                                        <label for="pickup-date"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Date de
+                                            retrait</label>
+                                        <div class="relative">
+                                            <input type="date" id="datePickerEnd" name="dateTard"
+                                                wire:model="dateTard" min="{{ now()->addDay()->toDateString() }}"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        </div>
+                                    </div>
+
+                                    <!-- Heure de retrait -->
+                                    <div class="mb-4">
+                                        <label for="timePickerEnd"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Heure de
+                                            retrait</label>
+                                        <div class="relative">
+                                            <input type="time" id="timePickerEnd" name="timeEnd"
+                                                wire:model="timeEnd"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                                oninput="togglePeriodSelect2()">
+                                        </div>
+                                    </div>
+
+                                    <!-- Période -->
+                                    <div>
+                                        <label for="dayPeriodFin"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Période</label>
+                                        <select id="dayPeriodFin" name="dayPeriodFin" wire:model="dayPeriodFin"
+                                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none"
+                                            onchange="toggleTimeInput2()">
+                                            <option value="" selected>Choisir la période</option>
+                                            <option value="Matin">Matin</option>
+                                            <option value="Après-midi">Après-midi</option>
+                                            <option value="Soir">Soir</option>
+                                            <option value="Nuit">Nuit</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         @endif
 
                     </div>
@@ -317,12 +321,9 @@
                     <input type="hidden" name="userTrader" wire:model.defer="userTrader">
                     <input type="hidden" name="nameProd" wire:model.defer="nameProd">
                     <input type="hidden" name="userSender" wire:model.defer="userSender">
-                    <input type="hidden" name="message" wire:model.defer="message">
                     <input type="hidden" name="photoProd" wire:model.defer="photoProd">
                     <input type="hidden" name="idProd" wire:model.defer="idProd">
                     <input type="hidden" name="prix" wire:model.defer="prix">
-
-
 
                     <p id="errorMessage" class="text-sm text-center text-red-500 hidden"></p>
 
@@ -357,20 +358,67 @@
                             </dl>
                         </div>
                     </div>
+                    <p class="bg-gray-100 sm:col-span-2 w-full text-gray-700 p-4 rounded-md shadow-md">
+                        En soumettant ce formulaire, je certifie que les informations fournies sont exactes et
+                        complètes.
+                        J'autorise la plateforme à effectuer toutes les vérifications nécessaires concernant ces
+                        informations.
+                    </p>
                     <div class="text-center mt-3">
 
                         <button type="submit" id="submitButton"
                             class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
                             wire:loading.attr="disabled" disabled>
-                            <span wire:loading.remove>Payement</span>
-                            <span wire:loading>Envoi en cours...</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                            </svg>
+
+                            <span wire:loading.remove>Procéder au payement</span>
+                            <span wire:loading>Payement en cours...</span>
                         </button>
+
                     </div>
                 </div>
             </div>
         </div>
     </form>
 </div>
+
+<script>
+    function togglePeriodSelect() {
+        const timeInput = document.getElementById('timePickerStart');
+        const periodSelect = document.getElementById('dayPeriod');
+        const periodSelect2 = document.getElementById('dayPeriodFin');
+        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+    }
+
+    function togglePeriodSelect2() {
+        const timeInput = document.getElementById('timePickerEnd');
+        const periodSelect = document.getElementById('dayPeriodFin');
+        const periodSelect2 = document.getElementById('dayPeriod');
+        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
+    }
+
+    function toggleTimeInput2() {
+        const timeInput = document.getElementById('timePickerEnd');
+        const timeInput2 = document.getElementById('timePickerStart');
+        const periodSelect = document.getElementById('dayPeriodFin');
+        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+    }
+
+    function toggleTimeInput() {
+        const timeInput = document.getElementById('timePickerStart');
+        const timeInput2 = document.getElementById('timePickerEnd');
+        const periodSelect = document.getElementById('dayPeriod');
+        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
+    }
+</script>
 <script>
     function toggleVisibility() {
         const contentDiv = document.getElementById('toggleContent');
@@ -389,9 +437,6 @@
             });
         }
     }
-
-
-
 
     // Fonction pour mettre à jour le montant total pour l'achat direct
     function updateMontantTotalDirect() {

@@ -23,9 +23,7 @@ class Appeloffregrouper extends Component
     public $quantite;
     public $localite;
     public $selectedOption;
-    public $options = [
-        'Achat avec livraison'
-    ];
+
 
     public function mount($id)
     {
@@ -39,7 +37,10 @@ class Appeloffregrouper extends Component
 
 
         $this->sumquantite = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
-        $this->appelOffreGroupcount = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)->count();
+        $this->appelOffreGroupcount = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)
+            ->distinct('user_id') // Prend uniquement les valeurs uniques de user_id
+            ->count('user_id');   // Compte les valeurs distinctes
+
     }
 
 
@@ -55,9 +56,7 @@ class Appeloffregrouper extends Component
             $validatedData = $this->validate([
                 'quantite' => 'required|integer',
                 'localite' => 'required|string',
-                'selectedOption' => 'required|string',
             ]);
-            Log::info('Données du formulaire validées.', ['validated_data' => $validatedData]);
 
             // Créer un nouvel enregistrement dans la table offregroupe
             Log::info('Création d\'un nouvel enregistrement dans AppelOffreGrouper.');
@@ -67,7 +66,6 @@ class Appeloffregrouper extends Component
             $offregroupe->quantity = $validatedData['quantite'];
             $offregroupe->save();
 
-            Log::info('Enregistrement dans AppelOffreGrouper sauvegardé.', ['offregroupe_id' => $offregroupe->id]);
 
 
             // Ajouter dans la table userquantites
@@ -77,7 +75,6 @@ class Appeloffregrouper extends Component
             $quantite->user_id = Auth::id(); // Vous devez définir `userId` correctement
             $quantite->localite = $validatedData['localite']; // Vous devez définir `userId` correctement
             $quantite->quantite = $validatedData['quantite'];
-            $quantite->type_achat = $validatedData['selectedOption'];
             $quantite->save();
 
             Log::info('Enregistrement dans userquantites sauvegardé.', ['quantite_id' => $quantite->id]);

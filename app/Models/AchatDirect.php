@@ -23,18 +23,21 @@ class AchatDirect extends Model
         'date_tot',
         'date_tard',
         'dayPeriod',
+        'dayPeriodFin',
         'userTrader',
         'userSender',
         'idProd',
         'specificite',
+        'count',
+        'code_verification',
     ];
 
-    public function userTrader()
+    public function userTraderI()
     {
         return $this->belongsTo(User::class, 'userTrader');
     }
 
-    public function userSender()
+    public function userSenderI()
     {
         return $this->belongsTo(User::class, 'userSender');
     }

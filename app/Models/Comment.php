@@ -29,7 +29,7 @@ class Comment extends Model
         'specificite',
         'nameprod',
         'id_sender',
-        'prixProd'
+        'prixProd',
     ];
 
     /**

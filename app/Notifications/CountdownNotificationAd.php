@@ -27,16 +27,12 @@ class CountdownNotificationAd extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
-            'sender_name' => $this->details['sender_name'] ?? null,
             'code_unique' => $this->details['code_unique'] ?? null,
             'prixTrade' => $this->details['prixTrade'] ?? null,
-            'fournisseur' => $this->details['fournisseur'] ?? null,
             'livreur' => $this->details['livreur'] ?? null,
-            'idProd' => $this->details['idProd'] ?? null,
-            'quantiteC' => $this->details['quantiteC'] ?? null,
-            'prixProd' => $this->details['prixProd'] ?? null,
-            'date_tot' => $this->details['date_tot'] ?? null,
-            'date_tard' => $this->details['date_tard'] ?? null,
+            'achat_id' => $this->details['achat_id'] ?? null,
+            'prixFin' => $this->details['prixFin'] ?? null,
+
         ];
     }
 }

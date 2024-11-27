@@ -27,18 +27,17 @@ class mainleveclient extends Notification
     public function toDatabase($notifiable)
     {
         return [
-           'idProd' => $this->main['idProd'],
-            'code_unique' =>$this->main['code_unique'],
+            'idProd' => $this->main['idProd'],
+            'code_unique' => $this->main['code_unique'],
             'fournisseur' => $this->main['fournisseur'],
-            'quantite' => $this->main['quantite'],
-            'localité' => $this->main['localité'],
-            'id_client' => $this->main['id_client'],
             'livreur' => $this->main['livreur'],
             'date_livr' => $this->main['date_livr'],
-            'matine' => $this->main['matine'],
-            'prixTrade' => $this->main['prixTrade'],
-            'prixProd' => $this->main['prixProd']
-            
+            'time' => $this->main['time'],
+            'achat_id' => $this->main['achat_id'],
+            'CodeVerification' => $this->main['CodeVerification'],
+            'title' => $this->main['title'],
+            'description' => $this->main['description'],
+
         ];
     }
 }

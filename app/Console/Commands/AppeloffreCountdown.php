@@ -57,9 +57,7 @@ class AppeloffreCountdown extends Command
 
             $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
 
-            $appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)
-                ->distinct('user_id')
-                ->count('user_id');
+
 
             foreach ($decodedProdUsers as $prodUser) {
                 $data = [
@@ -77,6 +75,7 @@ class AppeloffreCountdown extends Command
                     'prodUsers' => $prodUser,
                     'lowestPricedProduct' => $lowestPricedProduct,
                     'code_unique' => $codesUniques,
+                    'id_appelOffreGrp' => $appelOffreGroups->id,
                 ];
 
                 $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
@@ -93,7 +92,7 @@ class AppeloffreCountdown extends Command
                 }
             }
 
-            AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
+            // AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
         }
 
         return 0;
