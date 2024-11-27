@@ -2,29 +2,30 @@
 
 namespace App\Console\Commands;
 
-use App\Events\NotificationSent;
-use App\Events\PortionUpdated;
-use App\Models\Admin;
+use Exception;
+use Carbon\Carbon;
 use App\Models\Cfa;
 use App\Models\Coi;
-use App\Models\credits;
-use App\Models\credits_groupé;
 use App\Models\Crp;
-use App\Models\portions_journalieres;
-use App\Models\projets_accordé;
-use App\Models\Transaction;
-use App\Models\transactions_remboursement;
 use App\Models\User;
+use App\Models\Admin;
 use App\Models\Wallet;
-use App\Notifications\PortionJournaliere;
-use App\Notifications\remboursement;
-use Carbon\Carbon;
-use Exception;
 use GuzzleHttp\Client;
+use App\Models\credits;
+use App\Models\Transaction;
+use App\Events\PortionUpdated;
+use App\Models\ComissionAdmin;
+use App\Models\credits_groupé;
+use App\Models\projets_accordé;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationSent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\remboursement;
+use Illuminate\Support\Facades\Auth;
+use App\Models\portions_journalieres;
+use App\Notifications\PortionJournaliere;
+use App\Models\transactions_remboursement;
 use Illuminate\Support\Facades\Notification;
 
 class RappelPortionsJournalCredits extends Command
@@ -169,6 +170,7 @@ class RappelPortionsJournalCredits extends Command
         // Initialiser des tableaux pour stocker les IDs des investisseurs et leurs montants financés
         $investisseursIds = [];
         $investisseursMontants = [];
+        $investisseursMontantsSansInteret = [];
 
         if (is_array($decodedInvestisseurs)) {
             foreach ($decodedInvestisseurs as $investisseur) {
@@ -180,6 +182,7 @@ class RappelPortionsJournalCredits extends Command
 
                     // Stocker le montant financé augmenté des intérêts dans le tableau
                     $investisseursMontants[$investisseur['investisseur_id']] = $montantAvecInteret;
+                    $investisseursMontantsSansInteret[$investisseur['investisseur_id']] = $investisseur['montant_finance'];
                 }
             }
         }
@@ -214,7 +217,9 @@ class RappelPortionsJournalCredits extends Command
 
             $montantTotalInvestisseurs = array_sum($investisseursMontants); // Total envoyé aux investisseurs
 
-            foreach ($investisseursMontants as $id => $montant) {
+            foreach ($investisseursMontantsSansInteret as $id => $montant) {
+
+                $montantTotal = $montant + ($montant * $credit->taux_interet / 100);
                 // Log de l'opération
                 Log::info("Investisseur ID $id a financé : $montant");
 
@@ -228,13 +233,13 @@ class RappelPortionsJournalCredits extends Command
                 // Mise à jour de la table COI
                 $coi = Coi::where('id_wallet', $walletInvestisseurs->id)->first();
                 if ($coi) {
-                    $coi->Solde += $montant;
+                    $coi->Solde += $montantTotal;
                     $coi->save();
                     // Log de la mise à jour
                     Log::info('Mise à jour de la table CRP', [
                         'id_wallet' => $walletInvestisseurs->id,
                         'nouveau_solde' => $coi->Solde,
-                        'montant_débité' => $montant
+                        'montant_débité' => $montantTotal
                     ]);
                 }
 
@@ -243,7 +248,7 @@ class RappelPortionsJournalCredits extends Command
                     $credit->emprunteur_id,
                     $id,
                     'Envoie',
-                    $montant,
+                    $montantTotal,
                     $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
@@ -254,7 +259,7 @@ class RappelPortionsJournalCredits extends Command
                     $credit->emprunteur_id,
                     $id,
                     'Réception',
-                    $montant,
+                    $montantTotal,
                     $this->generateIntegerReference(),
                     'Remboursement de financement',
                     'effectué',
@@ -272,53 +277,135 @@ class RappelPortionsJournalCredits extends Command
 
                 $message = 'Paiement de crédit effectué avec succès.';
                 Notification::send($investisseur, new remboursement($message));
-            }
 
-            // Calcul du montant restant
-            $montantRestant = $credit->montant - $montantTotalInvestisseurs;
-            // Vérifier si le montant restant est égal à la commission
-            if ($montantRestant == $credit->comission) {
-                // Récupérer l'ID de l'administrateur
-                $admin = Admin::find(1); // Supposons que le rôle admin est défini
-                if ($admin) {
-                    $walletAdmin = Wallet::where('admin_id', $admin->id)->first();
-                    if ($walletAdmin) {
-                        // Ajouter le montant restant à l'administrateur
-                        $walletAdmin->balance += $montantRestant;
-                        $walletAdmin->save();
+
+                //Commission de BICF et des differants parrains
+
+                $roi = $montant * $credit->taux_interet / 100;
+
+                $commissions = $roi - $roi * 0.01;
+
+                if ($investisseur->parrain) {
+
+                    $parrainLevel1 = User::find($investisseur->parrain);
+                    $parrainLevel1Wallet = Wallet::where('user_id', $parrainLevel1->id);
+
+                    if ($parrainLevel1Wallet) {
+                        $parrainLevel1Wallet->balance += $commissions * 0.01;
+                        $parrainLevel1Wallet->save();
 
                         // Log de la mise à jour
-                        Log::info('Montant restant envoyé à l\'administrateur', [
-                            'admin_id' => $admin->id,
-                            'montant' => $montantRestant
+                        Log::info('Commission envoyée au parrain', [
+                            'parrain_id' => $parrainLevel1->id,
+                            'commissions' => $commissions * 0.01
                         ]);
 
-                        // Créer une transaction vers l'administrateur
-                        $this->createTransactionAdmin(
+                        // Créer une transaction vers le parrain
+
+                        $this->createTransaction(
                             $credit->emprunteur_id,
-                            $admin->id,
-                            'Envoie',
-                            $montantRestant,
+                            $parrainLevel1->id,
+                            'Commission',
+                            $commissions * 0.01,
                             $this->generateIntegerReference(),
-                            'Commision de la plateforme',
+                            'Commission de BICF',
                             'effectué',
-                            'COI'
+                            $parrainLevel1Wallet->type_compte
                         );
 
-                        // Créer une transaction vers l'administrateur
-                        $this->createTransactionAdmin(
-                            $credit->emprunteur_id,
-                            $admin->id,
-                            'Réception',
-                            $montantRestant,
-                            $this->generateIntegerReference(),
-                            'Remboursement de financement',
-                            'effectué',
-                            'COI'
-                        );
+                        $commissions = $commissions - $commissions * 0.01;
+                    }
+
+
+
+                    if ($parrainLevel1->parrain) {
+
+                        $parrainLevel2 = User::find($parrainLevel1->parrain);
+                        $parrainLevel2Wallet = Wallet::where('user_id', $parrainLevel2->id);
+
+                        if ($parrainLevel2Wallet) {
+                            $parrainLevel2Wallet->balance += $commissions * 0.01;
+                            $parrainLevel2Wallet->save();
+
+                            // Log de la mise à jour
+                            Log::info('Commission envoyée au deuxième parrain', [
+                                'parrain_id' => $parrainLevel2->id,
+                                'commissions' => $commissions * 0.01
+                            ]);
+
+                            // Créer une transaction vers le deuxième parrain
+                            $this->createTransaction(
+                                $credit->emprunteur_id,
+                                $parrainLevel2->id,
+                                'Commission',
+                                $commissions * 0.01,
+                                $this->generateIntegerReference(),
+                                'Commission de BICF',
+                                'effectué',
+                                $parrainLevel2Wallet->type_compte
+                            );
+
+                            $commissions = $commissions - $commissions * 0.01;
+                        }
+
+                        if ($parrainLevel2->parrain) {
+                            $parrainLevel3 = User::find($parrainLevel2->parrain);
+                            $parrainLevel3Wallet = Wallet::where('user_id', $parrainLevel3->id);
+                            if ($parrainLevel3Wallet) {
+                                $parrainLevel3Wallet->balance += $commissions * 0.01;
+                                $parrainLevel3Wallet->save();
+
+                                // Log de la mise à jour
+                                Log::info('Commission envoyée au troisième parrain', [
+                                    'parrain_id' => $parrainLevel3->id,
+                                    'commissions' => $commissions * 0.01
+                                ]);
+
+                                // Créer une transaction vers le troisième parrain
+                                $this->createTransaction(
+                                    $credit->emprunteur_id,
+                                    $parrainLevel3->id,
+                                    'Commission',
+                                    $commissions * 0.01,
+                                    $this->generateIntegerReference(),
+                                    'Commission de BICF',
+                                    'effectué',
+                                    $parrainLevel3Wallet->type_compte
+                                );
+
+                                $commissions = $commissions - $commissions * 0.01;
+                            }
+                        }
                     }
                 }
+
+                // Envoyé commission a l'admin
+
+                $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
+                if ($adminWallet) {
+                    $adminWallet->balance += $commissions;
+                    $adminWallet->save();
+
+                    // Log de la mise à jour
+                    Log::info('Commission envoyée à l\'admin', [
+                        'admin_id' => 1,
+                        'commissions' => $commissions
+                    ]);
+
+                    // Créer une transaction vers l'admin
+                    $this->createTransactionAdmin(
+                        $credit->emprunteur_id,
+                        1,
+                        'Commission',
+                        $commissions,
+                        $this->generateIntegerReference(),
+                        'Commission de BICF',
+                        'effectué',
+                        'commission'
+                    );
+                }
             }
+
             DB::commit();
         } catch (Exception $e) {
             // Annulation de toutes les modifications en cas d'erreur

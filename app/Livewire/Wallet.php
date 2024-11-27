@@ -2,12 +2,13 @@
 
 namespace App\Livewire;
 
-use App\Models\Admin;
-use App\Models\Transaction;
 use App\Models\User;
-use App\Models\Wallet as AdminWallet;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Admin;
 use Livewire\Component;
+use App\Models\Transaction;
+use App\Models\ComissionAdmin;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Wallet as AdminWallet;
 
 class Wallet extends Component
 {
@@ -16,6 +17,8 @@ class Wallet extends Component
     public $totalEnv;
 
     public $totalRecu;
+
+    public $comissions;
 
   
 
@@ -28,6 +31,8 @@ class Wallet extends Component
         $this->totalRecu = Transaction::where('receiver_admin_id', Auth::guard('admin')->id())
              ->where('type', 'Reception')
              ->sum('amount');
+        
+        $this->comissions = ComissionAdmin::where('admin_id', 1)->first();
        
        
     }
