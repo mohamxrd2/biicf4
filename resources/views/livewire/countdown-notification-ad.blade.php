@@ -245,7 +245,7 @@
                         <div class="flex space-x-2 mt-4">
                             <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
                                 <!-- Texte du bouton et icône -->
-                                Proceder a la recuperation de votre commande
+                                Proceder a la recuperation de votre commande / Envoi de notification aux four et livreur
 
                             </div>
 

@@ -172,12 +172,18 @@
                             <div class="flex justify-between text-sm text-gray-600">
                                 <span>Frais de livraison :
                                 </span>
-                                <span>{{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
+                                <span>{{ number_format($notification->data['prixTrade'], 2, ',', '.') }}
                                     FCFA</span>
                             </div>
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>Frais de service :
+                                </span>
+                                <span>1%</span>
+                            </div>
                             <div class="flex justify-between font-medium text-gray-900">
-                                <span>Total :</span>
+                                <span>A recevoir :</span>
                                 <span>
+                                    {{ number_format($notification->data['prixTrade'] - $notification->data['prixTrade'] * 0.01, 2, ',', '.') }}
                                     FCFA</span>
                             </div>
                         </div>
@@ -270,7 +276,7 @@
                                                     <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-400">
                                                         Code de vérification</h3>
                                                     <p class="text-xl font-bold text-blue-900 dark:text-white">
-                                                        {{ $codeVerification ?? 'N/A' }}
+                                                        {{ $notification->data['livreurCode'] ?? 'N/A' }}
                                                     </p>
                                                 </div>
                                                 <p class="text-sm text-red-500 mt-4">Veuillez sélectionner au moins
@@ -279,7 +285,7 @@
                                         </div>
                                     </div>
                                     <!-- Modal footer -->
-                                    <div
+                                    {{-- <div
                                         class="flex justify-end p-6 border-t border-gray-200 rounded-b dark:border-gray-600">
                                         <button data-modal-hide="static-modal" type="button" wire:click='mainleve'
                                             class="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
@@ -290,7 +296,7 @@
                                             class="ml-4 px-6 py-2.5 bg-gray-200 text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-300 focus:ring-4 focus:ring-gray-400 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
                                             Je refuse
                                         </button>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                         </div>

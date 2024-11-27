@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\AchatDirect;
 use App\Models\ComissionAdmin;
+use App\Models\gelement;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
@@ -36,6 +37,7 @@ class CountdownNotificationAd extends Component
     public $livreur;
     public $codeVerification;
     public $fournisseur;
+    public $userWallet;
 
 
 
@@ -59,6 +61,15 @@ class CountdownNotificationAd extends Component
             if (!$this->produit) {
                 throw new Exception("ProduitService introuvable avec l'ID fourni.");
             }
+
+            $this->userWallet = Wallet::where('user_id', $this->user)->first();
+
+            if (!$this->userWallet) {
+                Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $this->user]);
+                session()->flash('error', 'Portefeuille introuvable.');
+                return;
+            }
+            Log::info('Portefeuille trouvé', ['userWallet' => $this->userWallet]);
         } catch (Exception $e) {
             Log::error("Erreur dans mount : " . $e->getMessage());
             session()->flash('error', 'Une erreur s\'est produite lors de la récupération des données.');
@@ -108,153 +119,11 @@ class CountdownNotificationAd extends Component
     {
         DB::beginTransaction();
         try {
-            $userWallet = Wallet::where('user_id', $this->user)->first();
-
-            if (!$userWallet) {
-                Log::error('Portefeuille introuvable pour l\'utilisateur', ['userId' => $this->user]);
-                session()->flash('error', 'Portefeuille introuvable.');
-                return;
+            if ($this->notification->type_achat == 'Delivery') {
+                $this->pour_livraison();
+            } elseif ($this->notification->type_achat == 'Take Away') {
+                $this->retait_magasin();
             }
-            Log::info('Portefeuille trouvé', ['userWallet' => $userWallet]);
-
-            // Calcul du montant requis avec une réduction de 10%
-            $requiredAmount = $this->notification->data['prixFin'];
-
-            if ($userWallet->balance < $requiredAmount) {
-                Log::error('Fonds insuffisants pour l\'achat', ['balance' => $userWallet->balance, 'requiredAmount' => $requiredAmount]);
-                session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-                return;
-            }
-
-            $this->createTransaction(
-                $this->user,
-                $this->fournisseur->id ?? null,
-                'Envoie',
-                $requiredAmount,
-                $this->generateIntegerReference(),
-                'Debité pour achat',
-                'effectué',
-                'COC'
-            );
-
-            $roi = $this->achatdirect->montantTotal * 0.01 / 100;
-            $commissions = $roi - $roi * 0.01;
-
-            if ($this->fournisseur->parrain) {
-
-                $parrainLevel1 = User::find($this->fournisseur->parrain);
-                $parrainLevel1Wallet = Wallet::where('user_id', $parrainLevel1->id)->first();
-                if ($parrainLevel1Wallet) {
-                    $parrainLevel1Wallet->balance += $commissions * 0.01;
-                    $parrainLevel1Wallet->save();
-
-                    Log::info('Commission envoyée au parrain', [
-                        'parrain_id' => $parrainLevel1->id,
-                        'commissions' => $commissions * 0.01,
-                    ]);
-
-                    $this->createTransaction(
-                        $this->user,
-                        $parrainLevel1->id,
-                        'Commission',
-                        $commissions * 0.01,
-                        $this->generateIntegerReference(),
-                        'Commission de BICF',
-                        'effectué',
-                        'COC'
-                    );
-
-                    $commissions -= $commissions * 0.01;
-                }
-
-
-
-
-                if ($parrainLevel1->parrain) {
-
-                    $parrainLevel2 = User::find($parrainLevel1->parrain);
-                    $parrainLevel2Wallet = Wallet::where('user_id', $parrainLevel2->id)->first();
-
-                    if ($parrainLevel2Wallet) {
-                        $parrainLevel2Wallet->balance += $commissions * 0.01;
-                        $parrainLevel2Wallet->save();
-
-                        // Log de la mise à jour
-                        Log::info('Commission envoyée au deuxième parrain', [
-                            'parrain_id' => $parrainLevel2->id,
-                            'commissions' => $commissions * 0.01
-                        ]);
-
-                        // Créer une transaction vers le deuxième parrain
-                        $this->createTransaction(
-                            $this->user,
-                            $parrainLevel2->id,
-                            'Commission',
-                            $commissions * 0.01,
-                            $this->generateIntegerReference(),
-                            'Commission de BICF',
-                            'effectué',
-                            'COC'
-                        );
-
-                        $commissions = $commissions - $commissions * 0.01;
-                    }
-
-                    if ($parrainLevel2->parrain) {
-                        $parrainLevel3 = User::find($parrainLevel2->parrain);
-                        $parrainLevel3Wallet = Wallet::where('user_id', $parrainLevel3->id)->first();
-                        if ($parrainLevel3Wallet) {
-                            $parrainLevel3Wallet->balance += $commissions * 0.01;
-                            $parrainLevel3Wallet->save();
-
-                            // Log de la mise à jour
-                            Log::info('Commission envoyée au troisième parrain', [
-                                'parrain_id' => $parrainLevel3->id,
-                                'commissions' => $commissions * 0.01
-                            ]);
-
-                            // Créer une transaction vers le troisième parrain
-                            $this->createTransaction(
-                                $this->user,
-                                $parrainLevel3->id,
-                                'Commission',
-                                $commissions * 0.01,
-                                $this->generateIntegerReference(),
-                                'Commission de BICF',
-                                'effectué',
-                                'COC'
-                            );
-
-                            $commissions = $commissions - $commissions * 0.01;
-                        }
-                    }
-                }
-            }
-
-            // Envoyé commission a l'admin
-
-            $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
-            if ($adminWallet) {
-                $adminWallet->balance += $commissions;
-                $adminWallet->save();
-
-                Log::info('Commission envoyée à l\'admin', [
-                    'admin_id' => 1,
-                    'commissions' => $commissions,
-                ]);
-
-                $this->createTransactionAdmin(
-                    $this->user,
-                    1,
-                    'Commission',
-                    $commissions,
-                    $this->generateIntegerReference(),
-                    'Commission de BICF',
-                    'effectué',
-                    'commission'
-                );
-            }
-
             // Générer et stocker le code de vérification
             $this->codeVerification = random_int(1000, 9999);
             $this->achatdirect->update([
@@ -288,10 +157,188 @@ class CountdownNotificationAd extends Component
             session()->flash('error', 'Une erreur est survenue lors du processus de validation. Veuillez réessayer.');
         }
     }
+    public function pour_livraison()
+    {
+        // Calcul du montant requis
+        $requiredAmount = floatval($this->notification->data['prixTrade']);
 
+        // Vérification des fonds disponibles
+        if ($this->userWallet->balance < $requiredAmount) {
+            Log::error('Fonds insuffisants pour l\'achat', [
+                'balance' => $this->userWallet->balance,
+                'requiredAmount' => $requiredAmount
+            ]);
+            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
+            return;
+        }
+        // Vérification de l'existence de l'achat dans les transactions gelées
+        $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
+            ->first();
+        if ($existingGelement) {
+            // Si la transaction existe, ajoutez le montant requis au montant gelé
+            $existingGelement->amount += $requiredAmount;
+            $existingGelement->save();
+
+            Log::info('Montant ajouté à une transaction existante', [
+                'transaction_id' => $existingGelement->id,
+                'new_amount' => $existingGelement->amount
+            ]);
+            $this->createTransaction(
+                $this->user,
+                $this->fournisseur->id ?? null,
+                'Gele',
+                $requiredAmount,
+                $this->generateIntegerReference(),
+                'Gelement en plus pour la livraison',
+                'effectué',
+                'COC'
+            );
+        }
+    }
+    public function retait_magasin()
+    {
+        // Calcul du montant requis avec une réduction de 1% cest pour le retrait en magasin
+        $requiredAmount = floatval($this->notification->data['prixFin']);
+
+        if ($this->userWallet->balance < $requiredAmount) {
+            Log::error('Fonds insuffisants pour l\'achat', ['balance' => $this->userWallet->balance, 'requiredAmount' => $requiredAmount]);
+            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
+            return;
+        }
+
+        $this->createTransaction(
+            $this->user,
+            $this->fournisseur->id ?? null,
+            'Envoie',
+            $requiredAmount,
+            $this->generateIntegerReference(),
+            'Debité pour achat',
+            'effectué',
+            'COC'
+        );
+
+        $roi = $this->achatdirect->montantTotal * 0.01 / 100;
+        $commissions = $roi - $roi * 0.01;
+
+        if ($this->fournisseur->parrain) {
+
+            $parrainLevel1 = User::find($this->fournisseur->parrain);
+            $parrainLevel1Wallet = Wallet::where('user_id', $parrainLevel1->id)->first();
+            if ($parrainLevel1Wallet) {
+                $parrainLevel1Wallet->balance += $commissions * 0.01;
+                $parrainLevel1Wallet->save();
+
+                Log::info('Commission envoyée au parrain', [
+                    'parrain_id' => $parrainLevel1->id,
+                    'commissions' => $commissions * 0.01,
+                ]);
+
+                $this->createTransaction(
+                    $this->user,
+                    $parrainLevel1->id,
+                    'Commission',
+                    $commissions * 0.01,
+                    $this->generateIntegerReference(),
+                    'Commission de BICF',
+                    'effectué',
+                    'COC'
+                );
+
+                $commissions -= $commissions * 0.01;
+            }
+
+
+
+
+            if ($parrainLevel1->parrain) {
+
+                $parrainLevel2 = User::find($parrainLevel1->parrain);
+                $parrainLevel2Wallet = Wallet::where('user_id', $parrainLevel2->id)->first();
+
+                if ($parrainLevel2Wallet) {
+                    $parrainLevel2Wallet->balance += $commissions * 0.01;
+                    $parrainLevel2Wallet->save();
+
+                    // Log de la mise à jour
+                    Log::info('Commission envoyée au deuxième parrain', [
+                        'parrain_id' => $parrainLevel2->id,
+                        'commissions' => $commissions * 0.01
+                    ]);
+
+                    // Créer une transaction vers le deuxième parrain
+                    $this->createTransaction(
+                        $this->user,
+                        $parrainLevel2->id,
+                        'Commission',
+                        $commissions * 0.01,
+                        $this->generateIntegerReference(),
+                        'Commission de BICF',
+                        'effectué',
+                        'COC'
+                    );
+
+                    $commissions = $commissions - $commissions * 0.01;
+                }
+
+                if ($parrainLevel2->parrain) {
+                    $parrainLevel3 = User::find($parrainLevel2->parrain);
+                    $parrainLevel3Wallet = Wallet::where('user_id', $parrainLevel3->id)->first();
+                    if ($parrainLevel3Wallet) {
+                        $parrainLevel3Wallet->balance += $commissions * 0.01;
+                        $parrainLevel3Wallet->save();
+
+                        // Log de la mise à jour
+                        Log::info('Commission envoyée au troisième parrain', [
+                            'parrain_id' => $parrainLevel3->id,
+                            'commissions' => $commissions * 0.01
+                        ]);
+
+                        // Créer une transaction vers le troisième parrain
+                        $this->createTransaction(
+                            $this->user,
+                            $parrainLevel3->id,
+                            'Commission',
+                            $commissions * 0.01,
+                            $this->generateIntegerReference(),
+                            'Commission de BICF',
+                            'effectué',
+                            'COC'
+                        );
+
+                        $commissions = $commissions - $commissions * 0.01;
+                    }
+                }
+            }
+        }
+
+        // Envoyé commission a l'admin
+
+        $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
+        if ($adminWallet) {
+            $adminWallet->balance += $commissions;
+            $adminWallet->save();
+
+            Log::info('Commission envoyée à l\'admin', [
+                'admin_id' => 1,
+                'commissions' => $commissions,
+            ]);
+
+            $this->createTransactionAdmin(
+                $this->user,
+                1,
+                'Commission',
+                $commissions,
+                $this->generateIntegerReference(),
+                'Commission de BICF',
+                'effectué',
+                'commission'
+            );
+        }
+    }
     public $quantite;
     public $qualite;
     public $diversite;
+
 
 
 
@@ -326,7 +373,6 @@ class CountdownNotificationAd extends Component
                     'idAchat' => $this->achatdirect->id ?? null,
                     'title' => 'Commande récupérée avec succès',
                     'description' => 'Votre commande a été récupérée avec succès. Merci de votre confiance !',
-
                 ];
 
                 if ($this->fournisseur) {
@@ -363,6 +409,7 @@ class CountdownNotificationAd extends Component
                     'fournisseur' => $this->fournisseur->id ?? null,
                     'client' => $this->achatdirect->userSender ?? null,
                     'achat_id' => $this->achatdirect->id ?? null,
+                    'prixTrade' => $this->notification->data['prixTrade']?? null,
                     'title' => 'Livraison a effectuer',
                     'description' => 'Deplacez vous pour aller chercher le colis->',
                 ];
@@ -377,7 +424,6 @@ class CountdownNotificationAd extends Component
 
             session()->flash('message', 'Livraison marquée comme livrée.');
             DB::commit();
-
         } catch (Exception $e) {
             // Gérer les exceptions générales
             Log::error('Erreur lors de la validation', [

@@ -54,14 +54,13 @@ class LivraisonAchatdirect extends Component
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
         $this->serverTime = Carbon::now()->toIso8601String();
 
-        $this->listenForMessage();
     }
 
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage()
     {
+        dd('test 1');
         // Déboguer pour vérifier la structure de l'événement
-        // dd($event);
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->comments = Comment::with('user')
             ->where('code_unique', $this->achatdirect->code_unique)

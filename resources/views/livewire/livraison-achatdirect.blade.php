@@ -1,6 +1,5 @@
 <div class="max-w-5xl mx-auto">
 
-
     <!-- Barre du haut avec timer -->
     <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
         <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
@@ -133,7 +132,7 @@
                     <div
                         class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-200 font-normal space-y-3 relative dark:border-slate-700/40">
                         <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
-                        @php
+                        {{-- @php
                             // Trouver le plus petit taux dans la liste des commentaires
                             $minPrice = $comments->min('prixTrade');
 
@@ -142,7 +141,7 @@
                                 ->where('prixTrade', $minPrice)
                                 ->sortBy('created_at')
                                 ->first();
-                        @endphp
+                        @endphp --}}
                         @foreach ($comments as $comment)
                             <!-- Message -->
                             <div
@@ -171,7 +170,7 @@
                                     <span class="text-lg font-bold text-gray-800">
                                         {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
                                     </span>
-                                    @if ($comment->id == $oldestMinPriceComment->id)
+                                    {{-- @if ($comment->id == $oldestMinPriceComment->id)
                                         <button
                                             class="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium py-2 px-4 bg-green-50 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-400"
@@ -181,7 +180,7 @@
                                             </svg>
                                             Meilleure offre
                                         </button>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         @endforeach
