@@ -15,7 +15,11 @@ return new class extends Migration
             $table->unsignedBigInteger('id_achat')->nullable(); // ID du crédit concerné
 
             $table->foreign('id_achat')->references('id')->on('achat_direct')->onDelete('cascade');
-    });
+
+            $table->unsignedBigInteger('id_appeloffre')->nullable(); // ID du crédit concerné
+
+            $table->foreign('id_appeloffre')->references('id')->on('appel_offres')->onDelete('cascade');
+        });
     }
 
     /**

@@ -24,10 +24,7 @@
             <div class="flex gap-8">
                 <!-- Carte appeloffre -->
                 <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 h-fit">
-                    {{-- <div class="mb-4">
-                        <img src="{{ asset('post/all/' . $notification->data['photoProd']) }}" alt="Smart Watch Pro X1"
-                            class="w-full h-48 object-cover rounded-lg bg-gray-100" />
-                    </div> --}}
+                    
 
                     <h1 class="text-2xl font-bold mb-1">{{ $appeloffre->product_name }}</h1>
                     <!-- Nom du appeloffre -->
@@ -225,17 +222,20 @@
                         <!-- Champ pour proposer un nouveau prix -->
                         <div class="bg-gray-100 p-4 rounded-lg mt-4 shadow-sm">
                             <h4 class="text-sm font-bold mb-2 text-gray-800">Proposer un nouveau prix</h4>
-                            <form wire:submit.prevent="commentFormLivr">
+                            <form wire:submit.prevent="commentFormLivr" id="commentForm">
                                 @if (!$appeloffre->count)
                                     <div class="flex items-center gap-2">
                                         <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                             class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-purple-500"
-                                            placeholder="Faire une offre..." required>
+                                            placeholder="Faire une offre..." required oninput="checkPrice()">
+                                        <p id="errorMessage" class="text-red-500 text-sm mt-2 hidden">Votre offre
+                                            dépasse le prix minimal acceptable.</p>
+
                                         <button type="submit" id="submitBtnAppel"
                                             class="p-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition duration-200">
                                             <span wire:loading.remove>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                                                 </svg>
@@ -260,6 +260,24 @@
 
             </div>
         </div>
+        <script>
+            function checkPrice() {
+                const prixTrade = parseFloat(document.getElementById('prixTrade').value);
+                const lowestPrice = parseFloat({{ $appeloffre->lowestPricedProduct }});
+                const submitBtn = document.getElementById('submitBtnAppel');
+                const errorMessage = document.getElementById('errorMessage');
+
+                if (prixTrade > lowestPrice) {
+                    submitBtn.style.display = 'none';
+                    errorMessage.classList.remove('hidden');
+
+                } else {
+                    submitBtn.style.display = 'block';
+                    errorMessage.classList.add('hidden');
+
+                }
+            }
+        </script>
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('countdownTimer', (oldestCommentDate, comments) => ({

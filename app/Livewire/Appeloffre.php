@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
+use App\Events\OldestCommentUpdated;
 use App\Models\AppelOffreUser;
 use App\Models\Comment;
 use App\Models\Countdown;
@@ -11,6 +12,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -87,26 +89,35 @@ class Appeloffre extends Component
         }
     }
 
-    protected $listeners = ['compteReboursFini'];
-    public function compteReboursFini()
-    {
-        // Mettre à jour l'attribut 'finish' du demandeCredit
-        $this->achatdirect->update([
-            'count' => true,
-            $this->dispatch(
-                'formSubmitted',
-                'Temps écoule, Négociation terminé.'
-            )
-        ]);
-    }
+    // protected $listeners = ['compteReboursFini'];
+    // public function compteReboursFini()
+    // {
+    //     // Mettre à jour l'attribut 'finish' du demandeCredit
+    //     $this->achatdirect->update([
+    //         'count' => true,
+    //         $this->dispatch(
+    //             'formSubmitted',
+    //             'Temps écoule, Négociation terminé.'
+    //         )
+    //     ]);
+    // }
 
     public function commentFormLivr()
     {
+
+        // Récupérer l'utilisateur authentifié
+        $this->validate([
+            'prixTrade' => 'required|numeric',
+        ]);
+
+        // if ($this->prixTrade < $this->appeloffre->lowestPricedProduct) {
+        //     session()->flash('error', 'Commentaire créé avec succès!');
+        //     return;
+        // }
+        DB::beginTransaction();
+
         try {
-            // Récupérer l'utilisateur authentifié
-            $this->validate([
-                'prixTrade' => 'required|numeric',
-            ]);
+
 
             $comment = Comment::create([
                 'prixTrade' => $this->prixTrade,
@@ -118,12 +129,13 @@ class Appeloffre extends Component
 
             broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
-// Vérifier si 'code_unique' existe dans les données de notification
-$this->comments = Comment::with('user')
-->where('code_unique', $this->appeloffre->code_unique)
-->whereNotNull('prixTrade')
-->orderBy('prixTrade', 'asc')
-->get();
+            // Vérifier si 'code_unique' existe dans les données de notification
+            $this->comments = Comment::with('user')
+                ->where('code_unique', $this->appeloffre->code_unique)
+                ->whereNotNull('prixTrade')
+                ->orderBy('prixTrade', 'asc')
+                ->get();
+
             // Vérifier si un compte à rebours est déjà en cours pour cet code unique
             $existingCountdown = Countdown::where('code_unique', $this->code_unique)
                 ->where('notified', false)
@@ -134,14 +146,20 @@ $this->comments = Comment::with('user')
                 // Créer un nouveau compte à rebours s'il n'y en a pas en cours
                 Countdown::create([
                     'user_id' => $this->id_trader,
-                    'userSender' => $this->id_trader,
+                    'userSender' => null,
                     'start_time' => now(),
                     'code_unique' => $this->code_unique,
                     'difference' => 'appOffre',
+                    'id_appeloffre' => $this->appeloffre->id,
                 ]);
+                // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
+                broadcast(new OldestCommentUpdated(now()->toIso8601String()));
+                $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
             }
 
             session()->flash('success', 'Commentaire créé avec succès!');
+
+            DB::commit();
 
             $this->reset(['prixTrade']);
         } catch (Exception $e) {

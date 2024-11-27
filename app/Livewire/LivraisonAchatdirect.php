@@ -103,6 +103,7 @@ class LivraisonAchatdirect extends Component
 
         DB::beginTransaction();
         try {
+            
             // Créer un commentaire
             $comment = Comment::create([
                 'prixTrade' => $validatedData['prixTrade'],

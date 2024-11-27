@@ -92,8 +92,11 @@ class CheckCountdowns extends Command
                         'code_unique' => $countdown->code_unique,
                         'prixTrade' => $price,
                         'livreur' => $traderId,
-                        'achat_id' => $countdowns->achat_id,
+                        'achat_id' => $countdown->achat_id, // Correction ici
                     ];
+
+                    // Vous pouvez maintenant traiter la notification ou autre logique
+                    Log::info('Notification préparée.', $details);
 
 
                     $Gdetails = [
@@ -130,31 +133,20 @@ class CheckCountdowns extends Command
                     }
                     // Vérifier le type de notification à envoyer
                     if ($countdown->difference === 'appOffre') {
-                        // $Adetails = [
-                        //     'code_unique' => $countdown->code_unique,
-                        //     'prixTrade' => $price,
-                        //     'id_trader' => $traderId,
-                        //     'quantiteC' => $quantiteC,
-                        //     'localite' => $localite,
-                        //     'specificite' => $specificite,
-                        //     'nameprod' => $nameprod,
-                        //     'id_sender' => $decodedSenderIds,
-                        //     'montantTotal' => $montotal,
-                        //     'reference' => $reference,
-                        //     'date_tot' => $date_tot,
-                        //     'date_tard' => $date_tard,
-                        //     'timeStart' => $timeStart ?? null,
-                        //     'timeEnd' => $timeEnd ?? null,
-                        //     'dayPeriod' => $dayPeriod ?? null,
-                        // ];
+                        $Adetails = [
+                            'code_unique' => $countdown->code_unique,
+                            'prixTrade' => $price,
+                            'id_trader' => $traderId,
+                            'id_appeloffre' => $countdown->id_appeloffre, // Correction ici
+                        ];
                         Log::info('Envoi de la notification pour type "appOffre".', ['user_id' => $commentToUse->user->id]);
-                        // Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
+                        Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
 
-                        $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
-                        if ($notification) {
-                            Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-                            $notification->update(['type_achat' => $type_achat]);
-                        }
+                        // $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
+                        // if ($notification) {
+                        //     Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
+                        //     $notification->update(['type_achat' => $type_achat]);
+                        // }
                     } else if ($countdown->difference === 'offredirect') {
                         Log::info('Envoi de la notification pour type "offredirect".', ['user_id' => $lowestPriceComment->user->id]);
                         Notification::send($commentToUse->user, new NegosTerminer($details));
@@ -168,7 +160,7 @@ class CheckCountdowns extends Command
                             $notification->update(['type_achat' => 'OFG']);
                         }
                     } else  if ($countdown->difference === 'ad') {
-                        $clientId = User::find( $countdown->achat->userSender);
+                        $clientId = User::find($countdown->achat->userSender);
                         Log::info('id.', ['id user' => $clientId->id ?? null]);
 
                         Notification::send($clientId, new CountdownNotificationAd($details));

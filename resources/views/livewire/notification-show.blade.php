@@ -38,7 +38,6 @@
     @elseif ($notification->type === 'App\Notifications\AOGrouper')
         @livewire('appeloffregrouper', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
-        <h1 class="mb-2 text-3xl font-semibold text-center ">Negociations pour la quantitée groupée</h1>
         @livewire('appeloffregroupernegociation', ['id' => $id])
     @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
         @livewire('appeloffreterminergrouper', ['id' => $id])

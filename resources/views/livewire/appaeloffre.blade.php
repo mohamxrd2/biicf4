@@ -217,6 +217,39 @@
                                 </div>
                             </div>
                         @else
+                            <div x-show="selectedOption === 'Delivery'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
+                                <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
+                                    <h2 class="text-lg font-bold mb-4">Choisir l'horaire de debut</h2>
+
+                                    <!-- Date de retrait -->
+                                    <div class="mb-4">
+                                        <label for="pickup-date"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                        <div class="relative">
+                                            <input type="date" id="datePickerStart" name="dateTot"
+                                                min="{{ now()->addDay()->toDateString() }}" wire:model="dateTot"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
+                                    <h2 class="text-lg font-bold mb-4">Choisir l'horaire de fin</h2>
+
+                                    <!-- Date de retrait -->
+                                    <div class="mb-4">
+                                        <label for="pickup-date"
+                                            class="block text-sm font-medium text-gray-700 mb-2">Date de
+                                            retrait</label>
+                                        <div class="relative">
+                                            <input type="date" id="datePickerEnd" name="dateTard"
+                                                wire:model="dateTard" min="{{ now()->addDay()->toDateString() }}"
+                                                class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div x-show="selectedOption === 'Take Away'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
                                 <div class="p-6 bg-gray-100 border rounded-lg shadow-sm max-w-md">
                                     <h2 class="text-lg font-bold mb-4">Choisir l'horaire de debut</h2>
