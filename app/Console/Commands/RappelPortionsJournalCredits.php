@@ -312,7 +312,7 @@ class RappelPortionsJournalCredits extends Command
                             $this->generateIntegerReference(),
                             'Commission de BICF',
                             'effectué',
-                            $parrainLevel1Wallet->type_compte
+                            'COC'
                         );
 
                         $commissions = $commissions - $commissions * 0.01;
@@ -344,7 +344,7 @@ class RappelPortionsJournalCredits extends Command
                                 $this->generateIntegerReference(),
                                 'Commission de BICF',
                                 'effectué',
-                                $parrainLevel2Wallet->type_compte
+                                'COC'
                             );
 
                             $commissions = $commissions - $commissions * 0.01;
@@ -372,7 +372,7 @@ class RappelPortionsJournalCredits extends Command
                                     $this->generateIntegerReference(),
                                     'Commission de BICF',
                                     'effectué',
-                                    $parrainLevel3Wallet->type_compte
+                                    'COC'
                                 );
 
                                 $commissions = $commissions - $commissions * 0.01;
