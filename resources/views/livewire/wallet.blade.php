@@ -119,7 +119,7 @@
                         <div class="bg-black rounded-2xl p-6 flex flex-col justify-between  h-32 bg-violet-100">
                             <p class="text-md text-slate-400">Total sur le compte</p>
                             <div>
-                                <p class="text-xl text-black font-bold"> {{ number_format($totalRecu, 2, ',', ' ') }} FCFA</p>
+                                <p class="text-xl text-black font-bold"> {{ number_format($comissions->balance, 2, ',', ' ') }} FCFA</p>
                             </div>
 
                         </div>

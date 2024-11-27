@@ -354,7 +354,7 @@
                                                             @elseif ($transaction->type == 'Réception' || $transaction->type == 'Depot' || $transaction->type == 'Commission')
                                                                 Reception
                                                             @elseif ($transaction->type == 'Gele')
-                                                                Gele pour achat
+                                                                Gele
                                                             @elseif ($transaction->type == 'withdrawal')
                                                                 Retrait
                                                             @endif
