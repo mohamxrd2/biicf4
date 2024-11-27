@@ -37,8 +37,10 @@ use App\Notifications\RefusAchat;
 use App\Notifications\RefusVerif;
 
 use App\Events\AjoutQuantiteOffre;
+use App\Models\ComissionAdmin;
+use App\Models\gelement;
 use App\Notifications\acceptAchat;
-use App\Notifications\colisaccept;
+use App\Notifications\Confirmation;
 use App\Notifications\DepositRecu;
 use App\Notifications\DepositSend;
 use Illuminate\Support\Facades\DB;
@@ -58,6 +60,7 @@ use App\Notifications\mainleveclient;
 use App\Notifications\OffreNegosDone;
 use App\Notifications\AppelOffreTerminer;
 use App\Notifications\CountdownNotification;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -408,39 +411,10 @@ class NotificationShow extends Component
             ->where('id_trader', $this->user)
             ->first();
 
-        // Compter le nombre de commentaires
-        // $this->commentCount = $comments->count();
-
-        // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $this->oldestComment = Comment::where('code_unique', $codeUnique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Initialiser la variable pour la date du plus ancien commentaire
-        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
-        $this->serverTime = Carbon::now()->toIso8601String();
-
-        // Ajouter 5 heures à la date la plus ancienne, s'il y en a une
-        $this->tempsEcoule = $this->oldestCommentDate ? Carbon::parse($this->oldestCommentDate)->addMinutes(1) : null;
-
-        // Vérifier si $tempsEcoule est écoulé
-        $this->isTempsEcoule = $this->tempsEcoule && $this->tempsEcoule->isPast();
 
 
-        // Recherche dans la table produit_service pour récupérer l'ID du produit
-        // if (isset($this->notification->data['nameprod']) && isset($this->notification->data['id_trader'])) {
-        //     $produitService = ProduitService::where('name', $this->notification->data['nameprod'])
-        //         ->where('user_id', $this->notification->data['id_trader'])
-        //         ->first();
 
-        //     if ($produitService) {
-        //         $this->idProd2 = $produitService->id;
-        //     }
-        // }
-        //offre ajout de quantite
-        // $this->offreinfo($this->appelOffreGroup);
+
 
         // Vérification avant de récupérer le produit
         if (isset($this->notification->data['idProd']) || isset($this->notification->data['produit_id'])) {
@@ -696,7 +670,7 @@ class NotificationShow extends Component
 
 
                         // Create transaction record for the trader
-                        $this->createTransaction($userId, $id_trader, 'Reception', $prixArticleNego);
+                        // $this->createTransaction($userId, $id_trader, 'Reception', $prixArticleNego);
                     }
 
 
@@ -705,7 +679,7 @@ class NotificationShow extends Component
                     // Update the user's wallet
                     $userWallet->decrement('balance', $prixArticleNego);
                     // Create transaction record for the user
-                    $this->createTransaction($userId, $id_trader, 'Envoie', $prixArticleNego);
+                    // $this->createTransaction($userId, $id_trader, 'Envoie', $prixArticleNego);
 
 
 
@@ -1089,7 +1063,7 @@ class NotificationShow extends Component
             $userWallet->decrement('balance', $requiredAmount);
             Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
 
-            $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
+            // $this->createTransaction($userSender->id, $userSender->id, 'Envoie', $requiredAmount);
 
             // Vérifiez si $this->userFour est défini
             if (!isset($this->userFour) || !$this->userFour) {
@@ -1157,7 +1131,7 @@ class NotificationShow extends Component
                 $userWallet->decrement('balance', $requiredAmount);
                 Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
 
-                $this->createTransaction($userSender->id, $traderUser->id, 'Reception', $requiredAmount);
+                // $this->createTransaction($userSender->id, $traderUser->id, 'Reception', $requiredAmount);
             } else {
                 Notification::send($userSender, new commandVerif($data));
 
@@ -1275,7 +1249,7 @@ class NotificationShow extends Component
             ];
 
             if ($this->notification->type_achat == 'reserv/take') {
-                Notification::send($fournisseur, new colisaccept($data));
+                Notification::send($fournisseur, new Confirmation($data));
 
                 $userWallet = Wallet::where('user_id', $fournisseur->id)->first();
 
@@ -1289,9 +1263,9 @@ class NotificationShow extends Component
                 $userWallet->decrement('balance', $this->totalPrice);
                 Log::info('Solde du portefeuille après déduction', ['newBalance' => $userWallet->balance]);
 
-                $this->createTransaction($user->id, $fournisseur->id, 'Reception', $this->totalPrice);
+                // $this->createTransaction($user->id, $fournisseur->id, 'Reception', $this->totalPrice);
 
-                Notification::send($user, new colisaccept($data));
+                Notification::send($user, new Confirmation($data));
             } else {
                 Notification::send($livreur, new mainleve($data));
 
@@ -1359,121 +1333,155 @@ class NotificationShow extends Component
         } else {
             session()->flash('error', 'Code invalide.');
         }
-
     }
 
 
-
+    public $fournisseurWallet;
     public function acceptColis()
     {
-        Log::info('Début de la fonction acceptColis', ['notification_id' => $this->notification->id]);
+        DB::beginTransaction();
 
-        $livreur = User::find($this->notification->data['livreur']);
-        $fournisseur = User::find($this->notification->data['fournisseur']);
-        $client = User::find(Auth::user()->id);
-        $produit = ProduitService::find($this->notification->data['idProd']);
+        try {
+            // Vérification dans la table `gelement`
+            $gelement = gelement::where('reference_id', $this->notification->data['code_unique'])->first();
+            if (!$gelement) {
+                throw new Exception('Référence introuvable dans la table gelement.');
+            }
 
-        Log::info('Utilisateurs et produit récupérés', [
-            'livreur_id' => $livreur->id,
-            'fournisseur_id' => $fournisseur->id,
-            'client_id' => $client->id,
-            'produit_id' => $produit->id
-        ]);
+            $valeurGelement = $gelement->amount;
+            Log::info('Valeur récupérée depuis la table gelement', ['valeur' => $valeurGelement]);
 
-        $data = [
-            'idProd' => $this->notification->data['idProd'],
-            'code_unique' => $this->code_unique,
-            'fournisseur' => $this->notification->data['fournisseur'],
-            'localité' =>  $this->notification->data['localité'],
-            'quantite' => $this->notification->data['quantite'],
-            'id_client' => $this->notification->data['id_client'],
-            'livreur' => $this->notification->data['livreur'],
-            'prixTrade' => $this->notification->data['prixTrade'],
-            'prixProd' => $this->notification->data['prixProd'],
-        ];
+            // Vérification des portefeuilles
+            $this->fournisseurWallet = Wallet::where('user_id', $this->achatdirect->userTrader)->firstOrFail();
+            $livreurWallet = Wallet::where('user_id', $this->notification->data['livreur'])->firstOrFail();
 
-        Log::info('Données préparées', ['data' => $data]);
+            // Calcul des montants et des intérêts
+            $interetFournisseur = ($valeurGelement - $this->notification->data['prixTrade']) * 0.01;
+            $montantPourFournisseur = ($valeurGelement - $this->notification->data['prixTrade']) - $interetFournisseur;
 
-        // Récupération des portefeuilles
-        $clientWallet = Wallet::where('user_id', Auth::user()->id)->first();
-        if (!$clientWallet) {
-            Log::error('Portefeuille du client introuvable', ['user_id' => Auth::user()->id]);
-            session()->flash('error', 'Portefeuille du client introuvable.');
-            return;
+            $interetLivreur = $this->notification->data['prixTrade'] * 0.01;
+            $montantPourLivreur = $this->notification->data['prixTrade'] - $interetLivreur;
+
+            $totalInterets = $interetFournisseur + $interetLivreur;
+
+            Log::info('Montants et intérêts calculés', [
+                'montantPourFournisseur' => $montantPourFournisseur,
+                'montantPourLivreur' => $montantPourLivreur,
+                'totalInterets' => $totalInterets,
+            ]);
+
+            // Mise à jour des soldes des portefeuilles
+            $this->fournisseurWallet->increment('balance', $montantPourFournisseur);
+            $livreurWallet->increment('balance', $montantPourLivreur);
+
+            // Log des mises à jour
+            Log::info('Portefeuilles mis à jour', [
+                'fournisseur_id' => $this->notification->data['fournisseur'],
+                'livreur_id' => $this->notification->data['livreur'],
+            ]);
+
+            // Préparer les données de notification
+            $data = [
+                'code_unique' => $this->notification->data['code_unique'],
+                'achat_id' => $this->notification->data['achat_id'],
+                'title' => 'Transaction réussie',
+                'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
+            ];
+
+            // Envoi des notifications
+            $this->notifyUsers($data);
+
+            // Création des transactions
+            $this->createTransactionNew(Auth::user()->id, $this->notification->data['fournisseur'], 'Réception', 'COC', $montantPourFournisseur, $this->generateIntegerReference(), 'Réception pour achat.');
+            $this->createTransactionNew(Auth::user()->id, $this->notification->data['livreur'], 'Réception', 'COC', $montantPourLivreur, $this->generateIntegerReference(), 'Réception pour livraison.');
+
+            // Gestion des commissions pour parrains et administrateurs
+            $this->handleCommissions($totalInterets);
+
+            // Mise à jour de la notification
+            $this->notification->update(['reponse' => 'Confirmation']);
+            Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
+
+            DB::commit();
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            Log::error('Portefeuille introuvable.', ['message' => $e->getMessage()]);
+            session()->flash('error', 'Un portefeuille requis est introuvable.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur lors de l\'acceptation du colis.', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
-
-        $fournisseurWallet = Wallet::where('user_id', $this->notification->data['fournisseur'])->first();
-        if (!$fournisseurWallet) {
-            Log::error('Portefeuille du fournisseur introuvable', ['user_id' => $this->notification->data['fournisseur']]);
-            session()->flash('error', 'Portefeuille du fournisseur introuvable.');
-            return;
-        }
-
-        $livreurWallet = Wallet::where('user_id', $this->notification->data['livreur'])->first();
-        if (!$livreurWallet) {
-            Log::error('Portefeuille du livreur introuvable', ['user_id' => $this->notification->data['livreur']]);
-            session()->flash('error', 'Portefeuille du livreur introuvable.');
-            return;
-        }
-
-        $requiredAmount = $this->notification->data['quantite'] * $this->notification->data['prixProd'];
-        Log::info('Montant requis calculé', ['requiredAmount' => $requiredAmount]);
-
-        $pourcentSomme  = $requiredAmount * 0.1;
-        $totalSom = $requiredAmount - $pourcentSomme;
-
-        Log::info('Pourcentage et montant total calculés', ['pourcentSomme' => $pourcentSomme, 'totalSom' => $totalSom]);
-
-        if ($fournisseur->parrain) {
-            $commTraderParrain = $pourcentSomme * 0.05;
-            $commTraderParrainWallet = Wallet::where('user_id', $fournisseur->parrain)->first();
-            $commTraderParrainWallet->increment('balance', $commTraderParrain);
-            Log::info('Commission parrain fournisseur ajouté', ['parrain_id' => $fournisseur->parrain, 'commission' => $commTraderParrain]);
-        }
-
-        if ($client->parrain) {
-            $commSenderParrain = $pourcentSomme * 0.05;
-            $commSenderParrainWallet = Wallet::where('user_id', $client->parrain)->first();
-            $commSenderParrainWallet->increment('balance', $commSenderParrain);
-            Log::info('Commission parrain client ajouté', ['parrain_id' => $client->parrain, 'commission' => $commSenderParrain]);
-        }
-
-        // Débit
-        $fournisseurWallet->increment('balance', $totalSom);
-        Log::info('Solde du portefeuille du fournisseur mis à jour', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
-
-        // Transactions
-        // $this->createTransaction(Auth::user()->id, $this->notification->data['fournisseur'], 'Reception', $totalSom);
-        // Log::info('Transaction fournisseur créée', ['fournisseur_id' => $fournisseur->id, 'totalSom' => $totalSom]);
-
-        $referenceId = $this->generateIntegerReference();
-
-        $this->createTransactionNew(Auth::user()->id, $this->notification->data['fournisseur'], 'Réception', 'COC', $totalSom, $referenceId, 'Reception pour achat de ' . $produit->name);
-
-        // Montant total de la transaction
-        $prixTotal = $this->notification->data['prixTrade'];
-        $montantAdmin = $prixTotal * 0.10;
-        $montantLivreur = $prixTotal - $montantAdmin;
-
-        $livreurWallet->increment('balance', $montantLivreur);
-        Log::info('Solde du portefeuille du livreur mis à jour', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
-
-
-        // $this->createTransaction(Auth::user()->id, $this->notification->data['livreur'], 'Reception', $montantLivreur);
-        // Log::info('Transaction livreur créée', ['livreur_id' => $livreur->id, 'montantLivreur' => $montantLivreur]);
-
-        $this->createTransactionNew(Auth::user()->id, $this->notification->data['livreur'], 'Réception', 'COC', $montantLivreur, $referenceId, 'Reception pour livraison de ' . $produit->name);
-
-
-        Notification::send($client, new colisaccept($data));
-        Notification::send($fournisseur, new colisaccept($data));
-        Notification::send($livreur, new colisaccept($data));
-
-        Log::info('Notifications envoyées', ['client_id' => $client->id, 'fournisseur_id' => $fournisseur->id, 'livreur_id' => $livreur->id]);
-
-        $this->notification->update(['reponse' => 'colisaccept']);
-        Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
     }
+    private function notifyUsers(array $data)
+    {
+        Notification::send(User::find(Auth::id()), new Confirmation($data));
+        Notification::send(User::find($this->achatdirect->userTrader), new Confirmation($data));
+        Notification::send(User::find($this->notification->data['livreur']), new Confirmation($data));
+
+        Log::info('Notifications envoyées.', $data);
+    }
+
+    private function handleCommissions(float $totalInterets)
+    {
+        $commissions = $totalInterets - ($totalInterets * 0.01);
+
+        if ($this->fournisseurWallet->user->parrain) {
+            $commissions = $this->distributeToParrains($commissions);
+        }
+
+        $this->distributeToAdmin($commissions);
+    }
+    private function distributeToParrains(float $commissions)
+    {
+        $parrain = $this->fournisseurWallet->user->parrain;
+        $level = 1;
+
+        while ($parrain && $level <= 3) {
+            $parrainUser = User::find($parrain);
+            $parrainWallet = Wallet::where('user_id', $parrainUser->id)->first();
+
+            if ($parrainWallet) {
+                $commissionForParrain = $commissions * 0.01;
+                $parrainWallet->increment('balance', $commissionForParrain);
+                $commissions -= $commissionForParrain;
+
+                Log::info("Commission envoyée au parrain niveau $level", ['parrain_id' => $parrainUser->id, 'commission' => $commissionForParrain]);
+
+                $this->createTransaction(Auth::user()->id, $parrainUser->id, 'Commission', $commissionForParrain, $this->generateIntegerReference(), "Commission niveau $level", 'effectué', 'COC');
+            }
+
+            $parrain = $parrainUser->parrain;
+            $level++;
+        }
+
+        return $commissions;
+    }
+
+    private function distributeToAdmin(float $commissions)
+    {
+        $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
+        if ($adminWallet) {
+            $adminWallet->increment('balance', $commissions);
+
+            Log::info('Commission envoyée à l\'admin.', ['admin_id' => 1, 'commissions' => $commissions]);
+
+            $this->createTransactionAdmin(
+                Auth::user()->id,
+                1,
+                'Commission',
+                $commissions,
+                $this->generateIntegerReference(),
+                'Commission de BICF',
+                'effectué',
+                'commission'
+            );
+        }
+    }
+
     public function refuseColis()
 
     {
@@ -1531,134 +1539,8 @@ class NotificationShow extends Component
 
 
         $this->notification->update(['reponse' => 'refuseVereif']);
-        $this->validate();
     }
-    // public function accepter($textareaContent = null)
-    // {
-    //     // Récupérez le contenu du textarea depuis la requête
-    //     $textareaContent = $textareaContent ?? '';
 
-    //     // Vérifiez si l'utilisateur a un portefeuille
-    //     $userId = Auth::id();
-    //     $userWallet = Wallet::where('user_id', $userId)->first();
-    //     if (!$userWallet) {
-    //         session()->flash('error', 'Portefeuille introuvable.');
-    //         return;
-    //     }
-
-    //     // Mettez à jour la notification
-    //     $notification = NotificationEd::find($this->notification->id);
-    //     if (!$notification) {
-    //         session()->flash('error', 'Notification introuvable.');
-    //         return;
-    //     }
-    //     $notification->reponse = 'accepte';
-    //     $notification->save();
-
-    //     // Calculez le montant total et le code unique
-    //     $requiredAmount = $this->notification->data['montantTotal'];
-    //     $pourcentSomme = $requiredAmount * 0.1;
-    //     $totalSom = $requiredAmount - $pourcentSomme;
-
-    //     $code_livr = $this->code_unique ?? $this->genererCodeAleatoire(10);
-    //     $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
-
-    //     // Préparez les données pour la notification
-    //     $data = [
-    //         'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
-    //         'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
-    //         'totalSom' => $requiredAmount,
-    //         'quantites' => $this->notification->data['quantité'] ?? $this->notification->data['quantiteC'],
-    //         'localite' => $this->notification->data['localite'],
-    //         'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
-    //         'code_livr' => $code_livr,
-    //         'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
-    //         'textareaContent' => $textareaContent
-    //     ];
-    //     Log::info('data', ['data' => $data]);
-
-    //     // Vérifiez si le code_unique existe dans userquantites
-    //     $userQuantites = userquantites::where('code_unique', $code_livr)->get();
-
-    //     // Log l'état initial de la récupération des données
-    //     Log::info('Recherche du code_unique', ['code_unique' => $code_livr, 'count' => $userQuantites->count()]);
-
-    //     if ($userQuantites->isNotEmpty()) {
-    //         foreach ($userQuantites as $userQuantite) {
-    //             $userId = $userQuantite->user_id;
-    //             $quantite = $userQuantite->quantite;
-    //             $typeAchat = $userQuantite->type_achat;
-
-    //             $notificationData = array_merge($data, [
-    //                 'quantite' => $quantite,
-    //                 'type_achat' => $typeAchat,
-    //                 'user_id' => $userId,
-    //             ]);
-
-    //             if ($typeAchat === 'Take Away' || $typeAchat === 'Reservation') {
-    //                 // Envoyez la notification au client directement
-    //                 $userSender = User::find($userId);
-    //                 if ($userSender) {
-    //                     Notification::send($userSender, new AllerChercher($notificationData));
-    //                     // Log l'envoi de la notification
-    //                     Log::info('Notification envoyée au client', ['user_id' => $userSender->id]);
-    //                 } else {
-    //                     // Log un avertissement si aucun utilisateur trouvé
-    //                     Log::warning('Utilisateur non trouvé pour l\'ID', ['user_id' => $userId]);
-    //                 }
-    //             } else {
-    //                 // Envoyez la notification aux livreurs
-    //                 if (!empty($this->livreursIds)) {
-    //                     foreach ($this->livreursIds as $livreurId) {
-    //                         $livreur = User::find($livreurId);
-    //                         if ($livreur) {
-    //                             Notification::send($livreur, new livraisonVerif($notificationData));
-    //                             // Log l'envoi de la notification
-    //                             Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
-    //                         } else {
-    //                             // Log un avertissement si aucun livreur trouvé
-    //                             Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         // Si aucune quantité utilisateur trouvée, envoyez des notifications aux livreurs seulement
-    //         if (!empty($this->livreursIds)) {
-    //             foreach ($this->livreursIds as $livreurId) {
-    //                 $livreur = User::find($livreurId);
-    //                 if ($livreur) {
-    //                     Notification::send($livreur, new livraisonVerif($data));
-    //                     // Log l'envoi de la notification
-    //                     Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
-    //                 } else {
-    //                     // Log un avertissement si aucun livreur trouvé
-    //                     Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     session()->flash('success', 'Achat accepté.');
-
-    //     $this->modalOpen = false;
-    //     $this->notification->update(['reponse' => 'accepte']);
-    // }
-
-
-
-    // private function genererCodeAleatoire($longueur)
-    // {
-    //     $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    //     $code = '';
-
-    //     for ($i = 0; $i < $longueur; $i++) {
-    //         $code .= $caracteres[rand(0, strlen($caracteres) - 1)];
-    //     }
-
-    //     return $code;
-    // }
 
     public function refuserPro()
     {
@@ -1714,7 +1596,7 @@ class NotificationShow extends Component
                 $userWallet->increment('balance', $requiredAmount);
 
                 // Créer une transaction pour chaque utilisateur
-                $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
+                // $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
 
                 // Envoyer une notification à chaque utilisateur
                 Notification::send($userSender, new RefusAchat($this->messageR));
@@ -1735,7 +1617,7 @@ class NotificationShow extends Component
                 $userWallet->increment('balance', $requiredAmount);
 
                 // Créer une transaction pour l'utilisateur
-                $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
+                // $this->createTransaction($userId, $userSender->id, 'Reception', $requiredAmount);
 
                 // Envoyer une notification à l'utilisateur
                 Notification::send($userSender, new RefusAchat($this->messageR));
@@ -1776,7 +1658,7 @@ class NotificationShow extends Component
         $clientWallet->increment('balance', $montantTotal);
 
         // Création de la transaction
-        $this->createTransaction($this->notification->data['id_trader'], $client->id, 'Reception', $montantTotal);
+        // $this->createTransaction($this->notification->data['id_trader'], $client->id, 'Reception', $montantTotal);
 
         // Envoi des notifications
         Notification::send($livreur, new RefusVerif('Le colis a été refusé !'));
@@ -1813,7 +1695,7 @@ class NotificationShow extends Component
         $clientWallet->increment('balance', $montantTotal);
 
         // Création de la transaction
-        $this->createTransaction($this->notification->data['id_trader'], $client->id, 'Reception', $montantTotal);
+        // $this->createTransaction($this->notification->data['id_trader'], $client->id, 'Reception', $montantTotal);
 
         // Envoi des notifications
         Notification::send($livreur, new RefusVerif('Le colis a été refusé !'));
@@ -1825,13 +1707,17 @@ class NotificationShow extends Component
         $this->validate();
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
         $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
         $transaction->save();
     }
 

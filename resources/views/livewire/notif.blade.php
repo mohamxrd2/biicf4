@@ -873,40 +873,7 @@
                         </div>
 
                     </a>
-                @elseif ($notification->type === 'App\Notifications\mainleveclient')
-                    <a href="{{ route('notification.show', $notification->id) }}">
-                        @php
-                            $produit = ProduitService::find($notification->data['idProd']);
-                        @endphp
-
-                        <div class="flex w-full">
-                            <div class="w-16 h-16 mr-3 overflow-hidden ">
-                                <img class="object-cover w-full h-full rounded-xl"
-                                    src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
-                                    alt="">
-                            </div>
-
-                            <div class="flex flex-col justify-between w-full">
-                                <div class="flex items-center justify-between w-full">
-                                    <h3 class="font-semibold text-md">{{ $produit->name }}</h3>
-                                    <p class="text-[12px] text-gray-400 text-right">
-                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
-                                    </p>
-                                </div>
-                                <div class="flex items-center justify-between w-full h-full">
-                                    <p class="text-sm font-normal text-slate-500 l max-w-1/2">Arrivage du livreur et
-                                        verification de confromité</p>
-                                    @if ($notification->read_at == null)
-                                        <div class="flex items-center justify-center w-10">
-                                            <span class="w-2 h-2 bg-purple-700 rounded-full"></span>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </a>
+                
                 @elseif ($notification->type === 'App\Notifications\colisaccept')
                     <a href="{{ route('notification.show', $notification->id) }}" class="">
                         <div class="flex w-full">

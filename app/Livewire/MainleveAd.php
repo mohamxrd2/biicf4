@@ -74,14 +74,14 @@ class MainleveAd extends Component
         ]);
 
         $data = [
-            'idProd' => $this->achatdirect->idProd,
-            'code_unique' => $this->notification->data['code_unique'],
+            'code_unique' => $this->achatdirect->code_unique,
             'fournisseur' => $this->notification->data['fournisseur'],
             'livreur' => Auth::id(),
+            'prixTrade' => $this->notification->data['prixTrade'],
             'date_livr' => $this->dateLivr,
             'time' => $this->time,
             'achat_id' => $this->achatdirect->id,
-            'CodeVerification' => random_int(1000, 9999),
+            'CodeVerification' => $this->notification->data['livreurCode'] ,
             'title' => 'Reception du colis',
             'description' => 'Procéder a la confirmité du colis',
         ];

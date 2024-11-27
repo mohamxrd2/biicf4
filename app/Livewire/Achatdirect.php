@@ -275,10 +275,19 @@ class Achatdirect extends Component
 
             // Envoi de la notification
             Notification::send($userSender, new CountdownNotificationAd($details));
-            Log::info('Notification envoyée avec succès.', [
-                'userSenderId' => $userSender->id,
-                'details' => $details,
-            ]);
+            // Récupérer la dernière notification de type AppelOffreTerminer
+            $notification = $userSender->notifications()
+                ->where('type', CountdownNotificationAd::class)
+                ->latest() // Prend la dernière notification
+                ->first();
+
+            if ($notification) {
+                // Mise à jour de la notification existante
+                $notification->update(['type_achat' => 'Take Away']);
+                Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
+            } else {
+                Log::warning('Aucune notification de type AppelOffreTerminer trouvée.', ['userSenderId' => $userSender->id]);
+            }
 
             // Mettre à jour la notification originale
             $this->notification->update(['reponse' => 'accepte', 'type_achat' => 'Take Away']);

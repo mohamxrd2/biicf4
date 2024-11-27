@@ -164,9 +164,17 @@ class CheckCountdowns extends Command
                         Log::info('id.', ['id user' => $clientId->id ?? null]);
 
                         Notification::send($clientId, new CountdownNotificationAd($details));
-                        $notification = $lowestPriceComment->user->notifications()->where('type', CountdownNotificationAd::class)->latest()->first();
+                        $notification = $clientId->notifications()
+                            ->where('type', CountdownNotificationAd::class)
+                            ->latest() // Prend la dernière notification
+                            ->first();
+
                         if ($notification) {
+                            // Mise à jour de la notification existante
                             $notification->update(['type_achat' => 'Delivery']);
+                            Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
+                        } else {
+                            Log::warning('Aucune notification de type AppelOffreTerminer trouvée.', ['clientId' => $clientId->id]);
                         }
 
                         // Récupération de l'utilisateur (trader) avec une vérification
