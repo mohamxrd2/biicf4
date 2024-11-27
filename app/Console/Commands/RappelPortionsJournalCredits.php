@@ -215,7 +215,7 @@ class RappelPortionsJournalCredits extends Command
 
                 $roi = $montant * $credit->taux_interet / 100;
 
-                $commissions = $roi - $roi * 0.01;
+                $commissions = $roi * 0.01;
 
                 $montantTotal = ($montant + ($montant * $credit->taux_interet / 100)) - $commissions;
                 // Log de l'opération
