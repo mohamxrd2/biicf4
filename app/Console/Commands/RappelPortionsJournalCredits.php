@@ -219,7 +219,11 @@ class RappelPortionsJournalCredits extends Command
 
             foreach ($investisseursMontantsSansInteret as $id => $montant) {
 
-                $montantTotal = $montant + ($montant * $credit->taux_interet / 100);
+                $roi = $montant * $credit->taux_interet / 100;
+
+                $commissions = $roi - $roi * 0.01;
+
+                $montantTotal = ($montant + ($montant * $credit->taux_interet / 100)) - $commissions;
                 // Log de l'opération
                 Log::info("Investisseur ID $id a financé : $montant");
 
@@ -281,9 +285,7 @@ class RappelPortionsJournalCredits extends Command
 
                 //Commission de BICF et des differants parrains
 
-                $roi = $montant * $credit->taux_interet / 100;
-
-                $commissions = $roi - $roi * 0.01;
+                
 
                 if ($investisseur->parrain) {
 
