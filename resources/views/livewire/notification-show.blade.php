@@ -1212,11 +1212,7 @@
         @endif
 
 
-        @php
-            // Assurez-vous que la variable $notification est définie et accessible
-            $livreur = \App\Models\User::find($notification->data['livreur']);
 
-        @endphp
 
         @if (session()->has('succes'))
 

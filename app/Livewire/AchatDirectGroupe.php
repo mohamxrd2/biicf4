@@ -176,13 +176,14 @@ class AchatDirectGroupe extends Component
             gelement::create([
                 'id_wallet' => $userWallet->id,
                 'amount' => $montantTotal,
-                'reference_id' => $reference_id,
+                'reference_id' => $codeUnique,
             ]);
 
             // Mettre à jour la table de AchatDirectModel de fond
             $achatUser = [
                 'nameProd' => $validated['nameProd'],
                 'idProd' => $validated['idProd'],
+                'code_unique' => $codeUnique,
                 'idAchat' => $achat->id,
                 'title' => 'Confirmation de commande',
                 'description' => 'La commande a été envoyéé avec success.',

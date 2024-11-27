@@ -148,6 +148,7 @@ class CountdownNotificationAd extends Component
 
             session()->flash('success', 'Validation effectuée avec succès.');
         } catch (Exception $e) {
+            DB::rollback();
             // Gérer les exceptions générales
             Log::error('Erreur lors de la validation', [
                 'message' => $e->getMessage(),
@@ -157,8 +158,9 @@ class CountdownNotificationAd extends Component
             session()->flash('error', 'Une erreur est survenue lors du processus de validation. Veuillez réessayer.');
         }
     }
-    public function pour_livraison()
+    private function pour_livraison()
     {
+
         // Calcul du montant requis
         $requiredAmount = floatval($this->notification->data['prixTrade']);
 
@@ -171,9 +173,13 @@ class CountdownNotificationAd extends Component
             session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
             return;
         }
+
         // Vérification de l'existence de l'achat dans les transactions gelées
         $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
             ->first();
+        if (!$existingGelement) {
+            return; // Arrête la fonction si aucune transaction n'est trouvée
+        }
         if ($existingGelement) {
             // Si la transaction existe, ajoutez le montant requis au montant gelé
             $existingGelement->amount += $requiredAmount;
@@ -409,7 +415,7 @@ class CountdownNotificationAd extends Component
                     'fournisseur' => $this->fournisseur->id ?? null,
                     'client' => $this->achatdirect->userSender ?? null,
                     'achat_id' => $this->achatdirect->id ?? null,
-                    'prixTrade' => $this->notification->data['prixTrade']?? null,
+                    'prixTrade' => $this->notification->data['prixTrade'] ?? null,
                     'title' => 'Livraison a effectuer',
                     'description' => 'Deplacez vous pour aller chercher le colis->',
                 ];

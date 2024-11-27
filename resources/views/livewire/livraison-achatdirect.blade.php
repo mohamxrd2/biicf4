@@ -5,8 +5,6 @@
         <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
 
         <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
-            <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
-
             <div id="countdown" x-show="oldestCommentDate"
                 class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
                 <div x-text="hours">--</div>j
@@ -124,7 +122,7 @@
                             </div>
 
                             <!-- Texte des participants -->
-                            <p class="text-sm font-medium text-gray-100">{{ $nombreParticipants }} participants</p>
+                            <p class="text-sm font-medium text-gray-100"> {{ $nombreParticipants ?? '0' }} participants</p>
                         </div>
                     </div>
 

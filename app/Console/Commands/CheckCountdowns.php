@@ -92,7 +92,7 @@ class CheckCountdowns extends Command
                         'code_unique' => $countdown->code_unique,
                         'prixTrade' => $price,
                         'livreur' => $traderId,
-                        'achat_id' => $countdown->achat_id, // Correction ici
+                        'achat_id' =>  $countdown->achat->id ?? $countdown->id_achat, // Assurez-vous que $countdown->achat existe
                     ];
 
                     // Vous pouvez maintenant traiter la notification ou autre logique
@@ -164,12 +164,17 @@ class CheckCountdowns extends Command
                         Log::info('id.', ['id user' => $clientId->id ?? null]);
 
                         Notification::send($clientId, new CountdownNotificationAd($details));
+                        $notification = $lowestPriceComment->user->notifications()->where('type', CountdownNotificationAd::class)->latest()->first();
+                        if ($notification) {
+                            $notification->update(['type_achat' => 'Delivery']);
+                        }
+
                         // Récupération de l'utilisateur (trader) avec une vérification
                         $gagnantId = User::find($traderId);
 
                         if ($gagnantId) {
                             $livreurdetails = [
-                                'idAchat' => $countdown->id_achat,
+                                'achat_id' => $countdown->id_achat,
                                 'idProd' => $id_prod,
                                 'code_unique' => $countdown->code_unique,
                                 'title' => 'Gagnant de la negociation',

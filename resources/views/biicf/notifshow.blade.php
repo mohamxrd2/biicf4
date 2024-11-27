@@ -9,7 +9,8 @@
 
     <div class=" mx-auto">
 
-        <livewire:notification-show :id="$id"/>
+        {{-- <livewire:notification-show :id="$id"/> --}}
+        @livewire('notification-show', ['id' => $id])
 
     </div>
 

@@ -41,25 +41,23 @@ class LivraisonAchatdirect extends Component
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->produit = ProduitService::find($this->idProd);
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
-        // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['code_livr'];
+
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $this->oldestComment = Countdown::where('code_unique', $codeUnique)
+        $this->oldestComment = Countdown::where('code_unique', $this->achatdirect->code_unique)
             ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
 
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
-        $this->serverTime = Carbon::now()->toIso8601String();
+        $this->listenForMessage();
 
     }
 
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage()
     {
-        dd('test 1');
         // Déboguer pour vérifier la structure de l'événement
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->comments = Comment::with('user')
@@ -136,7 +134,7 @@ class LivraisonAchatdirect extends Component
                 // Créer un nouveau compte à rebours s'il n'y en a pas en cours
                 Countdown::create([
                     'user_id' => Auth::id(),
-                    'userSender' => $this->userSender,
+                    'userSender' => $this->achatdirect->userSender,
                     'start_time' => now(),
                     'difference' => 'ad',
                     'code_unique' => $this->achatdirect->code_unique,
