@@ -58,19 +58,7 @@ class Offrenegosterminer extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
 
         $this->produit = ProduitService::findOrFail($this->notification->data['idProd']);
-        $this->type = $this->produit->type;
-        $this->type = $this->produit->type;
-        $this->photo = $this->produit->photoProd1;
-
-        $this->nameProd = $this->produit->name;
-        $this->idProd = $this->notification->data['idProd'];
-        $this->userId = Auth::guard('web')->id();
-        $this->prixProd = $this->notification->data['prixProd'];
-        $this->code_unique = $this->generateUniqueReference();
-        $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
-        $this->userTrader = $this->produit->user->id;
-
-
+       
     }
     protected function generateUniqueReference()
     {

@@ -104,13 +104,6 @@ class CheckCountdowns extends Command
                         'prixTrade' => $price,
                         'id_trader' => $traderId,
                         'quantiteC' => $quantiteC,
-                        // 'localite' => $localite,
-                        // 'specificite' => $specificite,
-                        // 'nameprod' => $nameprod,
-                        // 'id_sender' => $decodedSenderIds,
-                        // 'montantTotal' => $montotal,
-                        // 'date_tot' => $date_tot,
-                        // 'date_tard' => $date_tard,
                     ];
                     //lier a apple offre
 
@@ -148,8 +141,14 @@ class CheckCountdowns extends Command
                         //     $notification->update(['type_achat' => $type_achat]);
                         // }
                     } else if ($countdown->difference === 'offredirect') {
+                        $enchere = [
+                            'code_unique' => $countdown->code_unique,
+                            'prixTrade' => $price,
+                            'idProd' =>  $commentToUse->idProd, // Assurez-vous que $countdown->achat existe
+                            'id_trader' =>  $commentToUse->id_trader, // Assurez-vous que $countdown->achat existe
+                        ];
                         Log::info('Envoi de la notification pour type "offredirect".', ['user_id' => $lowestPriceComment->user->id]);
-                        Notification::send($commentToUse->user, new NegosTerminer($details));
+                        Notification::send($commentToUse->user, new NegosTerminer($enchere));
                     } else if ($countdown->difference === 'grouper') {
                         Log::info('Envoi de la notification pour type "grouper".', ['user_id' => $lowestPriceComment->user->id]);
                         Notification::send($lowestPriceComment->user, new AppelOffreTerminerGrouper($Gdetails));

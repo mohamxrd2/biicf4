@@ -52,117 +52,18 @@
 
         {{-- fournisseur offre negocier --}}
     @elseif ($notification->type === 'App\Notifications\OffreNotifGroup')
-        <h1 class="mb-2 text-3xl font-semibold text-center">Enchere Sur {{ $notification->data['produit_name'] }}</h1>
-
-        @livewire('enchere', ['id' => $id])
+        <div class="mb-4">
+            <img src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Smart Watch Pro X1"
+                class="w-full h-48 object-cover rounded-lg bg-gray-100" />
+        </div>
+        {{-- @livewire('enchere', ['id' => $id]) --}}
     @elseif ($notification->type === 'App\Notifications\NegosTerminer')
         @livewire('offrenegosterminer', ['id' => $id])
 
         {{-- fournisseur offre grouper --}}
     @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
-        <div class="flex flex-col justify-center p-4 bg-white border rounded-xl">
-            <h1 class="mb-4 text-xl font-medium">Ajout de quantite</h1>
-            <h2 class="mb-4 text-xl font-medium"><span class="font-semibold">Titre du produit:
-                    {{ $notification->data['produit_name'] }}</span></h2>
+        @livewire('offre-groupe-quantite', ['id' => $id])
 
-            <p class="mb-3"><strong>Quantité: </strong> {{ $sommeQuantites }}
-            </p>
-
-            <p class="mb-3"><strong>Nombre de participant: </strong> {{ $nombreParticp }}
-            </p>
-
-            <a href="{{ route('biicf.postdet', $notification->data['produit_id']) }}"
-                class="flex mb-3 text-blue-700 hover:underline">
-                Voir le produit
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                </svg>
-            </a>
-
-            <form wire:submit.prevent="add">
-                @csrf
-                <div class="flex">
-                    <input type="number"
-                        class="block w-full px-4 py-3 mr-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                        placeholder="Ajouter une quantité" name="quantitE" id="quantiteInput" wire:model="quantitE"
-                        required>
-                    <input type="hidden" name="name" wire:model="name">
-                    <input type="hidden" name="produit_id" wire:model="produit_id">
-
-                    <input type="hidden" name="code_unique" wire:model="code_unique">
-
-                    <button type="submit" class="px-4 text-white bg-purple-500 rounded-md"
-                        id="submitBtn">Ajouter</button>
-
-                </div>
-
-            </form>
-
-            <div id="countdown-container" class="flex flex-col items-center justify-center mt-4">
-
-
-
-                <span class="my-2 ">Temps restant pour vous ajouter</span>
-
-                <div id="countdown"
-                    class="flex items-center w-auto gap-2 p-3 text-3xl font-semibold text-red-500 bg-red-100 rounded-xl">
-
-                    <div>-</div>:
-                    <div>-</div>:
-                    <div>-</div>
-                </div>
-
-            </div>
-
-            <script>
-                window.addEventListener('form-submitted', function() {
-                    // Reload the page
-                    location.reload();
-                });
-            </script>
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const quantiteInput = document.getElementById('quantiteInput');
-                    const submitBtn = document.getElementById('submitBtn');
-
-                    // Convertir la date de départ en objet Date JavaScript
-                    const startDate = new Date("{{ $oldestNotificationDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 2);
-
-
-                    // Mettre à jour le compte à rebours à intervalles réguliers
-                    const countdownTimer = setInterval(updateCountdown, 1000);
-
-                    function updateCountdown() {
-                        const currentDate = new Date();
-                        const difference = startDate.getTime() - currentDate.getTime();
-
-                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                        const countdownElement = document.getElementById('countdown');
-                        countdownElement.innerHTML = `
-                            <div>${hours}h</div>:
-                            <div>${minutes}m</div>:
-                            <div>${seconds}s</div>
-                        `;
-
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            countdownElement.innerHTML = "Temps écoulé !";
-
-                            // Désactiver le champ de saisie et le bouton
-                            quantiteInput.disabled = true;
-                            submitBtn.disabled = true;
-                        }
-                    }
-                });
-            </script>
-
-        </div>
     @elseif ($notification->type === 'App\Notifications\OffreNegosDone')
         <div class="flex flex-col justify-center p-4 bg-white border rounded-xl">
 
@@ -1041,95 +942,7 @@
                 </div>
             </div>
         @endif
-    @elseif ($notification->type === 'App\Notifications\VerifUser')
-        <div class="flex justify-center items-center min-h-screen bg-blue-50">
-            <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
-                <!-- Titre -->
-                <div class="text-center mb-6">
-                    <h1 class="text-2xl font-semibold text-gray-800">Vérification Code Livreur</h1>
-                    <p class="text-gray-600">Entrez le code du livreur pour vérifier sa validité</p>
-                </div>
 
-                <!-- Formulaire -->
-                <form wire:submit.prevent="verifyCode">
-                    <!-- Champ Code Livre -->
-                    <div class="mb-4">
-                        <input type="text" name="code_verif" wire:model.defer="code_verif"
-                            placeholder="Entrez le code livreur"
-                            class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required />
-                    </div>
-
-                    <!-- Bouton Vérifier -->
-                    <div class="mb-6">
-                        <button type="submit" wire:loading.attr="disabled"
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <span wire:loading.remove>Vérifier le code</span>
-                            <span wire:loading>
-                                <svg class="inline-block w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                </svg>
-                            </span>
-                        </button>
-                    </div>
-                    @error('code_verif')
-                        <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </form>
-
-                <!-- Instructions -->
-                <div class="text-sm text-gray-600">
-                    <h3 class="font-semibold mb-2">Instructions</h3>
-                    <ul class="list-disc pl-5">
-                        <li>Le code livreur doit contenir 4 chiffres</li>
-                        <li>Vérifiez que le code correspond à votre bon de livraison</li>
-                        <li>En cas de problème, contactez le support</li>
-                    </ul>
-                </div>
-
-                @if (session()->has('succes'))
-                    <div class="p-4 mt-4 text-green-700 bg-green-100 rounded-lg">
-                        {{ session('succes') }}
-                    </div>
-                @endif
-
-                @if (session()->has('error'))
-                    <div class="p-4 mt-4 text-red-700 bg-red-100 rounded-lg">
-                        {{ session('error') }}
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        @if (session()->has('succes'))
-            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
-                <h2 class="mb-4 text-xl font-semibold">Information sur le client</h2>
-
-                <div class="flex-col w-full ">
-                    <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
-
-                        <img src="{{ asset($achatdirect->userSenderI->photo) }}" alt="photot" class="">
-
-                    </div>
-
-                    <div class="flex flex-col">
-                        <p class="mb-3 text-md">Nom du client: <span
-                                class="font-semibold ">{{ $achatdirect->userSenderI->name }}</span>
-                        </p>
-                        <p class="mb-3 text-md">Adress du client: <span
-                                class="font-semibold ">{{ $achatdirect->userSenderI->commune }}</span></p>
-                        <p class="mb-3 text-md">Contact du client: <span
-                                class="font-semibold ">{{ $achatdirect->userSenderI->phone }}</span></p>
-                        <p class="mb-3 text-md">Produit à recuperer: <span
-                                class= "font-semibold ">{{ $achatdirect->nameProd }}</span></p>
-                    </div>
-
-
-                </div>
-            </div>
-        @endif
     @elseif ($notification->type === 'App\Notifications\mainleveclient')
         <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
             <h2 class="mb-4 text-xl font-semibold">Estimation de reception du colis</h2>
@@ -1236,9 +1049,6 @@
                 </div>
             </div>
         @endif
-
-
-
 
         @if (session()->has('succes'))
             <div class="relative bg-white rounded-lg shadow-lg dark:bg-gray-800">

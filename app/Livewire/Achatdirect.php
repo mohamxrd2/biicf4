@@ -57,7 +57,7 @@ class Achatdirect extends Component
     {
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->produits = ProduitService::find($this->notification->data['idProd']);
-        $this->achatdirect = ModelsAchatDirect::find($this->notification->data['idAchat']);
+        $this->achatdirect = ModelsAchatDirect::find($this->notification->data['achat_id']);
         $this->prixFin = $this->achatdirect->montantTotal - $this->achatdirect->montantTotal * 0.01;
 
 
@@ -134,13 +134,12 @@ class Achatdirect extends Component
 
     public function accepter()
     {
-        $validated = $this->validate([
+       $validated = $this->validate([
             'photoProd' => 'required|image|max:1024', // Limite à 1 MB
             'textareaValue' => 'required',
         ]);
 
         DB::beginTransaction();
-
         try {
             // Vérifier si l'utilisateur a un portefeuille
             $userId = Auth::id();
@@ -154,12 +153,12 @@ class Achatdirect extends Component
             $photoName = $this->handlePhotoUpload('photoProd');
 
             // Préparer les données pour la notification
-            $data = [
+           $data = [
                 'idProd' => $this->notification->data['idProd'] ?? null,
                 'code_livr' => $this->notification->data['code_unique'],
                 'textareaContent' => $validated['textareaValue'],
                 'photoProd' => $photoName,
-                'idAchat' => $this->achatdirect->id,
+                'achat_id' => $this->achatdirect->id,
             ];
 
             if (!$data['idProd']) {

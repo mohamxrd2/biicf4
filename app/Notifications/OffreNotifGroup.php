@@ -13,17 +13,17 @@ class OffreNotifGroup extends Notification
     use Queueable;
 
     protected $produit;
-    protected $Uniquecode;
+    protected $code_unique;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct( $produit, $Uniquecode)
+    public function __construct( $produit, $code_unique)
     {
         $this->produit = $produit;
-        $this->Uniquecode  = $Uniquecode;
+        $this->code_unique  = $code_unique;
     }
 
 
@@ -41,13 +41,12 @@ class OffreNotifGroup extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'produit_id' => $this->produit->id,
+            'idProd' => $this->produit->id,
             'produit_name' => $this->produit->name,
-            'produit_conditionnement' => $this->produit->condProd,
-            'produit_livraison' => $this->produit->LivreCapProd,
             'produit_prix' => $this->produit->prix,
-            'Uniquecode' => $this->Uniquecode,
-            'message' => 'Nouvelle offre pour le produit: ' . $this->produit->name,
+            'code_unique' => $this->code_unique,
+            'title' => 'Enchere',
+            'description' => 'Cliquez pour participer a l\'enchere',
         ];
     }
 }

@@ -462,6 +462,20 @@ class CountdownNotificationAd extends Component
         // Retourne l'horodatage comme entier
         return (int) $timestamp;
     }
+    protected function createTransactionAdmin(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_admin_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = $status;
+        $transaction->type_compte = $type_compte;
+
+        $transaction->save();
+    }
 
     public function render()
     {

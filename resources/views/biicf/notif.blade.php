@@ -2,9 +2,9 @@
 
 @section('title', 'Notification')
 
-@php
+{{-- @php
     use App\Models\ProduitService;
-@endphp
+@endphp --}}
 
 @section('content')
     <!-- Afficher les messages de succès -->
@@ -24,7 +24,7 @@
 
     <div class="max-w-5xl mx-auto ">
 
-        
+
         <livewire:notif />
 
 
