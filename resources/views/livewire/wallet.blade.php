@@ -55,11 +55,12 @@
                                     </div>
                                     <div class="p-4 overflow-y-auto">
                                         <div class="space-y-3 w-full mb-3">
+                                            <p class="text-sm text-gray-700 text-center">Entrez un montant entre 10 000 Fr et 99 999 999 999 Fr</p>
                                             <input wire:model="amount" type="number" name="amount" id="floating_prix"
                                                 class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                                 placeholder="Entrez la somme" />
                                             @error('amount')
-                                                <span class="text-red-500">{{ $message }}</span>
+                                                <span class="text-red-500 mt-3">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </div>

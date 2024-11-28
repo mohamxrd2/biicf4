@@ -85,6 +85,12 @@ class RechargeClient extends Component
         // $transaction2->amount = $this->amount;
         // $transaction2->save();
 
+        $referenceId = $this->generateIntegerReference();
+
+
+        $this->createTransactionNew($adminId, $user->id, 'Réception', 'COC', $this->amount, $referenceId, 'Réception d\'argent');
+        $this->createTransactionNew($adminId, $user->id, 'Envoie', 'Compte virtuel', $this->amount, $referenceId, 'Envoie d\'argent');
+
         // session()->flash('success', 'Le compte de l\'agent a été rechargé avec succès.');
 
         // Notification de succès
@@ -93,6 +99,29 @@ class RechargeClient extends Component
         $this->reset(['user_id', 'amount', 'search']);
 
         return redirect()->route('admin.porte-feuille');
+    }
+
+    protected function createTransactionNew(int $senderId, int $receiverId, string $type, string $type_compte, float $amount, int $reference_id, string $description)
+    {
+
+        $transaction = new Transaction();
+        $transaction->sender_admin_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->type_compte = $type_compte;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = 'effectué';
+        $transaction->save();
+    }
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
     public function render()
     {

@@ -468,7 +468,7 @@
                                                         <div class="flex justify-between">
                                                             <span class="text-gray-600">Expéditeur :</span>
                                                             <span
-                                                                class="font-semibold text-gray-900">{{ strtoupper($transaction->senderUser->name) }}</span>
+                                                                class="font-semibold text-gray-900">{{ strtoupper($transaction->senderUser->name ?? 'Admin')   }}</span>
                                                         </div>
 
                                                         <div class="flex justify-between">
