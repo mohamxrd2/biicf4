@@ -11,6 +11,7 @@ use App\Models\ProduitService;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class OffreGroupClientController extends Controller
 {
@@ -18,60 +19,112 @@ class OffreGroupClientController extends Controller
     {
         $user_id = Auth::guard('web')->id();
 
-        // Récupérer l'ID du produit et la zone économique à partir du formulaire
-        $produitId = $request->input('produit_id');
-        $zone_economique = strtolower($request->input('zone_economique')); // Normaliser en minuscules
-        $user = User::find($user_id);
+        // Validation des données d'entrée
+        $validated = $request->validate([
+            'produit_id' => 'required|integer|exists:produit_services,id',
+            'zone_economique' => 'required|string|in:proximite,locale,departementale,nationale,sous_regionale,continentale',
+        ]);
 
-        if (!$user) {
-            return redirect()->back()->with('error', 'Utilisateur non trouvé.');
+        try {
+            // Récupération des données validées
+            $produitId = $validated['produit_id'];
+            $zone_economique = strtolower($validated['zone_economique']);
+
+            // Récupérer l'utilisateur courant
+            $user = User::find($user_id);
+            if (!$user) {
+                Log::error('Utilisateur non trouvé', ['user_id' => $user_id]);
+                return redirect()->back()->with('error', 'Utilisateur non trouvé.');
+            }
+
+            // Récupérer le produit
+            $produit = ProduitService::findOrFail($produitId);
+            $referenceProduit = $produit->reference;
+
+            Log::info('Produit récupéré', [
+                'produit_id' => $produitId,
+                'reference' => $referenceProduit,
+            ]);
+
+            // Générer un code unique
+            $code_unique = $this->generateUniqueReference();
+
+            // Récupérer les utilisateurs consommant ce produit
+            $idsProprietaires = $this->getConsommateurs($referenceProduit, $user_id);
+            if (empty($idsProprietaires)) {
+                Log::warning('Aucun utilisateur consommateur trouvé', ['produit' => $referenceProduit]);
+                return redirect()->back()->with('error', 'Aucun utilisateur ne consomme ce produit.');
+            }
+
+            // Appliquer le filtre de zone économique
+            $appliedZoneValue = $this->getZoneValue($zone_economique, $user);
+            if (!$appliedZoneValue) {
+                Log::error('Zone économique invalide', ['zone' => $zone_economique]);
+                return redirect()->back()->with('error', 'Zone économique invalide.');
+            }
+
+            // Filtrer les utilisateurs par zone
+            $idsLocalite = $this->getUsersInZone($idsProprietaires, $appliedZoneValue);
+            if (empty($idsLocalite)) {
+                Log::warning('Aucun utilisateur trouvé dans la zone économique', [
+                    'zone' => $zone_economique,
+                    'value' => $appliedZoneValue,
+                ]);
+                return redirect()->back()->with('error', 'Aucun utilisateur trouvé dans votre zone économique.');
+            }
+
+            // Fusionner les IDs pour éviter les doublons
+            $idsToNotify = array_unique(array_merge($idsProprietaires, $idsLocalite));
+            Log::info('IDs à notifier', ['ids' => $idsToNotify]);
+
+            // Envoyer des notifications
+            $this->notifyUsers($idsToNotify, $produit, $code_unique);
+
+            return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi des notifications', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->with('error', 'Une erreur s\'est produite. Veuillez réessayer.');
         }
+    }
 
-        // Déterminer la zone économique choisie par l'utilisateur
-        $userZone = strtolower($user->commune);
-        $userVille = strtolower($user->ville);
-        $userDepartement = strtolower($user->departe);
-        $userPays = strtolower($user->country);
-        $userSousRegion = strtolower($user->sous_region);
-        $userContinent = strtolower($user->continent);
-
-        // Trouver le produit ou échouer
-        $produit = ProduitService::findOrFail($produitId);
-        $nomProduit = $produit->name;
-
-        // Générer un code unique une seule fois pour tous les utilisateurs
-        $Uniquecode = $this->genererCodeAleatoire(10);
-
-        // Requête pour récupérer les IDs des propriétaires des consommations similaires
-        $idsProprietaires = Consommation::where('name', $nomProduit)
+    /**
+     * Récupérer les IDs des consommateurs d'un produit.
+     */
+    private function getConsommateurs(string $referenceProduit, int $user_id): array
+    {
+        return Consommation::where('reference', $referenceProduit)
             ->where('id_user', '!=', $user_id)
             ->where('statuts', 'Accepté')
             ->distinct()
             ->pluck('id_user')
             ->toArray();
+    }
 
-        if (empty($idsProprietaires)) {
-            return redirect()->back()->with('error', 'Aucun utilisateur ne consomme ce produit dans votre zone économique.');
-        }
+    /**
+     * Récupérer la valeur de la zone économique en fonction de l'utilisateur.
+     */
+    private function getZoneValue(string $zone_economique, User $user): ?string
+    {
+        $mapping = [
+            'proximite' => strtolower($user->commune),
+            'locale' => strtolower($user->ville),
+            'departementale' => strtolower($user->departe),
+            'nationale' => strtolower($user->country),
+            'sous_regionale' => strtolower($user->sous_region),
+            'continentale' => strtolower($user->continent),
+        ];
+        return $mapping[$zone_economique] ?? null;
+    }
 
-        // Appliquer le filtre de zone économique
-        $appliedZoneValue = null;
-        if ($zone_economique === 'proximite') {
-            $appliedZoneValue = $userZone;
-        } elseif ($zone_economique === 'locale') {
-            $appliedZoneValue = $userVille;
-        } elseif ($zone_economique === 'departementale') {
-            $appliedZoneValue = $userDepartement;
-        } elseif ($zone_economique === 'nationale') {
-            $appliedZoneValue = $userPays;
-        } elseif ($zone_economique === 'sous_regionale') {
-            $appliedZoneValue = $userSousRegion;
-        } elseif ($zone_economique === 'continentale') {
-            $appliedZoneValue = $userContinent;
-        }
-
-        // Récupérer les IDs des utilisateurs dans la zone choisie
-        $idsLocalite = User::whereIn('id', $idsProprietaires)
+    /**
+     * Récupérer les IDs des utilisateurs dans une zone donnée.
+     */
+    private function getUsersInZone(array $idsProprietaires, string $appliedZoneValue): array
+    {
+        return User::whereIn('id', $idsProprietaires)
             ->where(function ($query) use ($appliedZoneValue) {
                 $query->where('commune', $appliedZoneValue)
                     ->orWhere('ville', $appliedZoneValue)
@@ -82,37 +135,26 @@ class OffreGroupClientController extends Controller
             })
             ->pluck('id')
             ->toArray();
+    }
 
-        Log::info('IDs des utilisateurs avec la même localité récupérés:', ['ids_localite' => $idsLocalite]);
-
-        if (empty($idsLocalite)) {
-            return redirect()->back()->with('error', 'Aucun utilisateur ne consomme ce produit dans votre zone économique.');
-        }
-
-        // Fusionner les deux tableaux d'IDs
-        $idsToNotify = array_unique(array_merge($idsProprietaires, $idsLocalite));
-
-        // Envoyer une notification à chaque propriétaire
+    /**
+     * Envoyer des notifications aux utilisateurs spécifiés.
+     */
+    private function notifyUsers(array $idsToNotify, ProduitService $produit, string $code_unique): void
+    {
         foreach ($idsToNotify as $userId) {
             $user = User::find($userId);
             if ($user) {
-                Notification::send($user, new OffreNotifGroup($produit, $Uniquecode));
+                Notification::send($user, new OffreNotifGroup($produit, $code_unique));
+                Log::info('Notification envoyée', ['user_id' => $userId]);
+            } else {
+                Log::warning('Utilisateur non trouvé pour notification', ['user_id' => $userId]);
             }
         }
-
-        return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
     }
 
-
-    private function genererCodeAleatoire($longueur)
+    protected function generateUniqueReference()
     {
-        $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        $code = '';
-
-        for ($i = 0; $i < $longueur; $i++) {
-            $code .= $caracteres[rand(0, strlen($caracteres) - 1)];
-        }
-
-        return $code;
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
     }
 }

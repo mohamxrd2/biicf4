@@ -137,10 +137,11 @@
                 @elseif ($notification->type_achat == 'Take Away')
                     <button wire:click="refuser" id="btn-refuser" type="submit"
                         class="px-4 py-2 text-white bg-gray-500 rounded hover:bg-red-700">Refuser</button>
-                    <button wire:click="takeaway"
-                        class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Procéder a la
-                        confirmation</button>
-
+                    <button wire:click="takeaway" class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700"
+                        wire:loading.attr="disabled" wire:loading.class="bg-green-400 cursor-not-allowed">
+                        <span wire:loading.remove>Procéder à la confirmation</span> <!-- Texte lorsque non chargé -->
+                        <span wire:loading>Chargement...</span> <!-- Texte affiché pendant le chargement -->
+                    </button>
                 @else
                     <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...' }" x-cloak>
                         <!-- Buttons to open modal and refuse -->

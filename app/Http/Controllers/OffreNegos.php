@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\OffreNegosNotif;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class OffreNegos extends Controller
 {
@@ -36,7 +37,6 @@ class OffreNegos extends Controller
 
         // Retrieve product ID and other inputs from the form
         $produitId = $request->input('produit_id');
-        $differance = $request->input('differance');
         $quantité = $request->input('quantite');
 
         Log::info('Received request data', [
@@ -51,30 +51,28 @@ class OffreNegos extends Controller
 
         // Find the product or fail
         $produit = ProduitService::findOrFail($produitId);
-        $nomProduit = $produit->name;
         $referenceProduit = $produit->reference;
 
         Log::info('Product found', [
             'produit_id' => $produitId,
-            'nomProduit' => $nomProduit,
             'reference' => $referenceProduit
         ]);
 
         // User's location details
         $userLocation = [
-            'comnServ' => strtolower($produit->comnServ),
-            'villeServ' => strtolower($produit->villeServ),
-            'zonecoServ' => strtolower($produit->zonecoServ),
-            'pays' => strtolower($produit->pays),
-            'sous_region' => strtolower($produit->sous_region),
-            'continent' => strtolower($produit->continent)
+            'commune' => strtolower($produit->user->commune),
+            'ville' => strtolower($produit->user->ville),
+            'departe' => strtolower($produit->user->departe),
+            'pays' => strtolower($produit->user->pays),
+            'sous_region' => strtolower($produit->user->sous_region),
+            'continent' => strtolower($produit->user->continent)
         ];
 
         // Map zone to produit location key
         $zoneMapping = [
-            'proximite' => 'comnServ',
-            'locale' => 'villeServ',
-            'departementale' => 'zonecoServ',
+            'proximite' => 'commune',
+            'locale' => 'ville',
+            'departementale' => 'departe',
             'nationale' => 'pays',
             'sous_regionale' => 'sous_region',
             'continentale' => 'continent'
@@ -89,7 +87,7 @@ class OffreNegos extends Controller
         }
 
         // Generate a unique code
-        $Uniquecode = $this->genererCodeAleatoire(10);
+        $Uniquecode = $this->generateUniqueReference();
 
         Log::info('Generated unique code', ['Uniquecode' => $Uniquecode]);
 
@@ -132,7 +130,7 @@ class OffreNegos extends Controller
             $supplier = User::find($supplierId);
             if ($supplier) {
                 $data = [
-                    'produit_id' => $produitId,
+                    'idProd' => $produitId,
                     'produit_name' => $produit->name,
                     'quantite' => $quantité,
                     'code_unique' => $Uniquecode
@@ -155,7 +153,7 @@ class OffreNegos extends Controller
             'produit_id' => $produitId,
             'zone' => $zone_economique,
             'user_id' => $user_id,
-            'differance' => $differance ?? null,
+            'differance' => 'grouper',
         ]);
 
         Log::info('Inserted into OffreGroupe', [
@@ -194,18 +192,11 @@ class OffreNegos extends Controller
         return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
     }
 
+    // Fonction pour générer un code de référence de 5 chiffres
 
-
-    private function genererCodeAleatoire($longueur)
+    protected function generateUniqueReference()
     {
-        $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        $code = '';
-
-        for ($i = 0; $i < $longueur; $i++) {
-            $code .= $caracteres[rand(0, strlen($caracteres) - 1)];
-        }
-
-        return $code;
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
     }
 
     public function add(Request $request)
@@ -330,5 +321,4 @@ class OffreNegos extends Controller
         $transaction->save();
     }
 
-    public function offregroupneg() {}
 }

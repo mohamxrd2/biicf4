@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
+use App\Events\OldestCommentUpdated;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -35,76 +37,91 @@ class Enchere extends Component
     public $id_trader;
     public $prixTrade;
     public $namefourlivr;
-
+    public $commentCount;
+    public $produit, $nombreParticipants, $achatdirect;
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $this->code_unique = $this->notification->data['Uniquecode'] ?? null;
-        $this->prixProd = $this->notification->data['prixProd'] ?? null;
-        $this->specificite = $this->notification->data['specificity'] ?? null;
-        $this->localite = $this->notification->data['localite'] ?? null;
-        $this->nameprod = $this->notification->data['productName'] ?? null;
-        $this->idsender = $this->notification->data['id_sender'] ?? null;
-        $this->difference = $this->notification->data['difference'] ?? null;
-        $this->quantiteC = $this->notification->data['quantity'] ?? null;
+
         $this->id_trader = Auth::user()->id ?? null;
         $this->idProd = $this->notification->data['produit_id'] ?? null;
-        $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
+        $this->produit = ProduitService::find($this->idProd);
 
-
-        // Vérifier si 'code_unique' existe dans les données de notification
-        $codeUnique = $this->notification->data['Uniquecode'] ;
-        $comments = Comment::with('user')
-            ->where('code_unique', $codeUnique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('prixTrade', 'asc')
-            ->get();
-        foreach ($comments as $comment) {
-            $this->commentsend($comment);
-        }
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $this->oldestComment = Comment::where('code_unique', $codeUnique)
-            ->whereNotNull('prixTrade')
+        $this->oldestComment = Countdown::where('code_unique', $this->notification->data['code_unique'])
+            ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
 
-        // Initialiser la variable pour la date du plus ancien commentaire
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
-        $this->serverTime = Carbon::now()->toIso8601String();
+        $this->listenForMessage();
     }
 
+    #[On('echo:comments,CommentSubmitted')]
+    public function listenForMessage()
+    {
+        // Déboguer pour vérifier la structure de l'événement
+        // Vérifier si 'code_unique' existe dans les données de notification
+        $this->comments = Comment::with('user')
+            ->where('code_unique', $this->notification->data['code_unique'])
+            ->whereNotNull('prixTrade')
+            ->orderBy('prixTrade', 'desc')
+            ->get();
+
+
+        // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
+        if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
+            $this->commentCount = $this->comments->count();
+            // Obtenir le nombre d'investisseurs distincts
+            $this->nombreParticipants = $this->comments->pluck('user.id')->unique()->count();
+        } else {
+            // Si ce n'est pas une collection, gestion d'erreur ou traitement spécifique
+            $this->nombreParticipants = 0;
+        }
+    }
+    // protected $listeners = ['compteReboursFini'];
+
+    // public function compteReboursFini()
+    // {
+    //     // Mettre à jour l'attribut 'finish' du demandeCredit
+    //     $this->achatdirect->update([
+    //         'count' => true,
+    //         $this->dispatch(
+    //             'formSubmitted',
+    //             'Temps écoule, Négociation terminé.'
+    //         )
+    //     ]);
+    // }
     public function commentoffgroup()
     {
+        // Valider les données
+        $validatedData = $this->validate([
+            'prixTrade' => 'required|numeric'
+        ]);
+
         try {
-            // Récupérer l'utilisateur authentifié
-            $validatedData = $this->validate([
-                'prixTrade' => 'required|numeric',
-                'id_trader' => 'required|numeric',
-                'idProd' => 'required|numeric',
-            ]);
 
-
-            // Création du commentaire
+            // Créer un commentaire
             $comment = Comment::create([
-                'prixProd' => $validatedData['prixTrade'],
                 'prixTrade' => $validatedData['prixTrade'],
-                'id_trader' => $validatedData['id_trader'],
-                'code_unique' => $this->code_unique,
-                'id_prod' => $validatedData['idProd'],
+                'code_unique' => $this->notification->data['code_unique'],
+                'id_trader' => Auth::id(),
+                'id_prod' => $this->produit->id,
             ]);
-            $this->commentsend($comment);
 
-            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+            broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
 
-            $produit = ProduitService::with('user')->find($this->idProd);
+            // Vérifier si 'code_unique' existe dans les données de notification
+            $this->comments = Comment::with('user')
+                ->where('code_unique', $this->notification->data['code_unique'])
+                ->whereNotNull('prixTrade')
+                ->orderBy('prixTrade', 'asc')
+                ->get();
 
-            if ($produit) {
-                $userId = $produit->user_id; // Directement depuis l'objet ProduitService
-            }
             // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+            $existingCountdown = Countdown::where('code_unique', $this->notification->data['code_unique'])
                 ->where('notified', false)
                 ->orderBy('start_time', 'desc')
                 ->first();
@@ -112,12 +129,16 @@ class Enchere extends Component
             if (!$existingCountdown) {
                 // Créer un nouveau compte à rebours s'il n'y en a pas en cours
                 Countdown::create([
-                    'user_id' => $this->id_trader,
-                    'userSender' => $userId,
+                    'user_id' => Auth::id(),
+                    'userSender' => $this->produit->user_id,
                     'start_time' => now(),
-                    'code_unique' => $this->code_unique,
+                    'code_unique' => $this->notification->data['code_unique'],
                     'difference' => 'offredirect',
+
                 ]);
+                // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
+                broadcast(new OldestCommentUpdated(now()->toIso8601String()));
+                $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
             }
             $this->reset(['prixTrade']);
         } catch (Exception $e) {
@@ -128,43 +149,7 @@ class Enchere extends Component
     }
 
 
-    #[On('echo:comments,CommentSubmitted')]
-    public function listenForMessage($event)
-    {
-        // Déboguer pour vérifier la structure de l'événement
-        // dd($event);
 
-        // Récupérer les données de l'événement
-        $commentId = $event['commentId'] ?? null;
-
-        if ($commentId) {
-            // Récupérer le commentaire par ID
-            $comment = Comment::with('user')->find($commentId);
-
-            if ($comment) {
-                // Ajouter le nouveau commentaire à la liste
-                $this->commentsend($comment);
-            } else {
-                // Gérer le cas où le commentaire n'existe pas
-                Log::error('Commentaire non trouvé', ['commentId' => $commentId]);
-            }
-        } else {
-            // Gestion des erreurs si l'ID du commentaire n'est pas fourni
-            Log::error('ID du commentaire manquant dans l\'événement', ['event' => $event]);
-        }
-    }
-
-    public function commentsend($comment)
-    {
-        if ($comment) {
-            $this->comments[] = [
-                'prix' => $comment->prixTrade,
-                'commentId' => $comment->id,
-                'nameUser' => $comment->user->name,
-                'photoUser' => $comment->user->photo,
-            ];
-        }
-    }
 
     public function render()
     {

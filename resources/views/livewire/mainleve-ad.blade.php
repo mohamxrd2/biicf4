@@ -72,24 +72,29 @@
 
 
         @if (session()->has('succes'))
-            <div class="max-w-4xl p-8 mx-auto mt-6 bg-white rounded-lg shadow-lg">
-                <h2 class="mb-6 text-2xl font-bold text-center text-gray-800">Information sur le Client</h2>
-                <div class="flex items-center mb-6">
-                    <div class="w-20 h-20 overflow-hidden bg-gray-200 rounded-full">
-                        {{-- <img src="{{ asset($client->photo) }}" alt="Photo du client" class="object-cover w-full h-full"> --}}
+            <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
+                <h2 class="mb-4 text-xl font-semibold">Information sur le client</h2>
+
+                <div class="flex-col w-full ">
+                    <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
+
+                        <img src="{{ asset($achatdirect->userSenderI->photo) }}" alt="photot" class="">
+
                     </div>
-                    <div class="ml-6">
-                        <p class="text-lg font-medium text-gray-800">Nom du client: <span class="font-semibold">Jean
-                                Dupont</span></p>
-                        {{-- <p class="text-lg font-medium text-gray-800">Adresse du client: <span class="font-semibold">{{ $client->address }}</span></p> --}}
-                        <p class="text-lg font-medium text-gray-800">Contact du client: <span class="font-semibold">06
-                                00 00
-                                00 00</span></p>
-                        {{-- <p class="text-lg font-medium text-gray-800">Engin du client: <span class="font-semibold">Moto</span></p> --}}
-                        <p class="text-lg font-medium text-gray-800">Produit à récupérer: <span
-                                class="font-semibold">Colis
-                                A123</span></p>
+
+                    <div class="flex flex-col">
+                        <p class="mb-3 text-md">Nom du client: <span
+                                class="font-semibold ">{{ $achatdirect->userSenderI->name }}</span>
+                        </p>
+                        <p class="mb-3 text-md">Adress du client: <span
+                                class="font-semibold ">{{ $achatdirect->userSenderI->commune }}</span></p>
+                        <p class="mb-3 text-md">Contact du client: <span
+                                class="font-semibold ">{{ $achatdirect->userSenderI->phone }}</span></p>
+                        <p class="mb-3 text-md">Produit à recuperer: <span
+                                class= "font-semibold ">{{ $achatdirect->nameProd }}</span></p>
                     </div>
+
+
                 </div>
             </div>
         @endif

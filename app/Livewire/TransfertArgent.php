@@ -37,8 +37,6 @@ class TransfertArgent extends Component
             $this->users = User::where('username', 'like', '%' . $this->search . '%')
                 ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
                 ->get();
-
-            Log::info('Search updated.', ['search' => $this->search]);
         } else {
             // Si la barre de recherche est vide, ne rien afficher
             $this->users = [];
@@ -110,14 +108,7 @@ class TransfertArgent extends Component
             $this->createTransactionNew($senderId, $receiver->id, 'Réception', 'COC', $this->amount, $referenceId, 'Réception d\'argent');
             $this->createTransactionNew($senderId, $receiver->id, 'Envoie', 'COC', $this->amount, $referenceId, 'Envoie d\'argent');
 
-            Log::info('Recharge réussie.', [
-                'sender_id' => $senderId,
-                'receiver_id' => $receiver->id,
-                'amount' => $this->amount,
-                'reference_id' => $referenceId,
-                'sender_balance' => $senderWallet->balance - $this->amount,
-                'receiver_balance' => $receiverWallet->balance + $this->amount
-            ]);
+
 
             $this->dispatch('formSubmitted', 'Transfert effectué avec succès.');
             // Reset des champs après soumission

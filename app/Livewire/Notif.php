@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Notification;
 
 class Notif extends Component
 {
-
-
     public function render()
     {
         try {

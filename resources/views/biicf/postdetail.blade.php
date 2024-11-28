@@ -14,8 +14,8 @@
                 class="after:border-1 flex items-center text-primary-700  after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
                 <span
                     class="flex items-center text-blue-600 after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                    <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                        height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
@@ -36,7 +36,7 @@
                 </span>
             </li>
 
-          
+
         </ol>
 
         <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0 ">
@@ -82,13 +82,13 @@
                         <div class="flex items-center gap-2 mt-2 sm:mt-0">
                             <div class="flex items-center gap-1">
                                 <!-- SVGs for rating stars (repeated for all stars) -->
-                                <svg class="w-4 h-4 text-yellow-300" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" fill="currentColor">
+                                <svg class="w-4 h-4 text-yellow-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="currentColor">
                                     <path
                                         d=" M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397
-                                                                                                8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
-                                                                                                2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
-                                                                                                3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                                                                                        8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
+                                                                                                                        2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
+                                                                                                                        3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
                                 </svg>
                                 <!-- Repeat for additional stars -->
                             </div>
@@ -404,51 +404,73 @@
         class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
         <div
             class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-            <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900">
-                <div class="absolute top-2 end-2">
+            <div
+                class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900 transition duration-300 transform hover:scale-105">
+                <!-- Bouton pour fermer -->
+                <div class="absolute top-3 right-3">
                     <button type="button"
-                        class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-transparent dark:hover:bg-neutral-700"
+                        class="flex justify-center items-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white"
                         data-hs-overlay="#hs-offre-{{ $produit->id }}">
-                        <span class="sr-only">Close</span>
-                        <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18" />
+                            <path d="M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <div class="p-4 sm:p-10 text-center overflow-y-auto">
-                    <h3 class="mb-2 text-2xl font-bold text-gray-800 dark:text-neutral-200">
+                <!-- Contenu principal -->
+                <div class="p-6 sm:p-10 text-center">
+                    <h3 class="mb-4 text-2xl font-bold text-gray-800 dark:text-neutral-200">
                         Offre Simple
                     </h3>
-                    <p class="text-gray-500 dark:text-neutral-500">
-                        le nombre de client potentiel est ({{ $nombreProprietaires }})
+                    <p class="text-gray-600 dark:text-neutral-400">
+                        Le nombre de clients potentiels est <span
+                            class="font-semibold text-blue-600 dark:text-blue-400">({{ $nombreProprietaires }})</span>
                     </p>
 
-                    <div class="mt-6 flex justify-center gap-x-4">
+                    <!-- Formulaire -->
+                    <div class="mt-6">
                         <form action="{{ route('biicf.sendoffre', $produit->id) }}" method="POST">
                             @csrf
-                            @method('POST')
 
                             <!-- Champ caché pour l'ID du produit -->
-                            <input type="hidden" name="produit_id" value="{{ $produit->id }}">
+                            <input type="hidden" name="produit_id" value="{{ $produit->id }}" required>
 
-                            <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
-                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                soumettre
-                            </button>
+                            <!-- Sélection de la zone économique -->
+                            <div class="mb-4">
+                                <label for="zone_economique"
+                                    class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
+                                    Zone économique
+                                </label>
+                                <select name="zone_economique" id="zone_economique" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white">
+                                    <option value="proximite">Proximité</option>
+                                    <option value="locale">Locale</option>
+                                    <option value="departementale">Départementale</option>
+                                    <option value="nationale">Nationale</option>
+                                    <option value="sous_regionale">Sous-régionale</option>
+                                    <option value="continentale">Continentale</option>
+                                </select>
+                            </div>
+
+                            <!-- Boutons -->
+                            <div class="flex justify-center gap-4">
+                                <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
+                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Soumettre
+                                </button>
+                                <button type="button"
+                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+                                    data-hs-overlay="#hs-offre-{{ $produit->id }}">
+                                    Annuler
+                                </button>
+                            </div>
                         </form>
-                        <button type="button"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                            data-hs-overlay="#hs-offre-{{ $produit->id }}">
-                            Annuler
-                        </button>
                     </div>
-
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -456,103 +478,158 @@
         class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
         <div
             class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-            <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900">
-                <div class="absolute top-2 end-2">
+            <div
+                class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900 transition duration-300 transform hover:scale-105">
+                <!-- Bouton pour fermer -->
+                <div class="absolute top-3 right-3">
                     <button type="button"
-                        class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-transparent dark:hover:bg-neutral-700"
-                        data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
-                        <span class="sr-only">Close</span>
-                        <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
+                        class="flex justify-center items-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white"
+                        data-hs-overlay="#hs-offre-{{ $produit->id }}">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18" />
+                            <path d="M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <div class="p-4 sm:p-10 text-center overflow-y-auto">
-                    <h3 class="mb-2 text-2xl font-bold text-gray-800 dark:text-neutral-200">
-                        Offre Groupé
+                <!-- Contenu principal -->
+                <div class="p-6 sm:p-10 text-center">
+                    <h3 class="mb-4 text-2xl font-bold text-gray-800 dark:text-neutral-200">
+                        Offre Grouper
                     </h3>
-                    <p class="text-gray-500 dark:text-neutral-500">
-                        le nombre de fornisseur potentiels est ({{ $nomFournisseurCount }})
+                    <p class="text-gray-600 dark:text-neutral-400">
+                        Le nombre de clients potentiels est <span
+                            class="font-semibold text-blue-600 dark:text-blue-400">({{ $nomFournisseurCount }})</span>
                     </p>
 
-                    <div class="mt-6 flex justify-center gap-x-4">
-                        <form action="{{ route('biicf.sendoffreneg', $produit->id) }}" method="POST">
+                    <!-- Formulaire -->
+                    <div class="mt-6">
+                        <form action="{{ route('biicf.sendoffreneg', $produit->id) }}" method="POST" class="w-full">
                             @csrf
-                            @method('POST')
 
                             <!-- Champ caché pour l'ID du produit -->
-                            <input type="hidden" name="produit_id" value="{{ $produit->id }}">
+                            <input type="hidden" name="produit_id" value="{{ $produit->id }}" required>
 
-                            <button type="submit" @if ($nomFournisseurCount == 0) disabled @endif
-                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                soumettre
-                            </button>
+                            <!-- Sélection de la quantite -->
+                            <div class="mb-6">
+                                <label for="quantite"
+                                    class="block text-sm font-medium text-gray-800 dark:text-neutral-200">
+                                    Ajoutez votre quantité
+                                </label>
+                                <input name="quantite" id="quantite" type="number" min="1" required
+                                    class="mt-2 block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:ring-blue-400 dark:focus:border-blue-500 placeholder-gray-400">
+                            </div>
+
+                            <!-- Sélection de la zone économique -->
+                            <div class="mb-4">
+                                <label for="zone_economique"
+                                    class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
+                                    Zone économique
+                                </label>
+                                <select name="zone_economique" id="zone_economique" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white">
+                                    <option value="proximite">Proximité</option>
+                                    <option value="locale">Locale</option>
+                                    <option value="departementale">Départementale</option>
+                                    <option value="nationale">Nationale</option>
+                                    <option value="sous_regionale">Sous-régionale</option>
+                                    <option value="continentale">Continentale</option>
+                                </select>
+                            </div>
+
+                            <!-- Boutons -->
+                            <div class="flex justify-center gap-4">
+                                <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
+                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Soumettre
+                                </button>
+                                <button type="button"
+                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+                                    data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
+                                    Annuler
+                                </button>
+                            </div>
                         </form>
-                        <button type="button"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                            data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
-                            Annuler
-                        </button>
                     </div>
-
                 </div>
             </div>
+
         </div>
+
     </div>
 
     <div id="hs-offreNeg-{{ $produit->id }}"
         class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
         <div
             class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-            <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900">
-                <div class="absolute top-2 end-2">
+            <div
+                class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900 transition duration-300 transform hover:scale-105">
+                <!-- Bouton pour fermer -->
+                <div class="absolute top-3 right-3">
                     <button type="button"
-                        class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-transparent dark:hover:bg-neutral-700"
-                        data-hs-overlay="#hs-offreNeg-{{ $produit->id }}">
-                        <span class="sr-only">Close</span>
-                        <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
+                        class="flex justify-center items-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white"
+                        data-hs-overlay="#hs-offre-{{ $produit->id }}">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18" />
+                            <path d="M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <div class="p-4 sm:p-10 text-center overflow-y-auto">
-                    <h3 class="mb-2 text-2xl font-bold text-gray-800 dark:text-neutral-200">
-                        Offre Negocié
+                <!-- Contenu principal -->
+                <div class="p-6 sm:p-10 text-center">
+                    <h3 class="mb-4 text-2xl font-bold text-gray-800 dark:text-neutral-200">
+                        Offre Negocier
                     </h3>
-                    <p class="text-gray-500 dark:text-neutral-500">
-                        le nombre de client potentiels est ({{ $nombreProprietaires }})
+                    <p class="text-gray-600 dark:text-neutral-400">
+                        Le nombre de clients potentiels est <span
+                            class="font-semibold text-blue-600 dark:text-blue-400">({{ $nombreProprietaires }})</span>
                     </p>
 
-                    <div class="mt-6 flex justify-center gap-x-4">
+                    <!-- Formulaire -->
+                    <div class="mt-6">
                         <form action="{{ route('biicf.sendoffregrp', $produit->id) }}" method="POST">
                             @csrf
-                            @method('POST')
 
                             <!-- Champ caché pour l'ID du produit -->
-                            <input type="hidden" name="produit_id" value="{{ $produit->id }}">
+                            <input type="hidden" name="produit_id" value="{{ $produit->id }}" required>
 
-                            <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
-                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                soumettre
-                            </button>
+
+                            <div class="mb-4">
+                                <label for="zone_economique"
+                                    class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
+                                    Zone économique
+                                </label>
+                                <select name="zone_economique" id="zone_economique" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white">
+                                    <option value="proximite">Proximité</option>
+                                    <option value="locale">Locale</option>
+                                    <option value="departementale">Départementale</option>
+                                    <option value="nationale">Nationale</option>
+                                    <option value="sous_regionale">Sous-régionale</option>
+                                    <option value="continentale">Continentale</option>
+                                </select>
+                            </div>
+
+                            <!-- Boutons -->
+                            <div class="flex justify-center gap-4">
+                                <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
+                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Soumettre
+                                </button>
+                                <button type="button"
+                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+                                    data-hs-overlay="#hs-offreNeg-{{ $produit->id }}">
+                                    Annuler
+                                </button>
+                            </div>
                         </form>
-                        <button type="button"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                            data-hs-overlay="#hs-offreNeg-{{ $produit->id }}">
-                            Annuler
-                        </button>
                     </div>
-
                 </div>
             </div>
+
         </div>
     </div>
 

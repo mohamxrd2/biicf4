@@ -27,10 +27,10 @@ class mainleveclient extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'idProd' => $this->main['idProd'],
             'code_unique' => $this->main['code_unique'],
             'fournisseur' => $this->main['fournisseur'],
             'livreur' => $this->main['livreur'],
+            'prixTrade' => $this->main['prixTrade'],
             'date_livr' => $this->main['date_livr'],
             'time' => $this->main['time'],
             'achat_id' => $this->main['achat_id'],

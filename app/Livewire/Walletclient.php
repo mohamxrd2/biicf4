@@ -70,7 +70,6 @@ class Walletclient extends Component
         $userId = Auth::guard('web')->id();
         Log::info('User ID:', ['user_id' => $userId]);
         $this->userWallet = Wallet::where('user_id', $userId)->first();
-        Log::info('User Wallet:', ['wallet' => $this->userWallet]);
 
         // Récupérer l'enregistrement dans la table Coi en fonction de id_user
         $this->coi = Coi::where('id_wallet', $this->userWallet->id)->first();
@@ -141,7 +140,6 @@ class Walletclient extends Component
             ->where('id', '!=', $userId)
             ->orderBy('created_at', 'DESC')
             ->get();
-        // Log::info('Users (excluding authenticated user):', ['users' => $users]);
 
         $userCount = User::where('id', '!=', $userId)->count();
         Log::info('User Count (excluding authenticated user):', ['user_count' => $userCount]);
@@ -153,13 +151,11 @@ class Walletclient extends Component
             })
             ->orderBy('created_at', 'DESC')
             ->get();
-        // Log::info('Transactions involving authenticated user:', ['transactions' => $transactions]);
 
         $transacCount = Transaction::where(function ($query) use ($userId) {
             $query->where('sender_user_id', $userId)
                 ->orWhere('receiver_user_id', $userId);
         })->count();
-        Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $transacCount]);
 
         $receptionTransactionSum = $this->getReceptionTransactionSumForLast30Days();
         $envoieTransactionSum = $this->getEnvoieTransactionSumForLast30Days();

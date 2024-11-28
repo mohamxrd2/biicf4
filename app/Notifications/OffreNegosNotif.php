@@ -40,7 +40,7 @@ class OffreNegosNotif extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'produit_id' => $this->offrenegos['produit_id'],
+            'idProd' => $this->offrenegos['idProd'],
             'produit_name' => $this->offrenegos['produit_name'],
             'quantite' => $this->offrenegos['quantite'],
             'code_unique' => $this->offrenegos['code_unique']

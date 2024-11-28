@@ -32,7 +32,7 @@ class AchatBiicf extends Notification implements ShouldQueue
         return [
 
             'nameProd' => $this->achat['nameProd'],
-            'idAchat' => $this->achat['idAchat'],
+            'achat_id' => $this->achat['idAchat'],
             'idProd' => $this->achat['idProd'],
             'code_unique' => $this->achat['code_unique'] ?? null,
             'title' => $this->achat['title'] ?? null,

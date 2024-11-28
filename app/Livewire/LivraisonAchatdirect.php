@@ -43,7 +43,7 @@ class LivraisonAchatdirect extends Component
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
 
 
-        // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
+        // Récupérer l le plus ancien avec code_unique
         $this->oldestComment = Countdown::where('code_unique', $this->achatdirect->code_unique)
             ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
