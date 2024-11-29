@@ -48,6 +48,7 @@ class AddAgents extends Component
         $wallet = new Wallet();
         $wallet->admin_id = $admin->id;
         $wallet->balance = 0; // Solde initial
+        $wallet->Numero_compte = 11008889900;
         $wallet->save();
 
         $this->resetForm();

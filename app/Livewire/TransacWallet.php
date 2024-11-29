@@ -10,6 +10,12 @@ use Livewire\WithPagination;
 class TransacWallet extends Component
 {
     use WithPagination;
+
+    public $adminID;
+
+    public function mount(){
+        $this->adminID = Auth::guard('admin')->id();
+    }
     public function render()
     {
         $adminId = Auth::guard('admin')->id();

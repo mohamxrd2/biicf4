@@ -58,12 +58,13 @@ class TransfertArgent extends Component
 
         $this->validate([
             'user_id' => 'required|exists:users,id',
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:1|max:99999999',
         ], [
             'user_id.required' => 'Veuillez sélectionner un utilisateur.',
             'amount.required' => 'Veuillez entrer un montant.',
             'amount.numeric' => 'Le montant doit être numérique.',
             'amount.min' => 'Le montant doit être supérieur à 0.',
+            'amount.max' => 'Le montant doit être inferieur à 100 Millions'
         ]);
 
         $senderId = Auth::id();
