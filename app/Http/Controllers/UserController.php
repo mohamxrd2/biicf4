@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Investisseur;
-use App\Models\User;
-use App\Models\Admin;
-use App\Models\Cedd;
-use App\Models\Cefp;
 use App\Models\Cfa;
 use App\Models\Coi;
+use App\Models\Crp;
+use App\Models\Cedd;
+use App\Models\Cefp;
+use App\Models\User;
+use App\Models\Admin;
 use App\Models\Wallet;
+use Twilio\Rest\Client;
 use App\Models\Transaction;
 use App\Models\Consommation;
-use App\Models\Crp;
+use App\Models\Investisseur;
 use Illuminate\Http\Request;
 use App\Models\ProduitService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Twilio\Rest\Client;
 
 class UserController extends Controller
 {
@@ -461,7 +462,7 @@ class UserController extends Controller
         $wallet = new Wallet();
         $wallet->user_id = $userId;
         $wallet->balance = 0; // Solde initial
-        $wallet->Numero_compte = $this->generateIban($userId); // Ajout d'un numéro de compte
+        $wallet->Numero_compte = $this->generateUniqueAccountNumber(); // Ajout d'un numéro de compte
         $wallet->save();
 
         // Création des sous-comptes associés
@@ -481,21 +482,17 @@ class UserController extends Controller
         $walletInstance->save();
     }
 
-    private function generateIban($userId)
+    function generateUniqueAccountNumber()
     {
-        $countryCode = 'CI'; // Exemple : Code de la Côte d'Ivoire
-
         do {
-            // Générer un numéro de compte basé sur l'ID utilisateur et un composant aléatoire pour garantir l'unicité
-            $randomComponent = rand(1000, 9999); // Générer une partie aléatoire
-            $accountNumber = str_pad($userId, 12, '0', STR_PAD_LEFT) . $randomComponent;  // Numéro de compte unique
-            $iban = $countryCode . $accountNumber;
+            // Génère un numéro aléatoire de 12 chiffres
+            $accountNumber = mt_rand(100000000000, 999999999999);
 
-            // Vérifier si l'IBAN existe déjà dans la base de données
-            $existingWallet = Wallet::where('Numero_compte', $iban)->first();
-        } while ($existingWallet); // Recommencer jusqu'à ce que l'IBAN soit unique
+            // Vérifie s'il existe déjà dans la base de données
+            $exists = DB::table('wallets')->where('Numero_compte', $accountNumber)->exists();
+        } while ($exists);
 
-        return $iban;
+        return $accountNumber;
     }
     public function showProfile()
     {

@@ -6,6 +6,7 @@ use App\Models\Admin;
 use App\Models\Wallet;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
 
 class AddAgents extends Component
 {
@@ -48,7 +49,7 @@ class AddAgents extends Component
         $wallet = new Wallet();
         $wallet->admin_id = $admin->id;
         $wallet->balance = 0; // Solde initial
-        $wallet->Numero_compte = 11008889900;
+        $wallet->Numero_compte = $this->generateUniqueAccountNumber();
         $wallet->save();
 
         $this->resetForm();
@@ -56,7 +57,19 @@ class AddAgents extends Component
         $this->dispatch('swal:toast');
 
         return redirect()->route('admin.agent');
+    }
 
+    function generateUniqueAccountNumber()
+    {
+        do {
+            // Génère un numéro aléatoire de 12 chiffres
+            $accountNumber = mt_rand(100000000000, 999999999999);
+
+            // Vérifie s'il existe déjà dans la base de données
+            $exists = DB::table('wallets')->where('Numero_compte', $accountNumber)->exists();
+        } while ($exists);
+
+        return $accountNumber;
     }
 
 

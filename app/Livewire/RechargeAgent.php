@@ -71,19 +71,26 @@ class RechargeAgent extends Component
         $agentWallet->increment('balance', $this->amount);
         $adminWallet->decrement('balance', $this->amount);
 
-        $transaction1 = new Transaction();
-        $transaction1->sender_admin_id = $adminId;
-        $transaction1->receiver_admin_id = $agent->id;
-        $transaction1->type = 'Reception';
-        $transaction1->amount = $this->amount;
-        $transaction1->save();
+        // Générer une référence pour la transaction
+        $referenceId = $this->generateIntegerReference();
 
-        $transaction2 = new Transaction();
-        $transaction2->sender_admin_id = $adminId;
-        $transaction2->receiver_admin_id = $agent->id;
-        $transaction2->type = 'Envoie';
-        $transaction2->amount = $this->amount;
-        $transaction2->save();
+
+        $this->createTransactionNew($adminId, $agent->id, 'Réception', 'Compte virtuel', $this->amount, $referenceId, 'Réception d\'argent');
+        $this->createTransactionNew($adminId, $agent->id, 'Envoie', 'Compte virtuel', $this->amount, $referenceId, 'Envoie d\'argent');
+
+        // $transaction1 = new Transaction();
+        // $transaction1->sender_admin_id = $adminId;
+        // $transaction1->receiver_admin_id = $agent->id;
+        // $transaction1->type = 'Reception';
+        // $transaction1->amount = $this->amount;
+        // $transaction1->save();
+
+        // $transaction2 = new Transaction();
+        // $transaction2->sender_admin_id = $adminId;
+        // $transaction2->receiver_admin_id = $agent->id;
+        // $transaction2->type = 'Envoie';
+        // $transaction2->amount = $this->amount;
+        // $transaction2->save();
 
         // session()->flash('success', 'Le compte de l\'agent a été rechargé avec succès.');
 
@@ -94,6 +101,30 @@ class RechargeAgent extends Component
 
         return redirect()->route('admin.porte-feuille');
 
+    }
+
+    protected function createTransactionNew(int $senderId, int $receiverId, string $type, string $type_compte, float $amount, int $reference_id, string $description)
+    {
+
+        $transaction = new Transaction();
+        $transaction->sender_admin_id = $senderId;
+        $transaction->receiver_admin_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->type_compte = $type_compte;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->status = 'effectué';
+        $transaction->save();
+    }
+
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
     
     public function render()
