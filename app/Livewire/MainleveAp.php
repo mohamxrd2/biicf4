@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\AppelOffreUser;
 use App\Models\ProduitService;
 use App\Models\User;
 use App\Notifications\mainleveclient;
@@ -12,67 +13,79 @@ use Livewire\Component;
 
 class MainleveAp extends Component
 {
-    public $namefourlivr;
+    public $produit;
     public $notification;
     public $id;
     public $idProd;
     public $totalPrice;
     public $produitfat;
     public $dateLivr;
-    public $matine;
+    public $time;
     public $client;
+    public $appeloffre;
+    public $fournisseur;
+    public $code_verif;
+    public $matine; // Ajoutez cette propriété publique
 
 
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $this->idProd = $this->notification->data['idProd'] ?? null;
-        $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
+        $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appeloffre']);
 
-        $this->produitfat = ($this->notification->type === 'App\Notifications\AppelOffreGrouperNotification'
-        || $this->notification->type === 'App\Notifications\AppelOffreTerminer'
-        || $this->notification->type === 'App\Notifications\AppelOffreTerminerGrouper'
-        || $this->notification->type === 'App\Notifications\AppelOffre'
-        || $this->notification->type === 'App\Notifications\OffreNotifGroup'
-        || $this->notification->type === 'App\Notifications\NegosTerminer'
-        || $this->notification->type === 'App\Notifications\OffreNegosNotif'
-        || $this->notification->type === 'App\Notifications\OffreNegosDone'
-        || $this->notification->type === 'App\Notifications\AOGrouper'
-        ||  $this->notification->type === 'App\Notifications\OffreNotif'
-        || $this->notification->type === 'App\Notifications\Retrait')
-        ? null
-        : (ProduitService::find($this->notification->data['idProd']) ?? $this->notification->data['produit_id'] ?? null);
+        $prodUsers = json_decode($this->appeloffre->prodUsers, true); // Décodage en tableau associatif
+        $this->produit = ProduitService::where('reference', $this->appeloffre->reference)
+            ->where('user_id', $prodUsers)
+            ->first();
 
-        $this->client = User::find($this->notification->data['id_client'] ?? null);
-
+        $this->fournisseur = User::find($this->produit->user_id);
+        $this->client = User::find($this->appeloffre->id_sender);
     }
 
+    public function getCodeVerifProperty()
+    {
+        // Nettoie le code en enlevant les espaces blancs
+        return trim($this->code_verif);
+    }
+    public function verifyCode()
+    {
+        // Validation du code de vérification
+        $this->validate([
+            'code_verif' => 'required|string|size:4', // Taille de 4 caractères
+        ], [
+            'code_verif.required' => 'Le code de vérification est requis.',
+            'code_verif.string' => 'Le code de vérification doit être une chaîne.',
+            'code_verif.size' => 'Le code de vérification doit être exactement de 4 caractères.',
+        ]);
+        if (trim($this->code_verif) === trim($this->notification->data['livreurCode'])) {
+            session()->flash('succes', 'Code valide.');
+        } else {
+            session()->flash('error', 'Code invalide.');
+        }
+    }
     public function departlivr()
     {
 
-        $id_livreur = Auth::user()->id;
-
         $this->validate([
             'dateLivr' => 'required|date',
-            'matine' => 'required'
+            'time' => 'required'
         ], [
             'dateLivr.required' => 'La date de livraison est requise.',
             'dateLivr.date' => 'La date de livraison doit être une date valide.',
-            'matine.required' => 'La matinée ou soirée est requise.',
+            'time.required' => 'La matinée ou soirée est requise.',
         ]);
 
         $data = [
-            'idProd' => $this->notification->data['idProd'],
-            'code_unique' => $this->notification->data['code_unique'],
+            'code_unique' => $this->appeloffre->code_unique,
             'fournisseur' => $this->notification->data['fournisseur'],
-            'localité' => $this->localite ?? null,
-            'quantite' => $this->notification->data['quantite'],
-            'id_client' => $this->notification->data['id_client'],
-            'livreur' => $id_livreur,
-            'date_livr' => $this->dateLivr,
-            'matine' => $this->matine,
+            'livreur' => Auth::id(),
             'prixTrade' => $this->notification->data['prixTrade'],
-            'prixProd' => $this->notification->data['prixProd']
+            'date_livr' => $this->dateLivr,
+            'time' => $this->time,
+            'id_appeloffre' => $this->appeloffre->id,
+            'CodeVerification' => $this->notification->data['livreurCode'],
+            'title' => 'Reception du colis',
+            'description' => 'Procéder a la confirmité du colis',
         ];
 
         Notification::send($this->client, new mainleveclient($data));

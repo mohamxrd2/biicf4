@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\AchatDirect;
+use App\Models\AppelOffreUser;
 use App\Models\ComissionAdmin;
 use App\Models\gelement;
 use App\Models\ProduitService;
@@ -28,11 +29,16 @@ class Mainleveclient extends Component
     public $notification;
     public $id;
     public $achatdirect;
+    public $appeloffre;
+    public $livreur;
     public $fournisseurWallet;
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
+        $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appeloffre']);
+        $this->livreur = User::find($this->notification->data['livreur']);
+
     }
 
     public function getCodeVerifProperty()
@@ -63,7 +69,12 @@ class Mainleveclient extends Component
         DB::beginTransaction();
 
         try {
-            // Vérification dans la table `gelement`
+            $dataType = $this->achatdirect ? 'achatdirect' : ($this->appeloffre ? 'appeloffre' : null);
+
+            if (!$dataType) {
+                throw new Exception('Aucune donnée d\'achat direct ou d\'appel d\'offre n\'est disponible.');
+            }
+
             $gelement = gelement::where('reference_id', $this->notification->data['code_unique'])->first();
             if (!$gelement) {
                 throw new Exception('Référence introuvable dans la table gelement.');
@@ -72,16 +83,20 @@ class Mainleveclient extends Component
             $valeurGelement = $gelement->amount;
             Log::info('Valeur récupérée depuis la table gelement', ['valeur' => $valeurGelement]);
 
-            // Vérification des portefeuilles
-            $this->fournisseurWallet = Wallet::where('user_id', $this->achatdirect->userTrader)->firstOrFail();
-            $livreurWallet = Wallet::where('user_id', $this->notification->data['livreur'])->firstOrFail();
+            // Récupération des portefeuilles
+            $fournisseurId = $this->notification->data['fournisseur'];
+            $livreurId = $this->notification->data['livreur'];
 
-            // Calcul des montants et des intérêts
-            $interetFournisseur = ($valeurGelement - $this->notification->data['prixTrade']) * 0.01;
-            $montantPourFournisseur = ($valeurGelement - $this->notification->data['prixTrade']) - $interetFournisseur;
+            $this->fournisseurWallet = Wallet::where('user_id', $fournisseurId)->firstOrFail();
+            $livreurWallet = Wallet::where('user_id', $livreurId)->firstOrFail();
 
-            $interetLivreur = $this->notification->data['prixTrade'] * 0.01;
-            $montantPourLivreur = $this->notification->data['prixTrade'] - $interetLivreur;
+            // Calculs pour les montants et intérêts
+            $prixTrade = $this->notification->data['prixTrade'];
+            $interetFournisseur = ($valeurGelement - $prixTrade) * 0.01;
+            $montantPourFournisseur = ($valeurGelement - $prixTrade) - $interetFournisseur;
+
+            $interetLivreur = $prixTrade * 0.01;
+            $montantPourLivreur = $prixTrade - $interetLivreur;
 
             $totalInterets = $interetFournisseur + $interetLivreur;
 
@@ -91,17 +106,16 @@ class Mainleveclient extends Component
                 'totalInterets' => $totalInterets,
             ]);
 
-            // Mise à jour des soldes des portefeuilles
+            // Mise à jour des portefeuilles
             $this->fournisseurWallet->increment('balance', $montantPourFournisseur);
             $livreurWallet->increment('balance', $montantPourLivreur);
 
-            // Log des mises à jour
             Log::info('Portefeuilles mis à jour', [
-                'fournisseur_id' => $this->notification->data['fournisseur'],
-                'livreur_id' => $this->notification->data['livreur'],
+                'fournisseur_id' => $fournisseurId,
+                'livreur_id' => $livreurId,
             ]);
 
-            // Préparer les données de notification
+            // Préparation des notifications
             $data = [
                 'code_unique' => $this->notification->data['code_unique'],
                 'achat_id' => $this->notification->data['achat_id'],
@@ -109,14 +123,13 @@ class Mainleveclient extends Component
                 'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
             ];
 
-            // Envoi des notifications
-            $this->notifyUsers($data);
+            $this->notifyUsers($data, $dataType);
 
             // Création des transactions
-            $this->createTransactionNew(Auth::user()->id, $this->notification->data['fournisseur'], 'Réception', 'COC', $montantPourFournisseur, $this->generateIntegerReference(), 'Réception pour achat.');
-            $this->createTransactionNew(Auth::user()->id, $this->notification->data['livreur'], 'Réception', 'COC', $montantPourLivreur, $this->generateIntegerReference(), 'Réception pour livraison.');
+            $this->createTransactionNew(Auth::user()->id, $fournisseurId, 'Réception', 'COC', $montantPourFournisseur, $this->generateIntegerReference(), 'Réception pour achat.');
+            $this->createTransactionNew(Auth::user()->id, $livreurId, 'Réception', 'COC', $montantPourLivreur, $this->generateIntegerReference(), 'Réception pour livraison.');
 
-            // Gestion des commissions pour parrains et administrateurs
+            // Gestion des commissions
             $this->handleCommissions($totalInterets);
 
             // Mise à jour de la notification
@@ -137,14 +150,22 @@ class Mainleveclient extends Component
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
-    private function notifyUsers(array $data)
+
+    private function notifyUsers(array $data, string $dataType)
     {
+        $fournisseurId = $dataType === 'achatdirect' ? $this->achatdirect->userTrader : $this->appeloffre->user_id;
+
         Notification::send(User::find(Auth::id()), new Confirmation($data));
-        Notification::send(User::find($this->achatdirect->userTrader), new Confirmation($data));
+        Notification::send(User::find($fournisseurId), new Confirmation($data));
         Notification::send(User::find($this->notification->data['livreur']), new Confirmation($data));
 
-        Log::info('Notifications envoyées.', $data);
+        Log::info('Notifications envoyées.', [
+            'user_id' => Auth::id(),
+            'fournisseur_id' => $fournisseurId,
+            'livreur_id' => $this->notification->data['livreur'],
+        ]);
     }
+
 
     private function handleCommissions(float $totalInterets)
     {

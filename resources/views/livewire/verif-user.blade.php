@@ -62,29 +62,42 @@
 
     @if (session()->has('succes'))
         <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
-            <h2 class="mb-4 text-xl font-semibold">Information sur le client</h2>
+            <h2 class="mb-4 text-xl font-semibold">
+                Information sur le client 
 
-            <div class="flex-col w-full ">
+            </h2>
+
+            <div class="flex-col w-full">
                 <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
-
-                    <img src="{{ asset($achatdirect->userSenderI->photo) }}" alt="photot" class="">
-
+                    <img src="{{ asset(($achatdirect ? $achatdirect->userSenderI->photo : $appeloffre->user->photo) ?? 'img/noimg.jpeg') }}"
+                        alt="photo">
                 </div>
 
                 <div class="flex flex-col">
-                    <p class="mb-3 text-md">Nom du client: <span
-                            class="font-semibold ">{{ $achatdirect->userSenderI->name }}</span>
+                    <p class="mb-3 text-md">Nom du client :
+                        <span
+                            class="font-semibold">{{ $achatdirect ? $achatdirect->userSenderI->name : $appeloffre->user->name }}</span>
                     </p>
-                    <p class="mb-3 text-md">Adress du client: <span
-                            class="font-semibold ">{{ $achatdirect->userSenderI->commune }}</span></p>
-                    <p class="mb-3 text-md">Contact du client: <span
-                            class="font-semibold ">{{ $achatdirect->userSenderI->phone }}</span></p>
-                    <p class="mb-3 text-md">Produit à recuperer: <span
-                            class= "font-semibold ">{{ $achatdirect->nameProd }}</span></p>
+                    <p class="mb-3 text-md">Adresse du client :
+                        <span
+                            class="font-semibold">{{ $achatdirect ? $achatdirect->userSenderI->commune : $appeloffre->user->commune }}</span>
+                    </p>
+                    <p class="mb-3 text-md">Contact du client :
+                        <span
+                            class="font-semibold">{{ $achatdirect ? $achatdirect->userSenderI->phone : $appeloffre->user->phone }}</span>
+                    </p>
+                    @if ($achatdirect)
+                        <p class="mb-3 text-md">Produit à récupérer :
+                            <span class="font-semibold">{{ $achatdirect->nameProd }}</span>
+                        </p>
+                    @elseif ($appeloffre)
+                        <p class="mb-3 text-md">Produit à récupérer :
+                            <span class="font-semibold">{{ $appeloffre->produit->name ?? 'Non spécifié' }}</span>
+                        </p>
+                    @endif
                 </div>
-
-
             </div>
         </div>
     @endif
+
 </div>

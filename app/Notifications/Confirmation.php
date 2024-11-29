@@ -33,6 +33,7 @@ class Confirmation extends Notification implements ShouldQueue
     {
         return [
             'achat_id' => $this->achat['idAchat'] ?? null,
+            'id_appeloffre' => $this->achat['id_appeloffre'] ?? null,
             'idProd' => $this->achat['idProd'] ?? null,
             'code_unique' => $this->achat['code_unique'] ?? null,
             'title' => $this->achat['title'],

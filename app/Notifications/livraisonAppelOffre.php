@@ -28,16 +28,10 @@ class livraisonAppelOffre extends Notification
     {
         return [
             'idProd' => $this->livraison['idProd'],
-            'quantite' => $this->livraison['quantite'],
-            'id_trader' => $this->livraison['id_trader'],
-            'totalSom' => $this->livraison['totalSom'],
-            'localite' => $this->livraison['localite'],
-            'userSender' => $this->livraison['userSender'],
             'code_livr' => $this->livraison['code_livr'],
-            'prixProd' => $this->livraison['prixProd'],
             'textareaContent' => $this->livraison['textareaContent'],
-            'dateTot' => $this->livraison['dateTot'],
-            'dateTard' => $this->livraison['dateTard'],
+            'photoProd' => $this->livraison['photoProd'],
+            'id_appeloffre' => $this->livraison['id_appeloffre'],
         ];
     }
 }

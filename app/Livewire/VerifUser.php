@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\AchatDirect;
+use App\Models\AppelOffreUser;
 use Illuminate\Notifications\DatabaseNotification;
 use Livewire\Component;
 
@@ -12,10 +13,24 @@ class VerifUser extends Component
     public $notification;
     public $id;
     public $achatdirect;
+    public $appeloffre;
+
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
+        // Détermine si l'achat direct ou l'appel d'offre est présent
+        if (isset($this->notification->data['achat_id'])) {
+            $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
+        }
+
+        if (isset($this->notification->data['id_appeloffre'])) {
+            $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appeloffre']);
+        }
+
+        // Assurez-vous que l'un des deux objets est disponible
+        if (!$this->achatdirect && !$this->appeloffre) {
+            abort(404, 'Aucune donnée correspondante trouvée dans la notification.');
+        }
     }
 
     public function getCodeVerifProperty()

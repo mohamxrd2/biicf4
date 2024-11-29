@@ -30,7 +30,8 @@ class VerifUser extends Notification
             'code_unique' => $this->main['code_unique'],
             'CodeVerification' => $this->main['CodeVerification'],
             'client' => $this->main['client'],
-            'achat_id' => $this->main['id_achat']
+            'achat_id' => $this->main['id_achat'] ?? null,
+            'id_appeloffre' => $this->main['id_appeloffre']  ?? null
         ];
     }
 }

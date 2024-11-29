@@ -2,9 +2,9 @@
 
 @section('title', 'Notification')
 
-{{-- @php
+@php
     use App\Models\ProduitService;
-@endphp --}}
+@endphp
 
 @section('content')
     <!-- Afficher les messages de succès -->
@@ -20,7 +20,7 @@
             {{ session('error') }}
         </div>
     @endif
-
+    
 
     <div class="max-w-5xl mx-auto ">
 
