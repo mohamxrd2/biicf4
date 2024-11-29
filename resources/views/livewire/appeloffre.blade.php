@@ -24,7 +24,7 @@
             <div class="flex gap-8">
                 <!-- Carte appeloffre -->
                 <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 h-fit">
-                    
+
 
                     <h1 class="text-2xl font-bold mb-1">{{ $appeloffre->product_name }}</h1>
                     <!-- Nom du appeloffre -->
@@ -192,9 +192,9 @@
                                             </div>
                                             <!-- Message -->
                                             <p class="text-sm text-gray-600">
-                                                Je peux faire <span class="text-green-500 font-semibold">
+                                                Je peux descendre le prix a <span class="text-green-500 font-semibold">
                                                     {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                            </span> la livraison.
+                                            </span>.
                                             </p>
                                         </div>
                                     </div>

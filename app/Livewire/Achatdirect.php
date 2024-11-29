@@ -194,8 +194,6 @@ class Achatdirect extends Component
         }
     }
 
-
-
     public function refuser()
     {
         $userId = Auth::id();

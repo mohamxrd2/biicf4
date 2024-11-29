@@ -77,38 +77,44 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Projet 1 -->
                     @foreach ($produits as $produit)
-
-                        <div class="bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <div
+                            class="bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                             <!-- Image produit -->
                             <div class="relative h-48">
-                                <img src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}" alt="{{ $produit->name }}" class="w-full h-full object-cover" />
-                                <div class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-sm ">
+                                <img src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="{{ $produit->name }}" class="w-full h-full object-cover" />
+                                <div
+                                    class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-sm ">
                                     4.5 ★ <!-- Exemple de notation -->
                                 </div>
                             </div>
-
+                            
                             <!-- Contenu produit -->
                             <div class="p-4">
                                 <!-- Titre et prix -->
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="text-lg font-semibold text-gray-800">{{ $produit->name }}</h3>
-                                    <span class="text-lg font-bold text-yellow-500">{{ number_format($produit->prix, 0, ',', ' ') }} XOF</span>
+                                    <span
+                                        class="text-lg font-bold text-yellow-500">{{ number_format($produit->prix, 0, ',', ' ') }}
+                                        XOF</span>
                                 </div>
 
                                 <!-- Localisation -->
                                 <div class="flex items-center text-gray-600 text-sm mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor" stroke-width="2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M12 2C8.134 2 5 5.134 5 9c0 3.866 7 13 7 13s7-9.134 7-13c0-3.866-3.134-7-7-7z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a2 2 0 100-4 2 2 0 000 4z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 11a2 2 0 100-4 2 2 0 000 4z" />
                                     </svg>
                                     <span>{{ $produit->comnServ }} • {{ $produit->villeServ }}</span>
                                 </div>
 
                                 <!-- Temps et bouton -->
                                 <div class="flex justify-between items-center mt-4">
-                                    <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}</span>
+                                    <span
+                                        class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}</span>
                                     <a href="{{ route('biicf.postdet', $produit->id) }}"
                                         class="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-yellow-500 transition-colors duration-200">
                                         Voir le produit

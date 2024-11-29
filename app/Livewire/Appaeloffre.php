@@ -85,8 +85,8 @@ class Appaeloffre extends Component
                 'localite' => 'required|string',
                 'distinctSpecifications' => 'required|string',
                 'selectedOption' => 'required|string',
-                'dateTot' => $this->selectedOption == 'required|date',
-                'dateTard' => $this->selectedOption == 'required|date',
+                'dateTot' => 'required|date',
+                'dateTard' => 'required|date',
                 'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
                 'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
                 'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
@@ -116,7 +116,6 @@ class Appaeloffre extends Component
                 'image' => $validatedData['image'] ?? null, // Valeur par défaut si aucune image n'est fournie
                 'id_sender' => Auth::id(), // L'utilisateur connecté est le créateur
             ]);
-
             // Calculer le coût total
             $totalCost = $this->quantité * $this->lowestPricedProduct;
 
@@ -133,7 +132,7 @@ class Appaeloffre extends Component
             gelement::create([
                 'id_wallet' => $this->wallet->id,
                 'amount' => $totalCost,
-                'reference_id' => $this->generateIntegerReference(),
+                'reference_id' => $this->generateUniqueReference(),
             ]);
 
             // Convertir les utilisateurs cibles en JSON si nécessaire (dans votre exemple, prodUsers est encodé)
@@ -151,9 +150,6 @@ class Appaeloffre extends Component
                 if ($owner) {
                     // Envoi de la notification à l'utilisateur
                     Notification::send($owner, new AppelOffre($data));
-                    // Déclencher un événement pour signaler l'envoi de la notification
-                    event(new NotificationSent($owner));
-
                     // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
                     $notification = $owner->notifications()->where('type', AppelOffre::class)->latest()->first();
 
@@ -161,6 +157,8 @@ class Appaeloffre extends Component
                         // Mettez à jour le champ 'type_achat' dans la notification
                         $notification->update(['type_achat' => $this->selectedOption]);
                     }
+                    // Déclencher un événement pour signaler l'envoi de la notification
+                    event(new NotificationSent($owner));
                 }
             }
             // Redirection ou traitement pour l'envoi direct
@@ -225,7 +223,7 @@ class Appaeloffre extends Component
             Log::info('Création de l\'appel d\'offre groupé.');
 
             // Insérer dans la table `appel_offres`
-                $offre = AppelOffreGrouper::create([
+            $offre = AppelOffreGrouper::create([
                 'lowestPricedProduct' => $this->lowestPricedProduct,
                 'productName' => $validatedData['name'],
                 'quantity' => $validatedData['quantité'],
@@ -284,7 +282,7 @@ class Appaeloffre extends Component
             gelement::create([
                 'id_wallet' => $this->wallet->id,
                 'amount' => $totalCost,
-                'reference_id' => $this->generateIntegerReference(),
+                'reference_id' => $this->generateUniqueReference(),
             ]);
             Log::info('Gel des fonds enregistré.', ['amount' => $totalCost]);
 

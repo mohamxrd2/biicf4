@@ -71,21 +71,7 @@ class CheckCountdowns extends Command
                     $senderId = $commentToUse->id_sender;
                     $id_prod = $commentToUse->id_prod;
                     $quantiteC = $commentToUse->quantiteC;
-                    // $localite = $commentToUse->localite;
-                    // $specificite = $commentToUse->specificite;
-                    // $nameprod = $commentToUse->nameprod;
-                    // $id_sender = $commentToUse->id_sender;
-                    // $prixProd = $commentToUse->prixProd;
-                    // $type = $commentToUse->type;
-                    // $date_tot = $commentToUse->date_tot;
-                    // $date_tard = $commentToUse->date_tard;
-                    // $timeStart = $commentToUse->timeStart;
-                    // $timeEnd = $commentToUse->timeEnd;
-                    // $dayPeriod = $commentToUse->dayPeriod;
 
-                    // Décoder le JSON id_sender
-                    // $decodedSenderIds = json_decode($id_sender, true);
-                    // $montotal = $quantiteC * $price;
 
                     // Définir les détails de la notification
                     $details = [
@@ -93,6 +79,7 @@ class CheckCountdowns extends Command
                         'prixTrade' => $price,
                         'livreur' => $traderId,
                         'achat_id' =>  $countdown->achat->id ?? $countdown->id_achat, // Assurez-vous que $countdown->achat existe
+                        'id_appeloffre' =>  $countdown->appelOffre->id ?? $countdown->id_appeloffre, // Assurez-vous que $countdown->achat existe
                     ];
 
                     // Vous pouvez maintenant traiter la notification ou autre logique
@@ -194,7 +181,39 @@ class CheckCountdowns extends Command
                             Log::error("Utilisateur introuvable pour l'ID : $traderId");
                         }
                     } else  if ($countdown->difference === 'ap') {
+
+                        //envoie de notification au client
                         Notification::send($countdown->sender, new CountdownNotificationAp($details));
+                        $notification = $countdown->sender->notifications()
+                            ->where('type', CountdownNotificationAp::class)
+                            ->latest() // Prend la dernière notification
+                            ->first();
+
+                        if ($notification) {
+                            // Mise à jour de la notification existante
+                            $notification->update(['type_achat' => 'Delivery']);
+                            Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
+                        } else {
+                            Log::warning('Aucune notification de type AppelOffreTerminer trouvée.', ['clientId' => $countdown->sender]);
+                        }
+
+                        // Récupération de l'utilisateur (trader) avec une vérification
+                        $gagnantId = User::find($traderId);
+
+                        if ($gagnantId) {
+                            $livreurdetails = [
+                                'achat_id' => $countdown->id_achat,
+                                'idProd' => $id_prod,
+                                'code_unique' => $countdown->code_unique,
+                                'title' => 'Gagnant de la negociation',
+                                'description' => 'La négociation est terminée->',
+                            ];
+
+                            // Envoi de la notification au trader
+                            Notification::send($gagnantId, new Confirmation($livreurdetails));
+                        } else {
+                            Log::error("Utilisateur introuvable pour l'ID : $traderId");
+                        }
                     } else if ($countdown->difference === 'ag') {
                         $data = [
                             'sender_name' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification

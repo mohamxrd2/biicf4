@@ -33,7 +33,7 @@ class mainleveAd extends Notification
             'fournisseurCode' => $this->main['fournisseurCode'] ?? null,
             'livreurCode' => $this->main['livreurCode'] ?? null,
             'client' => $this->main['client'],
-            'achat_id' => $this->main['achat_id'],
+            'achat_id' => $this->main['achat_id'] ?? null,
             'prixTrade' => $this->main['prixTrade'] ?? null,
             'title' => $this->main['title'],
             'description' => $this->main['description'],

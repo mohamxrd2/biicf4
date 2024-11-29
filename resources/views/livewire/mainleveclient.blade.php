@@ -3,7 +3,8 @@
         <h2 class="mb-4 text-xl font-semibold">Estimation de reception du colis</h2>
 
         <p class="text-md">Date : <span
-                class="font-semibold">{{ \Carbon\Carbon::parse($notification->data['date_livr'] )->translatedFormat('d F Y') }} (Heure:
+                class="font-semibold">{{ \Carbon\Carbon::parse($notification->data['date_livr'])->translatedFormat('d F Y') }}
+                (Heure:
                 {{ $notification->data['time'] }} )</span>
         </p>
 
@@ -78,27 +79,26 @@
 
     @if (session()->has('succes'))
         <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
-            <h2 class="mb-4 text-xl font-semibold">Information sur le client</h2>
+            <h2 class="mb-4 text-xl font-semibold">Information sur le livreur</h2>
 
             <div class="flex-col w-full ">
                 <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
 
-                    <img src="{{ asset($achatdirect->userSenderI->photo) }}" alt="photot" class="">
+                    <img src="{{ asset($livreur->photo) }}" alt="photot" class="">
 
                 </div>
 
                 <div class="flex flex-col">
-                    <p class="mb-3 text-md">Nom du livreur: <span
-                            class="font-semibold ">{{ $achatdirect->userSenderI->name }}</span>
+                    <p class="mb-3 text-md">Nom du livreur: <span>
+                            class="font-semibold ">{{ $livreur->name }}</span>
                     </p>
                     <p class="mb-3 text-md">Adress du livreur: <span
-                            class="font-semibold ">{{ $achatdirect->userSenderI->commune }}</span></p>
-                    <p class="mb-3 text-md">Contact du client: <span
-                            class="font-semibold ">{{ $achatdirect->userSenderI->phone }}</span></p>
+                            class="font-semibold ">{{ $livreur->commune }}</span></p>
+                    <p class="mb-3 text-md">Contact du client: <span class="font-semibold ">{{ $livreur->phone }}</span>
+                    </p>
                     <p class="mb-3 text-md">Produit à recuperer: <span
-                            class= "font-semibold ">{{ $achatdirect->nameProd }}</span></p>
+                            class= "font-semibold ">{{ $appeloffre->product_name }}</span></p>
                 </div>
-
 
             </div>
         </div>

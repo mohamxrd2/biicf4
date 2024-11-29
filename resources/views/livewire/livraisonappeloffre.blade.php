@@ -1,278 +1,321 @@
-<div class="grid grid-cols-2 gap-4 p-4">
-    <div class="lg:col-span-1 col-span-2">
-        @php
-            $idProd = App\Models\ProduitService::find($notification->data['idProd']);
-            $continent = $idProd ? $idProd->continent : null;
-            $sous_region = $idProd ? $idProd->sous_region : null;
-            $pays = $idProd ? $idProd->pays : null;
-            $departement = $idProd ? $idProd->zonecoServ : null;
-            $ville = $idProd ? $idProd->villeServ : null;
-            $commune = $idProd ? $idProd->comnServ : null;
-        @endphp
-        <h2 class="text-3xl font-semibold mb-2">{{ $idProd->name }}
-        </h2>
+<div class="max-w-5xl mx-auto">
 
-        <div class="w-full flex justify-between items-center py-4  border-b-2">
-            <p class="text-md font-semibold">Quantité</p>
-            <p class="text-md font-medium text-gray-600">{{ $notification->data['quantite'] }}</p>
-        </div>
+    <!-- Barre du haut avec timer -->
+    <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
+        <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
 
-
-        <div class="w-full py-4 border-b-2">
-            <p class="text-md font-semibold mb-2">Lieu de récuperation / position geographique du produit</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                    <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
-                    <p class="text-md">{{ $continent }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Sous-région :</p>
-                    <p class="text-md">{{ $sous_region }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Pays :</p>
-                    <p class="text-md">{{ $pays }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Département :</p>
-                    <p class="text-md">{{ $departement }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Ville :</p>
-                    <p class="text-md">{{ $ville }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Commune :</p>
-                    <p class="text-md">{{ $commune }}</p>
-                </div>
+        <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
+            <div id="countdown" x-show="oldestCommentDate"
+                class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
+                <div x-text="hours">--</div>j
+                <span>:</span>
+                <div x-text="minutes">--</div>m
+                <span>:</span>
+                <div x-text="seconds">--</div>s
             </div>
         </div>
-        @php
-            $userSenderId = $notification->data['userSender'];
-
-            if ($userSenderId) {
-                $userSender = App\Models\User::find($userSenderId);
-            } else {
-                // Gestion de l'erreur si aucun ID utilisateur n'est trouvé
-                Log::error('ID de l\'utilisateur manquant dans la notification.', $notification->data);
-                $userSender = null;
-            }
-            $continent = $userSender ? $userSender->continent : null;
-            $sous_region = $userSender ? $userSender->sous_region : null;
-            $pays = $userSender ? $userSender->country : null;
-            $departement = $userSender ? $userSender->departe : null;
-            $ville = $userSender ? $userSender->ville : null;
-            $commune = $userSender ? $userSender->commune : null;
-        @endphp
-
-        <div class="w-full py-4 border-b-2">
-            <p class="text-md font-semibold mb-2">Position geographique du client</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                    <p class="text-md font-medium text-gray-600 text-underline">Continent :</p>
-                    <p class="text-md">{{ $continent }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Sous-région :</p>
-                    <p class="text-md">{{ $sous_region }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Pays :</p>
-                    <p class="text-md">{{ $pays }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Département :</p>
-                    <p class="text-md">{{ $departement }}</p>
-                </div>
-                <div>
-                    <p class="text-md font-medium text-gray-600">Ville :</p>
-                    <p class="text-md">{{ $ville }}</p>
-                </div>
-                {{-- <div>
-                            <p class="text-md font-medium text-gray-600">Commune :</p>
-                            <p class="text-md">{{ $commune }}</p>
-                        </div> --}}
-            </div>
-        </div>
-
-        <div class="w-full flex justify-between items-center py-4  border-b-2">
-            <p class="text-md font-semibold">Lieu de livraison</p>
-            <p class="text-md font-medium text-gray-600">{{ $notification->data['localite'] }}</p>
-        </div>
-
-        <div class="w-full flex justify-between items-center py-4  border-b-2">
-            <p class="text-md font-semibold">Contact fournisseur</p>
-            <p class="text-md font-medium text-gray-600">{{ $idProd->user->phone }}</p>
-        </div>
-
-        <div class="w-full flex justify-between items-center py-4  border-b-2">
-            <p class="text-md font-semibold">Conditionnement du colis</p>
-            <p class="text-md font-medium text-gray-600">{{ $notification->data['textareaContent'] }}</p>
-        </div>
-        <div class="w-full flex justify-between items-center py-4  border-b-2">
-            <span class="text-md font-semibold">Date prévue de récupération:</span>
-            <span>
-                @if (isset($notification->data['dateTot']) && isset($notification->data['dateTard']))
-                    {{ $notification->data['dateTot'] }} - {{ $notification->data['dateTard'] }}
-                @else
-                    Non spécifiée
-                @endif
-            </span>
-        </div>
-
-
-        <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
-            class="mb-3 text-blue-700 hover:underline flex items-center">
-            Voir le produit
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="ml-2 w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-            </svg>
-        </a>
     </div>
-    <div class="lg:col-span-1 col-span-2">
-        <div id="prixTradeError" class="hidden text-red-500 mt-2"></div>
 
-        <div class="p-4">
+    <div class="bg-gray-100 min-h-screen">
+        <div class="flex flex-wrap gap-8 p-4">
+            <!-- Carte produit -->
+            <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 md:w-96 h-fit">
+                <div class="mb-4">
+                    <img src="{{ asset('post/all/' . $notification->data['photoProd']) }}" alt="Smart Watch Pro X1"
+                        class="w-full h-48 object-cover rounded-lg bg-gray-100" />
+                </div>
 
-            <div class="flex items-center flex-col lg:space-y-4 lg:pb-8 max-lg:w-full  sm:grid-cols-2 max-lg:gap-6 sm:mt-2"
-                uk-sticky="media: 1024; end: #js-oversized; offset: 80">
+                <h1 class="text-2xl font-bold mb-1">{{ $produit->name }}</h1>
+                <!-- Nom du produit -->
+                <a href="{{ route('biicf.postdet', $notification->data['idProd']) }}"
+                    class="text-blue-700 hover:underline flex items-center">
+                    Voir le produit
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="ml-2 w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </a>
 
-                <div class="bg-white rounded-xl shadow-sm text-sm font-medium border1 dark:bg-dark2 w-full">
+                <!-- Détails principaux -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            📦
+                        </div>
+                        <span>Quantité : {{ $appeloffre->quantité }} unités </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            📦
+                        </div>
+                        <span>Conditionnement du colis: {{ $notification->data['textareaContent'] }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            📦
+                        </div>
+                        <span>Lieu de livraison: {{ $appeloffre->localite }}</span>
+                    </div>
+                    <span class="font-semibold">Date prévue de récupération :</span>
+                    @if (isset($appeloffre->dateTot) && isset($appeloffre->dateTard))
+                        {{ $appeloffre->dateTot }} - {{ $appeloffre->dateTard }}
+                    @else
+                        Non spécifiée
+                    @endif
 
-                    <!-- comments -->
+
+                    <div class="flex items-center gap-2">
+                        <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                            ⏱️
+                        </div>
+                        <span>Délai de livraison: 10 jours</span>
+                    </div>
+                </div>
+
+                <!-- Spécifications -->
+                <div class="mt-6">
+                    <h2 class="font-semibold mb-2">Lieu de récupération:</h2>
+                    <ul class="list-disc list-inside space-y-1 text-gray-600">
+                        <li>
+                            {{ $appeloffre->user->continent }},
+                            {{ $appeloffre->user->sous_region }},
+                            {{ $appeloffre->user->pays }},
+                            {{ $appeloffre->user->departe }},
+                            {{ $appeloffre->user->ville }},
+                            {{ $appeloffre->user->commune }}
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Discussion -->
+            <div class="flex-1 w-full md:w-auto">
+                <!-- Discussion de négociation -->
+                <div class="bg-white shadow-lg rounded-lg p-2">
+
+                    <!-- En-tête -->
+                    <div class="bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg rounded-lg p-4 text-white mb-4">
+                        <h3 class="text-2xl font-bold flex items-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+                            </svg>
+                            Discussion de négociation
+                        </h3>
+                        <div class="flex flex-row items-center space-x-2 relative">
+
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" data-tooltip-target="tooltip-coc"
+                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-white w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                            </svg>
+
+                            <!-- Tooltip -->
+                            <div id="tooltip-coc" role="tooltip"
+                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                Le prix le plus bas remportera la négociation. <br />
+                                Le gagnant recevra une notification.
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+
+                            <!-- Texte des participants -->
+                            <p class="text-sm font-medium text-gray-100"> {{ $nombreParticipants ?? '0' }} participants</p>
+                        </div>
+                    </div>
+
+                    <!-- Section des commentaires -->
                     <div
-                        class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-100 font-normal space-y-3 relative dark:border-slate-700/40">
+                        class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-200 font-normal space-y-3 relative dark:border-slate-700/40">
+                        <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
+                        @php
+                            // Trouver le plus petit taux dans la liste des commentaires
+                            $minPrice = $comments->min('prixTrade');
 
+                            // Trouver le commentaire le plus ancien avec le taux minimal
+                            $oldestMinPriceComment = $comments
+                                ->where('prixTrade', $minPrice)
+                                ->sortBy('created_at')
+                                ->first();
+                        @endphp
                         @foreach ($comments as $comment)
-                            <div class="flex items-center gap-3 relative">
-                                <img src="{{ asset($comment['photoUser']) }}" alt=""
-                                    class="w-8 h-8  mt-1 rounded-full overflow-hidden object-cover">
-                                <div class="flex-1">
-                                    <p class=" text-base text-black font-medium inline-block dark:text-white">
-                                        {{ $comment['nameUser'] }}</p>
-                                    <p class="text-sm mt-0.5">
-                                        {{ number_format($comment['prix'], 2, ',', ' ') }} FCFA</p>
-
+                            <!-- Message -->
+                            <div
+                                class="bg-gray-100 p-4 rounded-lg shadow-sm transition-transform transform hover:scale-105">
+                                <div class="flex items-start gap-3">
+                                    <!-- Photo utilisateur -->
+                                    <img src="{{ asset($comment->user->photo) }}" alt="Profile Picture"
+                                        class="w-10 h-10 rounded-full object-cover shadow-md" />
+                                    <div class="flex-1">
+                                        <!-- Informations utilisateur -->
+                                        <div class="flex justify-between items-center">
+                                            <span
+                                                class="font-semibold text-gray-800 text-sm">{{ $comment->user->name }}</span>
+                                            <span class="text-xs text-gray-400">{{ $comment->created_at }}</span>
+                                        </div>
+                                        <!-- Message -->
+                                        <p class="text-sm text-gray-600">
+                                            Je peux faire <span class="text-green-500 font-semibold">
+                                                {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
+                                        </span> la livraison.
+                                        </p>
+                                    </div>
+                                </div>
+                                <!-- Offre et bouton -->
+                                <div class="flex justify-between items-center">
+                                    <span class="text-lg font-bold text-gray-800">
+                                        {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
+                                    </span>
+                                    @if ($comment->id == $oldestMinPriceComment->id)
+                                        <button
+                                            class="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium py-2 px-4 bg-green-50 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-400"
+                                                viewBox="0 0 20 20" fill="currentColor">
+                                                <path
+                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.588 4.89a1 1 0 00.95.69h5.127c.969 0 1.371 1.24.588 1.81l-4.15 3.02a1 1 0 00-.364 1.118l1.588 4.89c.3.921-.755 1.688-1.54 1.118l-4.15-3.02a1 1 0 00-1.176 0l-4.15 3.02c-.785.57-1.838-.197-1.539-1.118l1.588-4.89a1 1 0 00-.364-1.118L2.792 9.317c-.783-.57-.38-1.81.588-1.81h5.127a1 1 0 00.95-.69l1.588-4.89z" />
+                                            </svg>
+                                            Meilleure offre
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
+                    <!-- Champ pour proposer un nouveau prix -->
+                    <div class="bg-gray-100 p-4 rounded-lg mt-4 shadow-sm">
+                        <h4 class="text-sm font-bold mb-2 text-gray-800">Proposer un nouveau prix</h4>
+                        <form wire:submit.prevent="commentFormLivr">
+                            @if (!$appeloffre->count)
+                                <div class="flex items-center gap-2">
+                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                        class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-purple-500"
+                                        placeholder="Faire une offre..." required>
+                                    <button type="submit" id="submitBtnAppel"
+                                        class="p-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition duration-200">
+                                        <span wire:loading.remove>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                            </svg>
+                                        </span>
 
-                    <form wire:submit.prevent="commentFormLivr">
-
-                        <div
-                            class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center justify-between gap-1 dark:border-slate-700/40">
-                            <input type="hidden" name="code_livr" wire:model="code_livr">
-                            <input type="hidden" name="quantite" wire:model="quantite">
-                            <input type="hidden" name="idProd" wire:model="idProd">
-                            <input type="hidden" name="userSender" wire:model="userSender">
-                            <input type="hidden" name="id_trader" wire:model="id_trader">
-                            <input type="hidden" name="prixProd" id="prixProd" wire:model="prixProd">
-                            <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                placeholder="Faire une offre..." required>
-
-                            <button type="submit" id="submitBtnAppel"
-                                class=" justify-center p-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-800 dark:text-blue-500 dark:hover:bg-gray-600">
-                                <!-- Button Text and Icon -->
-                                <span wire:loading.remove>
-                                    <svg class="w-5 h-5 rotate-90 rtl:-rotate-90 inline-block" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
-                                        <path
-                                            d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
-                                    </svg>
-                                </span>
-                                <!-- Loading Spinner -->
-                                <span wire:loading>
-                                    <svg class="w-5 h-5 animate-spin inline-block" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                    </svg>
-                                    </svg>
-                            </button>
-                        </div>
-                    </form>
-
-
-
-                </div>
-
-            </div>
-
-            <div id="countdown-container" class="flex flex-col justify-center items-center mt-4">
-                @if ($oldestCommentDate)
-                    <span class=" mb-2">Temps restant pour cette negociatiation</span>
-
-                    <div id="countdown"
-                        class="flex items-center gap-2 text-3xl font-semibold text-red-500 bg-red-100  p-3 rounded-xl w-auto">
-
-                        <div>-</div>:
-                        <div>-</div>:
-                        <div>-</div>
+                                        <span wire:loading>
+                                            <svg class="w-5 h-5 animate-spin inline-block"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            @endif
+                        </form>
                     </div>
-                @endif
+                </div>
             </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const prixTradeInput = document.getElementById('prixTrade');
-                    const submitBtn = document.getElementById('submitBtnAppel');
-                    const prixTradeError = document.getElementById('prixTradeError');
-
-
-                    const startDate = new Date("{{ $oldestCommentDate }}");
-                    startDate.setMinutes(startDate.getMinutes() + 2);
-
-                    const countdownTimer = setInterval(updateCountdown, 1000);
-
-                    function updateCountdown() {
-                        const currentDate = new Date();
-                        const difference = startDate.getTime() - currentDate.getTime();
-
-                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                        const countdownElement = document.getElementById('countdown');
-                        if (countdownElement) {
-                            countdownElement.innerHTML = `
-                                        <div>${hours}h</div>:
-                                        <div>${minutes}m</div>:
-                                        <div>${seconds}s</div>
-                                    `;
-                        }
-
-                        if (difference <= 0) {
-                            clearInterval(countdownTimer);
-                            if (countdownElement) {
-                                countdownElement.innerHTML = "Temps écoulé !";
-                            }
-                            prixTradeInput.disabled = true;
-                            submitBtn.classList.add('hidden');
-
-
-                            const highestPricedComment = @json($comments).reduce((max, comment) => comment
-                                .prix > max.prix ? comment : max, {
-                                    prix: -Infinity
-                                });
-
-                            if (highestPricedComment && highestPricedComment.nameUser) {
-                                prixTradeError.textContent =
-                                    `Le livreur avec le meilleur prix  est ${highestPricedComment.nameUser} avec ${highestPricedComment.prix} FCFA !`;
-                            } else {
-                                prixTradeError.textContent = "Aucun commentaire avec un prix trouvé.";
-                            }
-                            prixTradeError.classList.remove('hidden');
-                        }
-                    }
-                })
-            </script>
-
-
 
         </div>
-
     </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('countdownTimer', (oldestCommentDate, comments) => ({
+                oldestCommentDate: oldestCommentDate ? new Date(oldestCommentDate) : null,
+                hours: '--',
+                minutes: '--',
+                seconds: '--',
+                comments: comments || [],
+                startDate: null,
+                interval: null,
+                isCountdownActive: false, // Nouvelle variable pour suivre l'état du compte à rebours
+                hasSubmitted: false, // Variable pour éviter la soumission multiple
+
+                init() {
+                    console.log('Initialisation du compteur', this.oldestCommentDate);
+
+                    if (this.oldestCommentDate) {
+                        this.startDate = new Date(this.oldestCommentDate);
+                        this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                        this.startCountdown();
+                    }
+
+                    Echo.channel('oldest-comment')
+                        .listen('OldestCommentUpdated', (e) => {
+                            console.log('Événement OldestCommentUpdated reçu', e);
+                            if (e.oldestCommentDate) {
+                                const newDate = new Date(e.oldestCommentDate);
+
+                                // Ne redémarre que si la nouvelle date est différente
+                                if (!this.oldestCommentDate || this.oldestCommentDate.getTime() !==
+                                    newDate.getTime()) {
+                                    this.oldestCommentDate = newDate;
+                                    this.startDate = new Date(this.oldestCommentDate);
+                                    this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                                    this.startCountdown();
+
+                                    // Émettre une requête Livewire pour rafraîchir les données
+                                    // Livewire.dispatch('refreshCountdown');
+                                    // console.log('done livewire refresh')
+
+                                    location.reload();
+                                } else {
+                                    console.log(
+                                        'Le compte à rebours est déjà à jour, aucun redémarrage nécessaire.'
+                                    );
+                                }
+                            } else {
+                                console.error('oldestCommentDate est null ou incorrect !', e);
+                            }
+                        });
+                },
+
+
+                startCountdown() {
+                    if (this.isCountdownActive) {
+                        console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
+                        return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
+                    }
+
+                    if (this.interval) {
+                        clearInterval(this.interval);
+                    }
+                    this.updateCountdown();
+                    this.interval = setInterval(this.updateCountdown.bind(this), 1000);
+                    this.isCountdownActive = true; // Marque le compte à rebours comme actif
+                },
+
+                updateCountdown() {
+                    const currentDate = new Date();
+                    const difference = this.startDate.getTime() - currentDate.getTime();
+
+                    if (difference <= 0) {
+                        clearInterval(this.interval);
+                        this.endCountdown();
+                        return;
+                    }
+
+                    this.hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    this.minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    this.seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                },
+
+                endCountdown() {
+                    document.getElementById('countdown').innerText = "Temps écoulé !";
+
+                    //Soumettre l'événement seulement une fois
+                    if (!this.hasSubmitted) {
+                        setTimeout(() => {
+                            Livewire.dispatch('compteReboursFini');
+                            this.hasSubmitted = true; // Empêcher la soumission multiple
+                        }, 100); // Petit délai pour laisser le temps à l'affichage de se mettre à jour
+                    }
+                },
+            }));
+        });
+    </script>
+
 </div>

@@ -160,7 +160,6 @@ class CountdownNotificationAd extends Component
     }
     private function pour_livraison()
     {
-
         // Calcul du montant requis
         $requiredAmount = floatval($this->notification->data['prixTrade']);
 
@@ -177,11 +176,27 @@ class CountdownNotificationAd extends Component
         // Vérification de l'existence de l'achat dans les transactions gelées
         $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
             ->first();
+
         if (!$existingGelement) {
+            Log::warning('Aucune transaction gelée existante trouvée.', [
+                'reference_id' => $this->notification->data['code_unique']
+            ]);
             return; // Arrête la fonction si aucune transaction n'est trouvée
         }
-        if ($existingGelement) {
-            // Si la transaction existe, ajoutez le montant requis au montant gelé
+
+        DB::beginTransaction(); // Démarre une transaction pour garantir la cohérence
+        try {
+            // Débit du portefeuille utilisateur
+            $this->userWallet->balance -= $requiredAmount;
+            $this->userWallet->save();
+
+            Log::info('Portefeuille débité avec succès.', [
+                'user_id' => $this->userWallet->user_id,
+                'new_balance' => $this->userWallet->balance,
+                'debited_amount' => $requiredAmount
+            ]);
+
+            // Mise à jour du montant gelé
             $existingGelement->amount += $requiredAmount;
             $existingGelement->save();
 
@@ -189,19 +204,32 @@ class CountdownNotificationAd extends Component
                 'transaction_id' => $existingGelement->id,
                 'new_amount' => $existingGelement->amount
             ]);
+
+            // Création de la transaction
             $this->createTransaction(
                 $this->user,
-                $this->fournisseur->id ?? null,
+                $this->user,
                 'Gele',
                 $requiredAmount,
                 $this->generateIntegerReference(),
-                'Gelement en plus pour la livraison',
+                'Montant gelé pour la livraison',
                 'effectué',
                 'COC'
             );
+
+            DB::commit(); // Valide la transaction
+        } catch (Exception $e) {
+            DB::rollBack(); // Annule les modifications en cas d'erreur
+            Log::error('Erreur lors du traitement de la livraison.', [
+                'message' => $e->getMessage(),
+                'user_id' => $this->userWallet->user_id,
+                'required_amount' => $requiredAmount
+            ]);
+            session()->flash('error', 'Une erreur s\'est produite lors du traitement de la livraison.');
         }
     }
-    public function retait_magasin()
+
+    private function retait_magasin()
     {
         // Calcul du montant requis avec une réduction de 1% cest pour le retrait en magasin
         $requiredAmount = floatval($this->notification->data['prixFin']);
