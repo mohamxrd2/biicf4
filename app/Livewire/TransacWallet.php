@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Livewire;
 
 use App\Models\Transaction;
@@ -8,7 +9,7 @@ use Livewire\Component;
 class TransacWallet extends Component
 {
     public $adminID;
-    public $limit = 5; // Nombre initial de transactions à afficher
+    public $limit = 10; // Nombre initial de transactions à afficher
 
     public function mount()
     {
@@ -20,30 +21,8 @@ class TransacWallet extends Component
      */
     public function loadMore()
     {
-  
-        // Incrémenter la limite de transactions à afficher de 5
-        $this->limit += 5;
-
-        // Simuler le délai de chargement avant de cacher le spinner
- 
-    }
-
-    /**
-     * Vérifie s'il y a encore des transactions à charger.
-     *
-     * @return bool
-     */
-    public function hasMoreTransactions()
-    {
-        // Vérifie si le nombre de transactions retournées dépasse la limite actuelle
-        $transactionsCount = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
-            ->where(function ($query) {
-                $query->where('sender_admin_id', $this->adminID)
-                    ->orWhere('receiver_admin_id', $this->adminID);
-            })
-            ->count();
-
-        return $transactionsCount > $this->limit;
+        // Incrémente la limite de transactions à afficher de 5
+        $this->limit += 10;
     }
 
     /**
@@ -53,6 +32,7 @@ class TransacWallet extends Component
      */
     public function render()
     {
+        // Récupérer les transactions avec les relations nécessaires
         $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
             ->where(function ($query) {
                 $query->where('sender_admin_id', $this->adminID)
@@ -62,11 +42,21 @@ class TransacWallet extends Component
             ->limit($this->limit)
             ->get();
 
-        $transacCount = $transactions->count();
+        // Calculer le nombre total de transactions disponibles
+        $transactionsCount = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
+            ->where(function ($query) {
+                $query->where('sender_admin_id', $this->adminID)
+                    ->orWhere('receiver_admin_id', $this->adminID);
+            })
+            ->count();
 
+        // Vérifier s'il y a encore des transactions à charger
+        $hasMoreTransactions = $transactionsCount > $this->limit;
+
+        // Retourner la vue avec les données nécessaires
         return view('livewire.transac-wallet', [
             'transactions' => $transactions,
-            'transacCount' => $transacCount,
+            'hasMoreTransactions' => $hasMoreTransactions,
             'adminId' => $this->adminID
         ]);
     }

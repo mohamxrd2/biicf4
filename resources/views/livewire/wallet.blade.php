@@ -8,7 +8,7 @@
 
         {{-- deposer --}}
         <div x-data="{ isModalOpen: false }" class="bg-black rounded-2xl p-6 flex flex-col justify-between h-40">
-            <p class="text-md text-slate-400">Mon compte</p>
+            <p class="text-md text-slate-400">Total créé</p>
 
             <div class="flex justify-between items-center">
                 <p class="text-3xl text-white font-bold">{{ number_format($adminWallet->balance, 2, ',', ' ') }} FCFA</p>
@@ -55,7 +55,7 @@
                                     </div>
                                     <div class="p-4 overflow-y-auto">
                                         <div class="space-y-3 w-full mb-3">
-                                            <p class="text-sm text-gray-700 text-center">Entrez un montant entre 10 000 Fr et 99 999 999 999 Fr</p>
+                                            <p class="text-sm text-gray-500 dark:text-neutral-400">Entrez un montant entre 10 000 Fr et 99 999 999 999 Fr</p>
                                             <input wire:model="amount" type="number" name="amount" id="floating_prix"
                                                 class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                                 placeholder="Entrez la somme" />
@@ -100,25 +100,25 @@
                     <div class="lg:col-span-1 col-span-3">
                         <div class="rounded-2xl p-6 flex flex-col justify-between  h-32 bg-green-100">
 
-                            <p class="text-md text-slate-400">Total envoyé</p>
+                            <p class="text-md text-slate-400">Total à transformé</p>
 
-                            <p class="text-xl text-black font-bold">{{ number_format($totalEnv, 2, ',', ' ') }} FCFA</p>
+                            <p class="text-xl text-black font-bold">{{ number_format($totalBalanceAgent, 2, ',', ' ') }} FCFA</p>
 
 
                         </div>
                     </div>
                     <div class="lg:col-span-1 col-span-3">
                         <div class="bg-black rounded-2xl p-6 flex flex-col justify-between  h-32 bg-orange-100">
-                            <p class="text-md text-slate-400">Total reçu</p>
+                            <p class="text-md text-slate-400">Total sur le compte</p>
                             <div>
-                                <p class="text-xl text-black font-bold"> {{ number_format($totalRecu, 2, ',', ' ') }} FCFA</p>
+                                <p class="text-xl text-black font-bold"> {{ number_format($totalBalanceUsers, 2, ',', ' ') }} FCFA</p>
                             </div>
 
                         </div>
                     </div>
                     <div class="lg:col-span-1 col-span-3">
                         <div class="bg-black rounded-2xl p-6 flex flex-col justify-between  h-32 bg-violet-100">
-                            <p class="text-md text-slate-400">Total sur le compte</p>
+                            <p class="text-md text-slate-400">Commission BIICF</p>
                             <div>
                                 <p class="text-xl text-black font-bold"> {{ number_format($comissions->balance, 2, ',', ' ') }} FCFA</p>
                             </div>
@@ -141,9 +141,9 @@
                 @if (Auth::guard('admin')->user()->admin_type == 'admin')
                     <div x-data="{ isModal2Open: false }"
                         class="w-full p-5 bg-white border flex items-center rounded-2xl hover:bg-gray-50 mb-4 cursor-pointer"
-                        data-hs-overlay="#monney-send1">
+                        data-hs-overlay="#monney-send1" wire:click="navigateToContact">
 
-                        <div wire:click="navigateToContact" class="flex flex-col">
+                        <div  class="flex flex-col">
                             <p class="font-bold  mb-3">Envoyé a un agent</p>
                             <div class="flex items-center">
                                 <s  class="rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center mr-5">
@@ -174,9 +174,9 @@
 
 
             <div class="w-full p-5 bg-white border flex items-center rounded-2xl hover:bg-gray-50 mb-4 cursor-pointer"
-                data-hs-overlay="#monney-send2">
+                data-hs-overlay="#monney-send2" wire:click="navigateToClient">
 
-                <div  wire:click="navigateToClient"  class="flex flex-col">
+                <div    class="flex flex-col">
                     <p class="font-bold  mb-3">Envoyé a un client</p>
                     <div class="flex items-center">
                         <div class="rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center mr-5">

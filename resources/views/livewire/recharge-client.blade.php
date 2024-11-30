@@ -3,6 +3,12 @@
         <span class="text-green-500">Sending...</span>
     </div>
 
+    @if (session()->has('error'))
+        <div class="bg-red-500 text-white p-3 rounded-lg mb-4">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form wire:submit.prevent="recharge">
         <div
             class="flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-neutral-800 dark:border-neutral-700 dark:shadow-neutral-700/70">
@@ -53,7 +59,7 @@
                     class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                     wire:loading.attr="disabled">
                     <span wire:loading.remove>Envoyé</span>
-                    <span wire:loading>Sending...</span>
+                    <span wire:loading>Envoie...</span>
 
                 </button>
             </div>
