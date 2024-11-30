@@ -80,6 +80,7 @@
         @elseif ($notification->type === 'App\Notifications\commandVerifag')
             @livewire('mainleveag', ['id' => $id])
 
+
             {{--  retrait  --}}
         @elseif ($notification->type === 'App\Notifications\Retrait')
             <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
@@ -426,13 +427,12 @@
 
 
 
-        @endif
 
-        {{-- general --}}
-    @elseif ($notification->type === 'App\Notifications\VerifUser')
-        @livewire('verif-user', ['id' => $id])
-    @elseif ($notification->type === 'App\Notifications\mainleveclient')
-        @livewire('mainleveclient', ['id' => $id])
+            {{-- general --}}
+        @elseif ($notification->type === 'App\Notifications\VerifUser')
+            @livewire('verif-user', ['id' => $id])
+        @elseif ($notification->type === 'App\Notifications\mainleveclient')
+            @livewire('mainleveclient', ['id' => $id])
         @endif
     </div>
 
