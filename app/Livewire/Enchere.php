@@ -44,7 +44,7 @@ class Enchere extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
 
         $this->id_trader = Auth::user()->id ?? null;
-        $this->idProd = $this->notification->data['produit_id'] ?? null;
+        $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->produit = ProduitService::find($this->idProd);
 
 
@@ -117,7 +117,7 @@ class Enchere extends Component
             $this->comments = Comment::with('user')
                 ->where('code_unique', $this->notification->data['code_unique'])
                 ->whereNotNull('prixTrade')
-                ->orderBy('prixTrade', 'asc')
+                ->orderBy('prixTrade', 'desc')
                 ->get();
 
             // Vérifier si un compte à rebours est déjà en cours pour cet code unique

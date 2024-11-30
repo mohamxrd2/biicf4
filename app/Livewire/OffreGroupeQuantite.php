@@ -4,9 +4,8 @@ namespace App\Livewire;
 
 use App\Events\AjoutQuantiteOffre;
 use App\Models\Countdown;
-use App\Models\OffreGroupe;
 use App\Models\ProduitService;
-use App\Models\userquantites;
+use App\Models\OffreGroupe;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -47,21 +46,21 @@ class OffreGroupeQuantite extends Component
             ->first();
 
         // Compter les participants distincts
-        $this->participants = userquantites::where('code_unique', $this->notification->data['code_unique'])
+        $this->participants = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])
             ->distinct('user_id') // Filtrer les doublons
             ->count('user_id');
 
         // Somme des quantités
-        $this->quantiteTotale = userquantites::where('code_unique', $this->notification->data['code_unique'])
+        $this->quantiteTotale = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])
             ->sum('quantite');
 
         // Participant le plus ancien
-        $this->premierFournisseur = userquantites::where('code_unique', $this->notification->data['code_unique'])
+        $this->premierFournisseur = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])
             ->orderBy('created_at', 'asc')
             ->first();
 
         // Charger les groupages
-        $this->groupages = userquantites::with('user')
+        $this->groupages = OffreGroupe::with('user')
             ->where('code_unique', $this->notification->data['code_unique'])
             ->orderBy('created_at', 'asc')
             ->get();
@@ -81,22 +80,21 @@ class OffreGroupeQuantite extends Component
                 'quantite' => 'required|integer|min:1',
             ]);
 
-            $quantite = userquantites::create([
+            $quantite = OffreGroupe::create([
                 'code_unique' => $this->notification->data['code_unique'],
                 'user_id' => Auth::id(),
                 'quantite' => $validatedData['quantite'],
-                // Exemple à remplacer si nécessaire
             ]);
 
             // Mise à jour des données locales
             $this->quantiteTotale += $validatedData['quantite'];
 
             // Ajouter aux groupages (rechargement de la collection)
-            $this->groupages = userquantites::with('user')
+            $this->groupages = OffreGroupe::with('user')
                 ->where('code_unique', $this->notification->data['code_unique'])
                 ->orderBy('created_at', 'asc')
                 ->get();
-                
+
             // Réinitialiser le champ de quantité
             $this->reset('quantite');
 

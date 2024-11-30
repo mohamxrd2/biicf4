@@ -131,7 +131,7 @@ class CheckCountdowns extends Command
                         $enchere = [
                             'code_unique' => $countdown->code_unique,
                             'prixTrade' => $price,
-                            'idProd' =>  $commentToUse->idProd, // Assurez-vous que $countdown->achat existe
+                            'idProd' =>  $commentToUse->id_prod, // Assurez-vous que $countdown->achat existe
                             'id_trader' =>  $commentToUse->id_trader, // Assurez-vous que $countdown->achat existe
                         ];
                         Log::info('Envoi de la notification pour type "offredirect".', ['user_id' => $lowestPriceComment->user->id]);

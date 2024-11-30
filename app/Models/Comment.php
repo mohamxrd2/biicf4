@@ -16,20 +16,10 @@ class Comment extends Model
     protected $fillable = [
         'prixTrade',
         'id_trader',
-        'code_unique',
-        'timeStart',
-        'timeEnd',
-        'date_tot',
-        'date_tard',
-        'dayPeriod',
-        'type',
-        'id_prod',
-        'quantiteC',
-        'localite',
-        'specificite',
-        'nameprod',
         'id_sender',
         'prixProd',
+        'code_unique',
+        'id_prod',
     ];
 
     /**

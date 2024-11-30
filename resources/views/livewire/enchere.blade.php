@@ -148,7 +148,7 @@
                                         <p class="text-sm text-gray-600">
                                             Je propose  <span class="text-green-500 font-semibold">
                                                 {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                        </span> pour le prix .
+                                        </span>
                                         </p>
                                     </div>
                                 </div>

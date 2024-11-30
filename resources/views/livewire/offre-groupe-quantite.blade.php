@@ -126,7 +126,7 @@
                     if (this.oldestCommentDate) {
                         this.startDate = new Date(this.oldestCommentDate);
                         this.startDate.setMinutes(this.startDate.getMinutes() +
-                            2); // Ajout de 2 minutes pour le timer
+                            40); // Ajout de 2 minutes pour le timer
                         this.startCountdown();
                     }
                 },

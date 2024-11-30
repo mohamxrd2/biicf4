@@ -46,8 +46,8 @@ class OffreNegosDone extends Notification
 
         return [
             'quantite' => $this->offredone['quantite'],
-            'produit_id' => $this->offredone['produit_id'],
-            'produit_name' => $this->offredone['produit_name'],
+            'idProd' => $this->offredone['idProd'],
+            'id_sender' => $this->offredone['id_sender'],
             'code_unique' => $this->offredone['code_unique'],
         ];
     }

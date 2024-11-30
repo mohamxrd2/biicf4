@@ -86,9 +86,9 @@
                                     fill="currentColor">
                                     <path
                                         d=" M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397
-                                                                                                                        8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
-                                                                                                                        2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
-                                                                                                                        3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                                                                                            8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
+                                                                                                                            2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
+                                                                                                                            3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
                                 </svg>
                                 <!-- Repeat for additional stars -->
                             </div>
@@ -494,41 +494,55 @@
                 </div>
 
                 <!-- Contenu principal -->
-                <div class="p-6 sm:p-10 text-center">
+                <div class="p-6 sm:p-10 text-center bg-white rounded-lg shadow-md dark:bg-neutral-900">
+                    <!-- Titre principal -->
                     <h3 class="mb-4 text-2xl font-bold text-gray-800 dark:text-neutral-200">
                         Offre Grouper
                     </h3>
                     <p class="text-gray-600 dark:text-neutral-400">
-                        Le nombre de clients potentiels est <span
-                            class="font-semibold text-blue-600 dark:text-blue-400">({{ $nomFournisseurCount }})</span>
+                        Le nombre de clients potentiels est
+                        <span class="font-semibold text-blue-600 dark:text-blue-400">
+                            ({{ $nomFournisseurCount }})
+                        </span>
                     </p>
 
                     <!-- Formulaire -->
-                    <div class="mt-6">
-                        <form action="{{ route('biicf.sendoffreneg', $produit->id) }}" method="POST" class="w-full">
+                    <div class="mt-8">
+                        <form action="{{ route('biicf.sendoffreneg', $produit->id) }}" method="POST" class="space-y-6">
                             @csrf
-
-                            <!-- Champ caché pour l'ID du produit -->
                             <input type="hidden" name="produit_id" value="{{ $produit->id }}" required>
 
-                            <!-- Sélection de la quantite -->
-                            <div class="mb-6">
+                            <!-- Quantité -->
+                            <div>
                                 <label for="quantite"
                                     class="block text-sm font-medium text-gray-800 dark:text-neutral-200">
                                     Ajoutez votre quantité
                                 </label>
                                 <input name="quantite" id="quantite" type="number" min="1" required
+                                    placeholder="Entrez une quantité"
                                     class="mt-2 block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:ring-blue-400 dark:focus:border-blue-500 placeholder-gray-400">
                             </div>
 
-                            <!-- Sélection de la zone économique -->
-                            <div class="mb-4">
+                            <!-- Nom d'utilisateur -->
+                            <div>
+                                <label for="username"
+                                    class="block text-sm font-medium text-gray-800 dark:text-neutral-200">
+                                    Entrez le username du client ciblé
+                                </label>
+                                <input name="username" id="username" type="text" required
+                                    placeholder="Username du client ciblé"
+                                    class="mt-2 block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:ring-blue-400 dark:focus:border-blue-500 placeholder-gray-400">
+                            </div>
+
+                            <!-- Zone économique -->
+                            <div>
                                 <label for="zone_economique"
-                                    class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
+                                    class="block text-sm font-medium text-gray-800 dark:text-neutral-200">
                                     Zone économique
                                 </label>
                                 <select name="zone_economique" id="zone_economique" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-800 dark:text-white">
+                                    class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:ring-blue-400 dark:focus:border-blue-500">
+                                    <option value="" disabled selected>Sélectionnez une zone</option>
                                     <option value="proximite">Proximité</option>
                                     <option value="locale">Locale</option>
                                     <option value="departementale">Départementale</option>
@@ -541,11 +555,11 @@
                             <!-- Boutons -->
                             <div class="flex justify-center gap-4">
                                 <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
-                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    class="inline-flex items-center px-6 py-3 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
                                     Soumettre
                                 </button>
                                 <button type="button"
-                                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+                                    class="inline-flex items-center px-6 py-3 rounded-md text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
                                     data-hs-overlay="#hs-offreGrp-{{ $produit->id }}">
                                     Annuler
                                 </button>
@@ -553,6 +567,7 @@
                         </form>
                     </div>
                 </div>
+
             </div>
 
         </div>

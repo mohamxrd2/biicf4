@@ -4,13 +4,16 @@ namespace App\Livewire;
 
 use App\Events\NotificationSent;
 use App\Models\AchatDirect;
+use App\Models\gelement;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\AchatBiicf;
+use App\Notifications\Confirmation;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
@@ -30,26 +33,21 @@ class Offrenegosterminer extends Component
     public $idProd;
     public $photo;
     public $selectedOption = "";
-    public $options = [
-        'Achat avec livraison',
-        'Take Away',
-        'Reservation',
-    ];
-    public $optionsC = [
-        'Take Away',
-        'Reservation',
-    ];
+
     //
+    public $dayPeriodFin;
     public $nameProd;
     public $localite;
     public $userTrader;
+    public $userSender;
     public $selectedSpec = false;
-    public $message = "Un utilisateur veut acheter ce produit";
     public $code_unique;
     public $dateTard;
     public $dateTot;
+    public $photoProd;
     public $timeStart;
     public $timeEnd;
+    public $prix;
     public $dayPeriod = "";
 
     public function mount($id)
@@ -58,7 +56,16 @@ class Offrenegosterminer extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
 
         $this->produit = ProduitService::findOrFail($this->notification->data['idProd']);
-       
+        $this->userId = Auth::guard('web')->id();
+        $this->nameProd = $this->produit->name;
+        $this->type = $this->produit->type;
+        $this->userSender = $this->userId;
+        $this->userTrader = $this->produit->user->id;
+        $this->photoProd = $this->produit->photoProd1;
+        $this->idProd = $this->produit->id;
+        $this->prix = $this->notification->data['prixTrade'];
+        $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
+
     }
     protected function generateUniqueReference()
     {
@@ -67,6 +74,7 @@ class Offrenegosterminer extends Component
 
     public function AchatDirectForm()
     {
+
         $validated = $this->validate([
             'quantité' => 'required|integer',
             'localite' => 'required|string|max:255',
@@ -76,10 +84,13 @@ class Offrenegosterminer extends Component
             'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
             'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
-            'nameProd' => 'required|string',
+            'dayPeriodFin' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
             'userTrader' => 'required|exists:users,id',
-            'prixProd' => 'required|numeric',
+            'nameProd' => 'required|string',
+            'userSender' => 'required|exists:users,id',
+            'photoProd' => 'required|string',
             'idProd' => 'required|exists:produit_services,id',
+            'prix' => 'required|numeric',
         ]);
 
         // dd($validated);
@@ -87,7 +98,7 @@ class Offrenegosterminer extends Component
         Log::info('Validation réussie.', $validated);
 
         $userId = Auth::id();
-        $montantTotal = $validated['quantité'] * $validated['prixProd'];
+        $montantTotal = $validated['quantité'] * $this->prix;
 
         if (!$userId) {
             Log::error('Utilisateur non authentifié.');
@@ -113,13 +124,22 @@ class Offrenegosterminer extends Component
             return;
         }
 
+        ($codeUnique = $this->generateUniqueReference());
+        if (!$codeUnique) {
+            Log::error('Code unique non généré.');
+            throw new \Exception('Code unique non généré.');
+        }
+
+        // // Commencez une transaction de base de données
+        DB::beginTransaction();
         try {
-            // Utilisez `selectedSpec` pour obtenir la spécification sélectionnée
-            $selectedSpec = $this->selectedSpec;
+            // Mettre à jour le solde du portefeuille
+            $userWallet->decrement('balance', $montantTotal);
 
-            // Assurez-vous que `selectedSpec` est bien défini
-            $specificites = !empty($selectedSpec) ? $selectedSpec : null;
+            // Générer une référence de transaction
+            $reference_id = $this->generateIntegerReference();
 
+            // Mettre à jour la table de AchatDirectModel de fond
             $achat = AchatDirect::create([
                 'nameProd' => $validated['nameProd'],
                 'quantité' => $validated['quantité'],
@@ -130,32 +150,39 @@ class Offrenegosterminer extends Component
                 'timeStart' => $validated['timeStart'],
                 'timeEnd' => $validated['timeEnd'],
                 'dayPeriod' => $validated['dayPeriod'],
+                'dayPeriodFin' => $validated['dayPeriodFin'],
                 'userTrader' => $validated['userTrader'],
-                'userSender' => $userId,
-                'specificite' => $specificites,
-                'photoProd' => $this->photo,
+                'userSender' => $validated['userSender'],
+                'specificite' => $this->produit->specification,
+                'photoProd' => $validated['photoProd'],
                 'idProd' => $validated['idProd'],
-                'code_unique' => $this->code_unique,
+                'code_unique' => $codeUnique, // Utiliser la variable vérifiée
 
             ]);
-            // dd($achat);
-            $userWallet->decrement('balance', $montantTotal);
-
-            $transaction = new Transaction();
-            $transaction->sender_user_id = $userId;
-            $transaction->receiver_user_id = $validated['userTrader'];
-            $transaction->type = 'Gele';
-            $transaction->amount = $montantTotal;
-            $transaction->save();
-
-            Log::info('Transaction enregistrée.', [
-                'transactionId' => $transaction->id,
+            // Mettre à jour la table de gelement de fond
+            gelement::create([
+                'id_wallet' => $userWallet->id,
                 'amount' => $montantTotal,
+                'reference_id' => $codeUnique,
             ]);
+
+            // Mettre à jour la table de AchatDirectModel de fond
+            $achatUser = [
+                'nameProd' => $validated['nameProd'],
+                'idProd' => $validated['idProd'],
+                'code_unique' => $codeUnique,
+                'idAchat' => $achat->id,
+                'title' => 'Confirmation de commande',
+                'description' => 'La commande a été envoyéé avec success.',
+            ];
+
+            // Créer  transactions
+            $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Gele Pour ' . 'Achat de ' . $validated['nameProd'], 'effectué', 'COC');
 
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
-            Notification::send($owner, new AchatBiicf($achat));
+            Notification::send($owner, new AchatBiicf($achatUser));
+
             // Après l'envoi de la notification
             event(new NotificationSent($owner));
 
@@ -167,21 +194,54 @@ class Offrenegosterminer extends Component
                 $notification->update(['type_achat' => $selectedOption]);
             }
 
-            $user = User::find($userId);
-            $this->reset(['quantité', 'localite', 'selectedSpec']);
-            session()->flash('success', 'Achat passé avec succès.');
+            $this->reset(['quantité', 'localite']);
+
+            $userConnecte = Auth::user(); // Récupérer l'utilisateur connecté
+
+            if ($userConnecte instanceof User) { // Vérifier que c'est un utilisateur valide
+
+                //Envoyer une notification au propriétaire ($owner)
+                Notification::send($userConnecte, new Confirmation($achatUser));
+
+                // Déclencher un événement pour signaler l'envoi de la notification
+                event(new NotificationSent($userConnecte));
+            }
             // Émettre un événement après la soumission
-            $this->dispatch('formSubmitted', 'achat effectué avec success');
+            $this->dispatch('formSubmitted', 'Achat Affectué Avec Success');
+            // Valider la transaction de base de données
+            DB::commit();
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Erreur lors de l\'achat direct.', [
                 'error' => $e->getMessage(),
                 'userId' => $userId,
                 'data' => $validated,
             ]);
-            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
+            session()->flash('error', 'Une erreur est survenue ');
         }
     }
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
+        $transaction->save();
+    }
 
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
+    }
 
 
     public function render()
@@ -201,7 +261,7 @@ class Offrenegosterminer extends Component
             compact(
                 'produit',
                 'userWallet',
-                'userId'
+                'userId',
             )
         );
     }

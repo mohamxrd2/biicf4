@@ -15,182 +15,149 @@ use App\Models\ProduitService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\OffreNegosNotif;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class OffreNegos extends Controller
 {
 
     public function store(Request $request)
     {
-        $user_id = Auth::guard('web')->id();
+        try {
+            $user_id = Auth::id();
+            Log::info('Tentative de stockage de données', ['user_id' => $user_id]);
 
-        Log::info('Attempting to store data', ['user_id' => $user_id]);
+            // Validation des entrées
+            $validatedData = $request->validate([
+                'produit_id' => 'required|integer',
+                'quantite' => 'required|numeric',
+                'username' => 'required|string|max:255',
+                'zone_economique' => 'required|string',
+            ]);
 
-        // Validate request inputs
-        $request->validate([
-            'produit_id' => 'required|integer',
-            'quantite' => 'required|numeric',
-            'zone_economique' => 'required|string'
-        ]);
-
-        // Retrieve product ID and other inputs from the form
-        $produitId = $request->input('produit_id');
-        $quantité = $request->input('quantite');
-
-        Log::info('Received request data', [
-            'produit_id' => $produitId,
-            'quantite' => $quantité,
-            'zone_economique' => $request->input('zone_economique')
-        ]);
-
-        // Normalize economic zone input to lowercase
-        $zone_economique = addslashes(strtolower($request->input('zone_economique')));
+            // Recherche du produit et de l'utilisateur
+            $produit = ProduitService::findOrFail($validatedData['produit_id']);
+            $username = User::where('username', $validatedData['username'])->firstOrFail();
+            $zoneKey = $this->mapEconomicZone($validatedData['zone_economique'], $produit->user);
 
 
-        // Find the product or fail
-        $produit = ProduitService::findOrFail($produitId);
-        $referenceProduit = $produit->reference;
+            // Générer un code unique
+            $uniqueCode = $this->generateUniqueReference();
 
-        Log::info('Product found', [
-            'produit_id' => $produitId,
-            'reference' => $referenceProduit
-        ]);
+            // Trouver les fournisseurs pertinents
+            $suppliers = $this->findSuppliers($produit, $user_id, $zoneKey);
 
-        // User's location details
-        $userLocation = [
-            'commune' => strtolower($produit->user->commune),
-            'ville' => strtolower($produit->user->ville),
-            'departe' => strtolower($produit->user->departe),
-            'pays' => strtolower($produit->user->pays),
-            'sous_region' => strtolower($produit->user->sous_region),
-            'continent' => strtolower($produit->user->continent)
-        ];
+            if (empty($suppliers)) {
+                return $this->handleNoSuppliers($produit, $zoneKey);
+            }
 
-        // Map zone to produit location key
+            // Notifier les fournisseurs
+            $this->notifySuppliers($suppliers, $produit, $validatedData['quantite'], $uniqueCode);
+
+            // Insérer dans `OffreGroupe`
+            $this->saveOffreGroupe($validatedData, $produit, $user_id, $uniqueCode);
+
+            // Gestion du compte à rebours
+            $this->handleCountdown($uniqueCode, $username);
+
+            return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
+        } catch (Exception $e) {
+            Log::error('Erreur lors du stockage des données', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Une erreur est survenue. Veuillez réessayer.');
+        }
+    }
+
+
+    private function mapEconomicZone($zoneEconomique, $user)
+    {
         $zoneMapping = [
             'proximite' => 'commune',
             'locale' => 'ville',
             'departementale' => 'departe',
             'nationale' => 'pays',
             'sous_regionale' => 'sous_region',
-            'continentale' => 'continent'
+            'continentale' => 'continent',
         ];
 
-        $appliedZoneKey = $zoneMapping[$zone_economique] ?? null;
-        $appliedZoneValue = $userLocation[$appliedZoneKey] ?? null;
-
-        if (!$appliedZoneValue) {
-            Log::warning('Invalid economic zone selected', ['zone_economique' => $zone_economique]);
-            return redirect()->back()->with('error', 'Zone économique non valide.');
+        $zoneKey = $zoneMapping[strtolower($zoneEconomique)] ?? null;
+        if (!$zoneKey || !isset($user->$zoneKey)) {
+            throw new InvalidArgumentException('Zone économique invalide.');
         }
 
-        // Generate a unique code
-        $Uniquecode = $this->generateUniqueReference();
-
-        Log::info('Generated unique code', ['Uniquecode' => $Uniquecode]);
-
-        // Find suppliers with the same product reference within the selected economic zone
-        $nomFournisseur = ProduitService::where('reference', $referenceProduit)
-            ->where('user_id', '!=', $user_id) // Exclude the current user
+        Log::info('Zone économique mappée', ['zone_key' => $zoneKey, 'value' => $user->$zoneKey]);
+        return $zoneKey;
+    }
+    private function findSuppliers($produit, $userId, $zoneKey)
+    {
+        $suppliers = ProduitService::where('reference', $produit->reference)
+            ->where('user_id', '!=', $userId)
             ->where('statuts', 'Accepté')
-            ->whereHas('user', function ($query) use ($appliedZoneKey, $appliedZoneValue) {
-                $query->where($appliedZoneKey, $appliedZoneValue);
-            })
+            ->whereHas('user', fn($query) => $query->where($zoneKey, $produit->user->$zoneKey))
             ->pluck('user_id')
             ->toArray();
 
-        if (empty($nomFournisseur)) {
-            Log::warning('No suppliers found in the selected economic zone', [
-                'reference' => $referenceProduit,
-                'zone' => $appliedZoneKey,
-                'value' => $appliedZoneValue
-            ]);
-            return redirect()->back()->with('error', 'Aucun fournisseur trouvé dans la zone économique sélectionnée.');
-        }
+        Log::info('Fournisseurs trouvés', ['suppliers' => $suppliers]);
+        return $suppliers;
+    }
 
-        Log::info('Found suppliers', ['suppliers' => $nomFournisseur]);
-
-        // Store the quantity and unique code in userquantites table
-        userquantites::create([
-            'quantite' => $quantité,
-            'code_unique' => $Uniquecode,
-            'user_id' => $user_id,
-        ]);
-
-        Log::info('Stored user quantity', [
-            'quantite' => $quantité,
-            'code_unique' => $Uniquecode,
-            'user_id' => $user_id,
-        ]);
-
-        // Send notifications to relevant suppliers
-        foreach ($nomFournisseur as $supplierId) {
+    private function notifySuppliers(array $suppliers, $produit, $quantite, $uniqueCode)
+    {
+        foreach ($suppliers as $supplierId) {
             $supplier = User::find($supplierId);
             if ($supplier) {
-                $data = [
-                    'idProd' => $produitId,
+                Notification::send($supplier, new OffreNegosNotif([
+                    'idProd' => $produit->id,
                     'produit_name' => $produit->name,
-                    'quantite' => $quantité,
-                    'code_unique' => $Uniquecode
-                ];
+                    'quantite' => $quantite,
+                    'code_unique' => $uniqueCode,
+                ]));
 
-                // Sending the notification
-                Notification::send($supplier, new OffreNegosNotif($data));
-                Log::info('Notification sent', [
-                    'supplier_id' => $supplierId,
-                    'data' => $data
-                ]);
+                Log::info('Notification envoyée', ['supplier_id' => $supplierId]);
             }
         }
-
-        // Insert into the OffreGroupe table
+    }
+    private function saveOffreGroupe($data, $produit, $userId, $uniqueCode)
+    {
         OffreGroupe::create([
             'name' => $produit->name,
-            'quantite' => $quantité,
-            'code_unique' => $Uniquecode,
-            'produit_id' => $produitId,
-            'zone' => $zone_economique,
-            'user_id' => $user_id,
+            'quantite' => $data['quantite'],
+            'code_unique' => $uniqueCode,
+            'produit_id' => $data['produit_id'],
+            'zone' => $data['zone_economique'],
+            'user_id' => $userId,
             'differance' => 'grouper',
         ]);
 
-        Log::info('Inserted into OffreGroupe', [
+        Log::info('OffreGroupe enregistrée', [
             'name' => $produit->name,
-            'quantite' => $quantité,
-            'code_unique' => $Uniquecode,
-            'zone' => $zone_economique,
-            'produit_id' => $produitId,
-            'user_id' => $user_id,
+            'code_unique' => $uniqueCode,
         ]);
-
-        // Check if a countdown is already running for this unique code
-        $existingCountdown = Countdown::where('code_unique', $Uniquecode)
+    }
+    private function handleCountdown($uniqueCode, $username)
+    {
+        $existingCountdown = Countdown::where('code_unique', $uniqueCode)
             ->where('notified', false)
             ->orderBy('start_time', 'desc')
             ->first();
 
         if (!$existingCountdown) {
-            // Create a new countdown if none exists
             Countdown::create([
                 'user_id' => Auth::id(),
+                'userSender' => $username->id,
                 'start_time' => now(),
-                'code_unique' => $Uniquecode,
+                'code_unique' => $uniqueCode,
                 'difference' => 'offregroupe',
             ]);
 
-            Log::info('Countdown started', [
-                'user_id' => Auth::id(),
-                'start_time' => now(),
-                'code_unique' => $Uniquecode,
-            ]);
+            Log::info('Compte à rebours créé', ['code_unique' => $uniqueCode]);
         } else {
-            Log::info('Countdown already exists for the unique code', ['code_unique' => $Uniquecode]);
+            Log::info('Compte à rebours déjà existant', ['code_unique' => $uniqueCode]);
         }
-
-        return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
     }
+
 
     // Fonction pour générer un code de référence de 5 chiffres
 
@@ -302,15 +269,7 @@ class OffreNegos extends Controller
         }
     }
 
-    /**
-     * Créer et enregistrer une transaction.
-     *
-     * @param int $senderId
-     * @param int $receiverId
-     * @param string $type
-     * @param float $amount
-     * @return void
-     */
+    
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
     {
         $transaction = new Transaction();
@@ -320,5 +279,4 @@ class OffreNegos extends Controller
         $transaction->amount = $amount;
         $transaction->save();
     }
-
 }

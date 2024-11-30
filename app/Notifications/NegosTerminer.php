@@ -28,9 +28,9 @@ class NegosTerminer extends Notification
     {
         return [
             'code_unique' => $this->offre['code_unique'] ?? null,
+            'prixTrade' => $this->offre['prixTrade'] ?? null,
             'idProd' => $this->offre['idProd'] ?? null,
             'id_trader' => $this->offre['id_trader'] ?? null,
-            'prixTrade' => $this->offre['prixTrade'] ?? null,
         ];
     }
 }

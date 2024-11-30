@@ -9,6 +9,7 @@ use App\Models\ProduitService;
 use App\Models\User;
 use App\Notifications\OffreNegosDone;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
@@ -25,12 +26,17 @@ class AjoutQoffre extends Command
 
     public function handle()
     {
-       
+
 
         $offrecountdowns = Countdown::where('notified', false)
-            ->where('difference', 'offregroupe') // Ensure column name and value are correct
+            ->where('difference', 'offregroupe')
             ->where('created_at', '<=', now()->subMinutes(2))
             ->get();
+
+        if ($offrecountdowns->isEmpty()) {
+            Log::info('No countdowns found to process.');
+            return;
+        }
 
         Log::info('Found ' . $offrecountdowns->count() . ' countdowns to process.');
 
@@ -38,130 +44,51 @@ class AjoutQoffre extends Command
             Log::info('Processing countdown with unique code: ' . $offre->code_unique);
 
             $uniqueCode = $offre->code_unique;
-            $offreGroupeExistante = OffreGroupe::where('code_unique', $uniqueCode)->first();
+            try {
+                $offreGroupeExistante = OffreGroupe::where('code_unique', $uniqueCode)->first();
+            } catch (\Exception $e) {
+                Log::error('Error fetching OffreGroupe for unique code ' . $uniqueCode . ': ' . $e->getMessage());
+                continue;
+            }
 
             if (!$offreGroupeExistante) {
                 Log::error('OffreGroupe not found for unique code: ' . $uniqueCode);
                 continue;
             }
 
-            $produitId = $offreGroupeExistante->produit_id;
-            Log::info('Found OffreGroupe with produit ID: ' . $produitId);
 
             $sommeQuantites = OffreGroupe::where('code_unique', $uniqueCode)->sum('quantite');
+
             Log::info('Total quantity for OffreGroupe with code ' . $uniqueCode . ': ' . $sommeQuantites);
 
-            $produit = ProduitService::find($produitId);
-            if (!$produit) {
-                Log::error('Product not found for ID: ' . $produitId);
+
+            $sender = $offre->user;
+            if (!$sender) {
+                Log::error('Sender not found for countdown: ' . $offre->code_unique);
                 continue;
             }
 
-            Log::info('Found product: ' . $produit->name . ' for ID: ' . $produitId);
+            try {
+                DB::beginTransaction();
 
-            $user = User::find($produit->user_id);
-            if (!$user) {
-                Log::error('User not found for product ID: ' . $produit->user_id);
-                continue;
+                Notification::send($sender, new OffreNegosDone([
+                    'quantite' => $sommeQuantites,
+                    'idProd' =>  $offreGroupeExistante->produit_id,
+                    'id_sender' => $offre->sender->id,
+                    'code_unique' => $uniqueCode,
+                ]));
+                Log::info('Notification sent to user:', ['sender' => $sender]);
+
+                $offre->update(['notified' => true]);
+                DB::commit();
+
+                Log::info('Updated countdown notified status for unique code: ' . $uniqueCode);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error processing countdown with code ' . $uniqueCode . ': ' . $e->getMessage());
             }
-
-            Log::info('Found user for product: ' . $user->name . ' (ID: ' . $user->id . ')');
-
-            // Determine the economic zone selected by the user
-            $zone_economique = $offreGroupeExistante->zone; // Replace with your logic to determine the zone
-            Log::info('Economic zone selected: ' . $zone_economique);
-
-            $userZone = strtolower($user->commune);
-            $userVille = strtolower($user->ville);
-            $userDepartement = strtolower($user->departe);
-            $userPays = strtolower($user->country);
-            $userSousRegion = strtolower($user->sous_region);
-            $userContinent = strtolower($user->continent);
-
-            $appliedZoneValue = null;
-            switch ($zone_economique) {
-                case 'proximite':
-                    $appliedZoneValue = $userZone;
-                    break;
-                case 'locale':
-                    $appliedZoneValue = $userVille;
-                    break;
-                case 'departementale':
-                    $appliedZoneValue = $userDepartement;
-                    break;
-                case 'nationale':
-                    $appliedZoneValue = $userPays;
-                    break;
-                case 'sous_regionale':
-                    $appliedZoneValue = $userSousRegion;
-                    break;
-                case 'continentale':
-                    $appliedZoneValue = $userContinent;
-                    break;
-                default:
-                    Log::warning('Unknown economic zone: ' . $zone_economique);
-                    break;
-            }
-
-            Log::info('Applied zone value for notification: ' . $appliedZoneValue);
-
-            // Retrieve IDs of users in the same locality who have the product
-            $idsProprietaires = Consommation::where('name', $produit->name)
-                ->where('id_user', '!=', $produit->user_id)
-                ->where('statuts', 'Accepté')
-                ->distinct()
-                ->pluck('id_user')
-                ->toArray();
-
-            Log::info('IDs of product owners to notify: ', $idsProprietaires);
-
-            $idsLocalite = User::whereIn('id', $idsProprietaires)
-                ->where(function ($query) use ($appliedZoneValue) {
-                    $query->where('commune', $appliedZoneValue)
-                        ->orWhere('ville', $appliedZoneValue)
-                        ->orWhere('departe', $appliedZoneValue)
-                        ->orWhere('country', $appliedZoneValue)
-                        ->orWhere('sous_region', $appliedZoneValue)
-                        ->orWhere('continent', $appliedZoneValue);
-                })
-                ->pluck('id')
-                ->toArray();
-
-            Log::info('IDs of users in the same locality retrieved:', ['ids_localite' => $idsLocalite]);
-
-            if (empty($idsLocalite)) {
-                Log::error('No users consume this product in your economic zone.');
-                continue;
-            }
-
-            // Merge the two ID arrays
-            $idsToNotify = array_unique(array_merge($idsProprietaires, $idsLocalite));
-            Log::info('Final list of user IDs to notify: ', $idsToNotify);
-
-            // Send a notification to each user
-            foreach ($idsToNotify as $userId) {
-                $user = User::find($userId);
-                if ($user) {
-                    try {
-                        Notification::send($user, new OffreNegosDone([
-                            'quantite' => $sommeQuantites,
-                            'produit_id' => $produit->id,
-                            'produit_name' => $produit->name,
-                            'code_unique' => $uniqueCode
-                        ]));
-                        Log::info('Notification sent to user:', ['user_id' => $userId]);
-                    } catch (\Exception $e) {
-                        Log::error('Error sending notification:', ['user_id' => $userId, 'exception' => $e->getMessage()]);
-                    }
-                } else {
-                    Log::error('User not found for ID: ' . $userId);
-                }
-            }
-
-            // Update the notification status
-            $offre->update(['notified' => true]);
-            Log::info('Updated countdown notified status for unique code: ' . $uniqueCode);
         }
+
 
         Log::info('AjoutQoffre command finished.');
     }

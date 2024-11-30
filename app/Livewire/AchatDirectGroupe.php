@@ -327,35 +327,7 @@ class AchatDirectGroupe extends Component
         // Récupérer le portefeuille de l'utilisateur
         $userWallet = Wallet::where('user_id', $userId)->first();
 
-        // Récupérer les IDs des propriétaires des consommations similaires
-        $idsProprietaires = Consommation::where('name', $produit->name)
-            ->where('id_user', '!=', $userId)
-            ->where('statuts', 'Accepté')
-            ->distinct()
-            ->pluck('id_user')
-            ->toArray();
 
-        // Compter le nombre d'IDs distincts
-        $nombreProprietaires = count($idsProprietaires);
-
-        // Récupérer les fournisseurs pour ce produit
-        $nomFournisseur = ProduitService::where('name', $produit->name)
-            ->where('user_id', '!=', $userId)
-            ->where('statuts', 'Accepté')
-            ->distinct()
-            ->pluck('user_id')
-            ->toArray();
-
-        $nomFournisseurCount = count($nomFournisseur);
-
-        // Récupérer le nombre d'achats groupés distincts pour ce produit
-        $nbreAchatGroup = AchatGrouper::where('idProd', $produit->id)
-            ->distinct('userSender')
-            ->count('userSender');
-
-        // Récupérer la date la plus ancienne parmi les achats groupés pour ce produit
-        $datePlusAncienne = AchatGrouper::where('idProd', $produit->id)->min('created_at');
-        $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
 
 
         // $this->verifierEtEnvoyerNotification();
@@ -364,12 +336,6 @@ class AchatDirectGroupe extends Component
             'produit',
             'userWallet',
             'userId',
-            'nbreAchatGroup',
-            'datePlusAncienne',
-            'idsProprietaires',
-            'nombreProprietaires',
-            'nomFournisseur',
-            'nomFournisseurCount',
         ));
     }
 }

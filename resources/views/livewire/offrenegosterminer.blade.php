@@ -63,12 +63,18 @@
                 <div class="mt-4 p-4 bg-blue-50 rounded-lg border">
                     <h4 class="font-semibold text-gray-800">Résumé :</h4>
                     <p class="text-gray-700">
+                        Prix unitaire(apres négociation) : <span
+                            class="font-bold">{{ $notification->data['prixTrade'] }} FCFA</span>
+                        </span>
+                    </p>
+                    <p class="text-gray-700">
                         Vous avez sélectionné <span class="font-bold" x-text="quantité"></span>
                         {{ $produit->condProd }}(s).
                     </p>
                     <p class="text-gray-700">
                         Localisation : <span class="font-bold" x-text="localite || 'Non renseignée'"></span>
                     </p>
+
                 </div>
 
                 <!-- Mode de réception -->
@@ -441,7 +447,7 @@
     // Fonction pour mettre à jour le montant total pour l'achat direct
     function updateMontantTotalDirect() {
         const quantityInput = document.getElementById('quantityInput');
-        const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
+        const price = parseFloat({{ $notification->data['prixTrade'] }}); // Récupérer le prix depuis PHP
         const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
         const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
         const quantity = parseInt(quantityInput.value);
