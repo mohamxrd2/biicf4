@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\User;
 use App\Models\Admin;
+use App\Models\Coi;
 use Livewire\Component;
 use App\Models\Transaction;
 use App\Models\ComissionAdmin;
@@ -20,31 +21,61 @@ class Wallet extends Component
 
     public $comissions;
 
-  
+    public $totalBalanceAgent;
+
+    public $totalWalletUser;
+    public $totalCOIUser;
+    public $totalCEDDUser;
+    public $totalCFAUser;
+
+    public $totalCEFDUser;
+    public $totalCRPUser;
+
+    public $totalBalanceUsers;
+
+
 
     public function mount()
     {
-        $this->totalEnv = Transaction::where('sender_admin_id', Auth::guard('admin')->id())
-            ->where('type', 'Envoie')
-            ->sum('amount');
+        $this->totalBalanceAgent = \App\Models\Wallet::whereIn('admin_id', function ($query) {
+            $query->select('id')
+                ->from('admins')
+                ->where('admin_type', 'agent');
+        })->sum('balance');
+
+        $this->totalWalletUser = \App\Models\Wallet::whereNotNull('user_id')
+            ->sum('balance');
+        $this->totalCOIUser = Coi::whereNotNull('id_wallet')->sum('Solde');
+        $this->totalCEDDUser = \App\Models\Cedd::whereNotNull('id_wallet')->sum('Solde');
+        $this->totalCFAUser = \App\Models\Cfa::whereNotNull('id_wallet')->sum('Solde');
+        $this->totalCEFDUser = \App\Models\Cefp::whereNotNull('id_wallet')->sum('Solde');
+        $this->totalCRPUser = \App\Models\Crp::whereNotNull('id_wallet')->sum('Solde');
+
+
+
+        // Somme des balances des user_id
+        $this->totalBalanceUsers = $this->totalWalletUser + $this->totalCOIUser + $this->totalCEDDUser + $this->totalCFAUser + $this->totalCEFDUser + $this->totalCRPUser;
+
+
         
+
+
+
+
+
         $this->totalRecu = Transaction::where('receiver_admin_id', Auth::guard('admin')->id())
-             ->where('type', 'Reception')
-             ->sum('amount');
-        
+            ->where('type', 'Reception')
+            ->sum('amount');
+
         $this->comissions = ComissionAdmin::where('admin_id', 1)->first();
-       
-       
     }
 
-    protected $rules = [
-        
-    ];
+    protected $rules = [];
 
     public function deposit()
     {
         $this->validate([
-          'amount' => 'required|numeric|min:10000|max:99999999',
+            'amount' => 'required|numeric|min:10000|max:99999999',
         ], [
             'amount.required' => 'Veuillez entrer un montant.',
             'amount.numeric' => 'Le montant doit être numérique.',
@@ -54,7 +85,7 @@ class Wallet extends Component
 
         $adminId = Auth::guard('admin')->id();
 
-      
+
 
         // Mettre à jour le solde du portefeuille de l'administrateur
         $adminWallet = AdminWallet::where('admin_id', $adminId)->first();
@@ -69,7 +100,7 @@ class Wallet extends Component
         $this->amount = null;
 
         // Rediriger avec un message de succès
-         session()->flash('success', 'Dépôt effectué avec succès.');
+        session()->flash('success', 'Dépôt effectué avec succès.');
 
         // // Émettre un événement pour mettre à jour les données dans d'autres composants si nécessaire
         // $this->emit('walletUpdated');
@@ -143,7 +174,7 @@ class Wallet extends Component
 
         return view('livewire.wallet', compact('adminWallet', 'agents', 'users', 'agentCount', 'userCount', 'adminId'));
     }
-    
+
     public function navigateToClient()
     {
         $this->dispatch('navigate', 'rechargeClient');

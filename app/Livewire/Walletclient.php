@@ -29,6 +29,12 @@ class Walletclient extends Component
 
     public $currentPage = 'transaction';
 
+    // Variables pour la gestion de la pagination
+    public $transactions;
+    public $transactionsLimit = 10;
+    public $hasMoreTransactions = true;
+
+
     protected $listeners = ['navigate' => 'setPage'];
 
     public function setPage($page)
@@ -63,6 +69,9 @@ class Walletclient extends Component
 
 
         $this->wallet();
+
+         // Charger les transactions initiales
+         $this->loadTransactions();
     }
     #[On('refreshComponent')]
     public function wallet()
@@ -78,6 +87,33 @@ class Walletclient extends Component
         $this->cefd = Cefp::where('id_wallet', $this->userWallet->id)->first();
         $this->crp = Crp::where('id_wallet', $this->userWallet->id)->first();
 
+    }
+    public function loadTransactions()
+    {
+        $userId = Auth::guard('web')->id();
+        
+        // Charger les transactions avec la limite définie
+        $this->transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
+            ->where(function ($query) use ($userId) {
+                $query->where('sender_user_id', $userId)
+                    ->orWhere('receiver_user_id', $userId);
+            })
+            ->orderBy('created_at', 'DESC')
+            ->limit($this->transactionsLimit)
+            ->get();
+
+        // Vérifier si l'utilisateur a plus de transactions à charger
+        $this->hasMoreTransactions = Transaction::where(function ($query) use ($userId) {
+            $query->where('sender_user_id', $userId)
+                ->orWhere('receiver_user_id', $userId);
+        })
+        ->count() > $this->transactionsLimit;
+    }
+
+    public function loadMoreTransactions()
+    {
+        $this->transactionsLimit += 10; // Incrémenter la limite pour charger plus de transactions
+        $this->loadTransactions(); // Recharger les transactions
     }
     public function formatAccountNumber($accountNumber)
     {
@@ -144,22 +180,11 @@ class Walletclient extends Component
         $userCount = User::where('id', '!=', $userId)->count();
         Log::info('User Count (excluding authenticated user):', ['user_count' => $userCount]);
 
-        $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
-            ->where(function ($query) use ($userId) {
-                $query->where('sender_user_id', $userId)
-                    ->orWhere('receiver_user_id', $userId);
-            })
-            ->orderBy('created_at', 'DESC')
-            ->get();
-
-        $transacCount = Transaction::where(function ($query) use ($userId) {
-            $query->where('sender_user_id', $userId)
-                ->orWhere('receiver_user_id', $userId);
-        })->count();
+        $transactions = $this->transactions;
 
         $receptionTransactionSum = $this->getReceptionTransactionSumForLast30Days();
         $envoieTransactionSum = $this->getEnvoieTransactionSumForLast30Days();
 
-        return view('livewire.walletclient', compact('users', 'userCount', 'transactions', 'transacCount', 'userId', 'receptionTransactionSum', 'envoieTransactionSum'));
+        return view('livewire.walletclient', compact('users', 'userCount', 'transactions', 'userId', 'receptionTransactionSum', 'envoieTransactionSum'));
     }
 }

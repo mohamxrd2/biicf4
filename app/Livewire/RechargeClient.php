@@ -71,19 +71,7 @@ class RechargeClient extends Component
         $userWallet->increment('balance', $this->amount);
         $adminWallet->decrement('balance', $this->amount);
 
-        // $transaction1 = new Transaction();
-        // $transaction1->sender_admin_id = $adminId;
-        // $transaction1->receiver_user_id = $user->id;
-        // $transaction1->type = 'Reception';
-        // $transaction1->amount = $this->amount;
-        // $transaction1->save();
-
-        // $transaction2 = new Transaction();
-        // $transaction2->sender_admin_id = $adminId;
-        // $transaction2->receiver_user_id = $user->id;
-        // $transaction2->type = 'Envoie';
-        // $transaction2->amount = $this->amount;
-        // $transaction2->save();
+  
 
         $referenceId = $this->generateIntegerReference();
 
