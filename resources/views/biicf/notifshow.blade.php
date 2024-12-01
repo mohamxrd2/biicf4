@@ -53,7 +53,6 @@
         @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
             @livewire('appeloffreterminergrouper', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\livraisonAppelOffregrouper')
-            <h1 class="mb-2 text-3xl font-semibold text-center">Negociation Des Livreurs</h1>
             @livewire('livraisonagrouper', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\CountdownNotificationAg')
             @livewire('countdown-notification-ag', ['id' => $id])
@@ -417,16 +416,7 @@
                     @endif
                 </div>
 
-
-
-
             </div>
-
-
-
-
-
-
 
             {{-- general --}}
         @elseif ($notification->type === 'App\Notifications\VerifUser')

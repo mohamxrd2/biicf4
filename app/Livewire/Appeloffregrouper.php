@@ -23,6 +23,7 @@ class Appeloffregrouper extends Component
     public $quantite;
     public $localite;
     public $selectedOption;
+    public $groupages;
 
 
     public function mount($id)
@@ -41,6 +42,11 @@ class Appeloffregrouper extends Component
             ->distinct('user_id') // Prend uniquement les valeurs uniques de user_id
             ->count('user_id');   // Compte les valeurs distinctes
 
+        // Charger les groupages
+        $this->groupages = userquantites::with('user')
+            ->where('code_unique', $this->notification->data['code_unique'])
+            ->orderBy('created_at', 'asc')
+            ->get();
     }
 
 

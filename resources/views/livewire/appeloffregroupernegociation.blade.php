@@ -1,11 +1,24 @@
 <div>
-
-
     <div class="max-w-5xl mx-auto">
         <!-- Barre du haut avec timer -->
         <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
-            <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
+            <div class="flex flex-row items-center space-x-2 relative">
 
+                <h1 class="text-lg font-bold">NEGOCIATION POUR LES FOURNISSEURS
+                </h1>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" data-tooltip-target="tooltip-co" viewBox="0 0 24 24"
+                    stroke-width="1.5" stroke="currentColor" class="text-black w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                </svg>
+
+                <!-- Tooltip -->
+                <div id="tooltip-co" role="tooltip"
+                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                    Negociation sur les quantités des clients qui se sont groupés <br />
+                    <div class="tooltip-arrow" data-popper-arrow></div>
+                </div>
+            </div>
             <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
                 <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
 
@@ -55,7 +68,15 @@
                                 class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
                                 📦
                             </div>
-                            <span>Quantité : {{ $appeloffregrp->quantity }} unités </span>
+                            <span>Quantité TOTAL : {{ $this->notification->data['quantiteTotale'] }} </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
+                                📦
+                            </div>
+                            <span>Nombre total de Personnes :
+                                {{ $this->notification->data['totalPersonnestotalPersonnes'] }} </span>
                         </div>
                         <div class="flex items-center gap-2">
                             <div

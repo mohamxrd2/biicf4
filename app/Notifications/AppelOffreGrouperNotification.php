@@ -29,17 +29,9 @@ class AppelOffreGrouperNotification extends Notification implements ShouldQueue
             'dateTot' => $this->achat['dateTot'] ?? null,
             'dateTard' => $this->achat['dateTard'] ?? null,
             'productName' => $this->achat['productName'] ?? null,
-            'quantity' => $this->achat['quantity'] ?? null,
-            'payment' => $this->achat['payment'] ?? null,
-            'Livraison' => $this->achat['Livraison'] ?? null,
-            'specificity' => $this->achat['specificity'] ?? null,
-            'localite' => $this->achat['localite'] ?? null,
-            'image' => $this->achat['image'] ?? null,
-            'id_sender' => $this->achat['id_sender'] ?? null,
-            'prodUsers' => $this->achat['prodUsers'] ?? null,
-            'lowestPricedProduct' => $this->achat['lowestPricedProduct'] ?? null,
+            'totalPersonnestotalPersonnes' => $this->achat['totalPersonnes'] ?? null,
             'code_unique' => $this->achat['code_unique'],
-            'difference' => $this->achat['difference'] ?? null,
+            'quantiteTotale' => $this->achat['quantiteTotale'] ?? null,
         ];
     }
 }

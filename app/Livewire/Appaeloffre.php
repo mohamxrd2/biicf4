@@ -245,7 +245,6 @@ class Appaeloffre extends Component
             $quantite = new userquantites();
             $quantite->user_id = $userId;
             $quantite->localite = $validatedData['localite'];
-            $quantite->type_achat = $validatedData['selectedOption'];
             $quantite->quantite = $validatedData['quantité'];
             $quantite->code_unique = $this->generateUniqueReference();
             $quantite->save();
