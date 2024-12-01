@@ -45,24 +45,12 @@ class Appeloffregroupernegociation extends Component
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $this->code_unique = $this->notification->data['code_unique'] ?? null;
-        $this->prixProd = $this->notification->data['prixProd'] ?? null;
-        $this->specificite = $this->notification->data['specificity'] ?? null;
-        $this->localite = $this->notification->data['localite'] ?? null;
-        $this->nameprod = $this->notification->data['productName'] ?? null;
-        $this->idsender = $this->notification->data['id_sender'] ?? null;
-        $this->difference = $this->notification->data['difference'] ?? null;
-        $this->quantiteC = $this->notification->data['quantity'] ?? null;
         $this->id_trader = Auth::user()->id ?? null;
-        $this->namefourlivr = ProduitService::with('user')->find($this->idProd);
 
-        $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelOffreGrp']);
-
-        // Vérifier si 'code_unique' existe dans les données de notification
-        $this->code_unique = $this->notification->data['code_unique'];
+        $this->appeloffregrp = AppelOffreGrouper::find(218);
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $this->oldestComment = Countdown::where('code_unique', $this->code_unique)
+        $this->oldestComment = Countdown::where('code_unique', $this->appeloffregrp->codeunique)
             ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
@@ -79,7 +67,7 @@ class Appeloffregroupernegociation extends Component
         // Déboguer pour vérifier la structure de l'événement
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->comments = Comment::with('user')
-            ->where('code_unique', $this->appeloffregrp->code_unique)
+            ->where('code_unique', $this->appeloffregrp->codeunique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->get();
@@ -128,7 +116,7 @@ class Appeloffregroupernegociation extends Component
 
             $comment = Comment::create([
                 'prixTrade' => $this->prixTrade,
-                'code_unique' => $this->code_unique,
+                'code_unique' => $this->appeloffregrp->codeunique,
                 'id_trader' => Auth::id(),
                 'quantiteC' => $this->appeloffregrp->quantity,
                 'id_sender' => json_encode($this->appeloffregrp->prodUsers),
@@ -138,13 +126,13 @@ class Appeloffregroupernegociation extends Component
 
             // Vérifier si 'code_unique' existe dans les données de notification
             $this->comments = Comment::with('user')
-                ->where('code_unique', $this->appeloffregrp->code_unique)
+                ->where('code_unique', $this->appeloffregrp->codeunique)
                 ->whereNotNull('prixTrade')
                 ->orderBy('prixTrade', 'asc')
                 ->get();
 
             // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->code_unique)
+            $existingCountdown = Countdown::where('code_unique', $this->appeloffregrp->codeunique)
                 ->where('notified', false)
                 ->orderBy('start_time', 'desc')
                 ->first();
@@ -155,9 +143,8 @@ class Appeloffregroupernegociation extends Component
                     'user_id' => $this->id_trader,
                     'userSender' => null,
                     'start_time' => now(),
-                    'code_unique' => $this->code_unique,
-                    'difference' => 'appOffre',
-                    'id_appeloffre' => $this->appeloffregrp->id,
+                    'code_unique' => $this->appeloffregrp->codeunique,
+                    'difference' => 'appelOffreGrouper',
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
                 broadcast(new OldestCommentUpdated(now()->toIso8601String()));

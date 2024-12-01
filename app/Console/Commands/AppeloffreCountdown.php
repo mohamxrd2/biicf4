@@ -6,6 +6,7 @@ use App\Models\AppelOffreGrouper;
 use App\Models\User;
 use App\Notifications\AppelOffreGrouperNotification;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class AppeloffreCountdown extends Command
@@ -29,23 +30,28 @@ class AppeloffreCountdown extends Command
             $codesUniques = $appelOffreGroup->codeunique;
             $dateTot = $appelOffreGroup->dateTot;
             $dateTard = $appelOffreGroup->dateTard;
-            $productName = $appelOffreGroup->productName;
-            $quantity = $appelOffreGroup->quantity;
-            $payment = $appelOffreGroup->payment;
-            $livraison = $appelOffreGroup->livraison;
-            $specificity = $appelOffreGroup->specificity;
-            $localite = $appelOffreGroup->localite;
-            $lowestPricedProduct = $appelOffreGroup->lowestPricedProduct;
 
-            $usergroup = AppelOffreGrouper::where('codeunique', $codesUniques)
-                ->distinct()
-                ->pluck('user_id')
-                ->toArray();
+            Log::info('Traitement d\'un groupe d\'appel d\'offre', [
+                'codeunique' => $codesUniques,
+                'dateTot' => $dateTot,
+                'dateTard' => $dateTard,
+            ]);
 
             $prodUsers = AppelOffreGrouper::where('codeunique', $codesUniques)
                 ->distinct()
                 ->pluck('prodUsers')
                 ->toArray();
+
+            Log::info('Liste des prodUsers extraits', [
+                'prodUsers' => $prodUsers,
+            ]);
+
+            // Exemple : validation des données
+            if (empty($prodUsers)) {
+                Log::warning('Aucun prodUser trouvé pour ce codeunique', [
+                    'codeunique' => $codesUniques,
+                ]);
+            }
 
             $decodedProdUsers = [];
             foreach ($prodUsers as $prodUser) {
@@ -56,34 +62,17 @@ class AppeloffreCountdown extends Command
             }
 
             $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
-
-
+            $totalPersonnes = count($decodedProdUsers); // Nombre total de personnes
 
             foreach ($decodedProdUsers as $prodUser) {
                 $data = [
                     'dateTot' => $dateTot,
                     'dateTard' => $dateTard,
-                    'productName' => $productName,
-                    'quantity' => $sumquantite,
-                    'payment' => $payment,
-                    'Livraison' => $livraison,
-                    'localite' => $localite,
-                    'specificity' => $specificity,
-                    'difference' => 'grouper',
-                    'image' => null,
-                    'id_sender' => $usergroup,
-                    'prodUsers' => $prodUser,
-                    'lowestPricedProduct' => $lowestPricedProduct,
-                    'code_unique' => $codesUniques,
-                    'id_appelOffreGrp' => $appelOffreGroups->id,
+                    'productName' => $appelOffreGroup->productName, // Assurez-vous que $productName est bien défini
+                    'totalPersonnes' => $totalPersonnes, // Nombre total de personnes
+                    'quantiteTotale' => $sumquantite, // Quantité totale
+                    'code_unique' => $codesUniques // Quantité totale
                 ];
-
-                $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
-                foreach ($requiredKeys as $key) {
-                    if (!array_key_exists($key, $data)) {
-                        throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
-                    }
-                }
 
                 $owner = User::find($prodUser);
 
@@ -94,7 +83,5 @@ class AppeloffreCountdown extends Command
 
             // AppelOffreGrouper::where('codeunique', $codesUniques)->delete();
         }
-
-        return 0;
     }
 }

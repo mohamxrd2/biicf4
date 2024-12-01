@@ -5,16 +5,13 @@ namespace App\Console\Commands;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\User;
-use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
-use App\Notifications\Confirmation;
-use App\Notifications\CountdownNotification;
 use App\Notifications\CountdownNotificationAd;
 use App\Notifications\CountdownNotificationAg;
 use App\Notifications\CountdownNotificationAp;
 use App\Notifications\NegosTerminer;
+use App\Notifications\Confirmation;
 use Illuminate\Console\Command;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
@@ -30,232 +27,149 @@ class CheckCountdowns extends Command
 
     public function handle()
     {
-
         $countdowns = Countdown::where('notified', false)
             ->where('start_time', '<=', now()->subMinutes(2))
-            ->with('sender') // Charger la relation userSender
+            ->with(['sender', 'achat', 'appelOffre'])
             ->get();
 
-
         foreach ($countdowns as $countdown) {
-            // Récupérer le code unique
-            $code_unique = $countdown->code_unique;
-            // Log::info('Traitement du countdown.', ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
-
-            // Retrouver l'enregistrement avec le prix le plus bas parmi les enregistrements avec ce code unique
-            $lowestPriceComment = Comment::with('user')
-                ->where('code_unique', $code_unique)
-                ->orderBy('prixTrade', 'asc')
-                ->orderBy('created_at', 'asc') // En cas d'égalité, prendre le plus ancien
-                ->first();
-            // Log::info('Commentaire avec le prix le plus bas récupéré.', ['lowestPriceComment_id' => $lowestPriceComment->id ?? null]);
-
-            // Retrouver l'enregistrement avec le prix le plus élevé parmi les enregistrements avec ce code unique
-            $highestPriceComment = Comment::with('user')
-                ->where('code_unique', $code_unique)
-                ->orderBy('prixTrade', 'desc')
-                ->first();
-            // Log::info('Commentaire avec le prix le plus élevé récupéré.', ['highestPriceComment_id' => $highestPriceComment->id ?? null]);
-
-            // Vérifier si un enregistrement a été trouvé
-            if ($lowestPriceComment) {
-                $commentToUse = ($countdown->difference === 'offredirect') ? $highestPriceComment : $lowestPriceComment;
-                Log::info('Commentaire à utiliser déterminé.', ['commentToUse_id' => $commentToUse->id ?? null]);
-
-                if ($commentToUse) {
-                    // Extraire les détails pour la notification
-                    Log::info('Préparation des détails de la notification.', ['commentToUse_id' => $commentToUse->id]);
-
-                    $price = $commentToUse->prixTrade;
-                    $traderId = $commentToUse->id_trader;
-                    $senderId = $commentToUse->id_sender;
-                    $id_prod = $commentToUse->id_prod;
-                    $quantiteC = $commentToUse->quantiteC;
-
-
-                    // Définir les détails de la notification
-                    $details = [
-                        'code_unique' => $countdown->code_unique,
-                        'prixTrade' => $price,
-                        'livreur' => $traderId,
-                        'achat_id' =>  $countdown->achat->id ?? $countdown->id_achat, // Assurez-vous que $countdown->achat existe
-                        'id_appeloffre' =>  $countdown->appelOffre->id ?? $countdown->id_appeloffre, // Assurez-vous que $countdown->achat existe
-                    ];
-
-                    // Vous pouvez maintenant traiter la notification ou autre logique
-                    Log::info('Notification préparée.', $details);
-
-
-                    $Gdetails = [
-                        'code_unique' => $countdown->code_unique,
-                        'prixTrade' => $price,
-                        'id_trader' => $traderId,
-                        'quantiteC' => $quantiteC,
-                    ];
-                    //lier a apple offre
-
-                    $type_achat = $type ?? null;
-                    // Check if a notification with the specific conditions exists
-                    $notificationExists = DatabaseNotification::where('type', 'App\Notifications\AppelOffre')
-                        ->whereJsonContains('data->code_unique', $code_unique)
-                        ->exists();
-
-                    if ($notificationExists) {
-                        $notification = DatabaseNotification::where('type', 'App\Notifications\AppelOffre')
-                            ->whereJsonContains('data->code_unique', $code_unique)
-                            ->first();
-                        $notificationData = $notification->data;
-
-                        if (isset($notificationData['reference'])) {
-                            $reference = $notificationData['reference'];
-                            Log::info('Référence trouvée dans la notification existante.', ['reference' => $reference]);
-                        }
-                    }
-                    // Vérifier le type de notification à envoyer
-                    if ($countdown->difference === 'appOffre') {
-                        $Adetails = [
-                            'code_unique' => $countdown->code_unique,
-                            'prixTrade' => $price,
-                            'id_trader' => $traderId,
-                            'id_appeloffre' => $countdown->id_appeloffre, // Correction ici
-                        ];
-                        Log::info('Envoi de la notification pour type "appOffre".', ['user_id' => $commentToUse->user->id]);
-                        Notification::send($commentToUse->user, new AppelOffreTerminer($Adetails));
-
-                        // $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
-                        // if ($notification) {
-                        //     Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-                        //     $notification->update(['type_achat' => $type_achat]);
-                        // }
-                    } else if ($countdown->difference === 'offredirect') {
-                        $enchere = [
-                            'code_unique' => $countdown->code_unique,
-                            'prixTrade' => $price,
-                            'idProd' =>  $commentToUse->id_prod, // Assurez-vous que $countdown->achat existe
-                            'id_trader' =>  $commentToUse->id_trader, // Assurez-vous que $countdown->achat existe
-                        ];
-                        Log::info('Envoi de la notification pour type "offredirect".', ['user_id' => $lowestPriceComment->user->id]);
-                        Notification::send($commentToUse->user, new NegosTerminer($enchere));
-                    } else if ($countdown->difference === 'grouper') {
-                        Log::info('Envoi de la notification pour type "grouper".', ['user_id' => $lowestPriceComment->user->id]);
-                        Notification::send($lowestPriceComment->user, new AppelOffreTerminerGrouper($Gdetails));
-
-                        $notification = $lowestPriceComment->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
-                        if ($notification) {
-                            Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-                            $notification->update(['type_achat' => 'OFG']);
-                        }
-                    } else  if ($countdown->difference === 'ad') {
-                        $clientId = User::find($countdown->achat->userSender);
-                        Log::info('id.', ['id user' => $clientId->id ?? null]);
-
-                        Notification::send($clientId, new CountdownNotificationAd($details));
-                        $notification = $clientId->notifications()
-                            ->where('type', CountdownNotificationAd::class)
-                            ->latest() // Prend la dernière notification
-                            ->first();
-
-                        if ($notification) {
-                            // Mise à jour de la notification existante
-                            $notification->update(['type_achat' => 'Delivery']);
-                            Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-                        } else {
-                            Log::warning('Aucune notification de type AppelOffreTerminer trouvée.', ['clientId' => $clientId->id]);
-                        }
-
-                        // Récupération de l'utilisateur (trader) avec une vérification
-                        $gagnantId = User::find($traderId);
-
-                        if ($gagnantId) {
-                            $livreurdetails = [
-                                'achat_id' => $countdown->id_achat,
-                                'idProd' => $id_prod,
-                                'code_unique' => $countdown->code_unique,
-                                'title' => 'Gagnant de la negociation',
-                                'description' => 'La négociation est terminée->',
-                            ];
-
-                            // Envoi de la notification au trader
-                            Notification::send($gagnantId, new Confirmation($livreurdetails));
-                        } else {
-                            Log::error("Utilisateur introuvable pour l'ID : $traderId");
-                        }
-                    } else  if ($countdown->difference === 'ap') {
-
-                        //envoie de notification au client
-                        Notification::send($countdown->sender, new CountdownNotificationAp($details));
-                        $notification = $countdown->sender->notifications()
-                            ->where('type', CountdownNotificationAp::class)
-                            ->latest() // Prend la dernière notification
-                            ->first();
-
-                        if ($notification) {
-                            // Mise à jour de la notification existante
-                            $notification->update(['type_achat' => 'Delivery']);
-                            Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-                        } else {
-                            Log::warning('Aucune notification de type AppelOffreTerminer trouvée.', ['clientId' => $countdown->sender]);
-                        }
-
-                        // Récupération de l'utilisateur (trader) avec une vérification
-                        $gagnantId = User::find($traderId);
-
-                        if ($gagnantId) {
-                            $livreurdetails = [
-                                'achat_id' => $countdown->id_achat,
-                                'idProd' => $id_prod,
-                                'code_unique' => $countdown->code_unique,
-                                'title' => 'Gagnant de la negociation',
-                                'description' => 'La négociation est terminée->',
-                            ];
-
-                            // Envoi de la notification au trader
-                            Notification::send($gagnantId, new Confirmation($livreurdetails));
-                        } else {
-                            Log::error("Utilisateur introuvable pour l'ID : $traderId");
-                        }
-                    } else if ($countdown->difference === 'ag') {
-                        $data = [
-                            'sender_name' => $countdown->sender->id ?? null, // Ajouter le nom de l'expéditeur aux détails de la notification
-                            'code_unique' => $countdown->code_unique,
-                            'prixTrade' => $price,
-                            'fournisseur' => $senderId,
-                            'livreur' => $traderId,
-                            'idProd' => $id_prod,
-                            'quantiteC' => $quantiteC,
-                            // 'prixProd' => $prixProd,
-                            // 'date_tot' => $date_tot,
-                            // 'date_tard' => $date_tard,
-                            // 'nameprod' => $nameprod,
-                            // 'specificite' => $specificite,
-                        ];
-                        Log::info('Envoi d\'une autre notification ou action par défaut.');
-                        Notification::send($countdown->sender, new CountdownNotificationAg($data));
-                    }
-
-                    // Supprimer les commentaires avec ce code unique
-                    Log::info('Suppression des commentaires avec code_unique.', ['code_unique' => $code_unique]);
-                    Comment::where('code_unique', $code_unique)->delete();
-
-                    // $notificationExists = DatabaseNotification::where(function ($query) use ($code_unique) {
-                    //     $query->where('type', 'App\Notifications\livraisonVerif')
-                    //         ->orWhere('type', 'App\Notifications\AppelOffreGrouperNotification')
-                    //         ->orWhere('type', 'App\Notifications\AppelOffre');
-                    // })
-                    //     ->whereJsonContains('data->code_livr', $code_unique)
-                    //     ->exists();
-
-                    // if ($notificationExists) {
-                    //     Log::info('Suppression des notifications existantes contenant le code_unique.', ['code_unique' => $code_unique]);
-                    //     DatabaseNotification::whereJsonContains('data->code_livr', $code_unique)->delete();
-                    //     DatabaseNotification::whereJsonContains('data->code_unique', $code_unique)->delete();
-                    // }
-
-                    // // Mettre à jour le statut notified à true
-                    // Log::info('Mise à jour du statut "notified" à true.', ['countdown_id' => $countdown->id]);
-                    $countdown->update(['notified' => true]);
-                }
-            }
+            $this->processCountdown($countdown);
         }
+    }
+
+    private function processCountdown($countdown)
+    {
+        $codeUnique = $countdown->code_unique;
+
+        // Récupération des commentaires
+        $lowestPriceComment = $this->getLowestPriceComment($codeUnique);
+        $highestPriceComment = $this->getHighestPriceComment($codeUnique);
+
+        if ($lowestPriceComment) {
+            $commentToUse = $this->determineCommentToUse($countdown, $lowestPriceComment, $highestPriceComment);
+
+            if ($commentToUse) {
+                // Préparer les détails de notification
+                $details = $this->prepareNotificationDetails($countdown, $commentToUse);
+
+                // Envoyer la notification en fonction du type
+                $this->sendNotificationBasedOnType($countdown, $commentToUse, $details);
+
+                // Nettoyage des données
+                $this->cleanUp($codeUnique);
+                $countdown->update(['notified' => true]);
+            }
+        } else {
+            Log::warning('Aucun commentaire trouvé pour ce countdown.', ['code_unique' => $codeUnique]);
+        }
+    }
+
+    private function getLowestPriceComment($codeUnique)
+    {
+        return Comment::with('user')
+            ->where('code_unique', $codeUnique)
+            ->orderBy('prixTrade', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->first();
+    }
+
+    private function getHighestPriceComment($codeUnique)
+    {
+        return Comment::with('user')
+            ->where('code_unique', $codeUnique)
+            ->orderBy('prixTrade', 'desc')
+            ->first();
+    }
+
+    private function determineCommentToUse($countdown, $lowestPriceComment, $highestPriceComment)
+    {
+        return $countdown->difference === 'offredirect' ? $highestPriceComment : $lowestPriceComment;
+    }
+
+    private function prepareNotificationDetails($countdown, $commentToUse)
+    {
+        return [
+            'code_unique' => $countdown->code_unique,
+            'prixTrade' => $commentToUse->prixTrade,
+            'livreur' => $commentToUse->id_trader,
+            'achat_id' => $countdown->achat->id ?? $countdown->id_achat,
+            'id_appeloffre' => $countdown->appelOffre->id ?? $countdown->id_appeloffre,
+        ];
+    }
+
+    private function sendNotificationBasedOnType($countdown, $commentToUse, $details)
+    {
+        $difference = $countdown->difference;
+
+        switch ($difference) {
+            case 'appelOffreGrouper':
+                $this->sendGroupedOfferNotification($commentToUse, $details);
+                break;
+
+            case 'offredirect':
+                $this->sendOffRedirectNotification($commentToUse, $details);
+                break;
+
+            case 'grouper':
+                $this->sendGroupedNotification($commentToUse, $details);
+                break;
+
+            case 'ad':
+                $this->sendAdNotification($countdown, $commentToUse, $details);
+                break;
+
+            case 'appelOffre':
+                $this->sendSingleOfferNotification($countdown, $commentToUse, $details);
+                break;
+
+            case 'ag':
+                $this->sendAgNotification($countdown, $commentToUse, $details);
+                break;
+
+            default:
+                Log::warning('Type de notification inconnu.', ['difference' => $difference]);
+        }
+    }
+
+    private function sendGroupedOfferNotification($commentToUse, $details)
+    {
+        Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
+        Log::info('Notification "appelOffreGrouper" envoyée.', ['user_id' => $commentToUse->user->id]);
+    }
+
+    private function sendOffRedirectNotification($commentToUse, $details)
+    {
+        Notification::send($commentToUse->user, new NegosTerminer($details));
+        Log::info('Notification "offredirect" envoyée.', ['user_id' => $commentToUse->user->id]);
+    }
+
+    private function sendGroupedNotification($commentToUse, $details)
+    {
+        Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
+    }
+
+    private function sendAdNotification($countdown, $commentToUse, $details)
+    {
+        $client = User::find($countdown->achat->userSender);
+
+        if ($client) {
+            Notification::send($client, new CountdownNotificationAd($details));
+        }
+    }
+
+    private function sendSingleOfferNotification($countdown, $commentToUse, $details)
+    {
+        Notification::send($countdown->sender, new CountdownNotificationAp($details));
+    }
+
+    private function sendAgNotification($countdown, $commentToUse, $details)
+    {
+        Notification::send($countdown->sender, new CountdownNotificationAg($details));
+    }
+
+    private function cleanUp($codeUnique)
+    {
+        Comment::where('code_unique', $codeUnique)->delete();
+        Log::info('Commentaires supprimés.', ['code_unique' => $codeUnique]);
     }
 }

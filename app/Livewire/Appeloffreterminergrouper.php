@@ -2,9 +2,13 @@
 
 namespace App\Livewire;
 
+use App\Events\NotificationSent;
+use App\Models\AchatDirect;
+use App\Models\AppelOffreGrouper;
 use App\Models\Livraisons;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\userquantites;
 use App\Models\Wallet;
@@ -13,6 +17,8 @@ use App\Notifications\CountdownNotification;
 use App\Notifications\livraisonAchatdirect;
 use App\Notifications\livraisonAppelOffregrouper;
 use App\Notifications\livraisonVerif;
+use App\Notifications\RefusAchat;
+use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -43,35 +49,19 @@ class Appeloffreterminergrouper extends Component
     public $clientContinent;
     public $clientSous_Region;
     public $clientDepartement;
+    public $AppelOffreGrouper;
+    public $prixFin;
+    public $produit;
 
 
 
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
-        $this->idsender = $this->notification->data['id_sender'] ?? null;
-        if (array_key_exists('id_sender', $this->notification->data)) {
-            $idSender = $this->notification->data['id_sender'];
+        $this->AppelOffreGrouper = AppelOffreGrouper::find($this->notification->data['AppelOffreGrouper_id']);
+        $this->produit = ProduitService::find($this->AppelOffreGrouper->id_prod);
+        $this->prixFin = $this->notification->data['quantiteTotal'] - $this->notification->data['quantiteTotal']  * 0.01;
 
-            if (is_array($idSender)) {
-                //If $idSender is already an array, assign it directly
-                $this->id_sender = $idSender;
-            } else {
-                // If $idSender is a string, use explode to convert it to an array
-                $this->id_sender = explode(',', $idSender);
-            }
-        } else {
-            //Handle the case where 'id_sender' does not exist
-            $this->id_sender = null; // or any other default value you prefer
-        }
-
-        $produitService = ProduitService::where('name', $this->notification->data['nameprod'])
-            ->where('user_id', $this->notification->data['id_trader'])
-            ->first();
-
-        if ($produitService) {
-            $this->idProd2 = $produitService->id;
-        }
         $this->ciblageLivreurs();
 
         //ciblage de livreur
@@ -79,111 +69,65 @@ class Appeloffreterminergrouper extends Component
     }
     public function ciblageLivreurs()
     {
-        // Vérification de l'existence de la clé 'userSender' ou 'id_sender' dans les données de la notification
-        $this->Idsender = $this->notification->data['userSender'] ?? $this->notification->data['id_sender'] ?? null;
+        // Vérification de l'existence de 'userSender' dans les données de la notification
+        $this->Idsender = $this->achatdirect->userSender ?? null;
 
-        if ($this->Idsender === null) {
-            return; // Arrêter l'exécution si 'userSender' est null
+        if (!$this->Idsender) {
+            session()->flash('error', 'L\'expéditeur n\'est pas défini.');
+            return;
         }
 
-        $this->clients = []; // Initialiser le tableau de clients
+        // Récupérer les informations du client
+        $client = User::find($this->Idsender);
+        if (!$client) {
+            session()->flash('error', 'Client introuvable.');
+            return;
+        }
+
+        // Normalisation des données du client pour comparaison
+        $this->clientContinent = strtolower($client->continent);
+        $this->clientSous_Region = strtolower($client->sous_region);
+        $this->clientPays = strtolower($client->country);
+        $this->clientDepartement = strtolower($client->departe);
+        $this->clientCommune = strtolower($client->commune);
 
         // Préparer les critères de filtrage pour les livreurs
         $query = Livraisons::query();
 
-        // Vérification si 'id_sender' est un tableau
-        if (is_array($this->Idsender)) {
-            // Récupérer les informations pour chaque utilisateur dans le tableau
-            foreach ($this->Idsender as $id) {
-                $client = User::findOrFail($id);
-
-                // Ajouter chaque client à un tableau avec leurs informations en minuscules
-                $clientData = [
-                    'continent' => strtolower($client->continent),
-                    'sous_region' => strtolower($client->sous_region),
-                    'country' => strtolower($client->country),
-                    'departement' => strtolower($client->departe),
-                    'commune' => strtolower($client->commune),
-                ];
-
-                $this->clients[] = $clientData;
-
-                // Ajouter des conditions pour chaque client dans la requête
-                $query->orWhere(function ($q) use ($clientData) {
-                    $q->where(function ($subQuery) use ($clientData) {
-                        $subQuery->where('zone', 'proximite')
-                            ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
-                            ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
-                            ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
-                            ->whereRaw('LOWER(departe) = ?', [$clientData['departement']])
-                            ->whereRaw('LOWER(commune) = ?', [$clientData['commune']]);
-                    })
-                        ->orWhere(function ($subQuery) use ($clientData) {
-                            $subQuery->where('zone', 'locale')
-                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
-                                ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']])
-                                ->whereRaw('LOWER(pays) = ?', [$clientData['country']])
-                                ->whereRaw('LOWER(departe) = ?', [$clientData['departement']]);
-                        })
-                        ->orWhere(function ($subQuery) use ($clientData) {
-                            $subQuery->where('zone', 'nationale')
-                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']])
-                                ->whereRaw('LOWER(sous_region) = ?', [$clientData['sous_region']]);
-                        })
-                        ->orWhere(function ($subQuery) use ($clientData) {
-                            $subQuery->where('zone', 'sous_regionale')
-                                ->whereRaw('LOWER(continent) = ?', [$clientData['continent']]);
-                        })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->where('zone', 'continentale');
-                        });
-                });
-            }
-        } else {
-            // Récupérer les informations du client unique
-            $client = User::findOrFail($this->Idsender);
-            $this->clientContinent = strtolower($client->continent);
-            $this->clientSous_Region = strtolower($client->sous_region);
-            $this->clientPays = strtolower($client->country);
-            $this->clientDepartement = strtolower($client->departe);
-            $this->clientCommune = strtolower($client->commune);
-
-            // Ajouter les conditions de filtrage pour un client unique
-            $query->where(function ($q) {
-                $q->where(function ($subQuery) {
-                    $subQuery->where('zone', 'proximite')
+        $query->where(function ($q) {
+            $q->where(function ($subQuery) {
+                $subQuery->where('zone', 'proximite')
+                    ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+                    ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
+                    ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
+                    ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
+                    ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
+            })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'locale')
                         ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
                         ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
                         ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                        ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
-                        ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
+                        ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
                 })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'locale')
-                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                            ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                            ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                            ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
-                    })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'nationale')
-                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                            ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
-                    })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'sous_regionale')
-                            ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
-                    })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('zone', 'continentale');
-                    });
-            });
-        }
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'nationale')
+                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
+                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'sous_regionale')
+                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
+                })
+                ->orWhere(function ($subQuery) {
+                    $subQuery->where('zone', 'continentale');
+                });
+        });
 
-        // Récupérer les livreurs éligibles
+        // Filtrer les livreurs acceptés
         $this->livreurs = $query->where('etat', 'Accepté')->get();
 
-        // Extraire les IDs des livreurs éligibles
+        // Extraire les IDs et compter les livreurs
         $this->livreursIds = $this->livreurs->pluck('user_id');
         $this->livreursCount = $this->livreurs->count();
     }
@@ -192,137 +136,257 @@ class Appeloffreterminergrouper extends Component
         return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
     }
 
-    public function accepter($textareaContent = null)
+    public function accepter()
     {
-        // Récupérez le contenu du textarea depuis la requête
-        $textareaContent = $textareaContent ?? '';
+        $validated = $this->validate([
+            'photoProd' => 'required|image|max:1024', // Limite à 1 MB
+            'textareaValue' => 'required',
+        ]);
 
-        // Vérifiez si l'utilisateur a un portefeuille
-        $userId = Auth::id();
-        $userWallet = Wallet::where('user_id', $userId)->first();
-        if (!$userWallet) {
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
-        }
+        DB::beginTransaction();
+        try {
+            // Vérifier si le code_unique existe dans la table userquantites
+            $codeUnique = $validated['codeUnique']; // Assurez-vous que ce champ est correctement défini dans la requête
+            $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
 
-        // Mettez à jour la notification
-        $notification = NotificationEd::find($this->notification->id);
-        if (!$notification) {
-            session()->flash('error', 'Notification introuvable.');
-            return;
-        }
-        $notification->reponse = 'accepte';
-        $notification->save();
+            if ($userQuantites->isEmpty()) {
+                session()->flash('error', 'Code unique introuvable dans la table userquantites.');
+                return;
+            }
 
-        // Calculez le montant total et le code unique
-        $requiredAmount = $this->notification->data['montantTotal'];
-        $pourcentSomme = $requiredAmount * 0.1;
-        $totalSom = $requiredAmount - $pourcentSomme;
+            // Téléchargez la photo
+            $photoName = $this->handlePhotoUpload('photoProd');
 
-        $produit = Produitservice::find($this->notification->data['idProd'] ?? $this->idProd2);
+            // Parcourir chaque enregistrement dans userquantites et enregistrer l'achat pour chaque utilisateur
+            foreach ($userQuantites as $userQuantite) {
+                $userId = $userQuantite->user_id; // Récupérer l'ID utilisateur
+                $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
 
-        // Préparez les données de base pour la notification
-        $baseData = [
-            'idProd' => $this->notification->data['idProd'] ?? $this->idProd2,
-            'id_trader' => $this->userTrader ?? $this->notification->data['id_trader'],
-            'totalSom' => $requiredAmount,
-            'quantite' => $this->notification->data['quantiteC'] ?? null,
-            'localite' => $this->notification->data['localite'],
-            'userSender' => $this->notification->data['userSender'] ?? $this->notification->data['id_sender'],
-            'prixProd' => $this->notification->data['prixTrade'] ?? $produit->prix,
-            'textareaContent' => $textareaContent,
-            'dateTot' => $this->notification->data['date_tot'],
-            'dateTard' => $this->notification->data['date_tard']
-        ];
+                $userWallet = Wallet::where('user_id', $userId)->first();
+                if (!$userWallet) {
+                    Log::warning('Portefeuille introuvable pour l\'utilisateur', ['user_id' => $userId]);
+                    continue; // Passez au suivant si le portefeuille est manquant
+                }
+                // Enregistrer l'achat dans la table AchatDirectModel
+                $achatdirect = AchatDirect::create([
+                    'quantité' => $quantite,  // Quantité récupérée de userquantites
+                    'montantTotal' => $quantite * $this->notification->data['prixTrade'],
+                    'localite' => $this->AppelOffreGrouper->localite,
+                    'date_tot' => $this->AppelOffreGrouper->dateTot,
+                    'date_tard' => $this->AppelOffreGrouper->dateTard,
+                    'userTrader' => Auth::id(),
+                    'userSender' => $userId,  // Utilisateur qui a saisi l'achat
+                    'idProd' => $this->produit->id,
+                    'code_unique' => $codeUnique,
+                ]);
+                // Préparer les données pour la notification
+                $data = [
+                    'idProd' => $this->notification->data['idProd'] ?? null,
+                    'code_livr' => $this->notification->data['code_unique'],
+                    'textareaContent' => $validated['textareaValue'],
+                    'photoProd' => $photoName,
+                    'achat_id' => $achatdirect->id ?? null,
+                ];
 
-        Log::info('data', ['data' => $baseData]);
+                if (!$data['idProd']) {
+                    throw new Exception('Identifiant du produit introuvable.');
+                }
 
-        // Vérifiez si le code_unique existe dans userquantites
-        $userQuantites = UserQuantites::where('code_unique', $this->notification->data['code_unique'])->get();
-        Log::info('Recherche du code_unique', ['code_unique' => $this->notification->data['code_unique'], 'count' => $userQuantites->count()]);
-
-        if ($userQuantites->isNotEmpty()) {
-            $firstUserId = $userQuantites->first()->user_id;
-
-            DB::beginTransaction(); // Commencer une transaction pour assurer l'atomicité
-
-            try {
-                foreach ($userQuantites as $userQuantite) {
-                    $userId = $userQuantite->user_id;
-                    $quantite = $userQuantite->quantite;
-                    $typeAchat = $userQuantite->type_achat;
-
-                    // Générez un code unique pour chaque notification
-                    $code_livr = $this->generateUniqueReference();
-
-                    $notificationData = array_merge($baseData, [
-                        'quantite' => $quantite,
-                        'type_achat' => $typeAchat,
-                        'user_id' => $userId,
-                        'code_livr' => $code_livr, // Utilisation du code unique généré
-                        'code_unique' => $this->notification->data['code_unique']
-                    ]);
-
-                    // Envoyez la notification aux livreurs
-                    if (!empty($this->livreursIds)) {
-                        foreach ($this->livreursIds as $livreurId) {
-                            $livreur = User::find($livreurId);
-
-                            if ($livreur) {
-                                // Envoyer la notification
-                                Notification::send($livreur, new LivraisonAppelOffregrouper($notificationData));
-
-                                // Identifie la notification à mettre à jour pour cet utilisateur précis
-                                $notification = $livreur->notifications()
-                                    ->where('type', LivraisonAppelOffregrouper::class)
-                                    ->whereJsonContains('data->user_id', $userId)
-                                    ->latest()
-                                    ->first();
-
-                                if ($notification) {
-                                    // Mettez à jour 'type_achat' : 'PRO' pour le premier utilisateur, 'NOPRO' pour les autres
-                                    $typeAchat = $userId === $firstUserId ? 'PRO' : 'NOPRO';
-                                    $updated = $notification->update(['type_achat' => $typeAchat]);
-
-                                    if ($updated) {
-                                        Log::info('Notification mise à jour', [
-                                            'livreur_id' => $livreur->id,
-                                            'type_achat' => $typeAchat,
-                                            'notification_id' => $notification->id,
-                                        ]);
-                                    } else {
-                                        Log::error('Échec de la mise à jour de la notification', [
-                                            'livreur_id' => $livreur->id,
-                                            'notification_id' => $notification->id,
-                                        ]);
-                                    }
-                                } else {
-                                    Log::warning('Aucune notification trouvée pour mise à jour', ['livreur_id' => $livreur->id, 'user_id' => $userId]);
-                                }
-                            } else {
-                                Log::warning('Livreur non trouvé pour l\'ID', ['livreur_id' => $livreurId]);
-                            }
+                // Envoyer une notification aux livreurs pour la négociation
+                if ($this->livreursIds->isNotEmpty()) {
+                    foreach ($this->livreursIds as $livreurId) {
+                        $livreur = User::find($livreurId);
+                        if ($livreur) {
+                            Notification::send($livreur, new livraisonAchatdirect($data));
+                            event(new NotificationSent($livreur));
+                            Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
                         }
                     }
                 }
-
-                DB::commit(); // Si tout va bien, valide la transaction
-            } catch (\Exception $e) {
-                DB::rollBack(); // En cas d'erreur, annule la transaction
-                Log::error('Erreur lors de l\'envoi ou de la mise à jour des notifications', [
-                    'message' => $e->getMessage(),
-                    'code_unique' => $this->notification->data['code_unique'],
-                ]);
             }
-        } else {
-            Log::info('Aucun enregistrement trouvé pour le code_unique', ['code_unique' => $this->notification->data['code_unique']]);
+
+            // Mettre à jour la notification après le traitement de tous les utilisateurs
+            $this->notification->update(['reponse' => 'accepte']);
+
+            DB::commit();
+
+            // Retourner une confirmation
+            $this->dispatch('formSubmitted', 'Commande acceptée avec succès. Notifications envoyées à tous les livreurs.');
+            $this->modalOpen = false;
+        } catch (Exception $e) {
+            // Annuler la transaction et gérer l'erreur
+            DB::rollBack();
+            session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
+            Log::error('Erreur lors du traitement de l\'achat', ['message' => $e->getMessage()]);
         }
-
-        session()->flash('success', 'Achat accepté.');
-
-        $this->modalOpen = false;
-        $this->notification->update(['reponse' => 'accepte']);
     }
+
+    public function refuser()
+    {
+        $userId = Auth::id(); // ID de l'utilisateur actuel
+        $codeUnique = $this->notification->data['code_unique']; // Récupérer le code_unique depuis la notification
+
+        DB::beginTransaction();
+
+        try {
+            // Récupérer toutes les entrées de userquantites associées au code_unique
+            $userQuantites = UserQuantites::where('code_unique', $codeUnique)->get();
+
+            if ($userQuantites->isEmpty()) {
+                throw new Exception('Aucune entrée trouvée pour le code_unique : ' . $codeUnique);
+            }
+
+            // Parcourir chaque entrée et effectuer les opérations nécessaires
+            foreach ($userQuantites as $userQuantite) {
+                $clientId = $userQuantite->user_id; // Récupérer l'ID de l'utilisateur
+                $montantTotal = $userQuantite->quantite * $this->achatdirect->prix_unitaire; // Calculer le montant total basé sur la quantité et le prix unitaire
+
+                // Vérifier l'existence du portefeuille de l'utilisateur
+                $userWallet = Wallet::where('user_id', $clientId)->firstOrFail();
+
+                // Ajouter le montant au portefeuille de l'utilisateur
+                $userWallet->increment('balance', $montantTotal);
+
+                // Générer une référence unique
+                $reference_id = $this->generateIntegerReference();
+
+                // Créer une transaction pour ce client
+                $this->createTransaction(
+                    $userId, // ID de l'utilisateur qui a refusé
+                    $clientId, // ID du client
+                    'Réception', // Type de transaction
+                    $montantTotal, // Montant total
+                    $reference_id, // Référence unique
+                    'Achat refusé pour le code : ' . $codeUnique, // Description
+                    'effectué', // Statut
+                    'COC' // Code d'opération
+                );
+
+                // Envoyer une notification au client
+                $owner = User::findOrFail($clientId);
+                Notification::send($owner, new RefusAchat($codeUnique));
+                // Déclencher un événement pour signaler l'envoi de la notification
+                event(new NotificationSent($owner));
+            }
+
+            // Mettre à jour la réponse de la notification principale
+            $this->notification->update(['reponse' => 'refuser']);
+
+            // Valider toutes les transactions
+            DB::commit();
+
+            session()->flash('success', 'Achat refusé avec succès pour tous les utilisateurs.');
+        } catch (Exception $e) {
+            // Annuler la transaction si un élément est introuvable
+            DB::rollBack();
+            session()->flash('error', 'Un élément requis est introuvable : ' . $e->getMessage());
+        }
+    }
+
+
+    public function takeaway()
+    {
+        DB::beginTransaction();
+
+        try {
+            // Vérifiez que notification et achatdirect sont définis
+            if (!$this->notification || !$this->achatdirect) {
+                Log::error('Notification ou achatdirect non défini.', [
+                    'notification' => $this->notification,
+                    'achatdirect' => $this->achatdirect,
+                ]);
+                session()->flash('error', 'Données manquantes pour traiter la demande.');
+                return;
+            }
+
+            // Récupérer le code_unique depuis l'achat direct
+            $codeUnique = $this->achatdirect->code_unique ?? null;
+
+            if (!$codeUnique) {
+                throw new Exception('Code unique introuvable.');
+            }
+
+            // Récupérer toutes les entrées de userquantites liées au code_unique
+            $userQuantites = UserQuantites::where('code_unique', $codeUnique)->get();
+
+            if ($userQuantites->isEmpty()) {
+                throw new Exception('Aucune donnée trouvée dans userquantites pour ce code unique : ' . $codeUnique);
+            }
+
+            // Parcourir les entrées userquantites et traiter chaque utilisateur
+            foreach ($userQuantites as $userQuantite) {
+                $userSenderId = $userQuantite->user_id; // ID de l'utilisateur
+                $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
+                $montantTotal = $quantite * $this->notification->data['prixTrade']; // Calculer le montant total
+
+                // Créer une entrée AchatDirect pour cet utilisateur
+                $achatDirect = AchatDirect::create([
+                    'quantité' => $quantite,
+                    'montantTotal' => $montantTotal,
+                    'localite' => $this->AppelOffreGrouper->localite ?? null,
+                    'date_tot' => $this->AppelOffreGrouper->dateTot ?? null,
+                    'date_tard' => $this->AppelOffreGrouper->dateTard ?? null,
+                    'userTrader' => Auth::id(),
+                    'userSender' => $userSenderId,
+                    'idProd' => $this->produit->id,
+                    'code_unique' => $codeUnique,
+                ]);
+
+                // Préparer les détails pour la notification
+                $details = [
+                    'prixFin' => $this->prixFin ?? null,
+                    'code_unique' => $codeUnique,
+                    'achat_id' => $achatDirect->id,
+                ];
+
+                // Récupérer l'utilisateur expéditeur
+                $userSender = User::findOrFail($userSenderId);
+
+                // Envoyer une notification au client
+                Notification::send($userSender, new CountdownNotificationAd($details));
+                event(new NotificationSent($userSender));
+            }
+
+            // Mettre à jour la notification originale
+            $this->notification->update(['reponse' => 'accepte', 'type_achat' => 'Take Away']);
+            Log::info('Notification originale mise à jour avec succès.', [
+                'notificationId' => $this->notification->id,
+            ]);
+
+            // Valider la transaction
+            DB::commit();
+
+            session()->flash('success', 'Take Away traité avec succès pour tous les utilisateurs.');
+        } catch (Exception $e) {
+            // Annuler la transaction si un élément est introuvable
+            DB::rollBack();
+            session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
+            Log::error('Erreur dans la méthode takeaway', ['message' => $e->getMessage()]);
+        }
+    }
+
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
+    {
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
+        $transaction->save();
+    }
+    protected function generateIntegerReference(): int
+    {
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
+    }
+
 
 
     public function render()
