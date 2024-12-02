@@ -45,10 +45,13 @@ class OffreNegosDone extends Notification
         Log::info('Notification data: ', $this->offredone); // Log the data being sent
 
         return [
-            'quantite' => $this->offredone['quantite'],
+            'quantite_totale' => $this->offredone['quantite_totale'],
+            'details_par_user' => $this->offredone['details_par_user'],
             'idProd' => $this->offredone['idProd'],
             'id_sender' => $this->offredone['id_sender'],
             'code_unique' => $this->offredone['code_unique'],
+            'title' => 'Groupage de fournisseurs',
+            'description' => 'Cliquez pour voir les details du groupage.',
         ];
     }
 }

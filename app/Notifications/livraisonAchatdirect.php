@@ -28,7 +28,7 @@ class livraisonAchatdirect extends Notification
     {
         return [
             'idProd' => $this->livraison['idProd'],
-            'code_livr' => $this->livraison['code_livr'],
+            'code_unique' => $this->livraison['code_livr'],
             'textareaContent' => $this->livraison['textareaContent'],
             'photoProd' => $this->livraison['photoProd'],
             'achat_id' => $this->livraison['achat_id'],

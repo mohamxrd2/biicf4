@@ -497,10 +497,10 @@
                 <div class="p-6 sm:p-10 text-center bg-white rounded-lg shadow-md dark:bg-neutral-900">
                     <!-- Titre principal -->
                     <h3 class="mb-4 text-2xl font-bold text-gray-800 dark:text-neutral-200">
-                        Offre Grouper
+                        Offre Groupée
                     </h3>
                     <p class="text-gray-600 dark:text-neutral-400">
-                        Le nombre de clients potentiels est
+                        Le nombre de fournisseurs potentiels est
                         <span class="font-semibold text-blue-600 dark:text-blue-400">
                             ({{ $nomFournisseurCount }})
                         </span>

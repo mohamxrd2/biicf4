@@ -47,7 +47,7 @@ class Appeloffregroupernegociation extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->id_trader = Auth::user()->id ?? null;
 
-        $this->appeloffregrp = AppelOffreGrouper::find(218);
+        $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelGrouper']);
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Countdown::where('code_unique', $this->appeloffregrp->codeunique)
@@ -96,6 +96,7 @@ class Appeloffregroupernegociation extends Component
     //         )
     //     ]);
     // }
+
     public function commentFormLivr()
     {
 
@@ -145,6 +146,7 @@ class Appeloffregroupernegociation extends Component
                     'start_time' => now(),
                     'code_unique' => $this->appeloffregrp->codeunique,
                     'difference' => 'appelOffreGrouper',
+                    'AppelOffreGrouper_id' => $this->appeloffregrp->id,
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
                 broadcast(new OldestCommentUpdated(now()->toIso8601String()));

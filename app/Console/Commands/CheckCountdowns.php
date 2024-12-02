@@ -93,7 +93,7 @@ class CheckCountdowns extends Command
             'prixTrade' => $commentToUse->prixTrade,
             'livreur' => $commentToUse->id_trader,
             'achat_id' => $countdown->achat->id ?? $countdown->id_achat,
-            'id_appeloffre' => $countdown->appelOffre->id ?? $countdown->id_appeloffre,
+            'id_appeloffre' => $countdown->appelOffre->id ?? $countdown->AppelOffreGrouper_id,
         ];
     }
 
@@ -122,9 +122,6 @@ class CheckCountdowns extends Command
                 $this->sendSingleOfferNotification($countdown, $commentToUse, $details);
                 break;
 
-            case 'ag':
-                $this->sendAgNotification($countdown, $commentToUse, $details);
-                break;
 
             default:
                 Log::warning('Type de notification inconnu.', ['difference' => $difference]);
@@ -162,10 +159,6 @@ class CheckCountdowns extends Command
         Notification::send($countdown->sender, new CountdownNotificationAp($details));
     }
 
-    private function sendAgNotification($countdown, $commentToUse, $details)
-    {
-        Notification::send($countdown->sender, new CountdownNotificationAg($details));
-    }
 
     private function cleanUp($codeUnique)
     {

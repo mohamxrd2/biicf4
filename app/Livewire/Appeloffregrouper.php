@@ -4,10 +4,12 @@ namespace App\Livewire;
 
 use App\Events\AjoutQuantiteOffre;
 use App\Models\AppelOffreGrouper as ModelsAppelOffreGrouper;
+use App\Models\gelement;
 use App\Models\userquantites;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -24,6 +26,8 @@ class Appeloffregrouper extends Component
     public $localite;
     public $selectedOption;
     public $groupages;
+    public $existingQuantite;
+    public $modalOpen;
 
 
     public function mount($id)
@@ -37,64 +41,139 @@ class Appeloffregrouper extends Component
         $this->datePlusAncienne = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
 
 
-        $this->sumquantite = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
+        $this->sumquantite = userquantites::where('code_unique', $codesUniques)->sum('quantite');
         $this->appelOffreGroupcount = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)
             ->distinct('user_id') // Prend uniquement les valeurs uniques de user_id
             ->count('user_id');   // Compte les valeurs distinctes
 
         // Charger les groupages
-        $this->groupages = userquantites::with('user')
-            ->where('code_unique', $this->notification->data['code_unique'])
+        $this->groupages = userquantites::where('code_unique', $this->notification->data['code_unique'])
             ->orderBy('created_at', 'asc')
             ->get();
+
+        // Vérifier si l'utilisateur a déjà soumis une quantité pour ce code unique
+        $this->existingQuantite = userquantites::where('code_unique', $this->appelOffreGroup->codeunique)
+            ->where('user_id', Auth::id())
+            ->first();
+    }
+
+    protected $listeners = ['compteReboursFini'];
+
+    public function compteReboursFini()
+    {
+        // Mettre à jour l'attribut 'finish' du demandeCredit
+        $this->appelOffreGroup->update([
+            'count' => true,
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Groupage terminé.'
+            )
+        ]);
     }
 
 
-
-
-
-
-    public function storeoffre()
+    public function storeOffre()
     {
+        DB::beginTransaction(); // Démarrer une transaction
+
         try {
             // Valider les données du formulaire
-            Log::info('Début de la validation des données du formulaire.');
             $validatedData = $this->validate([
                 'quantite' => 'required|integer',
-                'localite' => 'required|string',
+                'localite' => 'nullable|string',
             ]);
 
-            // Créer un nouvel enregistrement dans la table offregroupe
-            Log::info('Création d\'un nouvel enregistrement dans AppelOffreGrouper.');
-            $offregroupe = new ModelsAppelOffreGrouper();
-            $offregroupe->codeunique = $this->appelOffreGroup->codeunique;
-            $offregroupe->user_id = Auth::id();
-            $offregroupe->quantity = $validatedData['quantite'];
-            $offregroupe->save();
+            // Récupérer l'utilisateur actuel et l'appel d'offre en cours
+            $user = Auth::user();
+            $appelOffreGroup = $this->appelOffreGroup;
 
+            // Vérifier si le groupe d'appel d'offre existe
+            if (!$appelOffreGroup) {
+                session()->flash('error', 'Appel d\'offre introuvable.');
+                return;
+            }
 
+            $userWallet = Wallet::where('user_id', $user)->first();
 
-            // Ajouter dans la table userquantites
-            Log::info('Ajout d\'une nouvelle quantité dans userquantites.');
-            $quantite = new userquantites();
-            $quantite->code_unique = $this->appelOffreGroup->codeunique; // Vous devez définir `codeUnique` correctement
-            $quantite->user_id = Auth::id(); // Vous devez définir `userId` correctement
-            $quantite->localite = $validatedData['localite']; // Vous devez définir `userId` correctement
-            $quantite->quantite = $validatedData['quantite'];
-            $quantite->save();
+            if (!$userWallet) {
+                Log::error('Portefeuille introuvable.', ['userId' => $user]);
+                session()->flash('error', 'Portefeuille introuvable.');
+                return;
+            }
+            // Calcul du coût total
+            $prixUnitaire = $appelOffreGroup->lowestPricedProduct ?? 0;
+            $quantite = $validatedData['quantite'];
+            $montantTotal = $prixUnitaire * $quantite;
 
-            Log::info('Enregistrement dans userquantites sauvegardé.', ['quantite_id' => $quantite->id]);
-            $this->reset('quantite', 'localite', 'selectedOption');
-            // Flash success message
-            session()->flash('success', 'Quantité ajoutée avec succès');
-            Log::info('Message de succès flashé.', ['message' => 'Quantité ajoutée avec succès']);
+            // Vérifier les fonds disponibles
+            if ($user->balance < $montantTotal) {
+                session()->flash('error', 'Fonds insuffisants pour soumettre cette quantité.');
+                return;
+            }
+
+            // Décrémente le solde utilisateur
+            $userWallet = $user->wallet; // Assurez-vous que $user->wallet retourne correctement le portefeuille
+            $userWallet->decrement('balance', $montantTotal);
+
+            // Enregistrement dans la table `gelement`
+            gelement::create([
+                'id_wallet' => $userWallet->id,
+                'amount' => $montantTotal,
+                'reference_id' => $appelOffreGroup->codeunique,
+            ]);
+
+            // Vérifier si l'utilisateur a déjà soumis une quantité pour ce code unique
+            $existingQuantite = userquantites::where('code_unique', $appelOffreGroup->codeunique)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existingQuantite) {
+                // Mise à jour de la quantité existante
+                $existingQuantite->quantite += $quantite;
+                $existingQuantite->save();
+            } else {
+                // Création d'un nouvel enregistrement
+                userquantites::create([
+                    'code_unique' => $appelOffreGroup->codeunique,
+                    'user_id' => $user->id,
+                    'localite' => $validatedData['localite'],
+                    'quantite' => $quantite,
+                ]);
+            }
+
+            // Mise à jour des données pour le composant Livewire
+            $this->groupages = userquantites::where('code_unique', $appelOffreGroup->codeunique)
+                ->orderBy('created_at', 'asc')
+                ->get();
+            $this->sumquantite = ModelsAppelOffreGrouper::where('codeunique', $appelOffreGroup->codeunique)
+                ->sum('quantity');
+            $this->appelOffreGroupcount = ModelsAppelOffreGrouper::where('codeunique', $appelOffreGroup->codeunique)
+                ->distinct('user_id')
+                ->count('user_id');
+
+            // Réinitialiser les champs du formulaire
+            $this->reset('quantite', 'localite');
+
+            // Fermer le modal
+            $this->modalOpen = false;
+
+            // Commit de la transaction
+            DB::commit();
+
+            // Message de succès
+            session()->flash('success', 'Quantité ajoutée ou mise à jour avec succès');
         } catch (Exception $e) {
-            // Log l'erreur
-            Log::error('Erreur lors de l\'enregistrement des données.', ['error' => $e->getMessage()]);
-            // Vous pouvez également définir un message d'erreur pour la session si nécessaire
-            session()->flash('error', 'Erreur lors de l\'ajout de la quantité.');
+            // Annuler les changements
+            DB::rollBack();
+
+            // Log l'erreur et afficher un message d'erreur
+            Log::error('Erreur lors de l\'ajout ou mise à jour : ' . $e->getMessage());
+            session()->flash('error', 'Erreur lors de l\'ajout ou mise à jour de la quantité.');
         }
     }
+
+
+
     public function render()
     {
         return view('livewire.appeloffregrouper');

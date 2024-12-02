@@ -43,7 +43,10 @@ class OffreNegosNotif extends Notification
             'idProd' => $this->offrenegos['idProd'],
             'produit_name' => $this->offrenegos['produit_name'],
             'quantite' => $this->offrenegos['quantite'],
-            'code_unique' => $this->offrenegos['code_unique']
+            'code_unique' => $this->offrenegos['code_unique'],
+
+            'title' => 'Groupage de fournisseurs',
+            'description' => 'le groupage vient de commencer. Cliquez pour participer.',
         ];
     }
 }

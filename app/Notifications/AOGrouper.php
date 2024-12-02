@@ -47,7 +47,8 @@ class AOGrouper extends Notification implements ShouldQueue
         return [
             'offre_id' => $this->offreId,
             'code_unique' => $this->codeunique,
-            'message' => 'Une nouvelle offre groupée est disponible.',
+            'description' => 'Une nouvelle offre groupée est disponible.Cliquez pour participer',
+            'title' => 'Groupage Clients',
         ];
     }
 }

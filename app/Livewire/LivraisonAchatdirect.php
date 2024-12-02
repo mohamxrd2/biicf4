@@ -45,6 +45,7 @@ class LivraisonAchatdirect extends Component
 
         // Récupérer l le plus ancien avec code_unique
         $this->oldestComment = Countdown::where('code_unique', $this->achatdirect->code_unique)
+            ->where('notified', false)
             ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
@@ -52,7 +53,6 @@ class LivraisonAchatdirect extends Component
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
         $this->listenForMessage();
-
     }
 
     #[On('echo:comments,CommentSubmitted')]

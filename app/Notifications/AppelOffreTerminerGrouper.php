@@ -30,7 +30,10 @@ class AppelOffreTerminerGrouper extends Notification implements ShouldQueue
         return [
             'code_unique' => $this->details['code_unique'] ?? null,
             'prixTrade' => $this->details['prixTrade'] ?? null,
-            'AppelOffreGrouper_id' => $this->details['id'] ?? null,
+            'achat_id' => $this->details['achat_id'] ?? null,
+            'id_appeloffre' => $this->details['id_appeloffre'] ?? null,
+            'title' => 'Gagnant de negociation',
+            'description' => 'Cliquez pour voir les details de la commande',
 
         ];
     }

@@ -7,6 +7,7 @@ use App\Models\Countdown;
 use App\Models\OffreGroupe;
 use App\Models\ProduitService;
 use App\Models\User;
+use App\Models\userquantites;
 use App\Notifications\OffreNegosDone;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -56,11 +57,16 @@ class AjoutQoffre extends Command
                 continue;
             }
 
+            // Récupérer les quantités par utilisateur dans userquantites
+            $quantitesParUser = userquantites::where('code_unique', $uniqueCode)
+                ->get()
+                ->groupBy('user_id')
+                ->map(function ($group) {
+                    return $group->sum('quantite');
+                })
+                ->toArray();
 
-            $sommeQuantites = OffreGroupe::where('code_unique', $uniqueCode)->sum('quantite');
-
-            Log::info('Total quantity for OffreGroupe with code ' . $uniqueCode . ': ' . $sommeQuantites);
-
+            Log::info('Quantities per user for unique code ' . $uniqueCode . ': ' . json_encode($quantitesParUser));
 
             $sender = $offre->user;
             if (!$sender) {
@@ -72,14 +78,16 @@ class AjoutQoffre extends Command
                 DB::beginTransaction();
 
                 Notification::send($sender, new OffreNegosDone([
-                    'quantite' => $sommeQuantites,
-                    'idProd' =>  $offreGroupeExistante->produit_id,
-                    'id_sender' => $offre->sender->id,
+                    'quantite_totale' => array_sum($quantitesParUser),
+                    'details_par_user' => $quantitesParUser,
+                    'idProd' => $offreGroupeExistante->produit_id,
+                    'id_sender' => $offre->sender->id ?? null,
                     'code_unique' => $uniqueCode,
                 ]));
-                Log::info('Notification sent to user:', ['sender' => $sender]);
 
+                Log::info('Notification sent to user:', ['sender' => $sender->id]);
                 $offre->update(['notified' => true]);
+
                 DB::commit();
 
                 Log::info('Updated countdown notified status for unique code: ' . $uniqueCode);
@@ -87,9 +95,7 @@ class AjoutQoffre extends Command
                 DB::rollBack();
                 Log::error('Error processing countdown with code ' . $uniqueCode . ': ' . $e->getMessage());
             }
+            Log::info('AjoutQoffre command finished.');
         }
-
-
-        Log::info('AjoutQoffre command finished.');
     }
 }

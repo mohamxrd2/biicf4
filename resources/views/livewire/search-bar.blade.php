@@ -1,10 +1,8 @@
 <div id="search-input">
-
     <!-- Section de recherche -->
     <section class="mt-4 shadow-sm">
         <form wire:submit.prevent="search" class="">
-            <label for="default-search"
-                class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+
             <div class="relative">
                 <div class="relative">
                     <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -17,17 +15,16 @@
                     <input type="search" id="default-search" wire:model="keyword"
                         class="block w-full p-4 ps-10 text-sm sm:text-[12px] text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-purple-600 focus:border-purple-600 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Recherche de produit ou service..." required />
-
                 </div>
-
             </div>
-
-            <div class="grid grid-cols-4 gap-3 mt-2">
+            <!-- Section de filtre -->
+            <div id="filter-section"
+                class="hidden opacity-0 translate-y-[-20px] transition-all duration-300 ease-in-out grid grid-cols-4 gap-3 mt-2 p-4 bg-white">
                 <div class="col-span-1">
                     <select wire:model="zone_economique" name="zoneEco" type="text"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                         placeholder="Zone Economique">
-                        <option disabled selected>Zone economique</option>
+                        <option selected>Zone economique</option>
                         <option value="proximite">Proximité</option>
                         <option value="locale">Locale</option>
                         <option value="departementale">Departementale</option>
@@ -45,34 +42,24 @@
                     </select>
                 </div>
                 <div class="col-span-1">
-
-                    <div class="mb-4">
-                        <!-- Quantité  -->
-                        <input wire:model="qte" name="qte" type="number"
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Quantité ">
-                    </div>
+                    <input wire:model="qte" name="qte" type="number"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                        placeholder="Quantité ">
                 </div>
                 <div class="col-span-1">
-
-                    <div class="mb-4">
-                        <!-- prix unitaire -->
-                        <input wire:model="prix" name="prix" type="number"
-                            class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                            placeholder="Prix unitaire">
-                    </div>
+                    <input wire:model="prix" name="prix" type="number"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                        placeholder="Prix unitaire">
                 </div>
             </div>
+
         </form>
     </section>
 
-
-
-    <section class=" py-8 antialiased dark:bg-gray-900 md:py-12 rounded-lg">
+    <section class=" py-4 antialiased dark:bg-gray-900 md:py-12 rounded-lg">
         <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
 
             <main class="max-w-6xl mx-auto px-4 py-8">
-                {{-- <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Produits & Services</h1> --}}
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Projet 1 -->
@@ -88,7 +75,7 @@
                                     4.5 ★ <!-- Exemple de notation -->
                                 </div>
                             </div>
-                            
+
                             <!-- Contenu produit -->
                             <div class="p-4">
                                 <!-- Titre et prix -->
@@ -124,10 +111,34 @@
                         </div>
                     @endforeach
                 </div>
+                
             </main>
-
         </div>
 
     </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.getElementById("default-search");
+            const filterSection = document.getElementById("filter-section");
+
+            searchInput.addEventListener("focus", () => {
+                filterSection.classList.remove("hidden", "opacity-0", "translate-y-[-20px]");
+                filterSection.classList.add("opacity-100", "translate-y-0");
+            });
+
+            searchInput.addEventListener("blur", () => {
+                setTimeout(() => {
+                    if (!document.activeElement.closest("#filter-section")) {
+                        filterSection.classList.add("opacity-0", "translate-y-[-20px]");
+                        filterSection.classList.remove("opacity-100", "translate-y-0");
+                        setTimeout(() => {
+                            filterSection.classList.add("hidden");
+                        }, 300); // Durée correspondant à `duration-300`
+                    }
+                }, 200);
+            });
+        });
+    </script>
 
 </div>

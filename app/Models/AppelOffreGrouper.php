@@ -21,10 +21,13 @@ class AppelOffreGrouper extends Model
         'dateTard',
         'specificity',
         'localite',
-        // 'id_prod',
+        'id_prod',
         'image',
+        'notified',
         'prodUsers',
-        'codeunique', // Add the new column here
+        'codeunique',
+        'count',
+        'reference',
         'user_id'
     ];
     public function User()

@@ -68,7 +68,7 @@
                                 class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
                                 📦
                             </div>
-                            <span>Quantité TOTAL : {{ $this->notification->data['quantiteTotale'] }} </span>
+                            <span>Quantité TOTAL : </span>
                         </div>
                         <div class="flex items-center gap-2">
                             <div
@@ -76,7 +76,7 @@
                                 📦
                             </div>
                             <span>Nombre total de Personnes :
-                                {{ $this->notification->data['totalPersonnestotalPersonnes'] }} </span>
+                                {{ $this->notification->data['totalPersonnes'] }} </span>
                         </div>
                         <div class="flex items-center gap-2">
                             <div
@@ -245,7 +245,7 @@
                         <div class="bg-gray-100 p-4 rounded-lg mt-4 shadow-sm">
                             <h4 class="text-sm font-bold mb-2 text-gray-800">Proposer un nouveau prix</h4>
                             <form wire:submit.prevent="commentFormLivr" id="commentForm">
-                                @if (!$appeloffregrp->count)
+                                {{-- @if (!$appeloffregrp->count) --}}
                                     <div class="flex items-center gap-2">
                                         <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
                                             class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-purple-500"
@@ -274,7 +274,7 @@
                                             </span>
                                         </button>
                                     </div>
-                                @endif
+                                {{-- @endif --}}
                             </form>
                         </div>
                     </div>

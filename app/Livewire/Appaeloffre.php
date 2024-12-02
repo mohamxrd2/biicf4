@@ -7,11 +7,13 @@ use App\Models\AppelOffreGrouper;
 use App\Models\AppelOffreUser;
 use App\Models\Consommation;
 use App\Models\gelement;
+use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\userquantites;
 use App\Notifications\AOGrouper;
 use App\Notifications\AppelOffre;
+use App\Notifications\Confirmation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -42,6 +44,7 @@ class Appaeloffre extends Component
     public $timeEnd;
     public $dayPeriod;
     public $dayPeriodFin;
+    public $id;
     public $loading = false;
 
     public function mount(
@@ -68,6 +71,9 @@ class Appaeloffre extends Component
         $this->reference = $reference;
         $this->distinctSpecifications = implode(', ', $distinctSpecifications);
         $this->appliedZoneValue = $appliedZoneValue;
+
+        $this->id = ProduitService::where('reference', $reference)
+            ->first();
     }
 
     public function submitEnvoie()
@@ -110,12 +116,14 @@ class Appaeloffre extends Component
                 'specification' => $validatedData['distinctSpecifications'],
                 'reference' => $validatedData['reference'],
                 'localite' => $validatedData['localite'],
+                'id_prod' => $this->id,
                 'code_unique' => $this->generateUniqueReference(),
                 'lowestPricedProduct' => $validatedData['lowestPricedProduct'],
                 'prodUsers' => json_encode($validatedData['prodUsers']),
-                'image' => $validatedData['image'] ?? null, // Valeur par défaut si aucune image n'est fournie
-                'id_sender' => Auth::id(), // L'utilisateur connecté est le créateur
+                'image' => $validatedData['image'] ?? null,
+                'id_sender' => Auth::id(),
             ]);
+
             // Calculer le coût total
             $totalCost = $this->quantité * $this->lowestPricedProduct;
 
@@ -190,22 +198,21 @@ class Appaeloffre extends Component
     {
         Log::info('Début du processus de création de l\'appel d\'offre groupé.');
 
-        // Vérifier si la zone économique est sélectionnée
+        // Vérifier si une zone économique est sélectionnée
         if (!$this->appliedZoneValue) {
-            Log::warning('Aucune zone économique sélectionnée par l\'utilisateur.');
+            Log::warning('Aucune zone économique sélectionnée.');
             session()->flash('error', 'Veuillez sélectionner une zone économique pour pouvoir vous grouper.');
             return;
         }
 
         $this->loading = true;
-        $userId = Auth::guard('web')->id(); // Récupérer l'ID de l'utilisateur connecté
+        $userId = Auth::guard('web')->id(); // ID de l'utilisateur connecté
         Log::info('Utilisateur connecté.', ['user_id' => $userId]);
 
-        DB::beginTransaction(); // Démarrer une transaction
+        DB::beginTransaction();
 
         try {
-            // Valider les données
-            Log::info('Validation des données en cours.');
+            // Validation des données
             $validatedData = $this->validate([
                 'name' => 'required|string|max:255',
                 'quantité' => 'required|integer|min:1',
@@ -217,12 +224,12 @@ class Appaeloffre extends Component
                 'appliedZoneValue' => 'required|string|max:255',
                 'prodUsers' => 'required|array|min:1',
             ]);
-            Log::info('Données validées avec succès.', ['validated_data' => $validatedData]);
+            Log::info('Données validées.', ['validated_data' => $validatedData]);
+            
+            // Générer un code unique une seule fois
+            $codeUnique = $this->generateUniqueReference();
 
-            // Créer une instance pour l'appel d'offre groupé
-            Log::info('Création de l\'appel d\'offre groupé.');
-
-            // Insérer dans la table `appel_offres`
+            // Création de l'appel d'offre groupé
             $offre = AppelOffreGrouper::create([
                 'lowestPricedProduct' => $this->lowestPricedProduct,
                 'productName' => $validatedData['name'],
@@ -233,34 +240,33 @@ class Appaeloffre extends Component
                 'dateTard' => $validatedData['dateTard'],
                 'specificity' => $validatedData['distinctSpecifications'],
                 'localite' => $validatedData['localite'],
-                'image' => $validatedData['image'] ?? null, // Valeur par défaut si aucune image n'est fournie
+                'image' => $validatedData['image'] ?? null,
                 'prodUsers' => json_encode($validatedData['prodUsers']),
-                'codeunique' => $this->generateUniqueReference(),
+                'codeunique' => $codeUnique,
+                'reference' => $this->reference,
                 'user_id' => $userId,
             ]);
-            Log::info('Appel d\'offre groupé enregistré.', ['offre_id' => $offre->id]);
+            Log::info('Appel d\'offre créé.', ['offre_id' => $offre->id]);
 
             // Enregistrer la quantité utilisateur
-            Log::info('Enregistrement de la quantité utilisateur.');
-            $quantite = new userquantites();
-            $quantite->user_id = $userId;
-            $quantite->localite = $validatedData['localite'];
-            $quantite->quantite = $validatedData['quantité'];
-            $quantite->code_unique = $this->generateUniqueReference();
-            $quantite->save();
-            Log::info('Quantité utilisateur enregistrée.', ['quantite_id' => $quantite->id]);
+            userquantites::create([
+                'user_id' => $userId,
+                'localite' => $validatedData['localite'],
+                'quantite' => $validatedData['quantité'],
+                'code_unique' => $codeUnique,
+            ]);
+            Log::info('Quantité utilisateur enregistrée.');
 
             // Calcul du coût total
-            $totalCost = $this->quantité * $this->lowestPricedProduct;
+            $totalCost = $validatedData['quantité'] * $this->lowestPricedProduct;
             Log::info('Coût total calculé.', ['total_cost' => $totalCost]);
 
-            // Vérifier le solde du portefeuille
+            // Vérifier et décrémenter le solde du portefeuille
             if ($this->wallet->balance < $totalCost) {
                 Log::error('Solde insuffisant.', ['balance' => $this->wallet->balance, 'total_cost' => $totalCost]);
-                throw new \Exception("Solde insuffisant pour effectuer cette transaction.");
+                throw new \Exception("Votre solde est insuffisant pour effectuer cette transaction.");
             }
 
-            // Décrémenter le solde du portefeuille
             $this->wallet->decrement('balance', $totalCost);
             Log::info('Solde du portefeuille décrémenté.', ['new_balance' => $this->wallet->balance]);
 
@@ -275,7 +281,7 @@ class Appaeloffre extends Component
                 'effectué',
                 'COC'
             );
-            Log::info('Transaction enregistrée.', ['amount' => $totalCost]);
+            Log::info('Transaction enregistrée.');
 
             // Enregistrer le gel des fonds
             gelement::create([
@@ -283,18 +289,16 @@ class Appaeloffre extends Component
                 'amount' => $totalCost,
                 'reference_id' => $this->generateUniqueReference(),
             ]);
-            Log::info('Gel des fonds enregistré.', ['amount' => $totalCost]);
+            Log::info('Gel des fonds enregistré.');
 
-            // Récupérer les IDs des utilisateurs potentiellement intéressés
+            // Notifications aux utilisateurs intéressés
             $idsProprietaires = Consommation::where('name', $offre->productName)
                 ->where('id_user', '!=', $userId)
                 ->where('statuts', 'Accepté')
                 ->distinct()
                 ->pluck('id_user')
                 ->toArray();
-            Log::info('IDs des propriétaires récupérés.', ['ids_proprietaires' => $idsProprietaires]);
 
-            // Récupérer les IDs d'utilisateurs dans la même localité
             $idsLocalite = User::whereIn('id', $idsProprietaires)
                 ->where(function ($query) use ($validatedData) {
                     $query->where('continent', $validatedData['appliedZoneValue'])
@@ -306,38 +310,52 @@ class Appaeloffre extends Component
                 })
                 ->pluck('id')
                 ->toArray();
-            Log::info('IDs des utilisateurs dans la même localité récupérés.', ['ids_localite' => $idsLocalite]);
 
-            // Fusionner les IDs uniques
             $idsToNotify = array_unique(array_merge($idsProprietaires, $idsLocalite));
-            Log::info('IDs à notifier fusionnés.', ['ids_to_notify' => $idsToNotify]);
-
             if (empty($idsToNotify)) {
                 throw new \Exception('Aucun utilisateur ne consomme ce produit dans votre zone économique.');
             }
 
-            // Envoyer les notifications
             foreach ($idsToNotify as $id) {
                 $user = User::find($id);
                 if ($user) {
                     Notification::send($user, new AOGrouper($offre->codeunique, $offre->id));
-                    Log::info('Notification envoyée.', ['user_id' => $id, 'offre_id' => $offre->id]);
+                    event(new NotificationSent($user));
+                    Log::info('Notification envoyée.', ['user_id' => $id]);
                 }
             }
 
-            DB::commit(); // Valider la transaction
+            // Notification pour l'utilisateur actuel
+            Notification::send(auth()->user(), new Confirmation([
+                'code_unique' => $this->generateUniqueReference(),
+                'Id' => $offre->id,
+                'title' => 'Confirmation de commande',
+                'description' => 'Cliquez pour voir les détails.',
+            ]));
+
+            Log::info('Notification de confirmation envoyée.');
+            $user_connecte = User::find(Auth::id());
+            event(new NotificationSent($user_connecte));
+
+            DB::commit();
             Log::info('Transaction DB validée.');
             session()->flash('success', 'Appel d\'offre groupé créé avec succès.');
         } catch (\Exception $e) {
-            DB::rollBack(); // Annuler la transaction
+            DB::rollBack();
             Log::error('Erreur dans le regroupement.', ['error' => $e->getMessage()]);
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
+        } finally {
+            $this->loading = false;
         }
 
-        // Redirection ou mise à jour d'état
-        $this->dispatch('formSubmitted', 'groupe');
+        // Redirection ou traitement pour l'envoi direct
+        $this->dispatch(
+            'formSubmitted',
+            'Demande d\'appel offre grouper a été effectué avec succes.'
+        );
         Log::info('Fin du processus de création de l\'appel d\'offre groupé.');
     }
+
 
 
     protected function generateUniqueReference()

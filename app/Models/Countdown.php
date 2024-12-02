@@ -9,7 +9,7 @@ class Countdown extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id','userSender', 'start_time', 'notified', 'code_unique', 'difference', 'id_achat', 'id_appeloffre'];
+    protected $fillable = ['user_id','userSender', 'start_time', 'notified', 'code_unique', 'difference', 'id_achat', 'AppelOffreGrouper_id'];
 
 
 
@@ -27,6 +27,6 @@ class Countdown extends Model
     }
     public function appelOffre()
     {
-        return $this->belongsTo(AchatDirect::class, 'id_appeloffre');
+        return $this->belongsTo(AchatDirect::class, 'AppelOffreGrouper_id');
     }
 }

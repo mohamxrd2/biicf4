@@ -71,25 +71,25 @@
                         <div class="mt-2 space-y-4">
                             <!-- Exemple de produit/service -->
                             <div class="flex items-center">
-                                <img src="{{ $offregroupef->produit->photoProd1 ? asset('post/all/' . $offregroupef->produit->photoProd1) : asset('img/noimg.jpeg') }}"
+                                <img src="{{ $offregroupe->produit->photoProd1 ? asset('post/all/' . $offregroupe->produit->photoProd1) : asset('img/noimg.jpeg') }}"
                                     alt="Image produit" class="w-20 h-20 object-cover rounded-lg">
                                 <div class="ml-4 flex-1">
                                     <h3 class="text-sm font-medium text-gray-900 mb-2">Commande avec livraison</h3>
                                     <p class="text-sm text-gray-600">
-                                        {{-- <strong>Lieu de livraison :</strong> {{ $offregroupe->localite }} --}}
+                                        <strong>Lieu de livraison :</strong> {{ $offregroupe->localite }}
                                     </p>
                                     <p class="mt-2 text-sm text-gray-600">
-                                        <strong>Conditionnement :</strong> {{ $offregroupef->produit->condProd }}
+                                        <strong>Conditionnement :</strong> {{ $offregroupe->produit->condProd }}
                                     </p>
                                 </div>
                                 <div class="ml-4 flex-1">
-                                    <h3 class="text-sm font-medium text-gray-900">Produit : {{ $offregroupef->produit->name }}
+                                    <h3 class="text-sm font-medium text-gray-900">Produit : {{ $offregroupe->produit->name }}
                                     </h3>
                                     <p class="mt-2 text-sm text-gray-600">
-                                        <strong>Quantité Total(apres groupage) :</strong> {{ $offregroupeSom }}
+                                        <strong>Quantité Total(apres groupage) :</strong> {{ $quantites }}
                                     </p>
                                     <p class="mt-1 text-sm text-gray-600">
-                                        <strong>Prix Unitaire :</strong> {{ $offregroupef->produit->prix }} FCFA
+                                        <strong>Prix Unitaire :</strong> {{ $offregroupe->produit->prix }} FCFA
                                     </p>
                                 </div>
                             </div>

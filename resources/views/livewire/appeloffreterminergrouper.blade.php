@@ -27,13 +27,13 @@
                         <span>{{ Auth::user()->name }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">date prevue de recuperation:</span>
-                        <span>{{ $achatdirect->date_tot }} - {{ $achatdirect->date_tard }}</span>
+                        <span>{{ $AppelOffreGrouper->date_tot }} - {{ $AppelOffreGrouper->date_tard }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">periode:</span>
-                        <span>{{ $achatdirect->dayPeriod }}</span>
+                        <span>{{ $AppelOffreGrouper->dayPeriod }} - {{ $AppelOffreGrouper->dayPeriodFin }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">heure prevue de recuperation:</span>
-                        <span>{{ $achatdirect->timeStart }} - {{ $achatdirect->timeEnd }}</span>
+                        <span>{{ $AppelOffreGrouper->timeStart }} - {{ $AppelOffreGrouper->timeEnd }}</span>
                     </li>
                     <li class="flex justify-between py-1">
                         <span class="font-medium">Statut:</span>
@@ -70,30 +70,28 @@
                         <div class="mt-2 space-y-4">
                             <!-- Exemple de produit/service -->
                             <div class="flex items-center">
-                                <img src="{{ $achatdirect->photoProd ? asset('post/all/' . $achatdirect->photoProd) : asset('img/noimg.jpeg') }}"
+                                <img src="{{ $AppelOffreGrouper->photoProd ? asset('post/all/' . $AppelOffreGrouper->photoProd) : asset('img/noimg.jpeg') }}"
                                     alt="Image produit" class="w-20 h-20 object-cover rounded-lg">
                                 <div class="ml-4 flex-1">
                                     <h3 class="text-sm font-medium text-gray-900 mb-2">Commande avec livraison</h3>
                                     <p class="text-sm text-gray-600">
-                                        <strong>Lieu de livraison :</strong> {{ $achatdirect->localite }}
+                                        <strong>Lieu de livraison :</strong> {{ $AppelOffreGrouper->localite }}
                                     </p>
                                     <p class="mt-2 text-sm text-gray-600">
-                                        <strong>Conditionnement :</strong> {{ $produits->condProd }}
+                                        <strong>Conditionnement :</strong> {{ $produit->condProd }}
                                     </p>
                                 </div>
                                 <div class="ml-4 flex-1">
-                                    <h3 class="text-sm font-medium text-gray-900">Produit : {{ $produits->name }}
+                                    <h3 class="text-sm font-medium text-gray-900">Produit : {{ $produit->name }}
                                     </h3>
                                     <p class="mt-2 text-sm text-gray-600">
-                                        <strong>Quantité demandée :</strong> {{ $achatdirect->quantité }}
+                                        <strong>Quantité groupée :</strong> {{ $Quantite }}
                                     </p>
                                     <p class="mt-1 text-sm text-gray-600">
-                                        <strong>Prix Unitaire :</strong> {{ $produits->prix }} FCFA
+                                        <strong>Prix Unitaire(apres negociation) :</strong>
+                                        {{ $notification->data['prixTrade'] }} FCFA
                                     </p>
                                 </div>
-                                <div class="text-sm font-medium text-gray-900">
-                                    {{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
-                                    FCFA</div>
                             </div>
                         </div>
                     </div>
@@ -104,13 +102,12 @@
                         <div class="mt-2 space-y-1 text-sm text-gray-600">
                             <div class="flex justify-between">
                                 <span>Sous-total :</span>
-                                <span>{{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
+                                <span>{{ number_format($Quantite * $notification->data['prixTrade'], 2, ',', '.') }}
                                     FCFA</span>
                             </div>
-
                             <div class="flex justify-between">
                                 <span>frais de service :</span>
-                                <span>1% </span>
+                                <span>1%</span>
                             </div>
                             <div class="flex justify-between font-medium text-gray-900">
                                 <span>Vous recevrez :</span>

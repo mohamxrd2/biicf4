@@ -26,12 +26,11 @@ class AppelOffreGrouperNotification extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
-            'dateTot' => $this->achat['dateTot'] ?? null,
-            'dateTard' => $this->achat['dateTard'] ?? null,
-            'productName' => $this->achat['productName'] ?? null,
-            'totalPersonnestotalPersonnes' => $this->achat['totalPersonnes'] ?? null,
+            'id_appelGrouper' => $this->achat['id_appelGrouper'] ?? null,
+            'totalPersonnes' => $this->achat['totalPersonnes'] ?? null,
             'code_unique' => $this->achat['code_unique'],
-            'quantiteTotale' => $this->achat['quantiteTotale'] ?? null,
+            'title' => $this->achat['title'] ?? null,
+            'description' => $this->achat['description'] ?? null,
         ];
     }
 }

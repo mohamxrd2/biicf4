@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NotificationSent;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Countdown;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Models\userquantites;
 use App\Models\NotificationEd;
 use App\Models\ProduitService;
+use App\Notifications\Confirmation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\OffreNegosNotif;
@@ -40,8 +42,9 @@ class OffreNegos extends Controller
 
             // Recherche du produit et de l'utilisateur
             $produit = ProduitService::findOrFail($validatedData['produit_id']);
-            $username = User::where('username', $validatedData['username'])->firstOrFail();
+            $user = User::where('username', $validatedData['username'])->first();
             $zoneKey = $this->mapEconomicZone($validatedData['zone_economique'], $produit->user);
+
 
 
             // Générer un code unique
@@ -57,11 +60,19 @@ class OffreNegos extends Controller
             // Notifier les fournisseurs
             $this->notifySuppliers($suppliers, $produit, $validatedData['quantite'], $uniqueCode);
 
+            Notification::send($user, new Confirmation([
+                'idProd' => $produit->id,
+                'code_unique' => $uniqueCode,
+                'title' => 'Confirmation de commande',
+                'description' => 'La commande groupée des fournisseurs a été envoyéé avec success.',
+            ]));
+            event(new NotificationSent($user));
+
             // Insérer dans `OffreGroupe`
             $this->saveOffreGroupe($validatedData, $produit, $user_id, $uniqueCode);
 
             // Gestion du compte à rebours
-            $this->handleCountdown($uniqueCode, $username);
+            $this->handleCountdown($uniqueCode, $user);
 
             return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
         } catch (Exception $e) {
@@ -114,6 +125,7 @@ class OffreNegos extends Controller
                     'quantite' => $quantite,
                     'code_unique' => $uniqueCode,
                 ]));
+                event(new NotificationSent($supplier));
 
                 Log::info('Notification envoyée', ['supplier_id' => $supplierId]);
             }
@@ -135,8 +147,15 @@ class OffreNegos extends Controller
             'name' => $produit->name,
             'code_unique' => $uniqueCode,
         ]);
+        // Création d'un nouvel enregistrement
+        userquantites::create( [
+            'code_unique' => $uniqueCode,
+            'user_id' => $userId,
+            'localite' => $data['zone_economique'],
+            'quantite' => $data['quantite'],
+        ]);
     }
-    private function handleCountdown($uniqueCode, $username)
+    private function handleCountdown($uniqueCode, $user)
     {
         $existingCountdown = Countdown::where('code_unique', $uniqueCode)
             ->where('notified', false)
@@ -146,7 +165,7 @@ class OffreNegos extends Controller
         if (!$existingCountdown) {
             Countdown::create([
                 'user_id' => Auth::id(),
-                'userSender' => $username->id,
+                'userSender' => $user->id,
                 'start_time' => now(),
                 'code_unique' => $uniqueCode,
                 'difference' => 'offregroupe',
@@ -269,7 +288,7 @@ class OffreNegos extends Controller
         }
     }
 
-    
+
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount): void
     {
         $transaction = new Transaction();
