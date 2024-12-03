@@ -179,14 +179,28 @@ class AchatDirectGroupe extends Component
                 'reference_id' => $codeUnique,
             ]);
 
+            // Confirmation pour l'utilisateur
+            $userConnecte = User::find($validated['userSender']);
+            Notification::send($userConnecte, new Confirmation([
+                'nameProd' => $validated['nameProd'],
+                'idProd' => $validated['idProd'],
+                'code_unique' => $codeUnique,
+                'idAchat' => $achat->id,
+                'title' => 'Commande effectuée avec succès',
+                'description' => 'Cliquez pour voir les détails de votre commande.',
+            ]));
+            // Déclencher un événement pour signaler l'envoi de la notification
+            event(new NotificationSent($userConnecte));
+
+
             // Mettre à jour la table de AchatDirectModel de fond
             $achatUser = [
                 'nameProd' => $validated['nameProd'],
                 'idProd' => $validated['idProd'],
                 'code_unique' => $codeUnique,
                 'idAchat' => $achat->id,
-                'title' => 'Confirmation de commande',
-                'description' => 'La commande a été envoyéé avec success.',
+                'title' => 'Nouvelle commande',
+                'description' => 'veuillez verifiez si le produit est disponible.',
             ];
 
             // Créer  transactions
@@ -195,7 +209,6 @@ class AchatDirectGroupe extends Component
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
             Notification::send($owner, new AchatBiicf($achatUser));
-
             // Après l'envoi de la notification
             event(new NotificationSent($owner));
 
@@ -209,16 +222,6 @@ class AchatDirectGroupe extends Component
 
             $this->reset(['quantité', 'localite']);
 
-            $userConnecte = Auth::user(); // Récupérer l'utilisateur connecté
-
-            if ($userConnecte instanceof User) { // Vérifier que c'est un utilisateur valide
-
-                //Envoyer une notification au propriétaire ($owner)
-                Notification::send($userConnecte, new Confirmation($achatUser));
-
-                // Déclencher un événement pour signaler l'envoi de la notification
-                event(new NotificationSent($userConnecte));
-            }
             // Émettre un événement après la soumission
             $this->dispatch('formSubmitted', 'Achat Affectué Avec Success');
             // Valider la transaction de base de données

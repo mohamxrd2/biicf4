@@ -70,8 +70,8 @@ class Walletclient extends Component
 
         $this->wallet();
 
-         // Charger les transactions initiales
-         $this->loadTransactions();
+        // Charger les transactions initiales
+        $this->loadTransactions();
     }
     #[On('refreshComponent')]
     public function wallet()
@@ -86,12 +86,12 @@ class Walletclient extends Component
         $this->cedd = Cedd::where('id_wallet', $this->userWallet->id)->first();
         $this->cefd = Cefp::where('id_wallet', $this->userWallet->id)->first();
         $this->crp = Crp::where('id_wallet', $this->userWallet->id)->first();
-
     }
+    
     public function loadTransactions()
     {
         $userId = Auth::guard('web')->id();
-        
+
         // Charger les transactions avec la limite définie
         $this->transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
             ->where(function ($query) use ($userId) {
@@ -107,7 +107,7 @@ class Walletclient extends Component
             $query->where('sender_user_id', $userId)
                 ->orWhere('receiver_user_id', $userId);
         })
-        ->count() > $this->transactionsLimit;
+            ->count() > $this->transactionsLimit;
     }
 
     public function loadMoreTransactions()
@@ -128,7 +128,7 @@ class Walletclient extends Component
         return $formattedVisiblePart . ' ' . $maskedPart;
     }
 
-      /**
+    /**
      * Calcule la somme des transactions de type 'Reception' pour l'utilisateur connecté sur les 30 derniers jours
      *
      * @return float
@@ -146,7 +146,7 @@ class Walletclient extends Component
         return $sum;
     }
 
-      /**
+    /**
      * Calcule la somme des transactions de type 'Envoie' pour l'utilisateur connecté sur les 30 derniers jours
      *
      * @return float

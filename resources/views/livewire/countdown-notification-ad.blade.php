@@ -252,9 +252,20 @@
                         </div>
                     @else
                         <button wire:click.prevent='FactureRefuser'
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg shadow-md hover:bg-gray-200">
-                            Refuser la facture
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg shadow-md hover:bg-gray-200"
+                            wire:loading.attr="disabled">
+                            <span wire:loading.remove>Refuser la facture</span>
+                            <span wire:loading>
+                                <svg class="animate-spin h-5 w-5 text-gray-700 inline-block"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                </svg>
+                                Chargement...
+                            </span>
                         </button>
+
                         <button data-modal-target="popup-modal" data-modal-toggle="popup-modal"
                             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700">
                             Accepter la facture
