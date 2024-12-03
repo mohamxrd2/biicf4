@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Consommation;
+use App\Models\Countdown;
+use App\Models\OffreGroupe;
 use App\Models\ProduitService;
 use App\Models\User;
 use App\Notifications\OffreNotif;
@@ -149,13 +151,18 @@ class FonctOffre extends Component
                 throw new Exception('Utilisateur non trouvé.');
             }
 
-            Log::info('Produit récupéré', [
-                'produit_id' => $produit,
-                'reference' => $referenceProduit,
-            ]);
-
             // Générer un code unique
             $code_unique = $this->generateUniqueReference();
+
+            $offgroupe = OffreGroupe::create([
+                'name' => $produit->name,
+                'code_unique' => $code_unique,
+                'produit_id' => $produit->id,
+                'zone' => $zoneEconomique,
+                'user_id' => $user_id,
+                'differance' => 'grouper',
+            ]);
+
 
             // Récupérer les utilisateurs consommant ce produit
             $idsProprietaires = $this->getConsommateurs($referenceProduit, $user_id);
@@ -197,7 +204,6 @@ class FonctOffre extends Component
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'envoi des notifications', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
             return redirect()->back()->with('error', 'Une erreur s\'est produite. Veuillez réessayer.');
         }
@@ -253,7 +259,7 @@ class FonctOffre extends Component
     /**
      * Envoyer des notifications aux utilisateurs spécifiés.
      */
-    private function notifyUsers(array $idsToNotify, ProduitService $produit, string $code_unique): void
+    private function notifyUsers(array $idsToNotify,  $produit, string $code_unique): void
     {
         foreach ($idsToNotify as $userId) {
             $user = User::find($userId);

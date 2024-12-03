@@ -27,6 +27,7 @@ class OffreGroupe extends Model
         'code_unique',
         'zone',
         'produit_id',
+        'count',
         'user_id',
     ];
 

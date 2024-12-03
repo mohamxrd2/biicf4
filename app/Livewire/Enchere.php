@@ -6,6 +6,7 @@ use App\Events\CommentSubmitted;
 use App\Events\OldestCommentUpdated;
 use App\Models\Comment;
 use App\Models\Countdown;
+use App\Models\OffreGroupe;
 use App\Models\ProduitService;
 use Carbon\Carbon;
 use Exception;
@@ -38,7 +39,9 @@ class Enchere extends Component
     public $prixTrade;
     public $namefourlivr;
     public $commentCount;
+    public $offgroupe;
     public $produit, $nombreParticipants, $achatdirect;
+
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
@@ -46,11 +49,13 @@ class Enchere extends Component
         $this->id_trader = Auth::user()->id ?? null;
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->produit = ProduitService::find($this->idProd);
+        $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
 
 
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Countdown::where('code_unique', $this->notification->data['code_unique'])
             ->whereNotNull('start_time')
+            ->where('notified', false)
             ->orderBy('created_at', 'asc')
             ->first();
 
@@ -81,19 +86,19 @@ class Enchere extends Component
             $this->nombreParticipants = 0;
         }
     }
-    // protected $listeners = ['compteReboursFini'];
+    protected $listeners = ['compteReboursFini'];
 
-    // public function compteReboursFini()
-    // {
-    //     // Mettre à jour l'attribut 'finish' du demandeCredit
-    //     $this->achatdirect->update([
-    //         'count' => true,
-    //         $this->dispatch(
-    //             'formSubmitted',
-    //             'Temps écoule, Négociation terminé.'
-    //         )
-    //     ]);
-    // }
+    public function compteReboursFini()
+    {
+        // Mettre à jour l'attribut 'finish' du demandeCredit
+        $this->offgroupe->update([
+            'count' => true,
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Négociation terminé.'
+            )
+        ]);
+    }
     public function commentoffgroup()
     {
         // Valider les données
@@ -133,8 +138,7 @@ class Enchere extends Component
                     'userSender' => $this->produit->user_id,
                     'start_time' => now(),
                     'code_unique' => $this->notification->data['code_unique'],
-                    'difference' => 'offredirect',
-
+                    'difference' => 'enchere',
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
                 broadcast(new OldestCommentUpdated(now()->toIso8601String()));

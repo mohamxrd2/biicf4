@@ -47,7 +47,8 @@
                         <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
                             📦
                         </div>
-                        <span>Quantité traite : [{{ $produit->qteProd_min }} - {{ $produit->qteProd_max }}] unités </span>
+                        <span>Quantité traite : [{{ $produit->qteProd_min }} - {{ $produit->qteProd_max }}] unités
+                        </span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
@@ -146,7 +147,7 @@
                                         </div>
                                         <!-- Message -->
                                         <p class="text-sm text-gray-600">
-                                            Je propose  <span class="text-green-500 font-semibold">
+                                            Je propose <span class="text-green-500 font-semibold">
                                                 {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
                                         </span>
                                         </p>
@@ -177,32 +178,32 @@
                     <div class="bg-gray-100 p-4 rounded-lg mt-4 shadow-sm">
                         <h4 class="text-sm font-bold mb-2 text-gray-800">Proposer un nouveau prix</h4>
                         <form wire:submit.prevent="commentoffgroup">
-                            {{-- @if (!$produit->count) --}}
-                            <div class="flex items-center gap-2">
-                                <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
-                                    class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-purple-500"
-                                    placeholder="Faire une offre..." required>
-                                <button type="submit" id="submitBtnAppel"
-                                    class="p-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition duration-200">
-                                    <span wire:loading.remove>
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                                        </svg>
-                                    </span>
+                            @if (!$offgroupe->count)
+                                <div class="flex items-center gap-2">
+                                    <input type="number" name="prixTrade" id="prixTrade" wire:model="prixTrade"
+                                        class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-purple-500"
+                                        placeholder="Faire une offre..." required>
+                                    <button type="submit" id="submitBtnAppel"
+                                        class="p-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition duration-200">
+                                        <span wire:loading.remove>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                            </svg>
+                                        </span>
 
-                                    <span wire:loading>
-                                        <svg class="w-5 h-5 animate-spin inline-block"
-                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                            {{-- @endif --}}
+                                        <span wire:loading>
+                                            <svg class="w-5 h-5 animate-spin inline-block"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            @endif
                         </form>
                     </div>
                 </div>

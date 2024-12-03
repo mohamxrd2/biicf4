@@ -97,7 +97,7 @@ class CheckCountdowns extends Command
 
     private function determineCommentToUse($countdown, $lowestPriceComment, $highestPriceComment)
     {
-        return $countdown->difference === 'offredirect' ? $highestPriceComment : $lowestPriceComment;
+        return $countdown->difference === 'enchere' ? $highestPriceComment : $lowestPriceComment;
     }
 
     private function prepareNotificationDetails($countdown, $commentToUse)
@@ -119,8 +119,8 @@ class CheckCountdowns extends Command
                 $this->sendGroupedOfferNotification($commentToUse, $details);
                 break;
 
-            case 'offredirect':
-                $this->sendOffRedirectNotification($commentToUse, $details);
+            case 'enchere':
+                $this->sendEnchereNotification($commentToUse, $details);
                 break;
 
             case 'grouper':
@@ -147,8 +147,13 @@ class CheckCountdowns extends Command
         Log::info('Notification "appelOffreGrouper" envoyée.', ['user_id' => $commentToUse->user->id]);
     }
 
-    private function sendOffRedirectNotification($commentToUse, $details)
+    private function sendEnchereNotification($commentToUse, $details)
     {
+        $details['title'] = 'Négociation terminée';
+        $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+        $details['id_trader'] = $commentToUse->id_trader ?? null;
+        $details['idProd'] = $commentToUse->id_prod ?? null;
+
         Notification::send($commentToUse->user, new NegosTerminer($details));
         Log::info('Notification "offredirect" envoyée.', ['user_id' => $commentToUse->user->id]);
     }

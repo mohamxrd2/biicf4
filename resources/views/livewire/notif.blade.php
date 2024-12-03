@@ -56,6 +56,7 @@
 
                             @case('App\Notifications\OffreNotifGroup')
                             @case('App\Notifications\RefusAchat')
+                            @case('App\Notifications\NegosTerminer')
 
                             @case('App\Notifications\OffreNegosDone')
                                 @include('biicf.components.ConfirmationNotif', [
@@ -67,10 +68,9 @@
                                     'markAsRead' => true,
                                     'delete' => true,
                                 ])
-                                
                             @break
-    {{-- Notification affichant la vue OffreNotif --}}
 
+                            {{-- Notification affichant la vue OffreNotif --}}
                             @case ('App\Notifications\OffreNotif')
                                 @include('biicf.components.OffreNotif', [
                                     'title' => 'Réception d\'offre',
@@ -82,11 +82,11 @@
                                     'delete' => true,
                                 ])
 
-                            @default
-                                <!-- Ajoutez ici un traitement par défaut ou laissez vide -->
-                        @endswitch
+                                @default
+                                    <!-- Ajoutez ici un traitement par défaut ou laissez vide -->
+                            @endswitch
 
-                        {{-- @if
+                            {{-- @if
 
                         @elseif ($notification->type === 'App\Notifications\OffreNegosNotif')
                             @include('biicf.components.ConfirmationNotif', [
@@ -182,17 +182,7 @@
                                 'delete' => true,
                             ])
                         @elseif ($notification->type === 'App\Notifications\NegosTerminer')
-                            @include('biicf.components.ConfirmationNotif', [
-                                'title' => 'Ganagnant de l\'offre',
-                                'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
-                                'description' => 'Verification de l\'identité du client',
-                                'orderId' => $notification->data['code_unique'],
-                                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
-                                                                                                                                                                                                                                                                                                                                                                                                            </svg> ',
-                                'markAsRead' => true,
-                                'delete' => true,
-                            ])
+                           
                         @elseif ($notification->type === 'App\Notifications\AppelOffreGrouperNotification')
                             @include('biicf.components.ConfirmationNotif', [
                                 'title' => 'negociation',
@@ -218,22 +208,22 @@
                                 'delete' => true,
                             ])
                         @endif --}}
-                    @endforeach
-                    <!-- Aucune notification -->
-                    <!-- Section commentée qui peut être activée si aucune notification -->
-                    <!--
-                    <div class="p-12 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-4.215a1 1 0 00-.95-.685H6.355a1 1 0 00-.95.685L4 17h5m7 0a3.25 3.25 0 11-6.5 0h6.5z" />
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune notification</h3>
-                        <p class="mt-1 text-sm text-gray-500">Vous n'avez aucune notification pour le moment.</p>
+                        @endforeach
+                        <!-- Aucune notification -->
+                        <!-- Section commentée qui peut être activée si aucune notification -->
+                        <!--
+                        <div class="p-12 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-4.215a1 1 0 00-.95-.685H6.355a1 1 0 00-.95.685L4 17h5m7 0a3.25 3.25 0 11-6.5 0h6.5z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune notification</h3>
+                            <p class="mt-1 text-sm text-gray-500">Vous n'avez aucune notification pour le moment.</p>
+                        </div>
+                        -->
                     </div>
-                    -->
                 </div>
             </div>
         </div>
+
+
     </div>
-
-
-</div>
