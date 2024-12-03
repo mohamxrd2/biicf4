@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\NotificationSent;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\User;
@@ -12,6 +13,7 @@ use App\Notifications\CountdownNotificationAp;
 use App\Notifications\NegosTerminer;
 use App\Notifications\Confirmation;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
@@ -27,13 +29,25 @@ class CheckCountdowns extends Command
 
     public function handle()
     {
-        $countdowns = Countdown::where('notified', false)
-            ->where('start_time', '<=', now()->subMinutes(2))
-            ->with(['sender', 'achat', 'appelOffre'])
-            ->get();
+        DB::beginTransaction(); // Démarre une transaction
 
-        foreach ($countdowns as $countdown) {
-            $this->processCountdown($countdown);
+        try {
+
+            $countdowns = Countdown::where('notified', false)
+                ->where('start_time', '<=', now()->subMinutes(2))
+                ->with(['sender', 'achat', 'appelOffre'])
+                ->get();
+
+            foreach ($countdowns as $countdown) {
+                $this->processCountdown($countdown);
+            }
+
+            DB::commit(); // Si tout se passe bien, commit les modifications
+        } catch (\Exception $e) {
+            DB::rollBack(); // Si une erreur se produit, annule les modifications
+
+            // Enregistrer l'erreur dans les logs
+            Log::error('Erreur lors du traitement des countdowns.', ['error' => $e->getMessage()]);
         }
     }
 
@@ -92,8 +106,7 @@ class CheckCountdowns extends Command
             'code_unique' => $countdown->code_unique,
             'prixTrade' => $commentToUse->prixTrade,
             'livreur' => $commentToUse->id_trader,
-            'achat_id' => $countdown->achat->id ?? $countdown->id_achat,
-            'id_appeloffre' => $countdown->appelOffre->id ?? $countdown->AppelOffreGrouper_id,
+            'id' => $countdown->achat->id ?? $countdown->id_achat ?? $countdown->appelOffre->id ?? $countdown->AppelOffreGrouper_id,
         ];
     }
 
@@ -115,7 +128,7 @@ class CheckCountdowns extends Command
                 break;
 
             case 'ad':
-                $this->sendAdNotification($countdown, $commentToUse, $details);
+                $this->sendAdNotification($countdown, $details);
                 break;
 
             case 'appelOffre':
@@ -145,12 +158,37 @@ class CheckCountdowns extends Command
         Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
     }
 
-    private function sendAdNotification($countdown, $commentToUse, $details)
+    private function sendAdNotification($countdown, $details)
     {
-        $client = User::find($countdown->achat->userSender);
 
-        if ($client) {
-            Notification::send($client, new CountdownNotificationAd($details));
+        Notification::send($countdown->sender, new CountdownNotificationAd($details));
+        // event(new NotificationSent($countdown->sender));
+
+        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+        $notification = $countdown->sender->notifications()->where('type', CountdownNotificationAd::class)->latest()->first();
+
+        if ($notification) {
+            // Mettez à jour le champ 'type_achat' dans la notification
+            $notification->update(['type_achat' => 'Delivery']);
+        }
+
+        // Étape 2 : Récupérer le commentaire avec le prix le plus bas
+        $lowestPriceComment = $this->getLowestPriceComment($countdown->code_unique); // On passe le code_unique depuis $commentToUse
+
+        // Vérifier si un commentaire avec le prix le plus bas a été trouvé
+        if ($lowestPriceComment) {
+            // Ajouter les informations supplémentaires (title et description) dans $details
+            $details['title'] = 'Négociation terminée';
+            $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+
+            // Envoyer la notification avec les détails mis à jour
+            Notification::send($lowestPriceComment->user, new Confirmation($details));
+            // event(new NotificationSent($lowestPriceComment->sender));
+        } else {
+            Log::warning('Aucun commentaire avec le prix le plus bas trouvé.', [
+                'code_unique' => $countdown->code_unique,
+                'details' => $details,
+            ]);
         }
     }
 

@@ -30,7 +30,7 @@ class CountdownNotificationAd extends Notification implements ShouldQueue
             'code_unique' => $this->details['code_unique'] ?? null,
             'prixTrade' => $this->details['prixTrade'] ?? null,
             'livreur' => $this->details['livreur'] ?? null,
-            'achat_id' => $this->details['achat_id'] ?? null,
+            'achat_id' => $this->details['id'] ?? null,
             'prixFin' => $this->details['prixFin'] ?? null,
             'title' => 'Facture Proformat',
             'description' => 'Cliquez pour voir plus de détails.',

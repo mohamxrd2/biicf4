@@ -348,9 +348,7 @@ class Achatdirect extends Component
         }
         return null; // Retourne null si aucun fichier valide
     }
-
-
-
+    
     public function render()
     {
         return view('livewire.Achatdirect');

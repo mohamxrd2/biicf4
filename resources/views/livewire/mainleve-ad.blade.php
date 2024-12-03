@@ -48,14 +48,14 @@
                         <li>En cas de problème, contactez le support</li>
                     </ul>
                 </div>
-                <div
+                {{-- <div
                     class="mt-6 p-4 bg-blue-100 border border-blue-300 rounded-lg dark:bg-blue-900 dark:border-blue-700">
                     <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-400">
                         Code de vérification</h3>
                     <p class="text-xl font-bold text-blue-900 dark:text-white">
                         {{ $this->notification->data['fournisseurCode'] ?? 'N/A' }}
                     </p>
-                </div>
+                </div> --}}
                 @if (session()->has('succes'))
                     <div class="p-4 mt-4 text-green-700 bg-green-100 rounded-lg">
                         {{ session('succes') }}
@@ -223,74 +223,138 @@
                                     <!-- Modal body -->
                                     <div class="p-6 space-y-6">
                                         <div class="max-w-4xl p-4 bg-gray-50 rounded-lg shadow-md dark:bg-gray-700">
+
+                                            <!-- Code de vérification -->
+                                            <div
+                                                class="mt-6 p-4 bg-blue-100 border border-blue-300 rounded-lg dark:bg-blue-900 dark:border-blue-700">
+                                                <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-400">
+                                                    Code de vérification</h3>
+                                                <p class="text-xl font-bold text-blue-900 dark:text-white">
+                                                    {{ $notification->data['livreurCode'] ?? 'N/A' }}
+                                                </p>
+                                            </div>
                                             <h2 class="text-lg font-medium text-gray-800 dark:text-white mb-4">Avis
                                                 de
                                                 conformité</h2>
+                                            <form wire:submit.prevent="departlivr" class="space-y-4">
+                                                <div class="space-y-4">
+                                                    <!-- Quantité -->
+                                                    <div class="flex items-center">
+                                                        <label class="mr-3 text-gray-700 dark:text-gray-300">Quantité
+                                                            :</label>
+                                                        <input type="radio" id="quantite-oui" name="quantite"
+                                                            value="oui" wire:model="quantite"
+                                                            class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
+                                                        <label for="quantite-oui"
+                                                            class="mr-4 text-gray-700 dark:text-gray-300">OUI</label>
+                                                        <input type="radio" id="quantite-non" name="quantite"
+                                                            value="non" wire:model="quantite"
+                                                            class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
+                                                        <label for="quantite-non"
+                                                            class="text-gray-700 dark:text-gray-300">NON</label>
+                                                    </div>
+                                                    <!-- Qualité apparante -->
+                                                    <div class="flex items-center">
+                                                        <label class="mr-3 text-gray-700 dark:text-gray-300">Qualité
+                                                            apparante
+                                                            :</label>
+                                                        <input type="radio" id="qualite-oui" name="qualite"
+                                                            value="oui" wire:model="qualite"
+                                                            class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
+                                                        <label for="qualite-oui"
+                                                            class="mr-4 text-gray-700 dark:text-gray-300">OUI</label>
+                                                        <input type="radio" id="qualite-non" name="qualite"
+                                                            value="non" wire:model="qualite"
+                                                            class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
+                                                        <label for="qualite-non"
+                                                            class="text-gray-700 dark:text-gray-300">NON</label>
+                                                    </div>
+                                                    <!-- diversite apparante -->
+                                                    <div class="flex items-center">
+                                                        <label class="mr-3 text-gray-700 dark:text-gray-300">Diversite
+                                                            :</label>
+                                                        <input type="radio" id="diversite-oui" name="diversite"
+                                                            value="oui" wire:model="diversite"
+                                                            class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
+                                                        <label for="diversite-oui"
+                                                            class="mr-4 text-gray-700 dark:text-gray-300">OUI</label>
+                                                        <input type="radio" id="diversite-non" name="diversite"
+                                                            value="non" wire:model="diversite"
+                                                            class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
+                                                        <label for="diversite-non"
+                                                            class="text-gray-700 dark:text-gray-300">NON</label>
+                                                    </div>
 
-                                            <div class="space-y-4">
-                                                <!-- Quantité -->
-                                                <div class="flex items-center">
-                                                    <label class="mr-3 text-gray-700 dark:text-gray-300">Quantité
-                                                        :</label>
-                                                    <input type="radio" id="quantite-oui" name="quantite"
-                                                        value="oui" wire:model="quantite"
-                                                        class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
-                                                    <label for="quantite-oui"
-                                                        class="mr-4 text-gray-700 dark:text-gray-300">OUI</label>
-                                                    <input type="radio" id="quantite-non" name="quantite"
-                                                        value="non" wire:model="quantite"
-                                                        class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
-                                                    <label for="quantite-non"
-                                                        class="text-gray-700 dark:text-gray-300">NON</label>
-                                                </div>
-                                                <!-- Qualité apparante -->
-                                                <div class="flex items-center">
-                                                    <label class="mr-3 text-gray-700 dark:text-gray-300">Qualité
-                                                        apparante
-                                                        :</label>
-                                                    <input type="radio" id="qualite-oui" name="qualite"
-                                                        value="oui" wire:model="qualite"
-                                                        class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
-                                                    <label for="qualite-oui"
-                                                        class="mr-4 text-gray-700 dark:text-gray-300">OUI</label>
-                                                    <input type="radio" id="qualite-non" name="qualite"
-                                                        value="non" wire:model="qualite"
-                                                        class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
-                                                    <label for="qualite-non"
-                                                        class="text-gray-700 dark:text-gray-300">NON</label>
-                                                </div>
-                                                <!-- diversite apparante -->
-                                                <div class="flex items-center">
-                                                    <label class="mr-3 text-gray-700 dark:text-gray-300">Diversite
-                                                        :</label>
-                                                    <input type="radio" id="diversite-oui" name="diversite"
-                                                        value="oui" wire:model="diversite"
-                                                        class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
-                                                    <label for="diversite-oui"
-                                                        class="mr-4 text-gray-700 dark:text-gray-300">OUI</label>
-                                                    <input type="radio" id="diversite-non" name="diversite"
-                                                        value="non" wire:model="diversite"
-                                                        class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
-                                                    <label for="diversite-non"
-                                                        class="text-gray-700 dark:text-gray-300">NON</label>
-                                                </div>
+                                                    <!-- Section Programmation -->
 
-                                                <!-- Code de vérification -->
-                                                <div
-                                                    class="mt-6 p-4 bg-blue-100 border border-blue-300 rounded-lg dark:bg-blue-900 dark:border-blue-700">
-                                                    <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-400">
-                                                        Code de vérification</h3>
-                                                    <p class="text-xl font-bold text-blue-900 dark:text-white">
-                                                        {{ $notification->data['livreurCode'] ?? 'N/A' }}
-                                                    </p>
-                                                </div>
-                                                <p class="text-sm text-red-500 mt-4">Veuillez sélectionner au moins
-                                                    deux réponses "OUI" pour effectuer l'action.</p>
-                                            </div>
+                                                    <h2
+                                                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                        <svg class="h-6 w-6 text-purple-500"
+                                                            xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M8 7V3m8 4V3m-9 8h10m-4 9a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v12z" />
+                                                        </svg>
+                                                        Programmer la livraison
+                                                    </h2>
+
+                                                    <div class="space-y-2">
+                                                        <label for="date"
+                                                            class="block text-sm font-medium text-gray-700">Date de
+                                                            livraison</label>
+                                                        <div class="relative">
+                                                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+                                                                xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M8 7V3m8 4V3m-9 8h10m-4 9a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v12z" />
+                                                            </svg>
+                                                            <input type="date" id="date" name="date"
+                                                                wire:model.defer="dateLivr"
+                                                                class="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="space-y-2">
+                                                        <label for="time"
+                                                            class="block text-sm font-medium text-gray-700">Heure
+                                                            de
+                                                            livraison</label>
+                                                        <div class="relative">
+                                                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+                                                                xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M12 8v4m4 0H8m16 4a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v9z" />
+                                                            </svg>
+                                                            <input type="time" id="time" name="time"
+                                                                wire:model.defer="time"
+                                                                class="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                                        </div>
+                                                    </div>
+
+                                                    <button type="button" data-modal-hide="static-modal"
+                                                        class="w-full bg-purple-500 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-purple-600 transition-colors">
+                                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                        Confirmer la programmation
+                                                    </button>
+                                            </form>
+
+
+                                            <p class="text-sm text-red-500 mt-4">Veuillez sélectionner au moins
+                                                deux réponses "OUI" pour effectuer l'action.</p>
                                         </div>
                                     </div>
-                                    <!-- Modal footer -->
-                                    {{-- <div
+                                </div>
+                                <!-- Modal footer -->
+                                {{-- <div
                                         class="flex justify-end p-6 border-t border-gray-200 rounded-b dark:border-gray-600">
                                         <button data-modal-hide="static-modal" type="button" wire:click='mainleve'
                                             class="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
@@ -302,75 +366,18 @@
                                             Je refuse
                                         </button>
                                     </div> --}}
-                                </div>
                             </div>
                         </div>
-
-
                     </div>
+
+
                 </div>
             </div>
+</div>
 
-        </section>
-        <div class="space-y-8 max-w-4xl mx-auto p-6  min-h-screen">
-
-            <!-- Section Programmation -->
-            <section class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <svg class="h-6 w-6 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3m-9 8h10m-4 9a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v12z" />
-                    </svg>
-                    Programmer la livraison
-                </h2>
-
-                <form wire:submit.prevent="departlivr" class="space-y-4">
-                    <div class="space-y-2">
-                        <label for="date" class="block text-sm font-medium text-gray-700">Date de
-                            livraison</label>
-                        <div class="relative">
-                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10m-4 9a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v12z" />
-                            </svg>
-                            <input type="date" id="date" name="date" wire:model.defer="dateLivr"
-                                class="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="time" class="block text-sm font-medium text-gray-700">Heure de
-                            livraison</label>
-                        <div class="relative">
-                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m4 0H8m16 4a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v9z" />
-                            </svg>
-                            <input type="time" id="time" name="time" wire:model.defer="time"
-                                class="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-                        </div>
-                    </div>
-
-                    <button type="submit"
-                        class="w-full bg-purple-500 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-purple-600 transition-colors">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5 13l4 4L19 7" />
-                        </svg>
-                        Confirmer la programmation
-                    </button>
-                </form>
-            </section>
-
-        </div>
-    @endif
-    {{-- <script>
+</section>
+@endif
+{{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             const dateLivrInput = document.querySelector('input[name="dateLivr"]');
             const startDate = new Date("{{ $notification->data['date_tot'] }}");
