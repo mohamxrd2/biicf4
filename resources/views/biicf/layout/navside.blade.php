@@ -313,6 +313,12 @@
                 <div class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 w-56 hidden z-10 mt-2 min-w-60 bg-white border border-gray-200 rounded-md p-2"
                     aria-labelledby="hs-dropdown-unstyled">
 
+                    <a class="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+                                href="{{ route('finance.acceuil') }}">
+                                <div class="bg-green-500 w-5 h-5 text-center rounded-full text-white">F</div>
+                                Bourse du financement
+                            </a>
+
                     <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm @if (request()->route()->getName() == 'biicf.post') text-purple-600 font-semibold @else text-gray-800 @endif hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
                         href="{{ route('biicf.post') }}">
 
