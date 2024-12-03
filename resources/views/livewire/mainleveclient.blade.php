@@ -9,6 +9,13 @@
         </p>
 
     </div>
+
+    @if (session()->has('succes'))
+        <div class="p-4 mt-4 text-green-700 bg-green-100 rounded-lg">
+            {{ session('succes') }}
+        </div>
+    @endif
+
     <div class="flex justify-center items-center min-h-screen ">
         <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
             <!-- Titre -->
@@ -55,13 +62,7 @@
                     <li>En cas de problème, contactez le support</li>
                 </ul>
             </div>
-            <div class="mt-6 p-4 bg-blue-100 border border-blue-300 rounded-lg dark:bg-blue-900 dark:border-blue-700">
-                <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-400">
-                    Code de vérification</h3>
-                <p class="text-xl font-bold text-blue-900 dark:text-white">
-                    {{ $this->notification->data['fournisseurCode'] ?? 'N/A' }}
-                </p>
-            </div>
+
             @if (session()->has('succes'))
                 <div class="p-4 mt-4 text-green-700 bg-green-100 rounded-lg">
                     {{ session('succes') }}
@@ -89,15 +90,14 @@
                 </div>
 
                 <div class="flex flex-col">
-                    <p class="mb-3 text-md">Nom du livreur: <span>
-                            class="font-semibold ">{{ $livreur->name }}</span>
+                    <p class="mb-3 text-md">Nom du livreur: <span class="font-semibold ">{{ $livreur->name }}</span>
                     </p>
                     <p class="mb-3 text-md">Adress du livreur: <span
                             class="font-semibold ">{{ $livreur->commune }}</span></p>
                     <p class="mb-3 text-md">Contact du client: <span class="font-semibold ">{{ $livreur->phone }}</span>
                     </p>
                     <p class="mb-3 text-md">Produit à recuperer: <span
-                            class= "font-semibold ">{{ $appeloffre->product_name }}</span></p>
+                            class= "font-semibold ">{{ $achatdirect->nameProd }}</span></p>
                 </div>
 
             </div>
@@ -155,16 +155,6 @@
                                 class="mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800">
                             <label for="diversite-non" class="text-gray-700 dark:text-gray-300">NON</label>
                         </div>
-
-                        <!-- Code de vérification -->
-                        <div
-                            class="mt-6 p-4 bg-blue-100 border border-blue-300 rounded-lg dark:bg-blue-900 dark:border-blue-700">
-                            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-400">
-                                Code de vérification</h3>
-                            <p class="text-xl font-bold text-blue-900 dark:text-white">
-                                {{ $notification->data['livreurCode'] ?? 'N/A' }}
-                            </p>
-                        </div>
                         <p class="text-sm text-red-500 mt-4">Veuillez sélectionner au moins
                             deux réponses "OUI" pour effectuer l'action.</p>
                     </div>
@@ -172,14 +162,25 @@
             </div>
             <!-- Modal footer -->
             <div class="flex justify-end p-6 border-t border-gray-200 rounded-b dark:border-gray-600">
-                <button data-modal-hide="static-modal" type="button" wire:click='acceptColis'
-                    class="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
-                    J'accepte
-                </button>
-                <button data-modal-hide="static-modal" type="button" wire:click='refuseColis'
-                    class="ml-4 px-6 py-2.5 bg-gray-200 text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-300 focus:ring-4 focus:ring-gray-400 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
-                    Je refuse
-                </button>
+
+                @if ($notification->reponse)
+                    <div class="flex space-x-2 mt-4">
+                        <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
+                            <!-- Texte du bouton et icône -->
+                           Achat effectué avec success
+                        </div>
+
+                    </div>
+                @else
+                    <button data-modal-hide="static-modal" type="button" wire:click='acceptColis'
+                        class="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+                        Je paie
+                    </button>
+                    <button data-modal-hide="static-modal" type="button" wire:click='refuseColis'
+                        class="ml-4 px-6 py-2.5 bg-gray-200 text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-300 focus:ring-4 focus:ring-gray-400 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
+                        Je refuse
+                    </button>
+                @endif
             </div>
         </div>
     @endif

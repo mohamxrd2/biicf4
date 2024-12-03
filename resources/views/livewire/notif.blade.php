@@ -47,6 +47,8 @@
                             @case('App\Notifications\OffreNegosNotif')
                             @case('App\Notifications\VerifUser')
                             @case('App\Notifications\mainleveAd')
+                            @case('App\Notifications\mainleveclient')
+                            @case('App\Notifications\Confirmation')
 
                             @case('App\Notifications\RefusAchat')
                             @case('App\Notifications\OffreNegosDone')
@@ -170,17 +172,8 @@
                                 'markAsRead' => true,
                                 'delete' => true,
                             ])
-                       
-                        @elseif ($notification->type === 'App\Notifications\VerifUser')
-                            @include('biicf.components.ConfirmationNotif', [
-                                'title' => 'Main Levée Client',
-                                'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
-                                'description' => 'Verification de l\'identité du client',
-                                'orderId' => $notification->data['code_unique'],
-                                'svg' => ' ',
-                                'markAsRead' => true,
-                                'delete' => true,
-                            ])
+
+
                         @elseif ($notification->type === 'App\Notifications\AOGrouper')
                             @include('biicf.components.ConfirmationNotif', [
                                 'title' => 'Groupage de Client',

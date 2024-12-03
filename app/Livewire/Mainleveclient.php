@@ -36,7 +36,6 @@ class Mainleveclient extends Component
     {
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
-        $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appeloffre']);
         $this->livreur = User::find($this->notification->data['livreur']);
 
     }
@@ -67,7 +66,6 @@ class Mainleveclient extends Component
     public function acceptColis()
     {
         DB::beginTransaction();
-
         try {
             $dataType = $this->achatdirect ? 'achatdirect' : ($this->appeloffre ? 'appeloffre' : null);
 
@@ -135,6 +133,7 @@ class Mainleveclient extends Component
             // Mise à jour de la notification
             $this->notification->update(['reponse' => 'Confirmation']);
             Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
+            session()->flash('succes', 'Le payement a été éffecuté avec succes.');
 
             DB::commit();
         } catch (ModelNotFoundException $e) {

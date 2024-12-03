@@ -25,6 +25,9 @@ class MainleveAd extends Component
     public $achatdirect;
     public $fournisseur;
     public $code_verif;
+    public $quantite;
+    public $qualite;
+    public $diversite;
     public $matine; // Ajoutez cette propriété publique
 
 
@@ -59,10 +62,24 @@ class MainleveAd extends Component
         } else {
             session()->flash('error', 'Code invalide.');
         }
-
     }
     public function departlivr()
     {
+        // Rassemblez les réponses dans un tableau
+        $responses = [
+            'Quantité' => $this->quantite,
+            'Qualité' => $this->qualite,
+            'Diversité' => $this->diversite,
+        ];
+
+        // Comptez le nombre de "oui"
+        $countYes = count(array_filter([$this->quantite, $this->qualite, $this->diversite], fn($value) => $value === 'oui'));
+
+        // Vérifiez la condition
+        if ($countYes < 2) {
+            session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
+            return;
+        }
 
         $this->validate([
             'dateLivr' => 'required|date',
@@ -81,7 +98,7 @@ class MainleveAd extends Component
             'date_livr' => $this->dateLivr,
             'time' => $this->time,
             'achat_id' => $this->achatdirect->id,
-            'CodeVerification' => $this->notification->data['livreurCode'] ,
+            'CodeVerification' => $this->notification->data['livreurCode'],
             'title' => 'Reception du colis',
             'description' => 'Procéder a la confirmité du colis',
         ];
