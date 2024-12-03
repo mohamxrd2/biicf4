@@ -86,9 +86,9 @@
                                     fill="currentColor">
                                     <path
                                         d=" M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397
-                                                                                                                                    8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
-                                                                                                                                    2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
-                                                                                                                                    3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                                                                                                        8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
+                                                                                                                                        2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
+                                                                                                                                        3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
                                 </svg>
                                 <!-- Repeat for additional stars -->
                             </div>
@@ -127,7 +127,7 @@
                             </svg>
                         </div>
                     @else
-                        {{-- @livewire('fonct-offre', ['id' => $id]) --}}
+                        @livewire('fonct-offre', ['id' => $id])
 
 
                         <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
@@ -237,121 +237,7 @@
 
     {{-- les pop pour les fonctionnalite des fournissuers --}}
 
-    <div id="hs-offreGrpNeg-{{ $produit->id }}"
-        class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
-        <div
-            class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-            <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900">
-                <div class="absolute top-2 end-2">
-                    <button type="button"
-                        class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-transparent dark:hover:bg-neutral-700"
-                        data-hs-overlay="#hs-offreGrpNeg-{{ $produit->id }}">
-                        <span class="sr-only">Close</span>
-                        <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
-                        </svg>
-                    </button>
-                </div>
 
-                <div class="p-4 sm:p-10 text-center overflow-y-auto">
-                    <h3 class="mb-2 text-2xl font-bold text-gray-800 dark:text-neutral-200">
-                        Offre groupé negocié
-                    </h3>
-                    <p class="text-gray-500 dark:text-neutral-500">
-                        le nombre de fornisseur potentiels est ({{ $nomFournisseurCount }})
-                    </p>
-
-                    <div class="mt-6 flex justify-center gap-x-4">
-                        <form action="{{ route('biicf.sendoffreneg', $produit->id) }}" method="POST">
-                            @csrf
-                            @method('POST')
-
-                            <input type="hidden" name="differance" value="groupe">
-
-                            <!-- Champ caché pour l'ID du produit -->
-                            <input type="hidden" name="produit_id" value="{{ $produit->id }}">
-
-                            <button type="submit" @if ($nomFournisseurCount == 0) disabled @endif
-                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                soumettre
-                            </button>
-                        </form>
-
-                        <button type="button"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                            data-hs-overlay="#hs-offreGrpNeg-{{ $produit->id }}">
-                            Annuler
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div id="hs-delete-{{ $produit->id }}"
-        class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
-        <div
-            class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-            <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900">
-                <div class="absolute top-2 end-2">
-                    <button type="button"
-                        class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-transparent dark:hover:bg-neutral-700"
-                        data-hs-overlay="#hs-delete-{{ $produit->id }}">
-                        <span class="sr-only">Close</span>
-                        <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-4 sm:p-10 text-center overflow-y-auto">
-                    <!-- Icon -->
-                    <span
-                        class="mb-4 inline-flex justify-center items-center size-[62px] rounded-full border-4 border-red-50 bg-red-100 text-red-500 dark:bg-yellow-700 dark:border-yellow-600 dark:text-yellow-100">
-                        <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="16"
-                            height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path
-                                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                        </svg>
-                    </span>
-                    <!-- End Icon -->
-
-                    <h3 class="mb-2 text-2xl font-bold text-gray-800 dark:text-neutral-200">
-                        Supprimé
-                    </h3>
-                    <p class="text-gray-500 dark:text-neutral-500">
-                        Vous etes sur de supprimé le produit ?
-                    </p>
-
-                    <div class="mt-6 flex justify-center gap-x-4">
-                        <form action="{{ route('biicf.pubdeleteBiicf', $produit->id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
-                                Supprimer
-                            </button>
-                        </form>
-                        <button type="button"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                            data-hs-overlay="#hs-delete-{{ $produit->id }}">
-                            Annuler
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
 
 
 
@@ -435,7 +321,8 @@
 
                             <!-- Boutons -->
                             <div class="flex justify-center gap-4">
-                                <button type="submit" @if ($nombreProprietaires == 0) disabled @endif
+                                <button type="submit" data-hs-overlay="#hs-offreGrp-{{ $produit->id }}"
+                                    @if ($nombreProprietaires == 0) disabled @endif
                                     class="inline-flex items-center px-6 py-3 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
                                     Soumettre
                                 </button>
@@ -529,6 +416,65 @@
         </div>
     </div>
 
+    <div id="hs-delete-{{ $produit->id }}"
+        class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
+        <div
+            class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+            <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-neutral-900">
+                <div class="absolute top-2 end-2">
+                    <button type="button"
+                        class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-transparent dark:hover:bg-neutral-700"
+                        data-hs-overlay="#hs-delete-{{ $produit->id }}">
+                        <span class="sr-only">Close</span>
+                        <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-4 sm:p-10 text-center overflow-y-auto">
+                    <!-- Icon -->
+                    <span
+                        class="mb-4 inline-flex justify-center items-center size-[62px] rounded-full border-4 border-red-50 bg-red-100 text-red-500 dark:bg-yellow-700 dark:border-yellow-600 dark:text-yellow-100">
+                        <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="16"
+                            height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path
+                                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+                    </span>
+                    <!-- End Icon -->
+
+                    <h3 class="mb-2 text-2xl font-bold text-gray-800 dark:text-neutral-200">
+                        Supprimé
+                    </h3>
+                    <p class="text-gray-500 dark:text-neutral-500">
+                        Vous etes sur de supprimé le produit ?
+                    </p>
+
+                    <div class="mt-6 flex justify-center gap-x-4">
+                        <form action="{{ route('biicf.pubdeleteBiicf', $produit->id) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit"
+                                class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
+                                Supprimer
+                            </button>
+                        </form>
+                        <button type="button"
+                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                            data-hs-overlay="#hs-delete-{{ $produit->id }}">
+                            Annuler
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- JavaScript function to change main image -->
     <script>

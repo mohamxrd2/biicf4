@@ -192,7 +192,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     // Route pour stocker l'ajout de quantités à l'offre
     Route::post('formumelaire-appel-offregroupe/storeoffre', [AppelOffreController::class, 'storeoffre'])->name('biicf.storeoffre');
 
-    Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');
+    // Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');
 
     Route::post('offregroupClient/store', [OffreGroupClientController::class, 'sendoffGrp'])->name('biicf.sendoffregrp');
     Route::post('offregroupClient/comment', [OffreGroupClientController::class, 'commentoffgroup'])->name('biicf.offgrpcomment');

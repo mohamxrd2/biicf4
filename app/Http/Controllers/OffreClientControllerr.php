@@ -15,5 +15,5 @@ use Illuminate\Support\Facades\Notification;
 
 class OffreClientControllerr extends Controller
 {
-    
+   
 }
