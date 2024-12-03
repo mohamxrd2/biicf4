@@ -20,10 +20,10 @@
                             <h1 class="ml-3 text-xl font-semibold text-gray-900">Centre de notifications</h1>
                             <span class="ml-3 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                                 <!-- Nombre de notifications non lues -->
-                                {{ $unreadCount }} 
+                                {{ $unreadCount }}
                                 nouvelle{{ $unreadCount > 1 ? 's' : '' }}
                             </span>
-                            
+
                         </div>
                         <button class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
                             Tout marquer comme lu
@@ -67,6 +67,10 @@
                                     'markAsRead' => true,
                                     'delete' => true,
                                 ])
+                                
+                            @break
+    {{-- Notification affichant la vue OffreNotif --}}
+
                             @case ('App\Notifications\OffreNotif')
                                 @include('biicf.components.OffreNotif', [
                                     'title' => 'Réception d\'offre',
@@ -77,7 +81,6 @@
                                     'markAsRead' => true,
                                     'delete' => true,
                                 ])
-                            @break
 
                             @default
                                 <!-- Ajoutez ici un traitement par défaut ou laissez vide -->
