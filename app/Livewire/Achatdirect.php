@@ -134,7 +134,7 @@ class Achatdirect extends Component
 
     public function accepter()
     {
-       $validated = $this->validate([
+        $validated = $this->validate([
             'photoProd' => 'required|image|max:1024', // Limite à 1 MB
             'textareaValue' => 'required',
         ]);
@@ -153,12 +153,13 @@ class Achatdirect extends Component
             $photoName = $this->handlePhotoUpload('photoProd');
 
             // Préparer les données pour la notification
-           $data = [
+            $data = [
                 'idProd' => $this->notification->data['idProd'] ?? null,
                 'code_livr' => $this->notification->data['code_unique'],
                 'textareaContent' => $validated['textareaValue'],
                 'photoProd' => $photoName,
                 'achat_id' => $this->achatdirect->id,
+
             ];
 
             if (!$data['idProd']) {
@@ -201,11 +202,9 @@ class Achatdirect extends Component
         $montantTotal = $this->achatdirect->montantTotal;
 
         DB::beginTransaction();
-
         try {
             // Vérifier l'existence du portefeuille de l'utilisateur
             $userWallet = Wallet::where('user_id', $clientId)->firstOrFail();
-
 
             // Ajouter le montant au portefeuille du client
             $userWallet->increment('balance', $montantTotal);
@@ -220,14 +219,22 @@ class Achatdirect extends Component
                 'Réception',
                 $montantTotal,
                 $reference_id,
-                'Achat refusé',
+                'Restitution de fonds(achat refusé)',
                 'effectué',
                 'COC'
             );
 
+            $data = [
+                'id' => $this->achatdirect->id,
+                'idProd' => $this->notification->data['idProd'] ?? null,
+                'code_unique' => $this->notification->data['code_unique'],
+                'title' => 'Facture Refusée',
+                'description' => 'Le fournisseur a refuser votre commande.',
+            ];
+
             // Envoyer une notification au client
             $owner = User::findOrFail($clientId);
-            Notification::send($owner, new RefusAchat($this->notification->data['code_unique']));
+            Notification::send($owner, new RefusAchat($data));
             // Déclencher un événement pour signaler l'envoi de la notification
             event(new NotificationSent($owner));
             // Mettre à jour la réponse de la notification
@@ -264,20 +271,21 @@ class Achatdirect extends Component
                 'prixFin' =>  $this->prixFin ?? null,
                 'code_unique' => $this->achatdirect->code_unique ?? null,
                 'achat_id' => $this->achatdirect->id ?? null,
+
             ];
 
             // Trouvez l'utilisateur expéditeur
             $userSender = User::find($this->achatdirect->userSender);
 
-
             // Envoi de la notification
             Notification::send($userSender, new CountdownNotificationAd($details));
+            event(new NotificationSent($userSender));
+
             // Récupérer la dernière notification de type AppelOffreTerminer
             $notification = $userSender->notifications()
                 ->where('type', CountdownNotificationAd::class)
                 ->latest() // Prend la dernière notification
                 ->first();
-
             if ($notification) {
                 // Mise à jour de la notification existante
                 $notification->update(['type_achat' => 'Take Away']);

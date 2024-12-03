@@ -35,21 +35,26 @@
                     @foreach (auth()->user()->notifications as $notification)
                         @switch($notification->type)
                             @case('App\Notifications\Confirmation')
+                            @case('App\Notifications\AchatBiicf')
+
                             @case('App\Notifications\AOGrouper')
                             @case('App\Notifications\AppelOffreGrouperNotification')
+
                             @case('App\Notifications\AppelOffreTerminerGrouper')
                             @case('App\Notifications\livraisonAchatdirect')
+
                             @case('App\Notifications\CountdownNotificationAd')
                             @case('App\Notifications\OffreNegosNotif')
+                            @case('App\Notifications\VerifUser')
+
+                            @case('App\Notifications\RefusAchat')
                             @case('App\Notifications\OffreNegosDone')
                                 @include('biicf.components.ConfirmationNotif', [
                                     'title' => $notification->data['title'],
                                     'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
                                     'description' => $notification->data['description'],
                                     'orderId' => $notification->data['code_unique'],
-                                    'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-green-600">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                                     </svg>',
+                                    'svg' => $notification->data['svg'],
                                     'markAsRead' => true,
                                     'delete' => true,
                                 ])
@@ -59,21 +64,7 @@
                                 <!-- Ajoutez ici un traitement par défaut ou laissez vide -->
                         @endswitch
 
-                        {{-- @if ($notification->type === 'App\Notifications\AchatBiicf')
-                            @include('biicf.components.ConfirmationNotif', [
-                                'title' => 'Réception de Commande du produit ' . $notification->data['nameProd'],
-                                'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
-                                'description' =>
-                                    'Votre commande #' . $notification->data['code_unique'] . ' a été confirmée.',
-                                'orderId' => $notification->data['code_unique'],
-                                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                stroke="currentColor" class="size-6  text-green-600">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </svg>',
-                                'markAsRead' => true,
-                                'delete' => true,
-                            ])
+                        {{-- @if
                         @elseif ($notification->type === 'App\Notifications\OffreNotif')
                             @include('biicf.components.OffreNotif', [
                                 'title' => 'Réception d\'offre',
@@ -147,30 +138,11 @@
                                 'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
                                 'description' => $notification->data['description'],
                                 'orderId' => $notification->data['code_unique'],
-                                'svg' => '<svg class="w-full text-red-700 " xmlns="http://www.w3.org/2000/svg" fill="none"                                                                                                                                                                                                                                                                 viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    d="M9.75 9.75l4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </svg>',
+                                'svg' => '',
                                 'markAsRead' => true,
                                 'delete' => true,
                             ])
-                        @elseif (
-                            $notification->type === 'App\Notifications\livraisonAchatdirect' ||
-                                $notification->type === 'App\Notifications\livraisonAppelOffregrouper' ||
-                                $notification->type === 'App\Notifications\livraisonAppelOffre')
-                            @include('biicf.components.ConfirmationNotif', [
-                                'title' => 'Négociation des livreurs',
-                                'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
-                                'description' => 'Cliquez pour participer a la negociation.',
-                                'orderId' => $notification->data['code_livr'],
-                                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                                                                                                                                                                                                                                                                                                                                                                                                      <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                                                                                                                                                                                                                                                                                                                                                                                                                                    </svg>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ',
-                                'markAsRead' => true,
-                                'delete' => true,
-                            ])
                         @elseif ($notification->type === 'App\Notifications\AppelOffre')
                             @include('biicf.components.ConfirmationNotif', [
                                 'title' => 'Appel Offre',
@@ -193,11 +165,7 @@
                                 'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
                                 'description' => 'une negociation demarre .veuillez y participer',
                                 'orderId' => $notification->data['code_unique'],
-                                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 11.625h4.5m-4.5 2.25h4.5m2.121 1.527c-1.171 1.464-3.07 1.464-4.242 0-1.172-1.465-1.172-3.84 0-5.304 1.171-1.464 3.07-1.464 4.242 0M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </svg>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ',
+                                'svg' => '                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ',
                                 'markAsRead' => true,
                                 'delete' => true,
                             ])
@@ -224,9 +192,7 @@
                                 'time' => \Carbon\Carbon::parse($notification->created_at)->diffForHumans(),
                                 'description' => 'Verification de l\'identité du client',
                                 'orderId' => $notification->data['code_unique'],
-                                'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
-                                                                                                                                                                                                                                                                                                                                                                                                            </svg> ',
+                                'svg' => ' ',
                                 'markAsRead' => true,
                                 'delete' => true,
                             ])
