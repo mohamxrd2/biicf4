@@ -270,7 +270,7 @@ class Achatdirect extends Component
             $details = [
                 'prixFin' =>  $this->prixFin ?? null,
                 'code_unique' => $this->achatdirect->code_unique ?? null,
-                'achat_id' => $this->achatdirect->id ?? null,
+                'id' => $this->achatdirect->id ?? null,
 
             ];
 
@@ -348,7 +348,7 @@ class Achatdirect extends Component
         }
         return null; // Retourne null si aucun fichier valide
     }
-    
+
     public function render()
     {
         return view('livewire.Achatdirect');
