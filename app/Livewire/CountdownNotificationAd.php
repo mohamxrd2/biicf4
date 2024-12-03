@@ -265,7 +265,7 @@ class CountdownNotificationAd extends Component
                 $this->user,
                 $this->fournisseur->id ?? null,
                 'Envoie',
-                $requiredAmount,
+                $this->achatdirect->montantTotal,
                 $this->generateIntegerReference(),
                 'Debité pour achat',
                 'effectué',
@@ -283,8 +283,8 @@ class CountdownNotificationAd extends Component
             );
 
             // Calcul des commissions
-            $roi = $this->achatdirect->montantTotal * 0.01 / 100;
-            $commissions = $roi - $roi * 0.01;
+            // $roi = $this->achatdirect->montantTotal * 0.01 / 100;
+            $commissions = $this->achatdirect->montantTotal - $requiredAmount;
 
             // Paiement des commissions aux parrains
             $this->distributeCommissions($commissions);

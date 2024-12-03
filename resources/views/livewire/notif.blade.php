@@ -4,7 +4,7 @@
 
 <div wire:poll.150ms>
     <div class="min-h-screen ">
-        <div class="max-w-3xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
 
@@ -20,8 +20,10 @@
                             <h1 class="ml-3 text-xl font-semibold text-gray-900">Centre de notifications</h1>
                             <span class="ml-3 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                                 <!-- Nombre de notifications non lues -->
-                                {{ $unreadCount }} nouvelles
+                                {{ $unreadCount }} 
+                                nouvelle{{ $unreadCount > 1 ? 's' : '' }}
                             </span>
+                            
                         </div>
                         <button class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
                             Tout marquer comme lu
