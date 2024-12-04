@@ -34,24 +34,41 @@ class LivraisonAchatdirect extends Component
     public $user;
     public $commentCount;
     public $produit, $nombreParticipants, $achatdirect;
+    public $Valuecode_unique;
 
     public function mount($id)
     {
+        // Récupérer la notification par son ID ou échouer
         $this->notification = DatabaseNotification::findOrFail($id);
+
+        // Récupérer les données nécessaires depuis la notification
         $this->idProd = $this->notification->data['idProd'] ?? null;
         $this->produit = ProduitService::find($this->idProd);
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
 
+        // Assurez-vous que $this->achatdirect existe avant d'accéder à ses propriétés
+        if (!$this->achatdirect) {
+            throw new \Exception("Achat direct introuvable pour l'ID: " . $this->notification->data['achat_id']);
+        }
 
-        // Récupérer l le plus ancien avec code_unique
-        $this->oldestComment = Countdown::where('code_unique', $this->achatdirect->code_unique)
+        // Déterminer la valeur de $Valuecode_unique
+        $this->Valuecode_unique = $this->notification->type_achat == 'appelOffreGrouper'
+            ? ($this->notification->data['code_unique'] ?? null)
+            : $this->achatdirect->code_unique;
+
+        // Récupérer le plus ancien commentaire associé à ce code unique
+        $this->oldestComment = Countdown::where('code_unique', $this->Valuecode_unique)
             ->where('notified', false)
             ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
 
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
+        $this->oldestCommentDate = $this->oldestComment
+            ? $this->oldestComment->created_at->toIso8601String()
+            : null;
+
+        // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
     }
 
@@ -61,7 +78,7 @@ class LivraisonAchatdirect extends Component
         // Déboguer pour vérifier la structure de l'événement
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->comments = Comment::with('user')
-            ->where('code_unique', $this->achatdirect->code_unique)
+            ->where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->get();
@@ -104,7 +121,7 @@ class LivraisonAchatdirect extends Component
             // Créer un commentaire
             $comment = Comment::create([
                 'prixTrade' => $validatedData['prixTrade'],
-                'code_unique' => $this->achatdirect->code_unique,
+                'code_unique' => $this->Valuecode_unique,
                 'id_trader' => Auth::id(),
                 'quantiteC' => $this->achatdirect->quantité,
                 'id_prod' => $this->achatdirect->idProd,
@@ -119,13 +136,13 @@ class LivraisonAchatdirect extends Component
 
             // Vérifier si 'code_unique' existe dans les données de notification
             $this->comments = Comment::with('user')
-                ->where('code_unique', $this->achatdirect->code_unique)
+                ->where('code_unique', $this->Valuecode_unique)
                 ->whereNotNull('prixTrade')
                 ->orderBy('prixTrade', 'asc')
                 ->get();
 
             // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->achatdirect->code_unique)
+            $existingCountdown = Countdown::where('code_unique', $this->Valuecode_unique)
                 ->where('notified', false)
                 ->orderBy('start_time', 'desc')
                 ->first();
@@ -137,7 +154,7 @@ class LivraisonAchatdirect extends Component
                     'userSender' => $this->achatdirect->userSender,
                     'start_time' => now(),
                     'difference' => 'ad',
-                    'code_unique' => $this->achatdirect->code_unique,
+                    'code_unique' => $this->Valuecode_unique,
                     'id_achat' => $this->achatdirect->id,
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel

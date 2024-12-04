@@ -210,7 +210,7 @@ class Appeloffreterminergrouper extends Component
                 // Préparer les données pour la notification
                 $data = [
                     'idProd' => $this->produit->id,
-                    'code_livr' => $this->notification->data['code_unique'],
+                    'code_livr' => $this->generateUniqueReference(),
                     'textareaContent' => $validated['textareaValue'],
                     'photoProd' => $photoName,
                     'achat_id' => $achatdirect->id ?? null,
@@ -229,6 +229,13 @@ class Appeloffreterminergrouper extends Component
                         $livreur = User::find($livreurId);
                         if ($livreur) {
                             Notification::send($livreur, new livraisonAchatdirect($data));
+                            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+                            $notification = $livreur->notifications()->where('type', livraisonAchatdirect::class)->latest()->first();
+
+                            if ($notification) {
+                                // Mettez à jour le champ 'type_achat' dans la notification
+                                $notification->update(['type_achat' => 'appelOffreGrouper']);
+                            }
                             event(new NotificationSent($livreur));
                             Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
                         }
