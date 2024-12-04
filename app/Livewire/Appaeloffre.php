@@ -225,7 +225,7 @@ class Appaeloffre extends Component
                 'prodUsers' => 'required|array|min:1',
             ]);
             Log::info('Données validées.', ['validated_data' => $validatedData]);
-            
+
             // Générer un code unique une seule fois
             $codeUnique = $this->generateUniqueReference();
 
@@ -277,7 +277,7 @@ class Appaeloffre extends Component
                 'Gele',
                 $totalCost,
                 $this->generateIntegerReference(),
-                'Gele pour achat de ' . $validatedData['name'],
+                'Gele pour groupage de ' . $validatedData['name'],
                 'effectué',
                 'COC'
             );
@@ -287,7 +287,7 @@ class Appaeloffre extends Component
             gelement::create([
                 'id_wallet' => $this->wallet->id,
                 'amount' => $totalCost,
-                'reference_id' => $this->generateUniqueReference(),
+                'reference_id' => $codeUnique,
             ]);
             Log::info('Gel des fonds enregistré.');
 

@@ -82,7 +82,7 @@
                     </button>
                 </div>
 
-                <form wire:submit.prevent="storeoffre" class="p-6 space-y-6">
+                <form wire:submit.prevent="storeOffre" class="p-6 space-y-6">
                     <div>
                         <label for="quantite" class="block text-sm font-medium text-gray-700">
                             Ajouter une quantité

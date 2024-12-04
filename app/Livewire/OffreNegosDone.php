@@ -75,7 +75,7 @@ class OffreNegosDone extends Component
         // Récupération des offres groupées liées
         $this->offregroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
         $this->quantites = userquantites::where('code_unique', $this->notification->data['code_unique'])
-        ->sum('quantite');
+            ->sum('quantite');
 
         // Calcul du prix total et du prix final
         $produitPrix = $this->offregroupe->produit->prix;
@@ -166,88 +166,88 @@ class OffreNegosDone extends Component
             'textareaValue' => 'required',
         ]);
 
-        // DB::beginTransaction();
-        // try {
-        // Vérifier si le code_unique existe dans la table userquantites
-        $codeUnique = $this->offregroupe->code_unique; // Assurez-vous que ce champ est correctement défini dans la requête
-        $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
+        DB::beginTransaction();
+        try {
+            // Vérifier si le code_unique existe dans la table userquantites
+            $codeUnique = $this->offregroupe->code_unique; // Assurez-vous que ce champ est correctement défini dans la requête
+            $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
 
-        if ($userQuantites->isEmpty()) {
-            session()->flash('error', 'Code unique introuvable dans la table userquantites.');
-            return;
-        }
-
-        // Téléchargez la photo
-        $photoName = $this->handlePhotoUpload('photoProd');
-
-        // Parcourir chaque enregistrement dans userquantites et enregistrer l'achat pour chaque utilisateur
-        foreach ($userQuantites as $userQuantite) {
-            $userId = $userQuantite->user_id; // Récupérer l'ID utilisateur
-            $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
-
-            $userWallet = Wallet::where('user_id', $userId)->first();
-            if (!$userWallet) {
-                Log::warning('Portefeuille introuvable pour l\'utilisateur', ['user_id' => $userId]);
-                continue; // Passez au suivant si le portefeuille est manquant
+            if ($userQuantites->isEmpty()) {
+                session()->flash('error', 'Code unique introuvable dans la table userquantites.');
+                return;
             }
 
-            // Enregistrer l'achat dans la table AchatDirectModel
-            $achatdirect = AchatDirect::create([
-                'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
-                'quantité' => $quantite,  // Quantité récupérée de userquantites
-                'montantTotal' => $this->prixFin,
-                'localite' => 'cocody',
-                'date_tot' => now(),
-                'date_tard' => now(),
-                'userTrader' => Auth::id(),
-                'userSender' => $userId,  // Utilisateur qui a saisi l'achat
-                'idProd' => $this->produit->id,
-                'code_unique' => $codeUnique,
-            ]);
+            // Téléchargez la photo
+            $photoName = $this->handlePhotoUpload('photoProd');
 
-            // Préparer les données pour la notification
-            $data = [
-                'idProd' => $this->produit->id,
-                'code_livr' => $this->notification->data['code_unique'],
-                'textareaContent' => $validated['textareaValue'],
-                'photoProd' => $photoName,
-                'achat_id' => $achatdirect->id ?? null,
-                'title' => 'Negociations des livreurs',
-                'description' => 'Cliquez pour particicper a la negociation',
+            // Parcourir chaque enregistrement dans userquantites et enregistrer l'achat pour chaque utilisateur
+            foreach ($userQuantites as $userQuantite) {
+                $userId = $userQuantite->user_id; // Récupérer l'ID utilisateur
+                $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
 
-            ];
+                $userWallet = Wallet::where('user_id', $userId)->first();
+                if (!$userWallet) {
+                    Log::warning('Portefeuille introuvable pour l\'utilisateur', ['user_id' => $userId]);
+                    continue; // Passez au suivant si le portefeuille est manquant
+                }
 
-            if (!$data['idProd']) {
-                throw new Exception('Identifiant du produit introuvable.');
-            }
+                // Enregistrer l'achat dans la table AchatDirectModel
+                $achatdirect = AchatDirect::create([
+                    'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
+                    'quantité' => $quantite,  // Quantité récupérée de userquantites
+                    'montantTotal' => $this->prixFin,
+                    'localite' => 'cocody',
+                    'date_tot' => now(),
+                    'date_tard' => now(),
+                    'userTrader' => Auth::id(),
+                    'userSender' => $userId,  // Utilisateur qui a saisi l'achat
+                    'idProd' => $this->produit->id,
+                    'code_unique' => $codeUnique,
+                ]);
 
-            // Envoyer une notification aux livreurs pour la négociation
-            if ($this->livreursIds->isNotEmpty()) {
-                foreach ($this->livreursIds as $livreurId) {
-                    $livreur = User::find($livreurId);
-                    if ($livreur) {
-                        Notification::send($livreur, new livraisonAchatdirect($data));
-                        event(new NotificationSent($livreur));
-                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                // Préparer les données pour la notification
+                $data = [
+                    'idProd' => $this->produit->id,
+                    'code_livr' => $this->notification->data['code_unique'],
+                    'textareaContent' => $validated['textareaValue'],
+                    'photoProd' => $photoName,
+                    'achat_id' => $achatdirect->id ?? null,
+                    'title' => 'Negociations des livreurs',
+                    'description' => 'Cliquez pour particicper a la negociation',
+
+                ];
+
+                if (!$data['idProd']) {
+                    throw new Exception('Identifiant du produit introuvable.');
+                }
+
+                // Envoyer une notification aux livreurs pour la négociation
+                if ($this->livreursIds->isNotEmpty()) {
+                    foreach ($this->livreursIds as $livreurId) {
+                        $livreur = User::find($livreurId);
+                        if ($livreur) {
+                            Notification::send($livreur, new livraisonAchatdirect($data));
+                            event(new NotificationSent($livreur));
+                            Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                        }
                     }
                 }
             }
+
+            // Mettre à jour la notification après le traitement de tous les utilisateurs
+            $this->notification->update(['reponse' => 'accepte']);
+
+            DB::commit();
+
+            // Retourner une confirmation
+            $this->dispatch('formSubmitted', 'Commande acceptée avec succès. Notifications envoyées à tous les livreurs.');
+            $this->modalOpen = false;
+        } catch (Exception $e) {
+            // Annuler la transaction et gérer l'erreur
+            DB::rollBack();
+            session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
+            Log::error('Erreur lors du traitement de l\'achat', ['message' => $e->getMessage()]);
         }
-
-        // Mettre à jour la notification après le traitement de tous les utilisateurs
-        $this->notification->update(['reponse' => 'accepte']);
-
-        DB::commit();
-
-        // Retourner une confirmation
-        $this->dispatch('formSubmitted', 'Commande acceptée avec succès. Notifications envoyées à tous les livreurs.');
-        $this->modalOpen = false;
-        // } catch (Exception $e) {
-        //     // Annuler la transaction et gérer l'erreur
-        //     DB::rollBack();
-        //     session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
-        //     Log::error('Erreur lors du traitement de l\'achat', ['message' => $e->getMessage()]);
-        // }
     }
 
     public function refuser()

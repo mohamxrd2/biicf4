@@ -27,6 +27,7 @@ class AppelOffreGrouper extends Model
         'prodUsers',
         'codeunique',
         'count',
+        'count2',
         'reference',
         'user_id'
     ];

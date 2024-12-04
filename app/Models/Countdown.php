@@ -9,24 +9,42 @@ class Countdown extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id','userSender', 'start_time', 'notified', 'code_unique', 'difference', 'id_achat', 'AppelOffreGrouper_id'];
+    // Définition des champs remplissables dans le modèle
+    protected $fillable = [
+        'user_id',
+        'userSender',
+        'start_time',
+        'notified',
+        'code_unique',
+        'difference',
+        'id_achat',
+        'id_appeloffre',
+        'AppelOffreGrouper_id'
+    ];
 
-
-
+    // Méthodes relationnelles
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
     public function sender()
     {
         return $this->belongsTo(User::class, 'userSender');
     }
+
     public function achat()
     {
         return $this->belongsTo(AchatDirect::class, 'id_achat');
     }
+
     public function appelOffre()
     {
-        return $this->belongsTo(AchatDirect::class, 'AppelOffreGrouper_id');
+        return $this->belongsTo(AppelOffreUser::class, 'id_appeloffre'); // Correction du modèle appelé
+    }
+
+    public function appelOffreGrouper()
+    {
+        return $this->belongsTo(AppelOffreGrouper::class, 'AppelOffreGrouper_id'); // Nouvelle méthode relationnelle ajoutée
     }
 }

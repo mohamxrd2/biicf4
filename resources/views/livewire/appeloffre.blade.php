@@ -23,8 +23,7 @@
         <div class="bg-gray-100 min-h-screen">
             <div class="flex gap-8">
                 <!-- Carte appeloffre -->
-                <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 h-fit">
-
+                <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 md:w-96 h-fit">
 
                     <h1 class="text-2xl font-bold mb-1">{{ $appeloffre->product_name }}</h1>
                     <!-- Nom du appeloffre -->
@@ -124,7 +123,7 @@
                 </div>
 
                 <!-- Discussion -->
-                <div class="flex-1 w-64">
+                <div class="flex-1 w-full md:w-auto">
                     <!-- Discussion de négociation -->
                     <div class="bg-white shadow-lg rounded-lg p-2">
 

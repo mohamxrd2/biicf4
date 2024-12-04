@@ -59,6 +59,7 @@ class Appeloffreterminergrouper extends Component
     public $Quantite;
     public $photoProd;
     public $textareaValue;
+    public $groupages;
 
 
 
@@ -75,6 +76,11 @@ class Appeloffreterminergrouper extends Component
         // Vérifier si l'utilisateur a déjà soumis une quantité pour ce code unique
         $this->Quantite = userquantites::where('code_unique', $this->AppelOffreGrouper->codeunique)
             ->sum('quantite');
+
+        // Charger les groupages
+        $this->groupages = userquantites::where('code_unique', $this->AppelOffreGrouper->codeunique)
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         $reduction = 0.01;
         $prixUnitaire = $this->notification->data['prixTrade'];
@@ -162,87 +168,88 @@ class Appeloffreterminergrouper extends Component
         ]);
 
         DB::beginTransaction();
-        // try {
-        // Vérifier si le code_unique existe dans la table userquantites
-        $codeUnique = $this->AppelOffreGrouper->codeunique; // Assurez-vous que ce champ est correctement défini dans la requête
-        $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
+        try {
+            // Vérifier si le code_unique existe dans la table userquantites
+            $codeUnique = $this->AppelOffreGrouper->codeunique; // Assurez-vous que ce champ est correctement défini dans la requête
+            $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
 
-        if ($userQuantites->isEmpty()) {
-            session()->flash('error', 'Code unique introuvable dans la table userquantites.');
-            return;
-        }
-
-        // Téléchargez la photo
-        $photoName = $this->handlePhotoUpload('photoProd');
-
-        // Parcourir chaque enregistrement dans userquantites et enregistrer l'achat pour chaque utilisateur
-        foreach ($userQuantites as $userQuantite) {
-            $userId = $userQuantite->user_id; // Récupérer l'ID utilisateur
-            $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
-
-            $userWallet = Wallet::where('user_id', $userId)->first();
-            if (!$userWallet) {
-                Log::warning('Portefeuille introuvable pour l\'utilisateur', ['user_id' => $userId]);
-                continue; // Passez au suivant si le portefeuille est manquant
+            if ($userQuantites->isEmpty()) {
+                session()->flash('error', 'Code unique introuvable dans la table userquantites.');
+                return;
             }
 
-            // Enregistrer l'achat dans la table AchatDirectModel
-            $achatdirect = AchatDirect::create([
-                'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
-                'quantité' => $quantite,  // Quantité récupérée de userquantites
-                'montantTotal' => $quantite * $this->notification->data['prixTrade'],
-                'localite' => $this->AppelOffreGrouper->localite,
-                'date_tot' => $this->AppelOffreGrouper->dateTot,
-                'date_tard' => $this->AppelOffreGrouper->dateTard,
-                'userTrader' => Auth::id(),
-                'userSender' => $userId,  // Utilisateur qui a saisi l'achat
-                'idProd' => $this->produit->id,
-                'code_unique' => $codeUnique,
-            ]);
+            // Téléchargez la photo
+            $photoName = $this->handlePhotoUpload('photoProd');
 
-            // Préparer les données pour la notification
-            $data = [
-                'idProd' => $this->produit->id,
-                'code_livr' => $this->notification->data['code_unique'],
-                'textareaContent' => $validated['textareaValue'],
-                'photoProd' => $photoName,
-                'achat_id' => $achatdirect->id ?? null,
-                'title' => 'Negociations des livreurs',
-                'description' => 'Cliquez pour particicper a la negociation',
+            // Parcourir chaque enregistrement dans userquantites et enregistrer l'achat pour chaque utilisateur
+            foreach ($userQuantites as $userQuantite) {
+                $userId = $userQuantite->user_id; // Récupérer l'ID utilisateur
+                $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
+                $localite = $userQuantite->localite; // Quantité saisie par l'utilisateur
 
-            ];
+                $userWallet = Wallet::where('user_id', $userId)->first();
+                if (!$userWallet) {
+                    Log::warning('Portefeuille introuvable pour l\'utilisateur', ['user_id' => $userId]);
+                    continue; // Passez au suivant si le portefeuille est manquant
+                }
 
-            if (!$data['idProd']) {
-                throw new Exception('Identifiant du produit introuvable.');
-            }
+                // Enregistrer l'achat dans la table AchatDirectModel
+                $achatdirect = AchatDirect::create([
+                    'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
+                    'quantité' => $quantite,  // Quantité récupérée de userquantites
+                    'montantTotal' => $quantite * $this->notification->data['prixTrade'],
+                    'localite' => $localite,
+                    'date_tot' => $this->AppelOffreGrouper->dateTot,
+                    'date_tard' => $this->AppelOffreGrouper->dateTard,
+                    'userTrader' => Auth::id(),
+                    'userSender' => $userId,  // Utilisateur qui a saisi l'achat
+                    'idProd' => $this->produit->id,
+                    'code_unique' => $codeUnique,
+                ]);
 
-            // Envoyer une notification aux livreurs pour la négociation
-            if ($this->livreursIds->isNotEmpty()) {
-                foreach ($this->livreursIds as $livreurId) {
-                    $livreur = User::find($livreurId);
-                    if ($livreur) {
-                        Notification::send($livreur, new livraisonAchatdirect($data));
-                        event(new NotificationSent($livreur));
-                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                // Préparer les données pour la notification
+                $data = [
+                    'idProd' => $this->produit->id,
+                    'code_livr' => $this->notification->data['code_unique'],
+                    'textareaContent' => $validated['textareaValue'],
+                    'photoProd' => $photoName,
+                    'achat_id' => $achatdirect->id ?? null,
+                    'title' => 'Negociations des livreurs',
+                    'description' => 'Cliquez pour particicper a la negociation',
+
+                ];
+
+                if (!$data['idProd']) {
+                    throw new Exception('Identifiant du produit introuvable.');
+                }
+
+                // Envoyer une notification aux livreurs pour la négociation
+                if ($this->livreursIds->isNotEmpty()) {
+                    foreach ($this->livreursIds as $livreurId) {
+                        $livreur = User::find($livreurId);
+                        if ($livreur) {
+                            Notification::send($livreur, new livraisonAchatdirect($data));
+                            event(new NotificationSent($livreur));
+                            Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                        }
                     }
                 }
             }
+
+            // Mettre à jour la notification après le traitement de tous les utilisateurs
+            $this->notification->update(['reponse' => 'accepte']);
+
+            DB::commit();
+
+            // Retourner une confirmation
+            $this->dispatch('formSubmitted', 'Commande acceptée avec succès. Notifications envoyées à tous les livreurs.');
+            $this->modalOpen = false;
+        } catch (Exception $e) {
+            // Annuler la transaction et gérer l'erreur
+            DB::rollBack();
+            session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
+            Log::error('Erreur lors du traitement de l\'achat', ['message' => $e->getMessage()]);
         }
-
-        // Mettre à jour la notification après le traitement de tous les utilisateurs
-        $this->notification->update(['reponse' => 'accepte']);
-
-        DB::commit();
-
-        // Retourner une confirmation
-        $this->dispatch('formSubmitted', 'Commande acceptée avec succès. Notifications envoyées à tous les livreurs.');
-        $this->modalOpen = false;
-        // } catch (Exception $e) {
-        //     // Annuler la transaction et gérer l'erreur
-        //     DB::rollBack();
-        //     session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
-        //     Log::error('Erreur lors du traitement de l\'achat', ['message' => $e->getMessage()]);
-        // }
     }
 
     public function refuser()
@@ -263,29 +270,6 @@ class Appeloffreterminergrouper extends Component
             // Parcourir chaque entrée et effectuer les opérations nécessaires
             foreach ($userQuantites as $userQuantite) {
                 $clientId = $userQuantite->user_id; // Récupérer l'ID de l'utilisateur
-                $montantTotal = $userQuantite->quantite * $this->achatdirect->prix_unitaire; // Calculer le montant total basé sur la quantité et le prix unitaire
-
-                // Vérifier l'existence du portefeuille de l'utilisateur
-                $userWallet = Wallet::where('user_id', $clientId)->firstOrFail();
-
-                // Ajouter le montant au portefeuille de l'utilisateur
-                $userWallet->increment('balance', $montantTotal);
-
-                // Générer une référence unique
-                $reference_id = $this->generateIntegerReference();
-
-                // Créer une transaction pour ce client
-                $this->createTransaction(
-                    $userId, // ID de l'utilisateur qui a refusé
-                    $clientId, // ID du client
-                    'Réception', // Type de transaction
-                    $montantTotal, // Montant total
-                    $reference_id, // Référence unique
-                    'Achat refusé pour le code : ' . $codeUnique, // Description
-                    'effectué', // Statut
-                    'COC' // Code d'opération
-                );
-
                 // Envoyer une notification au client
                 $owner = User::findOrFail($clientId);
                 Notification::send($owner, new RefusAchat($codeUnique));
@@ -307,87 +291,6 @@ class Appeloffreterminergrouper extends Component
         }
     }
 
-
-    public function takeaway()
-    {
-        DB::beginTransaction();
-
-        try {
-            // Vérifiez que notification et achatdirect sont définis
-            if (!$this->notification || !$this->achatdirect) {
-                Log::error('Notification ou achatdirect non défini.', [
-                    'notification' => $this->notification,
-                    'achatdirect' => $this->achatdirect,
-                ]);
-                session()->flash('error', 'Données manquantes pour traiter la demande.');
-                return;
-            }
-
-            // Récupérer le code_unique depuis l'achat direct
-            $codeUnique = $this->achatdirect->code_unique ?? null;
-
-            if (!$codeUnique) {
-                throw new Exception('Code unique introuvable.');
-            }
-
-            // Récupérer toutes les entrées de userquantites liées au code_unique
-            $userQuantites = UserQuantites::where('code_unique', $codeUnique)->get();
-
-            if ($userQuantites->isEmpty()) {
-                throw new Exception('Aucune donnée trouvée dans userquantites pour ce code unique : ' . $codeUnique);
-            }
-
-            // Parcourir les entrées userquantites et traiter chaque utilisateur
-            foreach ($userQuantites as $userQuantite) {
-                $userSenderId = $userQuantite->user_id; // ID de l'utilisateur
-                $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
-                $montantTotal = $quantite * $this->notification->data['prixTrade']; // Calculer le montant total
-
-                // Créer une entrée AchatDirect pour cet utilisateur
-                $achatDirect = AchatDirect::create([
-                    'quantité' => $quantite,
-                    'montantTotal' => $montantTotal,
-                    'localite' => $this->AppelOffreGrouper->localite ?? null,
-                    'date_tot' => $this->AppelOffreGrouper->dateTot ?? null,
-                    'date_tard' => $this->AppelOffreGrouper->dateTard ?? null,
-                    'userTrader' => Auth::id(),
-                    'userSender' => $userSenderId,
-                    'idProd' => $this->produit->id,
-                    'code_unique' => $codeUnique,
-                ]);
-
-                // Préparer les détails pour la notification
-                $details = [
-                    'prixFin' => $this->prixFin ?? null,
-                    'code_unique' => $codeUnique,
-                    'achat_id' => $achatDirect->id,
-                ];
-
-                // Récupérer l'utilisateur expéditeur
-                $userSender = User::findOrFail($userSenderId);
-
-                // Envoyer une notification au client
-                Notification::send($userSender, new CountdownNotificationAd($details));
-                event(new NotificationSent($userSender));
-            }
-
-            // Mettre à jour la notification originale
-            $this->notification->update(['reponse' => 'accepte', 'type_achat' => 'Take Away']);
-            Log::info('Notification originale mise à jour avec succès.', [
-                'notificationId' => $this->notification->id,
-            ]);
-
-            // Valider la transaction
-            DB::commit();
-
-            session()->flash('success', 'Take Away traité avec succès pour tous les utilisateurs.');
-        } catch (Exception $e) {
-            // Annuler la transaction si un élément est introuvable
-            DB::rollBack();
-            session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
-            Log::error('Erreur dans la méthode takeaway', ['message' => $e->getMessage()]);
-        }
-    }
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {

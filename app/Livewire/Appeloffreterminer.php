@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Events\NotificationSent;
+use App\Models\AchatDirect;
 use App\Models\AppelOffreUser;
 use App\Models\userquantites;
 use App\Notifications\AllerChercher;
@@ -160,11 +161,6 @@ class Appeloffreterminer extends Component
 
         DB::beginTransaction(); // Démarrer une transaction
         try {
-            // Vérifier ou créer le portefeuille de l'utilisateur
-            $userWallet = Wallet::firstOrCreate(['user_id' => $userId]);
-            if (!$userWallet) {
-                throw new Exception('Portefeuille introuvable.');
-            }
 
             // Télécharger la photo et gérer le fichier
             $photoName = $this->handlePhotoUpload('photoProd');
@@ -181,13 +177,31 @@ class Appeloffreterminer extends Component
                 'lowestPricedProduct' => $this->notification->data['prixTrade'],
             ]);
 
+            // Enregistrer l'achat dans la table AchatDirectModel
+            $achatdirect = AchatDirect::create([
+                'photoProd' => $photoName,  // Quantité récupérée de userquantites
+                'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
+                'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
+                'montantTotal' => $this->prixTotal,
+                'localite' => $this->appeloffre->localite,
+                'date_tot' => $this->appeloffre->date_tot,
+                'date_tard' => $this->appeloffre->date_tard,
+                'userTrader' => Auth::id(),
+                'userSender' => $userId,  // Utilisateur qui a saisi l'achat
+                'idProd' => $this->produit->id,
+                'code_unique' => $this->appeloffre->code_unique,
+            ]);
+
             // Préparer les données pour la notification
             $data = [
-                'idProd' => $this->produit->id ?? null,
-                'code_livr' => $this->notification->data['code_unique'] ?? null,
+                'idProd' => $this->produit->id,
+                'code_livr' => $this->notification->data['code_unique'],
                 'textareaContent' => $validated['textareaValue'],
                 'photoProd' => $photoName,
-                'id_appeloffre' => $this->appeloffre->id,
+                'achat_id' => $achatdirect->id ?? null,
+                'title' => 'Negociations des livreurs',
+                'description' => 'Cliquez pour particicper a la negociation',
+
             ];
 
             // Vérifier l'existence de l'identifiant du produit
@@ -200,7 +214,7 @@ class Appeloffreterminer extends Component
                 foreach ($this->livreursIds as $livreurId) {
                     $livreur = User::find($livreurId);
                     if ($livreur) {
-                        Notification::send($livreur, new livraisonAppelOffre($data));
+                        Notification::send($livreur, new livraisonAchatdirect($data));
                         event(new NotificationSent($livreur)); // Lancer l'événement
                         Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
                     }
@@ -241,17 +255,6 @@ class Appeloffreterminer extends Component
             // Générer une référence unique
             $reference_id = $this->generateIntegerReference();
 
-            // Créer une transaction
-            $this->createTransaction(
-                $userId,
-                $clientId,
-                'Réception',
-                $montantTotal,
-                $reference_id,
-                'Achat refusé',
-                'effectué',
-                'COC'
-            );
 
             // Envoyer une notification au client
             $owner = User::findOrFail($clientId);
@@ -346,7 +349,7 @@ class Appeloffreterminer extends Component
     protected function generateIntegerReference(): int
     {
         // Récupère l'horodatage en millisecondes
-        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+        $timestamp = $this->appeloffre->date_->getTimestamp() * 1000 + $this->appeloffre->date_->micro;
 
         // Retourne l'horodatage comme entier
         return (int) $timestamp;

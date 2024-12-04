@@ -9,6 +9,7 @@ use App\Models\UserQuantites;
 use App\Notifications\AppelOffreGrouperNotification;
 use App\Notifications\Confirmation;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
@@ -24,12 +25,22 @@ class AppeloffreCountdown extends Command
 
     public function handle()
     {
-        $appelOffreGroups = AppelOffreGrouper::where('notified', false)
-        ->where('created_at', '<=', now()->subMinutes(2))
-        ->get();
+        DB::beginTransaction(); // Démarre une transaction
 
-        foreach ($appelOffreGroups as $appelOffreGroup) {
-            $this->processAppelOffreGroup($appelOffreGroup);
+        try {
+            $appelOffreGroups = AppelOffreGrouper::where('notified', false)
+                ->where('created_at', '<=', now()->subMinutes(2))
+                ->get();
+
+            foreach ($appelOffreGroups as $appelOffreGroup) {
+                $this->processAppelOffreGroup($appelOffreGroup);
+            }
+            DB::commit(); // Si tout se passe bien, commit les modifications
+        } catch (\Exception $e) {
+            DB::rollBack(); // Si une erreur se produit, annule les modifications
+
+            // Enregistrer l'erreur dans les logs
+            Log::error('Erreur lors du traitement des countdowns.', ['error' => $e->getMessage()]);
         }
     }
 

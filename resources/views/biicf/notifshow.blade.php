@@ -36,14 +36,6 @@
             @livewire('appeloffre', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\AppelOffreTerminer')
             @livewire('appeloffreterminer', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\livraisonAppelOffre')
-            @livewire('livraisonappeloffre', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\CountdownNotificationAp')
-            @livewire('countdown-notification-ap', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\commandVerifAp')
-            @livewire('command-verif-ap', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\mainleveAp')
-            @livewire('mainleve-ap', ['id' => $id])
 
             {{-- Appel offre grouper --}}
         @elseif ($notification->type === 'App\Notifications\AOGrouper')
@@ -52,12 +44,6 @@
             @livewire('appeloffregroupernegociation', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\AppelOffreTerminerGrouper')
             @livewire('appeloffreterminergrouper', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\livraisonAppelOffregrouper')
-            @livewire('livraisonagrouper', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\CountdownNotificationAg')
-            @livewire('countdown-notification-ag', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\commandVerifag')
-            @livewire('mainleveag', ['id' => $id])
 
 
             {{-- fournisseur offre negocier --}}
@@ -72,12 +58,6 @@
             @livewire('offre-groupe-quantite', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\OffreNegosDone')
             @livewire('Offre-negos-done', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\livraisonAppelOffregrouper')
-            @livewire('livraisonagrouper', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\CountdownNotificationAg')
-            @livewire('countdown-notification-ag', ['id' => $id])
-        @elseif ($notification->type === 'App\Notifications\commandVerifag')
-            @livewire('mainleveag', ['id' => $id])
 
 
             {{--  retrait  --}}

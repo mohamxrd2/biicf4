@@ -6,6 +6,7 @@ use App\Events\NotificationSent;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\User;
+use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotificationAd;
 use App\Notifications\CountdownNotificationAg;
@@ -106,7 +107,10 @@ class CheckCountdowns extends Command
             'code_unique' => $countdown->code_unique,
             'prixTrade' => $commentToUse->prixTrade,
             'livreur' => $commentToUse->id_trader,
-            'id' => $countdown->achat->id ?? $countdown->id_achat ?? $countdown->appelOffre->id ?? $countdown->AppelOffreGrouper_id,
+            'id' => optional($countdown->achat)->id
+                ?? $countdown->id_achat
+                ?? optional($countdown->appelOffre)->id
+                ?? $countdown->AppelOffreGrouper_id,
         ];
     }
 
@@ -123,7 +127,7 @@ class CheckCountdowns extends Command
                 $this->sendEnchereNotification($commentToUse, $details);
                 break;
 
-            case 'grouper':
+            case 'offreGrouper':
                 $this->sendGroupedNotification($commentToUse, $details);
                 break;
 
@@ -131,10 +135,11 @@ class CheckCountdowns extends Command
                 $this->sendAdNotification($countdown, $details);
                 break;
 
-            case 'appelOffre':
+
+            case 'appelOffreD':
+            case 'appelOffreR':
                 $this->sendSingleOfferNotification($countdown, $commentToUse, $details);
                 break;
-
 
             default:
                 Log::warning('Type de notification inconnu.', ['difference' => $difference]);
@@ -199,7 +204,24 @@ class CheckCountdowns extends Command
 
     private function sendSingleOfferNotification($countdown, $commentToUse, $details)
     {
-        Notification::send($countdown->sender, new CountdownNotificationAp($details));
+        $details['id_trader'] = $commentToUse->id_trader ?? null;
+
+        Notification::send($commentToUse->user, new AppelOffreTerminer($details));
+        Log::info('Commentaires sent to .', ['user trader' => $commentToUse->user]);
+        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+        $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
+
+        if ($notification) {
+            switch ($countdown->difference) {
+                case 'appelOffreD':
+                    $notification->update(['type_achat' => 'Delivery']);
+                    break;
+
+                case 'appelOffreR':
+                    $notification->update(['type_achat' => 'Take Away']);
+                    break;
+            }
+        }
     }
 
 

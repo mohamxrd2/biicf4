@@ -57,6 +57,7 @@ class Appeloffre extends Component
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Countdown::where('code_unique', $this->code_unique)
             ->whereNotNull('start_time')
+            ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
 
@@ -89,18 +90,18 @@ class Appeloffre extends Component
         }
     }
 
-    // protected $listeners = ['compteReboursFini'];
-    // public function compteReboursFini()
-    // {
-    //     // Mettre à jour l'attribut 'finish' du demandeCredit
-    //     $this->achatdirect->update([
-    //         'count' => true,
-    //         $this->dispatch(
-    //             'formSubmitted',
-    //             'Temps écoule, Négociation terminé.'
-    //         )
-    //     ]);
-    // }
+    protected $listeners = ['compteReboursFini'];
+    public function compteReboursFini()
+    {
+        // Mettre à jour l'attribut 'finish' du demandeCredit
+        $this->appeloffre->update([
+            'count' => true,
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Négociation terminé.'
+            )
+        ]);
+    }
 
     public function commentFormLivr()
     {
@@ -149,7 +150,7 @@ class Appeloffre extends Component
                     'userSender' => null,
                     'start_time' => now(),
                     'code_unique' => $this->code_unique,
-                    'difference' => 'appOffre',
+                    'difference' => $this->notification->type_achat == 'Delivery' ? 'appelOffreD' : 'appelOffreR',
                     'id_appeloffre' => $this->appeloffre->id,
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel

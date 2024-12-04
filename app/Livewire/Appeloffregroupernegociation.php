@@ -52,6 +52,7 @@ class Appeloffregroupernegociation extends Component
         // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
         $this->oldestComment = Countdown::where('code_unique', $this->appeloffregrp->codeunique)
             ->whereNotNull('start_time')
+            ->where('notified', false)
             ->orderBy('created_at', 'asc')
             ->first();
 
@@ -84,18 +85,18 @@ class Appeloffregroupernegociation extends Component
         }
     }
 
-    // protected $listeners = ['compteReboursFini'];
-    // public function compteReboursFini()
-    // {
-    //     // Mettre à jour l'attribut 'finish' du demandeCredit
-    //     $this->achatdirect->update([
-    //         'count' => true,
-    //         $this->dispatch(
-    //             'formSubmitted',
-    //             'Temps écoule, Négociation terminé.'
-    //         )
-    //     ]);
-    // }
+    protected $listeners = ['compteReboursFini'];
+    public function compteReboursFini()
+    {
+        // Mettre à jour l'attribut 'finish' du demandeCredit
+        $this->appeloffregrp->update([
+            'count2' => true,
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Négociation terminé.'
+            )
+        ]);
+    }
 
     public function commentFormLivr()
     {
