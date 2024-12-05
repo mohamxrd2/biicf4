@@ -95,7 +95,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M12 11a2 2 0 100-4 2 2 0 000 4z" />
                                     </svg>
-                                    <span>{{ $produit->comnServ }} • {{ $produit->villeServ }}</span>
+                                    <span>{{ $produit->user->commune }} • {{ $produit->user->ville }}</span>
                                 </div>
 
                                 <!-- Temps et bouton -->
