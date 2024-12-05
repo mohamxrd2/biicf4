@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use App\Events\NotificationSent;
 use App\Models\Comment;
 use App\Models\Countdown;
+use App\Models\OffreGroupe;
 use App\Models\User;
+use App\Models\userquantites;
 use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotificationAd;
@@ -127,8 +129,8 @@ class CheckCountdowns extends Command
                 $this->sendEnchereNotification($commentToUse, $details);
                 break;
 
-            case 'offreGrouper':
-                $this->sendGroupedNotification($commentToUse, $details);
+            case 'offregrouper':
+                $this->sendGroupedNotification($countdown, $details);
                 break;
 
             case 'ad':
@@ -163,9 +165,29 @@ class CheckCountdowns extends Command
         Log::info('Notification "offredirect" envoyée.', ['user_id' => $commentToUse->user->id]);
     }
 
-    private function sendGroupedNotification($commentToUse, $details)
+    private function sendGroupedNotification($countdown, $details)
     {
-        Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
+        Notification::send($countdown->user, new AppelOffreTerminerGrouper($details));
+
+        $OffreGroup = OffreGroupe::where('code_unique', $countdown->code_unique)->get();
+        $userQuantites = userquantites::where('code_unique', $countdown->code_unique)->get();
+
+        foreach ($userQuantites as $userQuantite) {
+            $user = User::find($userQuantite->user_id);
+
+            if ($user) {
+                $achatUser = [
+                    'id' => $OffreGroup->id,
+                    'idProd' => $OffreGroup->produit_id,
+                    'code_unique' => $OffreGroup->code_unique,
+                    'title' => 'Confirmation de commande',
+                    'description' => 'Votre commande a été envoyée avec succès.',
+                ];
+
+                Notification::send($user, new Confirmation($achatUser));
+                event(new NotificationSent($user));
+            }
+        }
     }
 
     private function sendAdNotification($countdown, $details)

@@ -21,7 +21,7 @@ class OffreGroupeQuantite extends Component
     public $produit;
     public $localite;
     public $selectedOption;
-    public $appelOffreGroup;
+    public $OffreGroupe;
     public $participants = 0;
     public $existingQuantite;
     public $premierFournisseur;
@@ -37,6 +37,7 @@ class OffreGroupeQuantite extends Component
             // Récupération de la notification
             $this->notification = DatabaseNotification::findOrFail($id);
 
+            $this->OffreGroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
             // Récupérer le produit lié à la notification
             $this->produit = ProduitService::find($this->notification->data['idProd']);
             if (!$this->produit) {
@@ -91,12 +92,12 @@ class OffreGroupeQuantite extends Component
     {
         try {
             // Vérifier que le groupe d'appel d'offre est valide
-            if (!$this->appelOffreGroup) {
+            if (!$this->OffreGroupe) {
                 throw new Exception('Groupe d\'appel d\'offres introuvable.');
             }
 
             // Mettre à jour l'attribut 'finish'
-            $this->appelOffreGroup->update(['count' => true]);
+            $this->OffreGroupe->update(['count' => true]);
 
             // Émettre un événement Livewire pour notifier la fin
             $this->dispatch('formSubmitted', 'Temps écoulé, groupage terminé.');

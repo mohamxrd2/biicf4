@@ -56,7 +56,7 @@ class AppeloffreCountdown extends Command
 
     private function notifyUsersQuantites($appelOffreGroup, $codeUnique)
     {
-        $userQuantites = UserQuantites::where('code_unique', $codeUnique)->get();
+        $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
 
         foreach ($userQuantites as $userQuantite) {
             $user = User::find($userQuantite->user_id);

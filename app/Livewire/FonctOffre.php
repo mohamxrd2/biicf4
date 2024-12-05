@@ -2,11 +2,15 @@
 
 namespace App\Livewire;
 
+use App\Events\NotificationSent;
 use App\Models\Consommation;
 use App\Models\Countdown;
 use App\Models\OffreGroupe;
 use App\Models\ProduitService;
 use App\Models\User;
+use App\Models\userquantites;
+use App\Notifications\Confirmation;
+use App\Notifications\OffreNegosNotif;
 use App\Notifications\OffreNotif;
 use App\Notifications\OffreNotifGroup;
 use Exception;
@@ -15,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
-
+use InvalidArgumentException;
 use Livewire\Component;
 
 class FonctOffre extends Component
@@ -26,6 +30,8 @@ class FonctOffre extends Component
     public   $nombreProprietaires;
     public   $nomFournisseurCount;
     public   $zoneEconomique;
+    public   $quantite;
+    public   $username;
 
     public function mount($id)
     {
@@ -136,7 +142,7 @@ class FonctOffre extends Component
         }
     }
 
-    public function sendoffGrp()
+    public function sendoffneg()
     {
         $user_id = Auth::guard('web')->id();
 
@@ -276,6 +282,158 @@ class FonctOffre extends Component
     {
         return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
     }
+
+    public function sendoffreGrp()
+    {
+        try {
+            $user_id = Auth::id();
+            Log::info('Tentative de stockage de données', ['user_id' => $user_id]);
+
+            // Recherche du produit et de l'utilisateur
+            $produit = ProduitService::findOrFail($this->produit->id);
+            $user = User::where('username', $this->username)->firstOrFail();
+            $zoneKey = $this->mapEconomicZone($this->zoneEconomique, $produit->user);
+
+            // Générer un code unique
+            $uniqueCode = $this->generateUniqueReference();
+
+            // Trouver les fournisseurs pertinents
+            $suppliers = $this->findSuppliers($produit, $user_id, $zoneKey);
+
+            if (empty($suppliers)) {
+                return $this->handleNoSuppliers($produit, $zoneKey);
+            }
+
+            // Notifier les fournisseurs
+            $this->notifySuppliers($suppliers, $produit, $this->quantite, $uniqueCode);
+
+            // Notification de confirmation à l'utilisateur
+            Notification::send($user, new Confirmation([
+                'idProd' => $produit->id,
+                'code_unique' => $uniqueCode,
+                'title' => 'Confirmation de commande',
+                'description' => 'La commande groupée des fournisseurs a été envoyée avec succès.',
+            ]));
+            event(new NotificationSent($user));
+
+            // Enregistrement dans la table `OffreGroupe`
+            $this->saveOffreGroupe([
+                'quantite' => $this->quantite,
+                'produit_id' => $produit->id,
+                'zone_economique' => $this->zoneEconomique,
+            ], $produit, $user_id, $uniqueCode);
+
+            // Gestion du compte à rebours
+            $this->handleCountdown($uniqueCode, $user);
+            $this->dispatch(
+                'formSubmitted',
+                "Notifications envoyées à {$this->nomFournisseurCount} utilisateur(s).",
+            );
+            return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
+        } catch (Exception $e) {
+            Log::error('Erreur lors du stockage des données', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Une erreur est survenue. Veuillez réessayer.');
+        }
+    }
+
+    private function mapEconomicZone($zoneEconomique, $user)
+    {
+        $zoneMapping = [
+            'proximite' => 'commune',
+            'locale' => 'ville',
+            'departementale' => 'departe',
+            'nationale' => 'pays',
+            'sous_regionale' => 'sous_region',
+            'continentale' => 'continent',
+        ];
+
+        $zoneKey = $zoneMapping[strtolower($zoneEconomique)] ?? null;
+        if (!$zoneKey || !isset($user->$zoneKey)) {
+            throw new InvalidArgumentException('Zone économique invalide.');
+        }
+
+        Log::info('Zone économique mappée', ['zone_key' => $zoneKey, 'value' => $user->$zoneKey]);
+        return $zoneKey;
+    }
+
+    private function findSuppliers($produit, $userId, $zoneKey)
+    {
+        $suppliers = ProduitService::where('reference', $produit->reference)
+            ->where('user_id', '!=', $userId)
+            ->where('statuts', 'Accepté')
+            ->whereHas('user', fn($query) => $query->where($zoneKey, $produit->user->$zoneKey))
+            ->pluck('user_id')
+            ->toArray();
+
+        Log::info('Fournisseurs trouvés', ['suppliers' => $suppliers]);
+        return $suppliers;
+    }
+
+    private function notifySuppliers(array $suppliers, $produit, $quantite, $uniqueCode)
+    {
+        foreach ($suppliers as $supplierId) {
+            $supplier = User::find($supplierId);
+            if ($supplier) {
+                Notification::send($supplier, new OffreNegosNotif([
+                    'idProd' => $produit->id,
+                    'produit_name' => $produit->name,
+                    'quantite' => $quantite,
+                    'code_unique' => $uniqueCode,
+                ]));
+                event(new NotificationSent($supplier));
+
+                Log::info('Notification envoyée', ['supplier_id' => $supplierId]);
+            }
+        }
+    }
+
+    private function saveOffreGroupe($data, $produit, $userId, $uniqueCode)
+    {
+        OffreGroupe::create([
+            'name' => $produit->name,
+            'quantite' => $data['quantite'],
+            'code_unique' => $uniqueCode,
+            'produit_id' => $data['produit_id'],
+            'zone' => $data['zone_economique'],
+            'user_id' => $userId,
+            'differance' => 'offregrouper',
+        ]);
+
+        Log::info('OffreGroupe enregistrée', [
+            'name' => $produit->name,
+            'code_unique' => $uniqueCode,
+        ]);
+
+        userquantites::create([
+            'code_unique' => $uniqueCode,
+            'user_id' => $userId,
+            'localite' => $data['zone_economique'],
+            'quantite' => $data['quantite'],
+        ]);
+    }
+
+    private function handleCountdown($uniqueCode, $user)
+    {
+        $existingCountdown = Countdown::where('code_unique', $uniqueCode)
+            ->where('notified', false)
+            ->orderBy('start_time', 'desc')
+            ->first();
+
+        if (!$existingCountdown) {
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $user->id,
+                'start_time' => now(),
+                'code_unique' => $uniqueCode,
+                'difference' => 'countdown',
+            ]);
+
+            Log::info('Compte à rebours créé', ['code_unique' => $uniqueCode]);
+        } else {
+            Log::info('Compte à rebours déjà existant', ['code_unique' => $uniqueCode]);
+        }
+    }
+
     public function render()
     {
         return view('livewire.fonct-offre');

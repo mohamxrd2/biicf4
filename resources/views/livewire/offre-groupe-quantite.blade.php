@@ -53,7 +53,7 @@
         </div>
 
         <div x-data="{ isOpen: false }" x-cloak>
-            @if (!$produit->count)
+            @if (!$OffreGroupe->count)
                 <!-- Button to open modal -->
                 <button @click="isOpen = true"
                     class="block w-full max-w-xs mx-auto text-white bg-gradient-to-r  bg-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-6 py-3 text-center transition-all duration-300">
@@ -131,7 +131,7 @@
                                     d="M15 12H9m4 8h-4m5-16H5m5 16h-1"></path>
                             </svg>
                             <span>{{ $groupage->user->name ?? 'Utilisateur inconnu' }} - {{ $groupage->quantite }}
-                                (unités) - {{ $groupage->quantite * $produit->lowestPricedProduct}} FCFA
+                                (unités) - {{ $groupage->quantite * $produit->prix}} FCFA
                             </span>
                         </span>
                         <button type="button" class="text-red-500 hover:text-red-700 transition-all">
@@ -163,7 +163,7 @@
                 init() {
                     if (this.oldestCommentDate) {
                         this.startDate = new Date(this.oldestCommentDate);
-                        this.startDate.setMinutes(this.startDate.getMinutes() + 40);
+                        this.startDate.setMinutes(this.startDate.getMinutes() + 10);
                         this.startCountdown();
                     }
                 },

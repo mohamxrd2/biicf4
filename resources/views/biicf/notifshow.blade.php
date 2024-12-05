@@ -12,11 +12,8 @@
 
     <div class=" mx-auto">
 
-        {{-- <livewire:notification-show :id="$id"/> --}}
-        {{-- @livewire('notification-show', ['id' => $id]) --}}
-
+     
         {{-- Achat Direct --}}
-
         @if ($notification->type === 'App\Notifications\AchatBiicf')
             @livewire('Achatdirect', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\livraisonAchatdirect')

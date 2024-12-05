@@ -19,6 +19,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\CountdownNotification;
+use App\Notifications\CountdownNotificationAd;
 use App\Notifications\livraisonAchatdirect;
 use App\Notifications\RefusAchat;
 use Carbon\Carbon;
@@ -187,7 +188,7 @@ class Appeloffreterminer extends Component
                 'date_tot' => $this->appeloffre->date_tot,
                 'date_tard' => $this->appeloffre->date_tard,
                 'userTrader' => Auth::id(),
-                'userSender' => $userId,  // Utilisateur qui a saisi l'achat
+                'userSender' => $this->appeloffre->id_sender,  // Utilisateur qui a saisi l'achat
                 'idProd' => $this->produit->id,
                 'code_unique' => $this->appeloffre->code_unique,
             ]);
@@ -239,7 +240,7 @@ class Appeloffreterminer extends Component
     public function refuser()
     {
         $userId = Auth::id();
-        $clientId = $this->appeloffre->id_ender;
+        $clientId = $this->appeloffre->id_sender;
         $montantTotal = $this->prixTotal;
 
         DB::beginTransaction();
@@ -255,6 +256,20 @@ class Appeloffreterminer extends Component
             // Générer une référence unique
             $reference_id = $this->generateIntegerReference();
 
+
+            // Enregistrer l'achat dans la table AchatDirectModel
+            $achatdirect = AchatDirect::create([
+                'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
+                'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
+                'montantTotal' => $this->prixTotal,
+                'localite' => $this->appeloffre->localite,
+                'date_tot' => $this->appeloffre->date_tot,
+                'date_tard' => $this->appeloffre->date_tard,
+                'userTrader' => Auth::id(),
+                'userSender' => $this->appeloffre->id_sender,  // Utilisateur qui a saisi l'achat
+                'idProd' => $this->produit->id,
+                'code_unique' => $this->appeloffre->code_unique,
+            ]);
 
             // Envoyer une notification au client
             $owner = User::findOrFail($clientId);
@@ -289,12 +304,25 @@ class Appeloffreterminer extends Component
                 session()->flash('error', 'Données manquantes pour traiter la demande.');
                 return;
             }
+            // Enregistrer l'achat dans la table AchatDirectModel
+            $achatdirect = AchatDirect::create([
+                'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
+                'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
+                'montantTotal' => $this->prixTotal,
+                'localite' => $this->appeloffre->localite,
+                'date_tot' => $this->appeloffre->date_tot,
+                'date_tard' => $this->appeloffre->date_tard,
+                'userTrader' => Auth::id(),
+                'userSender' => $this->appeloffre->id_sender,  // Utilisateur qui a saisi l'achat
+                'idProd' => $this->produit->id,
+                'code_unique' => $this->appeloffre->code_unique,
+            ]);
 
             // Préparer les détails pour la notification
             $details = [
                 'prixFin' =>  $this->prixFin ?? null,
                 'code_unique' => $this->notification->data['code_unique'] ?? null,
-                'id_appeloffre' => $this->appeloffre->id ?? null,
+                'id' => $achatdirect->id ?? null,
             ];
 
             // Trouvez l'utilisateur expéditeur
@@ -302,7 +330,7 @@ class Appeloffreterminer extends Component
 
 
             // Envoi de la notification
-            Notification::send($userSender, new CountdownNotificationAp($details));
+            Notification::send($userSender, new CountdownNotificationAd($details));
             // Récupérer la dernière notification de type AppelOffreTerminer
             $notification = $userSender->notifications()
                 ->where('type', CountdownNotificationAd::class)
@@ -318,7 +346,6 @@ class Appeloffreterminer extends Component
             }
 
             // Mettre à jour la notification originale
-            $this->notification->update(['reponse' => 'accepte', 'type_achat' => 'Take Away']);
             Log::info('Notification originale mise à jour avec succès.', [
                 'notificationId' => $this->notification->id,
             ]);
