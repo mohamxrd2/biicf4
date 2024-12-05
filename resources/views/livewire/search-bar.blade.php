@@ -12,16 +12,16 @@
                                 d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                         </svg>
                     </div>
-                    <input type="search" id="default-search" wire:model="keyword"
+                    <input type="search" id="default-search" wire:model.live="keyword"
                         class="block w-full p-4 ps-10 text-sm sm:text-[12px] text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-purple-600 focus:border-purple-600 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Recherche de produit ou service..." required />
                 </div>
             </div>
             <!-- Section de filtre -->
             <div id="filter-section"
-                class="hidden opacity-0 translate-y-[-20px] transition-all duration-300 ease-in-out grid grid-cols-4 gap-3 mt-2 p-4 bg-white">
+                class="hidden opacity-0 translate-y-[-20px] transition-all duration-300 ease-in-out grid grid-cols-4 gap-3 mt-2 p-4 bg-purple-400 rounded-lg ">
                 <div class="col-span-1">
-                    <select wire:model="zone_economique" name="zoneEco" type="text"
+                    <select wire:model.live="zone_economique" name="zoneEco" type="text"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                         placeholder="Zone Economique">
                         <option selected>Zone economique</option>
@@ -34,7 +34,7 @@
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <select wire:model="type" name="type"
+                    <select wire:model.live="type" name="type"
                         class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none">
                         <option selected>Type</option>
                         <option>Produit</option>
@@ -42,12 +42,12 @@
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <input wire:model="qte" name="qte" type="number"
+                    <input wire:model.live="qte" name="qte" type="number"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                         placeholder="Quantité ">
                 </div>
                 <div class="col-span-1">
-                    <input wire:model="prix" name="prix" type="number"
+                    <input wire:model.live="prix" name="prix" type="number"
                         class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                         placeholder="Prix unitaire">
                 </div>
@@ -111,7 +111,7 @@
                         </div>
                     @endforeach
                 </div>
-                
+
             </main>
         </div>
 
