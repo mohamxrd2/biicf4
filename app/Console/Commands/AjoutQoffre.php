@@ -29,8 +29,7 @@ class AjoutQoffre extends Command
     {
 
 
-        $offrecountdowns = Countdown::where('notified', false)
-            ->where('difference', 'offregroupe')
+        $offrecountdowns = OffreGroupe::where('notified', false)
             ->where('created_at', '<=', now()->subMinutes(2))
             ->get();
 
@@ -95,7 +94,6 @@ class AjoutQoffre extends Command
                 DB::rollBack();
                 Log::error('Error processing countdown with code ' . $uniqueCode . ': ' . $e->getMessage());
             }
-            Log::info('AjoutQoffre command finished.');
         }
     }
 }

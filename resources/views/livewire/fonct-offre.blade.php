@@ -211,8 +211,6 @@
                                 class="font-semibold text-blue-600 dark:text-blue-400">({{ $nomFournisseurCount }})</span>
                         </p>
                         <form wire:submit.prevent="sendoffreGrp">
-                            @csrf
-
                             <!-- Quantité -->
                             <div>
                                 <label for="quantite"

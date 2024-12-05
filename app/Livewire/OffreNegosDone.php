@@ -59,7 +59,7 @@ class OffreNegosDone extends Component
     public $offregroupef;
     public $prixFin;
     public $prixTotal;
-
+    public $groupages;
     public $quantites;
 
 
@@ -77,6 +77,10 @@ class OffreNegosDone extends Component
         $this->quantites = userquantites::where('code_unique', $this->notification->data['code_unique'])
             ->sum('quantite');
 
+        // Charger les groupages
+        $this->groupages = userquantites::where('code_unique', $this->offregroupe->code_unique)
+            ->orderBy('created_at', 'asc')
+            ->get();
         // Calcul du prix total et du prix final
         $produitPrix = $this->offregroupe->produit->prix;
         $quantite = $this->quantites;
@@ -200,7 +204,7 @@ class OffreNegosDone extends Component
                     'date_tot' => now(),
                     'date_tard' => now(),
                     'userTrader' => Auth::id(),
-                    'userSender' => $userId,  // Utilisateur qui a saisi l'achat
+                    'userSender' => $this->offregroupe->user_id,  // Utilisateur qui a saisi l'achat
                     'idProd' => $this->produit->id,
                     'code_unique' => $codeUnique,
                 ]);
@@ -309,88 +313,6 @@ class OffreNegosDone extends Component
             // Annuler la transaction si un élément est introuvable
             DB::rollBack();
             session()->flash('error', 'Un élément requis est introuvable : ' . $e->getMessage());
-        }
-    }
-
-
-    public function takeaway()
-    {
-        DB::beginTransaction();
-
-        try {
-            // Vérifiez que notification et achatdirect sont définis
-            if (!$this->notification || !$this->achatdirect) {
-                Log::error('Notification ou achatdirect non défini.', [
-                    'notification' => $this->notification,
-                    'achatdirect' => $this->achatdirect,
-                ]);
-                session()->flash('error', 'Données manquantes pour traiter la demande.');
-                return;
-            }
-
-            // Récupérer le code_unique depuis l'achat direct
-            $codeUnique = $this->achatdirect->code_unique ?? null;
-
-            if (!$codeUnique) {
-                throw new Exception('Code unique introuvable.');
-            }
-
-            // Récupérer toutes les entrées de userquantites liées au code_unique
-            $userQuantites = UserQuantites::where('code_unique', $codeUnique)->get();
-
-            if ($userQuantites->isEmpty()) {
-                throw new Exception('Aucune donnée trouvée dans userquantites pour ce code unique : ' . $codeUnique);
-            }
-
-            // Parcourir les entrées userquantites et traiter chaque utilisateur
-            foreach ($userQuantites as $userQuantite) {
-                $userSenderId = $userQuantite->user_id; // ID de l'utilisateur
-                $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
-                $montantTotal = $quantite * $this->notification->data['prixTrade']; // Calculer le montant total
-
-                // Créer une entrée AchatDirect pour cet utilisateur
-                $achatDirect = AchatDirect::create([
-                    'quantité' => $quantite,
-                    'montantTotal' => $montantTotal,
-                    'localite' => $this->offregroupe->localite ?? null,
-                    'date_tot' => $this->offregroupe->dateTot ?? null,
-                    'date_tard' => $this->offregroupe->dateTard ?? null,
-                    'userTrader' => Auth::id(),
-                    'userSender' => $userSenderId,
-                    'idProd' => $this->produit->id,
-                    'code_unique' => $codeUnique,
-                ]);
-
-                // Préparer les détails pour la notification
-                $details = [
-                    'prixFin' => $this->prixFin ?? null,
-                    'code_unique' => $codeUnique,
-                    'achat_id' => $achatDirect->id,
-                ];
-
-                // Récupérer l'utilisateur expéditeur
-                $userSender = User::findOrFail($userSenderId);
-
-                // Envoyer une notification au client
-                Notification::send($userSender, new CountdownNotificationAd($details));
-                event(new NotificationSent($userSender));
-            }
-
-            // Mettre à jour la notification originale
-            $this->notification->update(['reponse' => 'accepte', 'type_achat' => 'Take Away']);
-            Log::info('Notification originale mise à jour avec succès.', [
-                'notificationId' => $this->notification->id,
-            ]);
-
-            // Valider la transaction
-            DB::commit();
-
-            session()->flash('success', 'Take Away traité avec succès pour tous les utilisateurs.');
-        } catch (Exception $e) {
-            // Annuler la transaction si un élément est introuvable
-            DB::rollBack();
-            session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
-            Log::error('Erreur dans la méthode takeaway', ['message' => $e->getMessage()]);
         }
     }
 

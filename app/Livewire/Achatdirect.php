@@ -271,7 +271,6 @@ class Achatdirect extends Component
                 'prixFin' =>  $this->prixFin ?? null,
                 'code_unique' => $this->achatdirect->code_unique ?? null,
                 'id' => $this->achatdirect->id ?? null,
-
             ];
 
             // Trouvez l'utilisateur expéditeur

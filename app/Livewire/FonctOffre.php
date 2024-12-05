@@ -323,8 +323,6 @@ class FonctOffre extends Component
                 'zone_economique' => $this->zoneEconomique,
             ], $produit, $user_id, $uniqueCode);
 
-            // Gestion du compte à rebours
-            $this->handleCountdown($uniqueCode, $user);
             $this->dispatch(
                 'formSubmitted',
                 "Notifications envoyées à {$this->nomFournisseurCount} utilisateur(s).",
@@ -412,27 +410,7 @@ class FonctOffre extends Component
         ]);
     }
 
-    private function handleCountdown($uniqueCode, $user)
-    {
-        $existingCountdown = Countdown::where('code_unique', $uniqueCode)
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
 
-        if (!$existingCountdown) {
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $user->id,
-                'start_time' => now(),
-                'code_unique' => $uniqueCode,
-                'difference' => 'countdown',
-            ]);
-
-            Log::info('Compte à rebours créé', ['code_unique' => $uniqueCode]);
-        } else {
-            Log::info('Compte à rebours déjà existant', ['code_unique' => $uniqueCode]);
-        }
-    }
 
     public function render()
     {

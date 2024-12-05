@@ -54,6 +54,12 @@
                             @case('App\Notifications\mainleveclient')
                             @case('App\Notifications\Confirmation')
 
+                            @case('App\Notifications\Retrait')
+                            @case('App\Notifications\DepositSos')
+
+                            @case('App\Notifications\DepositRecu')
+                            @case('App\Notifications\DepositSend')
+
                             @case('App\Notifications\AppelOffre')
                             @case('App\Notifications\OffreNotifGroup')
 
