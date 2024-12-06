@@ -25,7 +25,7 @@
                         <h2 class="text-lg font-bold mb-2">Adresse de livraison</h2>
                         <input id="location" type="text" wire:model='localite' x-model="localite"
                             placeholder="Entrez votre localisation"
-                            class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" />
+                            class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" required />
                     </div>
                 </div>
 
@@ -494,40 +494,69 @@
             const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
             const montantTotalElement = document.getElementById('montantTotal');
             const errorMessageElement = document.getElementById('errorMessage');
-            const submitButton = document.getElementById('submitButton');
+            const submitButton = document.getElementById('submitEnvoie');
             const montantTotalInput = document.getElementById('montant_total_input');
             const requestCreditButton = document.getElementById('requestCreditButton');
-
-
-
+            const location = document.getElementById('location');
+            let hasError = false;
             const userBalance = {{ $wallet->balance }};
 
-            if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
+            const selectedOption = document.querySelector(
+                'input[name="selectedOption"]:checked'); // Récupère l'option sélectionnée
+
+            // Vérification si aucune option n'est sélectionnée
+            if (!selectedOption) {
+                errorMessageElement.innerText = `Veuillez sélectionner un mode de réception.`;
+                errorMessageElement.classList.remove('hidden');
+                submitButton.disabled = true;
+                hasError = true;
+            }
+
+            // Vérification si le champ "location" est vide
+            if (!hasError && !location.value.trim()) {
+                errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
+                errorMessageElement.classList.remove('hidden');
+                montantTotalElement.innerText = '0 FCFA'; // Réinitialise le montant affiché
+                submitButton.disabled = true;
+                montantTotalInput.value = 0; // Met à jour l'input montant_total_input
+                requestCreditButton.classList.add('hidden'); // Masque le bouton de crédit
+                hasError = true;
+            }
+
+
+
+
+
+            // Vérification de la quantité
+            if (!hasError && (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity)) {
                 errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
                 errorMessageElement.classList.remove('hidden');
                 montantTotalElement.innerText = '0 FCFA';
                 submitButton.disabled = true;
-                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
+                montantTotalInput.value = 0; // Réinitialise le montant total
+                requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit
+                hasError = true;
+            }
 
-                requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit si autre erreur
-
-            } else if (montantTotal > userBalance) {
+            // Vérification du solde utilisateur
+            if (!hasError && montantTotal > userBalance) {
                 errorMessageElement.innerText =
                     `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
                 errorMessageElement.classList.remove('hidden');
                 montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
                 submitButton.disabled = true;
-                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-                requestCreditButton.classList.remove('hidden'); // Afficher le bouton pour demander un crédit
+                requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
+            }
 
-            } else {
+            // Si aucune erreur n'a été détectée, afficher le montant total et activer le bouton de soumission
+            if (!hasError && montantTotal <= userBalance) {
                 errorMessageElement.classList.add('hidden');
                 montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
                 submitButton.disabled = false;
-                requestCreditButton.classList.add('hidden'); // Masquer le bouton si tout est correct
-
+                montantTotalInput.value = montantTotal;
+                requestCreditButton.classList.add('hidden');
             }
+        }
 
 
 

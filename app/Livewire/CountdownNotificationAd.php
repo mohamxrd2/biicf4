@@ -277,7 +277,7 @@ class CountdownNotificationAd extends Component
                 'Réception',
                 $requiredAmount,
                 $this->generateIntegerReference(),
-                'Debité pour achat',
+                'Réception pour achat',
                 'effectué',
                 'COC'
             );

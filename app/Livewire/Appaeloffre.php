@@ -74,6 +74,25 @@ class Appaeloffre extends Component
 
         $this->id = ProduitService::where('reference', $reference)
             ->first();
+
+            $this->resetForm();
+    }
+
+    public function resetForm()
+    {
+        $this->name = '';
+        $this->reference = '';
+        $this->quantité = null;
+        $this->localite = '';
+        $this->selectedOption = 'Delivery'; // Réinitialisé à la valeur par défaut
+        $this->dateTot = null;
+        $this->dateTard = null;
+        $this->timeStart = null;
+        $this->timeEnd = null;
+        $this->dayPeriod = null;
+        $this->dayPeriodFin = null;
+        $this->prodUsers = [];
+        $this->distinctSpecifications = [];
     }
 
     public function submitEnvoie()
@@ -169,6 +188,8 @@ class Appaeloffre extends Component
                     event(new NotificationSent($owner));
                 }
             }
+            // Réinitialiser le formulaire après un succès
+            $this->resetForm();
             // Redirection ou traitement pour l'envoi direct
             $this->dispatch(
                 'formSubmitted',
