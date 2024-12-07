@@ -16,7 +16,10 @@ class Transaction extends Model
         'receiver_admin_id',
         'type',
         'type_compte',
-        'amount'
+        'amount',
+        'reference_id',
+        'description',
+        'status',
     ];
 
     // Relation avec l'utilisateur (envoyeur)

@@ -30,6 +30,10 @@ class Retrait extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
+            'title' => $this->retrait['title'],
+            'description' => $this->retrait['description'],
+            'svg' => $this->retrait['svg'],
+            'code_unique' => $this->retrait['code_unique'],
             'psap' => $this->retrait['psap'],
             'userId' => $this->retrait['userId'],
             'amount' => $this->retrait['amount'],

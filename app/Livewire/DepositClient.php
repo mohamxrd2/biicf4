@@ -87,15 +87,6 @@ class DepositClient extends Component
         }
     }
 
-    public function resetForm()
-    {
-        $this->deposit_type = '';
-        $this->amount = '';
-        $this->user_id = '';
-        $this->receipt = null;
-        $this->roi = '';
-        
-    }
 
     public function updatedSearch()
     {
@@ -152,61 +143,88 @@ class DepositClient extends Component
     }
 
     public function submitSOSRecharge()
-{
-    $this->validate([
-        'amount' => 'required|numeric|min:1',
-        'roi' => 'required|numeric|min:1',
-    ], [
-        'amount.required' => 'Veuillez entrer un montant.',
-        'amount.numeric' => 'Le montant doit être numérique.',
-        'amount.min' => 'Le montant doit être supérieur à 0.',
-        'roi.required' => 'Veuillez entrer le ROI.',
-        'roi.numeric' => 'Le ROI doit être numérique.',
-        'roi.min' => 'Le ROI doit être supérieur à 0.',
-    ]);
+    {
+        $this->validate([
+            'amount' => 'required|numeric|min:1',
+            'roi' => 'required|numeric|min:1',
+        ], [
+            'amount.required' => 'Veuillez entrer un montant.',
+            'amount.numeric' => 'Le montant doit être numérique.',
+            'amount.min' => 'Le montant doit être supérieur à 0.',
+            'roi.required' => 'Veuillez entrer le ROI.',
+            'roi.numeric' => 'Le ROI doit être numérique.',
+            'roi.min' => 'Le ROI doit être supérieur à 0.',
+        ]);
 
-    // Récupérer l'ID de l'investisseur qui soumet
-    $submitterId = Auth::id(); // ou $this->investisseur_id selon ton contexte
+        // Récupérer l'ID de l'investisseur qui soumet
+        $submitterId = Auth::id(); // ou $this->investisseur_id selon ton contexte
 
-    // Récupérer les investisseurs en excluant celui qui soumet
-    $cois = Coi::where('Solde', '>=', $this->amount)
-        ->with('wallet')
-        ->get();
+        // Récupérer les investisseurs en excluant celui qui soumet
+        $cois = Coi::where('Solde', '>=', $this->amount)
+            ->with('wallet')
+            ->get();
 
-    if ($cois->isEmpty()) {
-        session()->flash('error', 'Aucun utilisateur avec un solde suffisant trouvé.');
-    } else {
-        // Générer un ID unique pour id_sos
-        $sosId = Str::uuid()->toString(); // Génère un UUID
+        if ($cois->isEmpty()) {
+            session()->flash('error', 'Aucun utilisateur avec un solde suffisant trouvé.');
+        } else {
+            // Générer un ID unique pour id_sos
+            $sosId = Str::uuid()->toString(); // Génère un UUID
 
-        // Récupérer chaque `user_id` associé aux wallets
-        foreach ($cois as $coi) {
-            $wallet = $coi->wallet;
+            ($codeUnique = $this->generateUniqueReference());
+            if (!$codeUnique) {
+                Log::error('Code unique non généré.');
+                throw new \Exception('Code unique non généré.');
+            }
 
-            // Vérifier que le wallet est associé à un utilisateur et que cet utilisateur est différent de l'utilisateur qui soumet
-            if ($wallet && $wallet->user_id && $wallet->user_id != $submitterId) {
-                $user = User::find($wallet->user_id);
+            // Récupérer chaque `user_id` associé aux wallets
+            foreach ($cois as $coi) {
+                $wallet = $coi->wallet;
 
-                if ($user) {
-                    // Envoyer la notification
-                    $data = [
-                        'user_id' => Auth::id(), // Utilisez l'ID de l'utilisateur connecté ici
-                        'amount' => $this->amount,
-                        'roi' => $this->roi,
-                        'id_sos' => $sosId, // Utilisez l'UUID généré ici
-                    ];
+                // Vérifier que le wallet est associé à un utilisateur et que cet utilisateur est différent de l'utilisateur qui soumet
+                if ($wallet && $wallet->user_id && $wallet->user_id != $submitterId) {
+                    $user = User::find($wallet->user_id);
 
-                    Notification::send($user, new DepositSos($data));
+                    if ($user) {
+                        // Envoyer la notification
+                        $data = [
+                            'title' => 'Rechargement SOS',
+                            'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+</svg>
+',
+                            'description' => 'Vous etes ciblez pour un rechargement SOS par un utlisateur',
+                            'code_unique' => $codeUnique,
+                            'user_id' => Auth::id(), // Utilisez l'ID de l'utilisateur connecté ici
+                            'amount' => $this->amount,
+                            'roi' => $this->roi,
+                            'id_sos' => $sosId, // Utilisez l'UUID généré ici
+                        ];
+
+                        Notification::send($user, new DepositSos($data));
+                    }
                 }
             }
+
+            session()->flash('message', 'Votre demande a été soumise avec succès et est en attente de validation.');
+
+            // Réinitialiser les champs du formulaire
+            $this->resetForm();
         }
-
-        session()->flash('message', 'Votre demande a été soumise avec succès et est en attente de validation.');
-
-        // Réinitialiser les champs du formulaire
-        $this->resetForm();
     }
-}
+
+
+    public function resetForm()
+    {
+        $this->deposit_type = "";
+        $this->amount = "";
+        $this->user_id = "";
+        $this->receipt = null;
+        $this->roi = "";
+    }
+    protected function generateUniqueReference()
+    {
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
+    }
 
 
     public function render()

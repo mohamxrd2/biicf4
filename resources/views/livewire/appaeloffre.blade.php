@@ -383,7 +383,7 @@
                         <!-- Bouton pour l'envoi direct -->
                         <button type="button" id="submitEnvoie"
                             class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                            wire:click="submitEnvoie" wire:loading.attr="disabled">
+                            wire:click="submitEnvoie" wire:loading.attr="disabled" :disabled="!@this.isFormValid">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -393,6 +393,7 @@
                                 votre zone</span>
                             <span wire:loading>Payement en cours...</span>
                         </button>
+
 
                         <!-- Message pour les types de services -->
                         @if ($type == 'Service')
@@ -523,10 +524,6 @@
                 hasError = true;
             }
 
-
-
-
-
             // Vérification de la quantité
             if (!hasError && (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity)) {
                 errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
@@ -556,10 +553,6 @@
                 montantTotalInput.value = montantTotal;
                 requestCreditButton.classList.add('hidden');
             }
-        }
-
-
-
         }
     </script>
 

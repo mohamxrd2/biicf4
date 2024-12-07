@@ -30,6 +30,10 @@ class DepositRecu extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
+            'title' => $this->deposit['title'],
+            'svg' => $this->deposit['svg'],
+            'description' => $this->deposit['description'],
+            'code_unique' => $this->deposit['code_unique'],
             'user_id' => $this->deposit['user_id'],
             'amount' => $this->deposit['amount'],
             'roi' => $this->deposit['roi'],

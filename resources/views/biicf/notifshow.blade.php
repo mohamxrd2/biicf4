@@ -59,13 +59,13 @@
 
             {{--  retrait  --}}
         @elseif ($notification->type === 'App\Notifications\Retrait')
-            @livewire('retrait')
+            @livewire('retrait', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\DepositSos')
-            @livewire('deposit-sos')
+            @livewire('deposit-sos', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\DepositRecu')
-            @livewire('deposit-recu')
+            @livewire('deposit-recu', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\DepositSend')
-            @livewire('deposit-send')
+            @livewire('deposit-send', ['id' => $id])
 
 
             {{-- general --}}

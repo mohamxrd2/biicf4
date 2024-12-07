@@ -134,13 +134,13 @@ class NotificationShow extends Component
         // Vérifiez si la demande existe déjà dans la table RechargeSos
         $this->existingRequest = RechargeSos::where('id_sos', $this->id_sos)->first();
 
-        $this->psap = $this->notification->data['psap'] ?? null;
+        // $this->psap = $this->notification->data['psap'] ?? null;
 
-        $this->amount = $this->notification->data['amount'] ?? null;
+        // $this->amount = $this->notification->data['amount'] ?? null;
 
-        $this->userId = $this->notification->data['userId'] ?? null;
+        // $this->userId = $this->notification->data['userId'] ?? null;
 
-        $this->demandeur = User::find($this->notification->data['userId'] ?? null);
+        // $this->demandeur = User::find($this->notification->data['userId'] ?? null);
 
 
 

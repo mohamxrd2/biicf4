@@ -35,7 +35,7 @@
     <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="p-4 text-center border rounded-lg bg-gray-50">
             <h3 class="text-lg font-medium text-gray-700">Opérateur</h3>
-            <p class="text-2xl font-bold text-blue-600">{{ $operatorRecu }}</p>
+            <p class="text-2xl font-bold text-blue-600">{{ $operator }}</p>
         </div>
         <div class="p-4 text-center border rounded-lg bg-gray-50">
             <h3 class="text-lg font-medium text-gray-700">Montant à envoyer</h3>

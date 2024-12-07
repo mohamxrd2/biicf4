@@ -5,10 +5,8 @@ namespace App\Livewire;
 use App\Models\Deposit;
 use Livewire\Component;
 use App\Models\Transaction;
-use App\Models\NotificationEd;
-use App\Models\User; // Importez le modèle User
-use Illuminate\Notifications\DatabaseNotification;
-use App\Models\Wallet; // Assurez-vous d'importer le modèle Wallet
+use App\Models\User;
+use App\Models\Wallet;
 
 class DetailDeposit extends Component
 {
@@ -24,89 +22,118 @@ class DetailDeposit extends Component
         $this->deposit = Deposit::with('user')->find($this->id);
 
         // Vérification de l'existence du dépôt et récupération du nom de l'utilisateur
-        if ($this->deposit) {
-            $this->userName = $this->deposit->user ? $this->deposit->user->name : 'Utilisateur inconnu';
-        } else {
-            $this->userName = 'Utilisateur inconnu';
-        }
+        $this->userName = $this->deposit && $this->deposit->user 
+            ? $this->deposit->user->name 
+            : 'Utilisateur inconnu';
     }
 
     public function acceptDeposit()
     {
-        // Vérifier si la notification existe
+        // Vérification préalable de la notification
         if (!$this->deposit) {
-            session()->flash('error', 'Notification introuvable.');
-            return;
+            return $this->handleError('Notification introuvable.');
         }
 
-        // Mettre à jour la réponse de la notification
-        $this->deposit->statut = 'Accepté'; 
-        $this->deposit->save();
-
-        // Récupérer le montant et l'ID de l'utilisateur du dépôt
-        $amount = $this->deposit->montant; // Assurez-vous que le nom du champ est correct
+        // Récupérer les informations nécessaires
+        $amount = $this->deposit->montant;
         $userId = $this->deposit->user_id;
         $adminId = auth()->guard('admin')->id();
 
-
-        // Vérifier si l'administrateur existe
         if (!$adminId) {
-            session()->flash('error', 'Administrateur introuvable.');
-            return;
+            return $this->handleError('Administrateur introuvable.');
         }
 
-        // Récupérer le portefeuille de l'utilisateur
-        $userWallet = Wallet::where('user_id', $userId)->first();
+        // Récupérer les portefeuilles utilisateur et administrateur
+        $userWallet = Wallet::firstWhere('user_id', $userId);
+        $adminWallet = Wallet::firstWhere('admin_id', $adminId);
 
-        // Vérifier si le portefeuille existe
         if (!$userWallet) {
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
+            return $this->handleError('Portefeuille utilisateur introuvable.');
         }
 
-        // Ajouter le montant au solde du portefeuille
+        if (!$adminWallet) {
+            return $this->handleError('Portefeuille administrateur introuvable.');
+        }
+
+        // Vérifier le solde du portefeuille administrateur
+        if ($adminWallet->balance < $amount) {
+            return $this->handleError('Le portefeuille administrateur ne dispose pas d\'assez de fonds.');
+        }
+
+        // Mettre à jour les soldes des portefeuilles
         $userWallet->balance += $amount;
+        $adminWallet->balance -= $amount;
 
-        // Enregistrer le nouveau solde
-        if ($userWallet->save()) {
-            // Créer une transaction
-            $referenceId = $this->generateIntegerReference();
-            $this->createTransaction($adminId, $userId, 'Envoie', $amount, $referenceId, 'Rechargement par virement bancaire');
-
-            // Message de succès
-            session()->flash('message', 'Dépôt accepté avec succès et le montant a été crédité au portefeuille de l\'utilisateur.');
-        } else {
-            session()->flash('error', 'Erreur lors de la mise à jour du portefeuille.');
+        // Enregistrer les modifications
+        if (!$userWallet->save() || !$adminWallet->save()) {
+            return $this->handleError('Erreur lors de la mise à jour des portefeuilles.');
         }
+
+        // Générer une référence pour la transaction
+        $referenceId = $this->generateIntegerReference();
+
+        // Créer les transactions correspondantes
+        $this->createTransaction(
+            $adminId,
+            $userId,
+            'Réception',
+            $amount,
+            $referenceId,
+            'Rechargement par virement bancaire',
+            'Effectué',
+            'COC',
+        );
+
+        $this->createTransaction(
+            $adminId,
+            $userId,
+            'Envoie',
+            $amount,
+            $referenceId,
+            'Rechargement par virement bancaire',
+            'Effectué',
+            'Compte virtuel'
+        );
+
+        // Mettre à jour l'état du dépôt
+        $this->deposit->update(['statut' => 'Accepté']);
+
+        // Message de succès
+        session()->flash('message', 'Dépôt accepté avec succès. Le montant a été crédité au portefeuille de l\'utilisateur.');
     }
 
     public function rejectDeposit()
     {
+        // Vérification de l'existence de la notification
         if (!$this->deposit) {
-            session()->flash('error', 'Notification introuvable.');
-            return;
+            return $this->handleError('Notification introuvable.');
         }
 
-        // Mettre à jour la réponse de la notification
-        $this->deposit->statut = 'Refusé';
-        $this->deposit->save();
+        // Mettre à jour le statut de la notification
+        $this->deposit->update(['statut' => 'Refusé']);
+
+        // Message de succès
+        session()->flash('message', 'Dépôt rejeté avec succès.');
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description)
+    private function handleError(string $message)
     {
+        session()->flash('error', $message);
+        return;
+    }
 
+    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
+    {
         $transaction = new Transaction();
-        $transaction->sender_admin_id = $senderId; // Assurez-vous que cela correspond au bon modèle
+        $transaction->sender_admin_id = $senderId;
         $transaction->receiver_user_id = $receiverId;
         $transaction->type = $type;
         $transaction->amount = $amount;
         $transaction->reference_id = $reference_id;
         $transaction->description = $description;
-        $transaction->status = 'effectué';
+        $transaction->type_compte = $type_compte;
+        $transaction->status = $status;
         $transaction->save();
-
-       
-
     }
 
 

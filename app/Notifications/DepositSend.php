@@ -30,6 +30,10 @@ class DepositSend extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
+            'title' => $this->deposit['title'],
+            'description' => $this->deposit['description'],
+            'code_unique' => $this->deposit['code_unique'],
+            'svg' => $this->deposit['svg'],
             'user_id' => $this->deposit['user_id'],
             'amount' => $this->deposit['amount'],
             'roi' => $this->deposit['roi'],

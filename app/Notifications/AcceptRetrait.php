@@ -30,8 +30,13 @@ class AcceptRetrait extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
-            'message' => 'Votre demande de retrait a été refusée',
-            'retrait' => $this->retrait, // You can add more details if needed
+            'title' => 'Retrait accepté',
+            'description' => 'Votre demande de retrait de ' . $this->retrait['amount']. ' FCFA a été acceptéé.',
+            'svg' => 'retrait',
+            'code_unique' => $this->retrait['code_unique'],
+            'psap' => $this->retrait['psap'],
+            'message' => 'Votre demande de retrait a été acceptéé',
+            // You can add more details if needed
 
         ];
     }

@@ -95,6 +95,16 @@ class Appaeloffre extends Component
         $this->distinctSpecifications = [];
     }
 
+    public function getIsFormValidProperty()
+    {
+        return !empty($this->name) &&
+               !empty($this->reference) &&
+               !empty($this->quantité) &&
+               !empty($this->localite) &&
+               !empty($this->selectedOption) ;
+             
+    }
+
     public function submitEnvoie()
     {
         $this->loading = true;
