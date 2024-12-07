@@ -29,8 +29,7 @@ class AjoutQoffre extends Command
     {
 
 
-        $offrecountdowns = OffreGroupe::where('notified', false)
-            ->where('created_at', '<=', now()->subMinutes(2))
+        $offrecountdowns = OffreGroupe::where('created_at', '<=', now()->subMinutes(2))
             ->get();
 
         if ($offrecountdowns->isEmpty()) {
