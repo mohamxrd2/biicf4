@@ -97,9 +97,6 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::post('/produit/{id}', [UserController::class, 'etat'])->name('produit.etat');
 
 
-
-
-
     Route::get('/edit-agent/{username}', [UserController::class, 'editAgent'])->name('client.editad');
     Route::post('/edit-agent/{username}', [UserController::class, 'updateAdmin'])->name('update.admin');
 
