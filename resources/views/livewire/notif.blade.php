@@ -97,7 +97,7 @@
                         @endforeach
                         <!-- Aucune notification -->
                         <!-- Section commentée qui peut être activée si aucune notification -->
-                       @if ( $unreadCount < 1)
+                       @if ( $unreadCount < 0)
 
                        <div class="p-8 flex flex-col items-center justify-center bg-gray-50 rounded-lg shadow-lg">
                         <!-- Icône centrale -->

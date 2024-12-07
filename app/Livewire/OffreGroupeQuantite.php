@@ -45,8 +45,7 @@ class OffreGroupeQuantite extends Component
             }
 
             // Récupérer le commentaire le plus ancien
-            $this->oldestComment = Countdown::where('code_unique', $this->notification->data['code_unique'])
-                ->whereNotNull('start_time')
+            $this->oldestComment = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])
                 ->orderBy('created_at', 'asc')
                 ->first();
 
