@@ -152,10 +152,10 @@ class AjoutProduitServices extends Component
             $this->origine = $selectedProduct->origine;
             $this->specification = $selectedProduct->specification;
 
-            // $this->photoProd1 = $selectedProduct->photoProd1;
-            // $this->photoProd2 = $selectedProduct->photoProd2;
-            // $this->photoProd3 = $selectedProduct->photoProd3;
-            // $this->photoProd4 = $selectedProduct->photoProd4;
+            $this->photoProd1 = $selectedProduct->photoProd1;
+            $this->photoProd2 = $selectedProduct->photoProd2;
+            $this->photoProd3 = $selectedProduct->photoProd3;
+            $this->photoProd4 = $selectedProduct->photoProd4;
 
             $this->qualification = $selectedProduct->qalifServ;
             $this->specialite = $selectedProduct->sepServ;
@@ -234,12 +234,7 @@ class AjoutProduitServices extends Component
             'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'Quantite' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
             //
-            // 'selectedSous_region' => 'required|string',
-            // 'selectedContinent' => 'required|string',
-            // 'pays' => 'string',
-            // 'depart' => 'string',
-            // 'ville' => 'string',
-            // 'commune' => 'string',
+
             //photo
             'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
             'photoProd2' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
@@ -302,12 +297,7 @@ class AjoutProduitServices extends Component
                 'description' => $this->type === 'Service' ? $this->descrip : null,
                 'quantite' => $this->type === 'Service' ? $this->Quantite : null,
                 //localisation
-                'continent' => $this->user->continent,
-                'sous_region' => $this->user->sous_region,
-                'pays' => $this->user->country,
-                'zonecoServ' => $this->user->active_zone,
-                'villeServ' => $this->user->ville,
-                'comnServ' => $this->user->commune,
+
                 'user_id' => auth()->id(),
                 'categorie_id' => $categorie->id ?? null,
             ]);
@@ -317,6 +307,9 @@ class AjoutProduitServices extends Component
             if ($this->photoProd1 && is_string($this->photoProd1)) {
                 // If photoProd1 is a string (from input field), use it directly
                 $produitService->update(['photoProd1' => $this->photoProd1]);
+                $produitService->update(['photoProd2' => $this->photoProd1]);
+                $produitService->update(['photoProd3' => $this->photoProd1]);
+                $produitService->update(['photoProd4' => $this->photoProd1]);
             } else {
                 $this->handlePhotoUpload($produitService, 'photoProd1');
             }
