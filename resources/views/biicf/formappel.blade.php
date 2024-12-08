@@ -5,19 +5,9 @@
 @section('content')
 
 
-    <livewire:appaeloffre
-    :wallet="$wallet"
-    :lowestPricedProduct="$lowestPricedProduct"
-    :distinctCondProds="$distinctCondProds"
-    :type="$type"
-    :prodUsers="$prodUsers"
-    :distinctquatiteMax="$distinctquatiteMax"
-    :distinctquatiteMin="$distinctquatiteMin"
-    :name="$name"
-    :reference="$reference"
-    :distinctSpecifications="$distinctSpecifications"
-    :appliedZoneValue="$appliedZoneValue"
-     />
+    <livewire:appaeloffre :wallet="$wallet" :lowestPricedProduct="$lowestPricedProduct" :distinctCondProds="$distinctCondProds" :type="$type" :prodUsers="$prodUsers"
+        :distinctquatiteMax="$distinctquatiteMax" :distinctquatiteMin="$distinctquatiteMin" :name="$name" :reference="$reference" :distinctSpecifications="$distinctSpecifications" :appliedZoneValue="$appliedZoneValue" />
+
 
 
 

@@ -69,89 +69,83 @@ class Appaeloffre extends Component
         $this->distinctquatiteMin = $distinctquatiteMin;
         $this->name = $name;
         $this->reference = $reference;
-        $this->distinctSpecifications = implode(', ', $distinctSpecifications);
+        $this->distinctSpecifications = is_array($distinctSpecifications) ? implode(', ', $distinctSpecifications) : $distinctSpecifications;
         $this->appliedZoneValue = $appliedZoneValue;
 
         $this->id = ProduitService::where('reference', $reference)
             ->first();
 
-            $this->resetForm();
+        // $this->resetForm();
     }
 
-    public function resetForm()
-    {
-        $this->name = '';
-        $this->reference = '';
-        $this->quantité = null;
-        $this->localite = '';
-        // $this->selectedOption = 'Delivery'; // Réinitialisé à la valeur par défaut
-        $this->dateTot = null;
-        $this->dateTard = null;
-        $this->timeStart = null;
-        $this->timeEnd = null;
-        $this->dayPeriod = null;
-        $this->dayPeriodFin = null;
-        $this->prodUsers = [];
-        $this->distinctSpecifications = [];
-    }
+    // public function resetForm()
+    // {
+    //     $this->name = '';
+    //     $this->reference = '';
+    //     $this->quantité = null;
+    //     $this->localite = '';
+    //     // $this->selectedOption = 'Delivery'; // Réinitialisé à la valeur par défaut
+    //     $this->dateTot = null;
+    //     $this->dateTard = null;
+    //     $this->timeStart = null;
+    //     $this->timeEnd = null;
+    //     $this->dayPeriod = null;
+    //     $this->dayPeriodFin = null;
+    //     $this->prodUsers = [];
+    //     $this->distinctSpecifications = [];
+    // }
 
-    public function getIsFormValidProperty()
-    {
-        return !empty($this->name) &&
-               !empty($this->reference) &&
-               !empty($this->quantité) &&
-               !empty($this->localite) &&
-               !empty($this->selectedOption) ;
-             
-    }
+    // public function getIsFormValidProperty()
+    // {
+    //     return !empty($this->name) &&
+    //         !empty($this->reference) &&
+    //         !empty($this->quantité) &&
+    //         !empty($this->localite) &&
+    //         !empty($this->selectedOption);
+    // }
 
     public function submitEnvoie()
     {
         $this->loading = true;
         $userId = Auth::guard('web')->id();
+        // Validation des données du formulaire
+        $validatedData = $this->validate([
+            'quantité' => 'required|integer',
+            'localite' => 'required|string',
+            'selectedOption' => 'required|string',
+            'dateTot' => 'required|date',
+            'dateTard' => 'required|date',
+            'timeStart' => 'nullable|date_format:H:i',
+            'timeEnd' => 'nullable|date_format:H:i',
+            'dayPeriod' => 'nullable|string',
+            'dayPeriodFin' => 'nullable|string',
+        ]);
+
 
         DB::beginTransaction();
         try {
-            // Validation des données du formulaire
-            $validatedData = $this->validate([
-                'name' => 'required|string',
-                'reference' => 'required|string',
-                'quantité' => 'required|integer',
-                'localite' => 'required|string',
-                'distinctSpecifications' => 'required|string',
-                'selectedOption' => 'required|string',
-                'dateTot' => 'required|date',
-                'dateTard' => 'required|date',
-                'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
-                'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
-                'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
-                'dayPeriodFin' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
-                'lowestPricedProduct' => 'required|integer',
-                'prodUsers' => 'required|array',
-            ]);
-
             // Insérer dans la table `appel_offres`
-            $appelOffre = AppelOffreUser::create([
-                'product_name' => $validatedData['name'],
+            dd($appelOffre = AppelOffreUser::create([
+                'product_name' => $this->name,
                 'quantity' => $validatedData['quantité'],
                 'payment' => 'comptant',
                 'livraison' => $validatedData['selectedOption'],
-                'date_tot' => $validatedData['dateTot'],
-                'date_tard' => $validatedData['dateTard'],
-                'time_start' => $validatedData['timeStart'],
-                'time_end' => $validatedData['timeEnd'],
-                'day_period' => $validatedData['dayPeriod'],
-                'day_periodFin' => $validatedData['dayPeriodFin'],
-                'specification' => $validatedData['distinctSpecifications'],
-                'reference' => $validatedData['reference'],
-                'localite' => $validatedData['localite'],
+                // 'date_tot' => $validatedData['dateTot'],
+                // 'date_tard' => $validatedData['dateTard'],
+                // 'time_start' => $validatedData['timeStart'],
+                // 'time_end' => $validatedData['timeEnd'],
+                // 'day_period' => $validatedData['dayPeriod'],
+                // 'day_periodFin' => $validatedData['dayPeriodFin'],
+                // 'specification' => $this->distinctSpecifications,
+                'reference' => $this->reference,
+                // 'localite' => $validatedData['localite'],
                 'id_prod' => $this->id,
-                'code_unique' => $this->generateUniqueReference(),
-                'lowestPricedProduct' => $validatedData['lowestPricedProduct'],
-                'prodUsers' => json_encode($validatedData['prodUsers']),
-                'image' => $validatedData['image'] ?? null,
+                // 'code_unique' => $this->generateUniqueReference(),
+                // 'lowestPricedProduct' => $this->lowestPricedProduct,
+                // 'prodUsers' => json_encode($this->prodUsers),
+                // 'image' => $validatedData['image'] ?? null,
                 'id_sender' => Auth::id(),
-            ]);
+            ]));
 
             // Calculer le coût total
             $totalCost = $this->quantité * $this->lowestPricedProduct;

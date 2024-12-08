@@ -49,10 +49,10 @@
                     <p class="text-gray-700">
                         reference : <span class="font-bold">{{ $reference }}</span>
                     </p>
-                    <p class="text-gray-700">
+                    {{-- <p class="text-gray-700">
                         Quantité Traité : <span class="font-bold">[{{ $distinctquatiteMin }} -
                             {{ $distinctquatiteMax }}]</span>
-                    </p>
+                    </p> --}}
                     <p class="text-gray-700">
                         Type : <span class="font-bold">{{ $type }}</span>
                     </p>
@@ -513,7 +513,7 @@
             //     hasError = true;
             // }
 
-         
+
             // Vérification de la quantité
             if (!hasError && (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity)) {
                 errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;

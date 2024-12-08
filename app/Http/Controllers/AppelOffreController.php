@@ -211,144 +211,30 @@ class AppelOffreController extends Controller
         $type = $request->input('type');
 
         // Convert inputs to arrays if they are not already
-        $prodUsers = is_array($prodUsers) ? $prodUsers : (is_object($prodUsers) ? $prodUsers->toArray() : []);
-        $distinctSpecifications = is_array($distinctSpecifications) ? $distinctSpecifications : (is_string($distinctSpecifications) ? explode(',', $distinctSpecifications) : []);
+        $prodUsers = (array) $prodUsers;
+        $distinctSpecifications = is_array($distinctSpecifications) ? $distinctSpecifications : explode(',', $distinctSpecifications);
 
         $userId = Auth::id();
         // Récupérer la balance pour un utilisateur donné
         $wallet = Wallet::where('user_id', $userId)->first();
-
-
-        return view('biicf.formappel', compact('wallet','lowestPricedProduct', 'distinctCondProds', 'type', 'prodUsers', 'distinctquatiteMax', 'distinctquatiteMin', 'name', 'reference', 'distinctSpecifications', 'appliedZoneValue'));
-    }
-
-    public function detailoffre(Request $request, $id)
-    {
-        // Récupérer l'ID de l'utilisateur connecté
-        $userId = Auth::guard('web')->id();
-
-        // Récupérer l'offre groupée par son ID
-        $appelOffreGroup = AppelOffreGrouper::find($id);
-
-        // Vérifier si l'offre groupée existe
-        if (!$appelOffreGroup) {
-            return redirect()->route('biicf.appeloffre');
+        if (!$wallet) {
+            // Gérer le cas où l'utilisateur n'a pas de portefeuille
+            $wallet = new Wallet(['user_id' => $userId, 'balance' => 0]); // Exemple de création d'un portefeuille par défaut
         }
 
-        // Récupérer les variables
-        $codesUniques = $appelOffreGroup->codeunique;
-        $dateTot = $appelOffreGroup->dateTot;
-        $dateTard = $appelOffreGroup->dateTard;
-        $productName = $appelOffreGroup->productName;
-        $quantity = $appelOffreGroup->quantity;
-        $payment = $appelOffreGroup->payment;
-        $livraison = $appelOffreGroup->livraison;
-        $specificity = $appelOffreGroup->specificity;
-        $lowestPricedProduct = $appelOffreGroup->lowestPricedProduct;
 
-        // // Récupérer les utilisateurs associés à l'offre groupée
-        // $usergroup = AppelOffreGrouper::where('codeunique', $codesUniques)
-        //     ->distinct()
-        //     ->pluck('user_id')
-        //     ->toArray();
-
-        // $prodUsers = AppelOffreGrouper::where('codeunique', $codesUniques)
-        //     ->distinct()
-        //     ->pluck('prodUsers')
-        //     ->toArray();
-
-        // // Décoder les valeurs JSON de $prodUsers en entiers
-        // $decodedProdUsers = [];
-        // foreach ($prodUsers as $prodUser) {
-        //     $decodedValues = json_decode($prodUser, true);
-        //     if (is_array($decodedValues)) {
-        //         $decodedProdUsers = array_merge($decodedProdUsers, $decodedValues);
-        //     }
-        // }
-
-        // // Récupérer la date la plus ancienne pour le code unique
-        // $datePlusAncienne = AppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
-
-        // // Ajouter 1 minute à la date la plus ancienne, s'il y en a une
-        // $tempsEcoule = $datePlusAncienne ? Carbon::parse($datePlusAncienne)->addMinutes(1) : null;
-
-        // // Vérifier si $tempsEcoule est écoulé
-        // $isTempsEcoule = $tempsEcoule && $tempsEcoule->isPast();
-
-        // $sumquantite = AppelOffreGrouper::where('codeunique', $codesUniques)->sum('quantity');
-
-        // // Compter le nombre distinct d'utilisateurs pour le code unique
-        // $appelOffreGroupcount = AppelOffreGrouper::where('codeunique', $codesUniques)
-        //     ->distinct('user_id')
-        //     ->count('user_id');
-
-        // $notificationExists = NotificationLog::where('code_unique', $codesUniques)->exists();
-
-        // if ($isTempsEcoule && !$notificationExists) {
-        //     foreach ($decodedProdUsers as $prodUser) {
-        //         $data = [
-        //             'dateTot' => $dateTot,
-        //             'dateTard' => $dateTard,
-        //             'productName' => $productName,
-        //             'quantity' => $sumquantite,
-        //             'payment' => $payment,
-        //             'Livraison' => $livraison,
-        //             'specificity' => $specificity,
-        //             'difference' => 'grouper',
-        //             'image' => null, // Gérer l'upload et le stockage de l'image si nécessaire
-        //             'id_sender' => $usergroup,
-        //             'prodUsers' => $prodUser,
-        //             'lowestPricedProduct' => $lowestPricedProduct,
-        //             'code_unique' => $codesUniques,
-        //         ];
-
-        //         // Vérification que toutes les clés nécessaires sont présentes
-        //         $requiredKeys = ['dateTot', 'dateTard', 'productName', 'quantity', 'payment', 'Livraison', 'specificity', 'image', 'prodUsers', 'code_unique'];
-        //         foreach ($requiredKeys as $key) {
-        //             if (!array_key_exists($key, $data)) {
-        //                 throw new \InvalidArgumentException("La clé '$key' est manquante dans \$data.");
-        //             }
-        //         }
-
-        //         // Récupération de l'utilisateur destinataire
-        //         $owner = User::find($prodUser);
-
-        //         // Vérification si l'utilisateur existe
-        //         if ($owner) {
-        //             // Envoi de la notification à l'utilisateur
-        //             // Notification::send($owner, new AppelOffre($data));
-        //         }
-        //     }
-        // }
-
-        // Passer les variables à la vue (si nécessaire)
-        return view('biicf.ajoutoffre', compact('userId', 'appelOffreGroup', 'datePlusAncienne', 'tempsEcoule', 'sumquantite', 'appelOffreGroupcount'));
-    }
-
-    public function storeoffre(Request $request)
-    {
-        // Valider les données du formulaire
-        $validatedData = $request->validate([
-            'codeUnique' => 'required|string',
-            'userId' => 'required|integer',
-            'quantite' => 'required|integer'
+        return view('biicf.formappel', [
+            'wallet' => $wallet,
+            'lowestPricedProduct' => $lowestPricedProduct,
+            'distinctCondProds' => $distinctCondProds,
+            'type' => $type,
+            'prodUsers' => $prodUsers,
+            'distinctquatiteMax' => $distinctquatiteMax,
+            'distinctquatiteMin' => $distinctquatiteMin,
+            'name' => $name,
+            'reference' => $reference,
+            'distinctSpecifications' => $distinctSpecifications,
+            'appliedZoneValue' => $appliedZoneValue,
         ]);
-
-        // Créer un nouvel enregistrement dans la table offregroupe
-        $offregroupe = new AppelOffreGrouper();
-        $offregroupe->codeunique = $validatedData['codeUnique'];
-        $offregroupe->user_id = $validatedData['userId'];
-        $offregroupe->quantity = $validatedData['quantite'];
-        $offregroupe->save();
-
-        //ajout dans table userquantites
-        $quantite = new userquantites();
-        $quantite->code_unique = $validatedData['codeUnique'];
-        $quantite->user_id = $validatedData['userId'];
-        $quantite->quantite = $validatedData['quantite'];
-        $quantite->save();
-
-        return redirect()->back()->with('success', 'Quantité ajouter avec succès');
     }
-
 }
