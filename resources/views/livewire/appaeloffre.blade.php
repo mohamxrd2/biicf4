@@ -506,24 +506,14 @@
                 'input[name="selectedOption"]:checked'); // Récupère l'option sélectionnée
 
             // Vérification si aucune option n'est sélectionnée
-            if (!selectedOption) {
-                errorMessageElement.innerText = `Veuillez sélectionner un mode de réception.`;
-                errorMessageElement.classList.remove('hidden');
-                submitButton.disabled = true;
-                hasError = true;
-            }
+            // if (!selectedOption) {
+            //     errorMessageElement.innerText = `Veuillez sélectionner un mode de réception.`;
+            //     errorMessageElement.classList.remove('hidden');
+            //     submitButton.disabled = true;
+            //     hasError = true;
+            // }
 
-            // Vérification si le champ "location" est vide
-            if (!hasError && !location.value.trim()) {
-                errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
-                errorMessageElement.classList.remove('hidden');
-                montantTotalElement.innerText = '0 FCFA'; // Réinitialise le montant affiché
-                submitButton.disabled = true;
-                montantTotalInput.value = 0; // Met à jour l'input montant_total_input
-                requestCreditButton.classList.add('hidden'); // Masque le bouton de crédit
-                hasError = true;
-            }
-
+         
             // Vérification de la quantité
             if (!hasError && (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity)) {
                 errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
@@ -544,6 +534,18 @@
                 submitButton.disabled = true;
                 requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
             }
+
+
+               // Vérification si le champ "location" est vide
+            //    if (!hasError && !location.value.trim()) {
+            //     errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
+            //     errorMessageElement.classList.remove('hidden');
+            //     montantTotalElement.innerText = '0 FCFA'; // Réinitialise le montant affiché
+            //     submitButton.disabled = true;
+            //     montantTotalInput.value = 0; // Met à jour l'input montant_total_input
+            //     requestCreditButton.classList.add('hidden'); // Masque le bouton de crédit
+            //     hasError = true;
+            // }
 
             // Si aucune erreur n'a été détectée, afficher le montant total et activer le bouton de soumission
             if (!hasError && montantTotal <= userBalance) {

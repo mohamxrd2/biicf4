@@ -84,7 +84,7 @@ class Appaeloffre extends Component
         $this->reference = '';
         $this->quantité = null;
         $this->localite = '';
-        $this->selectedOption = 'Delivery'; // Réinitialisé à la valeur par défaut
+        // $this->selectedOption = 'Delivery'; // Réinitialisé à la valeur par défaut
         $this->dateTot = null;
         $this->dateTard = null;
         $this->timeStart = null;
