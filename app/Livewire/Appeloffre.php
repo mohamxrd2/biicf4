@@ -64,6 +64,7 @@ class Appeloffre extends Component
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
         $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
         $this->serverTime = Carbon::now()->toIso8601String();
+
         $this->listenForMessage();
     }
 
@@ -153,6 +154,7 @@ class Appeloffre extends Component
                     'difference' => $this->notification->type_achat == 'Delivery' ? 'appelOffreD' : 'appelOffreR',
                     'id_appeloffre' => $this->appeloffre->id,
                 ]);
+                
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
                 broadcast(new OldestCommentUpdated(now()->toIso8601String()));
                 $this->dispatch('OldestCommentUpdated', now()->toIso8601String());

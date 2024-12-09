@@ -75,7 +75,6 @@ class Appaeloffre extends Component
         $this->id = ProduitService::where('reference', $reference)
             ->first();
 
-        // $this->resetForm();
     }
 
     // public function resetForm()
@@ -125,27 +124,27 @@ class Appaeloffre extends Component
         DB::beginTransaction();
         try {
             // Insérer dans la table `appel_offres`
-            dd($appelOffre = AppelOffreUser::create([
+            $appelOffre = AppelOffreUser::create([
                 'product_name' => $this->name,
                 'quantity' => $validatedData['quantité'],
                 'payment' => 'comptant',
                 'livraison' => $validatedData['selectedOption'],
-                // 'date_tot' => $validatedData['dateTot'],
-                // 'date_tard' => $validatedData['dateTard'],
-                // 'time_start' => $validatedData['timeStart'],
-                // 'time_end' => $validatedData['timeEnd'],
-                // 'day_period' => $validatedData['dayPeriod'],
-                // 'day_periodFin' => $validatedData['dayPeriodFin'],
-                // 'specification' => $this->distinctSpecifications,
+                'date_tot' => $validatedData['dateTot'],
+                'date_tard' => $validatedData['dateTard'],
+                'time_start' => $validatedData['timeStart'],
+                'time_end' => $validatedData['timeEnd'],
+                'day_period' => $validatedData['dayPeriod'],
+                'day_periodFin' => $validatedData['dayPeriodFin'],
+                'specification' => $this->distinctSpecifications,
                 'reference' => $this->reference,
-                // 'localite' => $validatedData['localite'],
+                'localite' => $validatedData['localite'],
                 'id_prod' => $this->id,
-                // 'code_unique' => $this->generateUniqueReference(),
-                // 'lowestPricedProduct' => $this->lowestPricedProduct,
-                // 'prodUsers' => json_encode($this->prodUsers),
-                // 'image' => $validatedData['image'] ?? null,
+                'code_unique' => $this->generateUniqueReference(),
+                'lowestPricedProduct' => $this->lowestPricedProduct,
+                'prodUsers' => json_encode($this->prodUsers),
+                'image' => $validatedData['image'] ?? null,
                 'id_sender' => Auth::id(),
-            ]));
+            ]);
 
             // Calculer le coût total
             $totalCost = $this->quantité * $this->lowestPricedProduct;
@@ -167,7 +166,7 @@ class Appaeloffre extends Component
             ]);
 
             // Convertir les utilisateurs cibles en JSON si nécessaire (dans votre exemple, prodUsers est encodé)
-            $prodUsers =  $validatedData['prodUsers']; // Convertit le JSON en tableau
+            $prodUsers =  $this->prodUsers; // Convertit le JSON en tableau
             foreach ($prodUsers as $prodUser) {
                 $data = [
                     'id_appelOffre' => $appelOffre->id,
@@ -193,7 +192,7 @@ class Appaeloffre extends Component
                 }
             }
             // Réinitialiser le formulaire après un succès
-            $this->resetForm();
+            $this->reset();
             // Redirection ou traitement pour l'envoi direct
             $this->dispatch(
                 'formSubmitted',

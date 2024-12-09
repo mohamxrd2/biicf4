@@ -500,7 +500,7 @@
             const requestCreditButton = document.getElementById('requestCreditButton');
             const location = document.getElementById('location');
             let hasError = false;
-            const userBalance = {{ $wallet->balance }};
+            // const userBalance = {{ $wallet->balance }};
 
             const selectedOption = document.querySelector(
                 'input[name="selectedOption"]:checked'); // Récupère l'option sélectionnée
@@ -526,17 +526,17 @@
             }
 
             // Vérification du solde utilisateur
-            if (!hasError && montantTotal > userBalance) {
-                errorMessageElement.innerText =
-                    `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-                errorMessageElement.classList.remove('hidden');
-                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                submitButton.disabled = true;
-                requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
-            }
+            // if (!hasError && montantTotal > userBalance) {
+            //     errorMessageElement.innerText =
+            //         `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
+            //     errorMessageElement.classList.remove('hidden');
+            //     montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+            //     submitButton.disabled = true;
+            //     requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
+            // }
 
 
-               // Vérification si le champ "location" est vide
+            // Vérification si le champ "location" est vide
             //    if (!hasError && !location.value.trim()) {
             //     errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
             //     errorMessageElement.classList.remove('hidden');
@@ -548,13 +548,13 @@
             // }
 
             // Si aucune erreur n'a été détectée, afficher le montant total et activer le bouton de soumission
-            if (!hasError && montantTotal <= userBalance) {
-                errorMessageElement.classList.add('hidden');
-                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-                submitButton.disabled = false;
-                montantTotalInput.value = montantTotal;
-                requestCreditButton.classList.add('hidden');
-            }
+            // if (!hasError && montantTotal <= userBalance) {
+            //     errorMessageElement.classList.add('hidden');
+            //     montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+            //     submitButton.disabled = false;
+            //     montantTotalInput.value = montantTotal;
+            //     requestCreditButton.classList.add('hidden');
+            // }
         }
     </script>
 
