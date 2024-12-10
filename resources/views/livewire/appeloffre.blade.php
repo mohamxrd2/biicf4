@@ -1,12 +1,11 @@
 <div>
     <div class="max-w-5xl mx-auto">
 
-
         <!-- Barre du haut avec timer -->
         <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
             <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
 
-            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
+            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($adjustedTime) }})" class="flex items-center space-x-2">
                 <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
 
                 <div id="countdown" x-show="oldestCommentDate"
@@ -23,7 +22,8 @@
         <div class="bg-gray-100 min-h-screen">
             <div class="flex gap-8">
                 <!-- Carte appeloffre -->
-                <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 md:w-96 h-fit">
+                <div class="bg-white flex-none rounded-lg shadow-md p-6 w-96 h-fit">
+
 
                     <h1 class="text-2xl font-bold mb-1">{{ $appeloffre->product_name }}</h1>
                     <!-- Nom du appeloffre -->
@@ -123,7 +123,7 @@
                 </div>
 
                 <!-- Discussion -->
-                <div class="flex-1 w-full md:w-auto">
+                <div class="flex-1 w-64">
                     <!-- Discussion de négociation -->
                     <div class="bg-white shadow-lg rounded-lg p-2">
 
@@ -279,16 +279,18 @@
         </script>
         <script>
             document.addEventListener('alpine:init', () => {
-                Alpine.data('countdownTimer', (oldestCommentDate, comments) => ({
+                Alpine.data('countdownTimer', (oldestCommentDate, serverTime) => ({
                     oldestCommentDate: oldestCommentDate ? new Date(oldestCommentDate) : null,
+                    serverTime: serverTime ? new Date(serverTime).getTime() :
+                    null, // Heure du serveur initiale
+                    localTimeAtLoad: Date.now(), // Temps local au moment du chargement
                     hours: '--',
                     minutes: '--',
                     seconds: '--',
-                    comments: comments || [],
                     startDate: null,
                     interval: null,
-                    isCountdownActive: false, // Nouvelle variable pour suivre l'état du compte à rebours
-                    hasSubmitted: false, // Variable pour éviter la soumission multiple
+                    isCountdownActive: false, // Suivi de l'état du compte à rebours
+                    hasSubmitted: false, // Évite les soumissions multiples
 
                     init() {
                         console.log('Initialisation du compteur', this.oldestCommentDate);
@@ -305,23 +307,15 @@
                                 if (e.oldestCommentDate) {
                                     const newDate = new Date(e.oldestCommentDate);
 
-                                    // Ne redémarre que si la nouvelle date est différente
                                     if (!this.oldestCommentDate || this.oldestCommentDate.getTime() !==
                                         newDate.getTime()) {
                                         this.oldestCommentDate = newDate;
                                         this.startDate = new Date(this.oldestCommentDate);
                                         this.startDate.setMinutes(this.startDate.getMinutes() + 2);
                                         this.startCountdown();
-
-                                        // Émettre une requête Livewire pour rafraîchir les données
-                                        // Livewire.dispatch('refreshCountdown');
-                                        // console.log('done livewire refresh')
-
                                         location.reload();
                                     } else {
-                                        console.log(
-                                            'Le compte à rebours est déjà à jour, aucun redémarrage nécessaire.'
-                                        );
+                                        console.log('Le compte à rebours est déjà à jour.');
                                     }
                                 } else {
                                     console.error('oldestCommentDate est null ou incorrect !', e);
@@ -329,23 +323,28 @@
                             });
                     },
 
-
                     startCountdown() {
                         if (this.isCountdownActive) {
                             console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
-                            return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
+                            return;
                         }
 
                         if (this.interval) {
                             clearInterval(this.interval);
                         }
+
                         this.updateCountdown();
                         this.interval = setInterval(this.updateCountdown.bind(this), 1000);
-                        this.isCountdownActive = true; // Marque le compte à rebours comme actif
+                        this.isCountdownActive = true;
                     },
 
                     updateCountdown() {
-                        const currentDate = new Date();
+                        const serverTime = this.serverTime; // Heure du serveur initiale
+                        const elapsedTime = Date.now() - this
+                        .localTimeAtLoad; // Temps écoulé depuis le chargement
+                        const currentDate = new Date(serverTime +
+                        elapsedTime); // Heure actuelle basée sur le serveur
+
                         const difference = this.startDate.getTime() - currentDate.getTime();
 
                         if (difference <= 0) {
@@ -362,17 +361,17 @@
                     endCountdown() {
                         document.getElementById('countdown').innerText = "Temps écoulé !";
 
-                        //Soumettre l'événement seulement une fois
                         if (!this.hasSubmitted) {
                             setTimeout(() => {
                                 Livewire.dispatch('compteReboursFini');
                                 this.hasSubmitted = true; // Empêcher la soumission multiple
-                            }, 100); // Petit délai pour laisser le temps à l'affichage de se mettre à jour
+                            }, 100);
                         }
                     },
                 }));
             });
         </script>
+
 
     </div>
 </div>

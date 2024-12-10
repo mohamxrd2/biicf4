@@ -40,10 +40,7 @@ class AppelOffreController extends Controller
             ->where('user_id', '<>', $userId)
             ->orderBy('created_at', 'desc');
 
-        Log::info('Initial query built', [
-            'keyword' => $keyword,
-            'type' => $type,
-        ]);
+        
 
         // Apply keyword filter
         if ($keyword) {

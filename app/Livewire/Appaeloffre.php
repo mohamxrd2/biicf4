@@ -204,6 +204,7 @@ class Appaeloffre extends Component
             $this->addError('formError', 'Une erreur est survenue pendant la validation.');
         }
     }
+    
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
@@ -379,8 +380,6 @@ class Appaeloffre extends Component
         );
         Log::info('Fin du processus de création de l\'appel d\'offre groupé.');
     }
-
-
 
     protected function generateUniqueReference()
     {

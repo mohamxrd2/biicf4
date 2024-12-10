@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
 use Carbon\Carbon;
+use DateTime;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +43,7 @@ class Appeloffre extends Component
     public $nombreParticipants;
     public $produit;
     public $code_unique;
+    public $adjustedTime;
 
 
     public function mount($id)
@@ -54,16 +56,35 @@ class Appeloffre extends Component
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->code_unique = $this->notification->data['code_unique'];
 
-        // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
+        // Récupérer le commentaire le plus ancien avec code_unique et start_time non nul
         $this->oldestComment = Countdown::where('code_unique', $this->code_unique)
-            ->whereNotNull('start_time')
             ->whereNotNull('start_time')
             ->orderBy('created_at', 'asc')
             ->first();
 
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
-        $this->serverTime = Carbon::now()->toIso8601String();
+        $this->oldestCommentDate = $this->oldestComment
+            ? Carbon::parse($this->oldestComment->start_time)->toIso8601String()
+            : null;
+
+        // Debug pour vérifier le résultat
+        // dd($this->oldestCommentDate);
+
+        $command = 'w32tm /stripchart /computer:time.windows.com /dataonly /samples:1';
+        $output = shell_exec($command);
+
+        // Extraire la ligne avec l'offset
+        preg_match('/([+-]\d+\.\d+)s/', $output, $matches);
+
+        preg_match('/([+-]\d+\.\d+)s/', $output, $matches);
+        if (!empty($matches)) {
+            $offset = (float)$matches[1]; // Offset en secondes
+            $localTimestamp = (new DateTime())->getTimestamp();
+            $adjustedTimestamp = $localTimestamp + $offset;
+            $this->adjustedTime = Carbon::createFromTimestamp($adjustedTimestamp)->toIso8601String();
+        } else {
+            $this->adjustedTime = now()->toIso8601String(); // Valeur de secours
+        }
 
         $this->listenForMessage();
     }
@@ -149,15 +170,14 @@ class Appeloffre extends Component
                 Countdown::create([
                     'user_id' => $this->id_trader,
                     'userSender' => null,
-                    'start_time' => now(),
+                    'start_time' => $this->adjustedTime,
                     'code_unique' => $this->code_unique,
                     'difference' => $this->notification->type_achat == 'Delivery' ? 'appelOffreD' : 'appelOffreR',
                     'id_appeloffre' => $this->appeloffre->id,
                 ]);
-                
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated(now()->toIso8601String()));
-                $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
+                broadcast(new OldestCommentUpdated($this->adjustedTime));
+                $this->dispatch('OldestCommentUpdated', $this->adjustedTime);
             }
 
             session()->flash('success', 'Commentaire créé avec succès!');

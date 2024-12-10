@@ -383,7 +383,7 @@
                         <!-- Bouton pour l'envoi direct -->
                         <button type="button" id="submitEnvoie"
                             class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                            wire:click="submitEnvoie" wire:loading.attr="disabled" :disabled="!@this.isFormValid">
+                            wire:click="submitEnvoie" wire:loading.attr="disabled" >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -499,19 +499,17 @@
             const montantTotalInput = document.getElementById('montant_total_input');
             const requestCreditButton = document.getElementById('requestCreditButton');
             const location = document.getElementById('location');
-            let hasError = false;
-            // const userBalance = {{ $wallet->balance }};
+            const userBalance = {{ $wallet->balance }};
 
             const selectedOption = document.querySelector(
                 'input[name="selectedOption"]:checked'); // Récupère l'option sélectionnée
 
-            // Vérification si aucune option n'est sélectionnée
-            // if (!selectedOption) {
-            //     errorMessageElement.innerText = `Veuillez sélectionner un mode de réception.`;
-            //     errorMessageElement.classList.remove('hidden');
-            //     submitButton.disabled = true;
-            //     hasError = true;
-            // }
+            //Vérification si aucune option n 'est sélectionnée
+            if (!selectedOption) {
+                errorMessageElement.innerText = `Veuillez sélectionner un mode de réception.`;
+                errorMessageElement.classList.remove('hidden');
+                submitButton.disabled = true;
+            }
 
 
             // Vérification de la quantité
@@ -526,35 +524,35 @@
             }
 
             // Vérification du solde utilisateur
-            // if (!hasError && montantTotal > userBalance) {
-            //     errorMessageElement.innerText =
-            //         `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-            //     errorMessageElement.classList.remove('hidden');
-            //     montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            //     submitButton.disabled = true;
-            //     requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
-            // }
+            if (!hasError && montantTotal > userBalance) {
+                errorMessageElement.innerText =
+                    `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
+                errorMessageElement.classList.remove('hidden');
+                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+                submitButton.disabled = true;
+                requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
+            }
 
 
             // Vérification si le champ "location" est vide
-            //    if (!hasError && !location.value.trim()) {
-            //     errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
-            //     errorMessageElement.classList.remove('hidden');
-            //     montantTotalElement.innerText = '0 FCFA'; // Réinitialise le montant affiché
-            //     submitButton.disabled = true;
-            //     montantTotalInput.value = 0; // Met à jour l'input montant_total_input
-            //     requestCreditButton.classList.add('hidden'); // Masque le bouton de crédit
-            //     hasError = true;
-            // }
+            if (!hasError && !location.value.trim()) {
+                errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
+                errorMessageElement.classList.remove('hidden');
+                montantTotalElement.innerText = '0 FCFA'; // Réinitialise le montant affiché
+                submitButton.disabled = true;
+                montantTotalInput.value = 0; // Met à jour l'input montant_total_input
+                requestCreditButton.classList.add('hidden'); // Masque le bouton de crédit
+                hasError = true;
+            }
 
             // Si aucune erreur n'a été détectée, afficher le montant total et activer le bouton de soumission
-            // if (!hasError && montantTotal <= userBalance) {
-            //     errorMessageElement.classList.add('hidden');
-            //     montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            //     submitButton.disabled = false;
-            //     montantTotalInput.value = montantTotal;
-            //     requestCreditButton.classList.add('hidden');
-            // }
+            if (!hasError && montantTotal <= userBalance) {
+                errorMessageElement.classList.add('hidden');
+                montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
+                submitButton.disabled = false;
+                montantTotalInput.value = montantTotal;
+                requestCreditButton.classList.add('hidden');
+            }
         }
     </script>
 
