@@ -233,7 +233,7 @@ class WithdrawalComponent extends Component
                 </svg>',
                 'code_unique' => $this->generateUniqueReference(),
                 'psap' => null,
-                'amount' => $this->amount,
+                'amount' => $this->bank_account,
                 'userId' => Auth::id(),
                 'codeRetrait' => $code1,
             ];
@@ -247,7 +247,7 @@ class WithdrawalComponent extends Component
                 </svg>',
                 'code_unique' => $this->generateUniqueReference(),
                 'psap' => null,
-                'amount' => $this->amount,
+                'amount' => $this->bank_account,
                 'userId' => Auth::id(),
                 'codeRetrait' => $code2 ,
             ];
@@ -272,15 +272,15 @@ class WithdrawalComponent extends Component
             'rib' => $this->bank_account,
             'reference' => $referenceID,
             'status' => 'En cours',
-            'code1' => $code1,
-            'code2' => $code2,
+            'code1' => $code1 ?? null,
+            'code2' => $code2 ?? null,
         ]);
 
         $this->resetForm();
         // Recharger la page
         return redirect()->to(request()->header('Referer'));
     }
-    
+
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, string $type_compte, float $amount, int $reference_id, string $description)
     {
