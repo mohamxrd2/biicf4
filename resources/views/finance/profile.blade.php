@@ -1,6 +1,6 @@
 @extends('finance.layout.navside')
 
-@section('title', 'Notification')
+@section('title', 'Profile')
 
 @section('content')
 
@@ -72,6 +72,15 @@
 
     <div class="mt-3 p-4">
         <div id="basic-tabs-1" role="tabpanel" aria-labelledby="basic-tabs-item-1">
+            @if ($user->actor_type == 'Institution')
+
+            <div class="mb-3">
+                
+                
+
+            </div>
+                
+            @endif
             <div class="mb-3">
                 <p class="font-semibold text-sm">Nom et pronom</p>
                 <p class="text-sm text-gray-400">{{ $user->name }}</p>
@@ -96,59 +105,55 @@
             </div>
 
             
-
-
+            @if ( $user->country)
             <div class="mb-3">
                 <p class="font-semibold text-sm">Pays de residence</p>
                 <p class="text-sm text-gray-400">{{ $user->country }}</p>
             </div>
+                
+            @endif
             <div class="mb-3">
                 <p class="font-semibold text-sm">Email</p>
                 <p class="text-sm text-gray-400">{{ $user->email }}</p>
             </div>
-
+            @if ($user->local_area)
             <div class="mb-3">
                 <p class="font-semibold text-sm">Localité</p>
                 <p class="text-sm text-gray-400">{{ $user->local_area }}</p>
             </div>
+                
+            @endif
+
+            
+            @if ($user->address)
             <div class="mb-3">
                 <p class="font-semibold text-sm">Adresse</p>
                 <p class="text-sm text-gray-400">{{ $user->address }}</p>
             </div>
+            @endif
+            
+            @if ( $user->active_zone )
             <div class="mb-3">
                 <p class="font-semibold text-sm">Zone d'activité</p>
                 <p class="text-sm text-gray-400">{{ $user->active_zone }}</p>
             </div>
+                
+            @endif
 
+           
+            @if ($user->actor_type)
             <div class="mb-3">
                 <p class="font-semibold text-sm">Type d'acteur</p>
                 <p class="text-sm text-gray-400">{{ $user->actor_type }}</p>
             </div>
+                
+            @endif
+
+           
             @if ($user->gender)
                 <div class="mb-3">
                     <p class="font-semibold text-sm">Sexe</p>
                     <p class="text-sm text-gray-400">{{ $user->gender }}</p>
-                </div>
-            @endif
-
-            @if ($user->age)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Tranche d'age</p>
-                    <p class="text-sm text-gray-400">{{ $user->age }}</p>
-                </div>
-            @endif
-
-            @if ($user->social_status)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Status social</p>
-                    <p class="text-sm text-gray-400">{{ $user->social_status }}</p>
-                </div>
-            @endif
-
-            @if ($user->company_size)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Taille d'entreprise</p>
-                    <p class="text-sm text-gray-400">{{ $user->company_size }}</p>
                 </div>
             @endif
 
@@ -159,69 +164,16 @@
                 </div>
             @endif
 
-            @if ($user->organization_type)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Type d'organisation</p>
-                    <p class="text-sm text-gray-400">{{ $user->organization_type }}</p>
-                </div>
-            @endif
+           
 
-            @if ($user->second_organization_type)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Type d'organisation 2</p>
-                    <p class="text-sm text-gray-400">{{ $user->second_organization_type }}</p>
-                </div>
-            @endif
-            @if ($user->communication_type)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Type de communauté</p>
-                    <p class="text-sm text-gray-400">{{ $user->communication_type }}</p>
-                </div>
-            @endif
-
-            @if ($user->mena_type)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Type de nenage</p>
-                    <p class="text-sm text-gray-400">{{ $user->mena_type }}</p>
-                </div>
-            @endif
-
-            @if ($user->mena_status)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Statut menage</p>
-                    <p class="text-sm text-gray-400">{{ $user->mena_type }}</p>
-                </div>
-            @endif
-
+            @if ($user->sector)
             <div class="mb-3">
                 <p class="font-semibold text-sm">Secteur d'activité</p>
                 <p class="text-sm text-gray-400">{{ $user->sector }}</p>
             </div>
+                
+            @endif
 
-            @if ($user->industry)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Industrie</p>
-                    <p class="text-sm text-gray-400">{{ $user->industry }}</p>
-                </div>
-            @endif
-            @if ($user->construction)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Type de batiment</p>
-                    <p class="text-sm text-gray-400">{{ $user->construction }}</p>
-                </div>
-            @endif
-            @if ($user->commerce)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Commerce</p>
-                    <p class="text-sm text-gray-400">{{ $user->commerce }}</p>
-                </div>
-            @endif
-            @if ($user->services)
-                <div class="mb-3">
-                    <p class="font-semibold text-sm">Service</p>
-                    <p class="text-sm text-gray-400">{{ $user->services }}</p>
-                </div>
-            @endif
 
             @if ($parrain)
             <div class="mb-3">
@@ -231,6 +183,8 @@
             @else
                 <p class="font-semibold text-sm">Vous n'avez pas de parrain</p>
             @endif
+
+            
 
 
         </div>
@@ -351,7 +305,5 @@
         return true;
     }
 </script>
-
-
 
 @endsection

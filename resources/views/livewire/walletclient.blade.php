@@ -365,7 +365,7 @@
                                                         $amountClass = 'text-green-500';
                                                     } elseif (
                                                         ($transaction->type == 'Envoie' ||
-                                                            $transaction->type == 'withdrawal') &&
+                                                            $transaction->type == 'Retrait') &&
                                                         $transaction->sender_user_id == $userId
                                                     ) {
                                                         $amountDisplay =

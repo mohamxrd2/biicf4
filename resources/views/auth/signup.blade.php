@@ -145,6 +145,7 @@
                                             'Personne physique',
                                             'Personne morale',
                                             'Service public',
+                                            'Institution',
                                             'Organisme',
                                             'Communauté',
                                             'Menage',

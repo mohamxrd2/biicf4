@@ -110,6 +110,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('demande-livraison/{id}', [UserController::class, 'detaillivraison'])->name('livraison.show');
     Route::get('demande-psap{id}', [UserController::class, 'detailpsap'])->name('psap.show');
     Route::get('demande-deposits/{id}', [UserController::class, 'detaildeposit'])->name('deposits.show');
+    Route::get('demande-retrait/{id}', [UserController::class, 'detailretrait'])->name('retrait.show');
 
     Route::get('projet', function () {
         return view('admin.projetlist');
