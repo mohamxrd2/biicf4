@@ -344,34 +344,7 @@ class RappelPortionsJournalCredits extends Command
                             $commissions = $commissions - $commissions * 0.01;
                         }
 
-                        if ($parrainLevel2->parrain) {
-                            $parrainLevel3 = User::find($parrainLevel2->parrain);
-                            $parrainLevel3Wallet = Wallet::where('user_id', $parrainLevel3->id);
-                            if ($parrainLevel3Wallet) {
-                                $parrainLevel3Wallet->balance += $commissions * 0.01;
-                                $parrainLevel3Wallet->save();
-
-                                // Log de la mise à jour
-                                Log::info('Commission envoyée au troisième parrain', [
-                                    'parrain_id' => $parrainLevel3->id,
-                                    'commissions' => $commissions * 0.01
-                                ]);
-
-                                // Créer une transaction vers le troisième parrain
-                                $this->createTransaction(
-                                    $credit->emprunteur_id,
-                                    $parrainLevel3->id,
-                                    'Commission',
-                                    $commissions * 0.01,
-                                    $this->generateIntegerReference(),
-                                    'Commission de BICF',
-                                    'effectué',
-                                    'COC'
-                                );
-
-                                $commissions = $commissions - $commissions * 0.01;
-                            }
-                        }
+                        
                     }
                 }
 
