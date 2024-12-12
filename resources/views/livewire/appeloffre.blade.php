@@ -5,7 +5,7 @@
         <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
             <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
 
-            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($adjustedTime) }})" class="flex items-center space-x-2">
+            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
                 <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
 
                 <div id="countdown" x-show="oldestCommentDate"
@@ -287,17 +287,17 @@
                     hours: '--',
                     minutes: '--',
                     seconds: '--',
-                    startDate: null,
+                    endDate: null,
                     interval: null,
                     isCountdownActive: false, // Suivi de l'état du compte à rebours
                     hasSubmitted: false, // Évite les soumissions multiples
 
                     init() {
-                        console.log('Initialisation du compteur', this.oldestCommentDate);
+
 
                         if (this.oldestCommentDate) {
-                            this.startDate = new Date(this.oldestCommentDate);
-                            this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                            this.endDate = new Date(this.oldestCommentDate);
+                            this.endDate.setMinutes(this.endDate.getMinutes() + 5);
                             this.startCountdown();
                         }
 
@@ -310,8 +310,8 @@
                                     if (!this.oldestCommentDate || this.oldestCommentDate.getTime() !==
                                         newDate.getTime()) {
                                         this.oldestCommentDate = newDate;
-                                        this.startDate = new Date(this.oldestCommentDate);
-                                        this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                                        this.endDate = new Date(this.oldestCommentDate);
+                                        this.endDate.setMinutes(this.endDate.getMinutes() + 5);
                                         this.startCountdown();
                                         location.reload();
                                     } else {
@@ -321,6 +321,10 @@
                                     console.error('oldestCommentDate est null ou incorrect !', e);
                                 }
                             });
+
+                        console.log('Initialisation du oldestCommentDate', this.oldestCommentDate);
+                        console.log('Initialisation du endDate', this.endDate);
+                        console.log('Initialisation du serverTime', this.serverTime);
                     },
 
                     startCountdown() {
@@ -340,12 +344,13 @@
 
                     updateCountdown() {
                         const serverTime = this.serverTime; // Heure du serveur initiale
-                        const elapsedTime = Date.now() - this
-                        .localTimeAtLoad; // Temps écoulé depuis le chargement
-                        const currentDate = new Date(serverTime +
-                        elapsedTime); // Heure actuelle basée sur le serveur
+                        const elapsedTime = Date.now() - this.localTimeAtLoad; // Temps écoulé depuis le chargement
+                        const currentDate = new Date(serverTime + elapsedTime); // Heure actuelle basée sur le serveur
 
-                        const difference = this.startDate.getTime() - currentDate.getTime();
+                        const difference = this.endDate.getTime() - currentDate.getTime();
+                        console.log('Initialisation du elapsedTime', elapsedTime);
+                        console.log('Initialisation du currentDate', currentDate);
+                        console.log('Initialisation du difference', difference);
 
                         if (difference <= 0) {
                             clearInterval(this.interval);

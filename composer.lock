@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "575f8b20ae14bbaa81cf946b97bfdd8a",
+    "content-hash": "f439730b539b20a9fdb5d3296f685c02",
     "packages": [
         {
             "name": "brick/math",
@@ -65,6 +65,55 @@
                 }
             ],
             "time": "2023-11-29T23:19:16+00:00"
+        },
+        {
+            "name": "bt51/ntp",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bt51/ntp.git",
+                "reference": "74041299558d8defa8eae4590839bf66692de32f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bt51/ntp/zipball/74041299558d8defa8eae4590839bf66692de32f",
+                "reference": "74041299558d8defa8eae4590839bf66692de32f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "2.0.*@dev"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bt51\\NTP\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ben Tollakson",
+                    "email": "ben.tollakson@gmail.com"
+                }
+            ],
+            "description": "PHP library for interacting with ntp servers",
+            "homepage": "https://github.com/bt51/ntp",
+            "keywords": [
+                "network time protocol",
+                "ntp",
+                "ntp client"
+            ],
+            "support": {
+                "issues": "https://github.com/bt51/ntp/issues",
+                "source": "https://github.com/bt51/ntp/tree/master"
+            },
+            "time": "2014-05-13T21:11:11+00:00"
         },
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -10160,12 +10209,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.1"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }
