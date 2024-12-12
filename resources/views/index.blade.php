@@ -80,7 +80,7 @@
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-3xl blur-3xl transform -rotate-6"></div>
                         <div class="relative bg-white rounded-3xl shadow-xl p-8">
                             <div class="aspect-w-16 aspect-h-9">
-                                <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1567&q=80" 
+                                <img src="https://www.finance-investissement.com/wp-content/uploads/sites/2/2020/07/fizkes_black-millennial-boss-leading-corporate-team-during-briefing-in-picture-id1139630453.jpg" 
                                      alt="Business Growth" 
                                      class="rounded-2xl object-cover shadow-lg">
                             </div>
