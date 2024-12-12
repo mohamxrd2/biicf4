@@ -4,29 +4,35 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class Retrait extends Notification implements ShouldQueue
+class RetraitCode extends Notification
 {
     use Queueable;
-
-    private $retrait;
 
     /**
      * Create a new notification instance.
      */
+    private $retrait;
     public function __construct($retrait)
     {
         $this->retrait = $retrait;
     }
 
-    public function via($notifiable)
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
+    public function via(object $notifiable): array
     {
         return ['database'];
     }
 
+    /**
+     * Get the mail representation of the notification.
+     */
     public function toDatabase($notifiable)
     {
         return [
@@ -37,8 +43,8 @@ class Retrait extends Notification implements ShouldQueue
             'psap' => $this->retrait['psap'],
             'userId' => $this->retrait['userId'],
             'amount' => $this->retrait['amount'],
-            'code1' => $this->retrait['code1'] ?? null,
-            'code2' => $this->retrait['code2'] ?? null,
+            'codeRetrait' => $this->retrait['codeRetrait'] ?? null,
+       
             
 
         ];

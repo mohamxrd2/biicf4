@@ -613,6 +613,10 @@ class UserController extends Controller
     {
         return view('admin.detail-deposit', compact('id'));
     }
+    public function detailretrait($id)
+    {
+        return view('admin.detail-retrait', compact('id'));
+    }
 
     public function detailprojetGroupe($id)
     {

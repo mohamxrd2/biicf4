@@ -102,8 +102,14 @@
                         </div>
                         <div class="relative bg-white rounded-3xl shadow-xl p-8">
                             <div class="aspect-w-16 aspect-h-9">
+<<<<<<< HEAD
                                 <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1567&q=80"
                                     alt="Business Growth" class="rounded-2xl object-cover shadow-lg">
+=======
+                                <img src="https://www.finance-investissement.com/wp-content/uploads/sites/2/2020/07/fizkes_black-millennial-boss-leading-corporate-team-during-briefing-in-picture-id1139630453.jpg" 
+                                     alt="Business Growth" 
+                                     class="rounded-2xl object-cover shadow-lg">
+>>>>>>> ed1c542124f2aad07b92f3761cec60d2b8a86a3a
                             </div>
                         </div>
                     </div>

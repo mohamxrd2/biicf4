@@ -66,6 +66,8 @@
             @livewire('deposit-recu', ['id' => $id])
         @elseif ($notification->type === 'App\Notifications\DepositSend')
             @livewire('deposit-send', ['id' => $id])
+        @elseif ($notification->type === 'App\Notifications\RetraitCode')
+            @livewire('retrait-code', ['id' => $id])
 
 
             {{-- general --}}

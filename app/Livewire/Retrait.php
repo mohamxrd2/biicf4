@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Livewire\Component;
 use App\Models\Transaction;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\RefusRetrait;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,10 @@ class Retrait extends Component
     public $demandeur;
     public $psap;
     public $amount;
+    public $code1;
+    public $code2;
+    public $codeRequest1;
+    public $codeRequest2;
     public $notification;
 
     public function mount($id)
@@ -28,6 +33,8 @@ class Retrait extends Component
         $this->demandeur = User::find($this->notification->data['userId']);
         $this->psap = User::find($this->notification->data['psap']);
         $this->amount = $this->notification->data['amount'];
+        $this->code1 = $this->notification->data['code1']?? null;
+        $this->code2 = $this->notification->data['code2']?? null;
     }
 
     public function accepteRetrait()
@@ -44,10 +51,35 @@ class Retrait extends Component
             return;
         }
 
+        if (($this->code1 !== null) || ($this->code2 !== null)) {
+            // Validation des données
+            $this->validate([
+                'codeRequest1' => [
+                    'required',
+                    'digits:4',
+                    Rule::in([$this->code1]), // Vérifie si codeRequest1 est égal à $this->code1
+                ],
+                'codeRequest2' => [
+                    'required',
+                    'digits:4',
+                    Rule::in([$this->code2]), // Vérifie si codeRequest2 est égal à $this->code2
+                ],
+            ], [
+                'codeRequest1.required' => 'Le code 1 est requis.',
+                'codeRequest1.digits' => 'Le code 1 doit être un nombre à 4 chiffres.',
+                'codeRequest1.in' => 'Le code 1 est invalide.',
+    
+                'codeRequest2.required' => 'Le code 2 est requis.',
+                'codeRequest2.digits' => 'Le code 2 doit être un nombre à 4 chiffres.',
+                'codeRequest2.in' => 'Le code 2 est invalide.',
+            ]);
+        }
+
         DB::beginTransaction();
 
         try {
             
+
 
             // Mettre à jour les soldes des portefeuilles
             $userWallet->decrement('balance', $this->amount);

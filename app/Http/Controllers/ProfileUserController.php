@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProfileUserController extends Controller
 {
@@ -11,9 +12,15 @@ class ProfileUserController extends Controller
     // Méthode pour afficher la vue du profil
     public function showProfile()
     {
-        return view('biicf.profile');
+        $userConnected = Auth::id(); 
+        $user = User::find($userConnected);
+    
+        // Assurez-vous que $userJoint a une valeur par défaut
+        $userJoint = $user && $user->user_joint ? User::find($user->user_joint) : null;
+    
+        return view('biicf.profile', compact('userConnected', 'userJoint'));
     }
-
+    
     public function userTof(Request $request, $user)
     {
         // Valider les données du formulaire

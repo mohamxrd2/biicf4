@@ -35,7 +35,8 @@ class User extends Authenticatable
         'active_zone',
         'photo',
         'last_seen',
-        'admin_id'
+        'admin_id',
+        'user_joint', 
     ];
 
 

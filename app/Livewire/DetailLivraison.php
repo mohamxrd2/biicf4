@@ -36,7 +36,6 @@ class DetailLivraison extends Component
         $livraison->etat = 'Refusé';
         $livraison->save();
     }
-
     protected $listeners = ['livraisonUpdated' => '$refresh'];
 
     public function render()

@@ -25,7 +25,8 @@ class FinanceViewServiceProvider extends ServiceProvider
         // Définir un View Composer pour les vues sous le préfixe 'finance'
         View::composer('finance.*', function ($view) {
             // Récupérer l'utilisateur authentifié
-            $user = Auth::guard('web')->user();
+            //$user = Auth::guard('web')->user();
+            $user = User::find(Auth::guard('web')->id());
 
             // Récupérer le nombre de notifications non lues
             $unreadCount = $user ? $user->unreadNotifications->count() : 0;
@@ -34,7 +35,7 @@ class FinanceViewServiceProvider extends ServiceProvider
 
             // Passer l'utilisateur et le nombre de notifications non lues aux vues
             $view->with('user', $user)
-                ->with('unreadCount', $unreadCount)->with('parrain');
+                ->with('unreadCount', $unreadCount)->with('parrain', $parrain);
         });
     }
 }

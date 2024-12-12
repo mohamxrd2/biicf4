@@ -44,7 +44,6 @@ class TransfertArgent extends Component
         }
     }
 
-
     public function selectUser($userId, $userName)
     {
         $this->user_id = $userId;
@@ -201,12 +200,6 @@ private function resetForm()
     $this->errorMessage = '';
 }
 
-    // public function resetForm()
-    // {
-    //     $this->search = '';
-    //     $this->user_id = '';
-    //     $this->amount = null;
-    // }
 
     protected function processTransaction($senderWallet, $receiverWallet)
     {

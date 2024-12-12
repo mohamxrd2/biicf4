@@ -326,7 +326,7 @@ class CountdownNotificationAd extends Component
         if ($this->fournisseur->parrain) {
             $currentParrain = $this->fournisseur;
 
-            for ($level = 1; $level <= 3; $level++) {
+            for ($level = 1; $level <= 2; $level++) {
                 if (!$currentParrain->parrain) break;
 
                 $nextParrain = User::find($currentParrain->parrain);
