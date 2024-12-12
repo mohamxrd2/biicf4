@@ -233,7 +233,7 @@ class WithdrawalComponent extends Component
                 </svg>',
                 'code_unique' => $this->generateUniqueReference(),
                 'psap' => null,
-                'amount' => $this->bank_account,
+                'amount' => $this->amountBank,
                 'userId' => Auth::id(),
                 'codeRetrait' => $code1,
             ];
@@ -247,7 +247,7 @@ class WithdrawalComponent extends Component
                 </svg>',
                 'code_unique' => $this->generateUniqueReference(),
                 'psap' => null,
-                'amount' => $this->bank_account,
+                'amount' => $this->amountBank,
                 'userId' => Auth::id(),
                 'codeRetrait' => $code2 ,
             ];
