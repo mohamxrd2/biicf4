@@ -170,18 +170,23 @@ class Appeloffre extends Component
         }
     }
 
-    // protected $listeners = ['compteReboursFini'];
-    // public function compteReboursFini()
-    // {
-    //     // Mettre à jour l'attribut 'finish' du demandeCredit
-    //     $this->appeloffre->update([
-    //         'count' => true,
-    //         $this->dispatch(
-    //             'formSubmitted',
-    //             'Temps écoule, Négociation terminé.'
-    //         )
-    //     ]);
-    // }
+    protected $listeners = ['compteReboursFini'];
+    public function compteReboursFini()
+    {
+        // Mettre à jour l'attribut 'finish' du demandeCredit
+        $this->appeloffre->update([
+            'count' => true,
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Négociation terminé.'
+            )
+
+        ]);
+        $this->dispatch(
+            'formSubmitted',
+            'Temps écoule, Négociation terminé.'
+        );
+    }
 
     public function commentFormLivr()
     {

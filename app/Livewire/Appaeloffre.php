@@ -14,6 +14,7 @@ use App\Models\userquantites;
 use App\Notifications\AOGrouper;
 use App\Notifications\AppelOffre;
 use App\Notifications\Confirmation;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -74,25 +75,24 @@ class Appaeloffre extends Component
 
         $this->id = ProduitService::where('reference', $reference)
             ->first();
-
     }
 
-    // public function resetForm()
-    // {
-    //     $this->name = '';
-    //     $this->reference = '';
-    //     $this->quantité = null;
-    //     $this->localite = '';
-    //     // $this->selectedOption = 'Delivery'; // Réinitialisé à la valeur par défaut
-    //     $this->dateTot = null;
-    //     $this->dateTard = null;
-    //     $this->timeStart = null;
-    //     $this->timeEnd = null;
-    //     $this->dayPeriod = null;
-    //     $this->dayPeriodFin = null;
-    //     $this->prodUsers = [];
-    //     $this->distinctSpecifications = [];
-    // }
+    public function resetForm()
+    {
+        $this->name = '';
+        $this->reference = '';
+        $this->quantité = null;
+        $this->localite = '';
+        $this->selectedOption = null; // Réinitialisé à la valeur par défaut
+        $this->dateTot = null;
+        $this->dateTard = null;
+        $this->timeStart = null;
+        $this->timeEnd = null;
+        $this->dayPeriod = null;
+        $this->dayPeriodFin = null;
+        $this->prodUsers = [];
+        $this->distinctSpecifications = [];
+    }
 
     // public function getIsFormValidProperty()
     // {
@@ -106,23 +106,38 @@ class Appaeloffre extends Component
     public function submitEnvoie()
     {
         $this->loading = true;
-        $userId = Auth::guard('web')->id();
+        $userId = Auth::id();
+
         // Validation des données du formulaire
         $validatedData = $this->validate([
-            'quantité' => 'required|integer',
-            'localite' => 'required|string',
+            'quantité' => 'required|integer|min:1',
+            'localite' => 'required|string|max:255',
             'selectedOption' => 'required|string',
-            'dateTot' => 'required|date',
-            'dateTard' => 'required|date',
+            'dateTot' => 'required|date|before_or_equal:dateTard',
+            'dateTard' => 'required|date|after_or_equal:dateTot',
             'timeStart' => 'nullable|date_format:H:i',
             'timeEnd' => 'nullable|date_format:H:i',
-            'dayPeriod' => 'nullable|string',
-            'dayPeriodFin' => 'nullable|string',
+            'dayPeriod' => 'nullable|string|max:255',
+            'dayPeriodFin' => 'nullable|string|max:255',
         ]);
 
+        // Calculer le coût total
+        $totalCost = $validatedData['quantité'] * $this->lowestPricedProduct;
 
+        // Vérification du solde avant décrémentation
+        if ($this->wallet->balance < $totalCost) {
+            $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
+
+            session()->flash('success', "Solde insuffisant pour effectuer cette transaction.");
+            return;
+        }
+
+        // Gestion de la transaction avec la base de données
         DB::beginTransaction();
         try {
+            // Décrémenter le solde du portefeuille
+            $this->wallet->decrement('balance', $totalCost);
+
             // Insérer dans la table `appel_offres`
             $appelOffre = AppelOffreUser::create([
                 'product_name' => $this->name,
@@ -143,21 +158,21 @@ class Appaeloffre extends Component
                 'lowestPricedProduct' => $this->lowestPricedProduct,
                 'prodUsers' => json_encode($this->prodUsers),
                 'image' => $validatedData['image'] ?? null,
-                'id_sender' => Auth::id(),
+                'id_sender' => $userId,
             ]);
 
-            // Calculer le coût total
-            $totalCost = $this->quantité * $this->lowestPricedProduct;
+            // Créer la transaction
+            $this->createTransaction(
+                $userId,
+                $userId,
+                'Gele',
+                $totalCost,
+                $this->generateIntegerReference(),
+                'Gele Pour Achat de ' . $this->name,
+                'effectué',
+                'COC'
+            );
 
-            // Vérification du solde avant décrémentation
-            if ($this->wallet->balance < $totalCost) {
-                throw new \Exception("Solde insuffisant pour effectuer cette transaction.");
-            }
-
-            // Décrémenter le solde du portefeuille
-            $this->wallet->decrement('balance', $totalCost);
-            // Créer  transactions
-            $this->createTransaction($userId, $userId, 'Gele', $totalCost, $this->generateIntegerReference(), 'Gele Pour ' . 'Achat de ' . $this->name, 'effectué', 'COC');
             // Mettre à jour la table de gelement de fond
             gelement::create([
                 'id_wallet' => $this->wallet->id,
@@ -165,46 +180,47 @@ class Appaeloffre extends Component
                 'reference_id' => $this->generateUniqueReference(),
             ]);
 
-            // Convertir les utilisateurs cibles en JSON si nécessaire (dans votre exemple, prodUsers est encodé)
-            $prodUsers =  $this->prodUsers; // Convertit le JSON en tableau
-            foreach ($prodUsers as $prodUser) {
-                $data = [
-                    'id_appelOffre' => $appelOffre->id,
-                    'code_unique' => $appelOffre->code_unique,
-                    'difference' => 'single',
-                ];
-                // Récupération de l'utilisateur destinataire
+            // Envoyer des notifications aux utilisateurs cibles
+            foreach ($this->prodUsers as $prodUser) {
                 $owner = User::find($prodUser);
 
-                // Vérification si l'utilisateur existe
                 if ($owner) {
-                    // Envoi de la notification à l'utilisateur
+                    $data = [
+                        'id_appelOffre' => $appelOffre->id,
+                        'code_unique' => $appelOffre->code_unique,
+                        'difference' => 'single',
+                    ];
+
                     Notification::send($owner, new AppelOffre($data));
-                    // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-                    $notification = $owner->notifications()->where('type', AppelOffre::class)->latest()->first();
+
+                    // Mettre à jour la notification
+                    $notification = $owner->notifications()
+                        ->where('type', AppelOffre::class)
+                        ->latest()
+                        ->first();
 
                     if ($notification) {
-                        // Mettez à jour le champ 'type_achat' dans la notification
-                        $notification->update(['type_achat' => $this->selectedOption]);
+                        $notification->update(['type_achat' => $validatedData['selectedOption']]);
                     }
-                    // Déclencher un événement pour signaler l'envoi de la notification
+
+                    // Déclencher un événement
                     event(new NotificationSent($owner));
                 }
             }
-            // Réinitialiser le formulaire après un succès
-            $this->reset();
-            // Redirection ou traitement pour l'envoi direct
-            $this->dispatch(
-                'formSubmitted',
-                'Demande d\'appel offre a ette effectué avec succes.'
-            );
+
+            // Réinitialiser le formulaire après succès
+            $this->resetForm();
+            $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
+
             DB::commit();
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Vous pouvez gérer des erreurs personnalisées ici si nécessaire
-            $this->addError('formError', 'Une erreur est survenue pendant la validation.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Erreur lors de la validation : ' . $e->getMessage());
+        } finally {
+            $this->loading = false;
         }
     }
-    
+
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();

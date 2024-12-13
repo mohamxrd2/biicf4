@@ -501,15 +501,7 @@
             const location = document.getElementById('location');
             const userBalance = {{ $wallet->balance }};
 
-            const selectedOption = document.querySelector(
-                'input[name="selectedOption"]:checked'); // Récupère l'option sélectionnée
 
-            //Vérification si aucune option n 'est sélectionnée
-            if (!selectedOption) {
-                errorMessageElement.innerText = `Veuillez sélectionner un mode de réception.`;
-                errorMessageElement.classList.remove('hidden');
-                submitButton.disabled = true;
-            }
 
 
             // Vérification de la quantité
