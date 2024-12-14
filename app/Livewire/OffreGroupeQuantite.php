@@ -104,7 +104,6 @@ class OffreGroupeQuantite extends Component
     }
 
     protected $listeners = ['compteReboursFini'];
-
     public function compteReboursFini()
     {
         try {
@@ -112,7 +111,6 @@ class OffreGroupeQuantite extends Component
             if (!$this->OffreGroupe) {
                 throw new Exception('Groupe d\'appel d\'offres introuvable.');
             }
-
             // Mettre à jour l'attribut 'finish'
             $this->OffreGroupe->update(['count' => true]);
 

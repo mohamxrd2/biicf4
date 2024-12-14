@@ -29,7 +29,8 @@ class AjoutQoffre extends Command
     {
 
 
-        $offrecountdowns = OffreGroupe::where('created_at', '<=', now()->subMinutes(2))
+        $offrecountdowns = OffreGroupe::where('count', true)
+            ->where('created_at', '<=', now()->subMinutes(2))
             ->get();
 
         if ($offrecountdowns->isEmpty()) {
@@ -42,21 +43,9 @@ class AjoutQoffre extends Command
         foreach ($offrecountdowns as $offre) {
             Log::info('Processing countdown with unique code: ' . $offre->code_unique);
 
-            $uniqueCode = $offre->code_unique;
-            try {
-                $offreGroupeExistante = OffreGroupe::where('code_unique', $uniqueCode)->first();
-            } catch (\Exception $e) {
-                Log::error('Error fetching OffreGroupe for unique code ' . $uniqueCode . ': ' . $e->getMessage());
-                continue;
-            }
-
-            if (!$offreGroupeExistante) {
-                Log::error('OffreGroupe not found for unique code: ' . $uniqueCode);
-                continue;
-            }
 
             // Récupérer les quantités par utilisateur dans userquantites
-            $quantitesParUser = userquantites::where('code_unique', $uniqueCode)
+            $quantitesParUser = userquantites::where('code_unique', $offre->code_unique)
                 ->get()
                 ->groupBy('user_id')
                 ->map(function ($group) {
@@ -64,7 +53,7 @@ class AjoutQoffre extends Command
                 })
                 ->toArray();
 
-            Log::info('Quantities per user for unique code ' . $uniqueCode . ': ' . json_encode($quantitesParUser));
+            Log::info('Quantities per user for unique code ' . $offre->code_unique . ': ' . json_encode($quantitesParUser));
 
             $sender = $offre->user;
             if (!$sender) {
@@ -78,9 +67,9 @@ class AjoutQoffre extends Command
                 Notification::send($sender, new OffreNegosDone([
                     'quantite_totale' => array_sum($quantitesParUser),
                     'details_par_user' => $quantitesParUser,
-                    'idProd' => $offreGroupeExistante->produit_id,
+                    'idProd' => $offre->produit_id,
                     'id_sender' => $offre->sender->id ?? null,
-                    'code_unique' => $uniqueCode,
+                    'code_unique' => $offre->code_unique,
                 ]));
 
                 Log::info('Notification sent to user:', ['sender' => $sender->id]);
@@ -88,10 +77,10 @@ class AjoutQoffre extends Command
 
                 DB::commit();
 
-                Log::info('Updated countdown notified status for unique code: ' . $uniqueCode);
+                Log::info('Updated countdown notified status for unique code: ' . $offre->code_unique);
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Error processing countdown with code ' . $uniqueCode . ': ' . $e->getMessage());
+                Log::error('Error processing countdown with code ' . $offre->code_unique . ': ' . $e->getMessage());
             }
         }
     }

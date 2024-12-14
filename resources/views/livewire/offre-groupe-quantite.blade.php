@@ -208,6 +208,11 @@
                         console.log('Heure serveur actuelle', currentDate);
                         console.log('Différence temporelle', difference);
 
+                        if (difference <= 0) {
+                            clearInterval(this.interval);
+                            this.endCountdown();
+                            return;
+                        }
 
                         this.hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         this.minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
