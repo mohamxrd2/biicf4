@@ -7,8 +7,10 @@ use App\Models\Countdown;
 use App\Models\ProduitService;
 use App\Models\OffreGroupe;
 use Exception;
-use App\Models\userquantites;
+use App\Services\RecuperationTimer;
 
+use App\Models\userquantites;
+use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -31,9 +33,24 @@ class OffreGroupeQuantite extends Component
     public $oldestCommentDate;
     public $groupages = []; // Liste des groupages existants
 
+    public $time;
+    public $error;
+
+    protected $recuperationTimer;
+
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
+
     public function mount($id)
     {
         try {
+            // Récupération de l'heure via le service
+            $this->time = $this->recuperationTimer->getTime();
+            $this->error = $this->recuperationTimer->error;
+
             // Récupération de la notification
             $this->notification = DatabaseNotification::findOrFail($id);
 
@@ -76,8 +93,9 @@ class OffreGroupeQuantite extends Component
 
             // Format de la date du commentaire le plus ancien
             $this->oldestCommentDate = $this->oldestComment
-                ? $this->oldestComment->created_at->toIso8601String()
+                ? Carbon::parse($this->oldestComment->created_at)->toIso8601String()
                 : null;
+
         } catch (Exception $e) {
             Log::error('Erreur dans mount', ['error' => $e->getMessage()]);
             session()->flash('error', 'Erreur lors du chargement des données.');

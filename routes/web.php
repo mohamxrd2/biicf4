@@ -138,8 +138,8 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 
 
     //accepter ou refuser la cmmande
-    Route::post('notification/accepter', [AchatDirectController::class, 'accepter'])->name('achatD.accepter');
-    Route::post('notification/refuser', [AchatDirectController::class, 'refuser'])->name('achatD.refuser');
+    // Route::post('notification/accepter', [AchatDirectController::class, 'accepter'])->name('achatD.accepter');
+    // Route::post('notification/refuser', [AchatDirectController::class, 'refuser'])->name('achatD.refuser');
 
 
     // routes/web.php

@@ -3,7 +3,7 @@
 
         <!-- Barre du haut avec timer -->
         <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
-            <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
+            <h1 class="text-lg font-bold">NEGOCIATION DES FOURNISSEURS</h1>
             @if (!$appeloffre->count)
                 <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
                     <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
@@ -96,7 +96,6 @@
                             Non spécifiée
                         @endif
 
-
                         <div class="flex items-center gap-2">
                             <div
                                 class="h-5 w-5 text-gray-600 bg-gray-200 rounded-full flex items-center justify-center">
@@ -104,21 +103,6 @@
                             </div>
                             <span>Délai de livraison: 10 jours</span>
                         </div>
-                    </div>
-
-                    <!-- Spécifications -->
-                    <div class="mt-6">
-                        <h2 class="font-semibold mb-2">Lieu de récupération:</h2>
-                        <ul class="list-disc list-inside space-y-1 text-gray-600">
-                            <li>
-                                {{ $appeloffre->continent }},
-                                {{ $appeloffre->sous_region }},
-                                {{ $appeloffre->pays }},
-                                {{ $appeloffre->zonecoServ }},
-                                {{ $appeloffre->villeServ }},
-                                {{ $appeloffre->comnServ }}
-                            </li>
-                        </ul>
                     </div>
 
                 </div>
@@ -234,8 +218,8 @@
                                         <button type="submit" id="submitBtnAppel"
                                             class="p-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition duration-200">
                                             <span wire:loading.remove>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                                                 </svg>
@@ -323,6 +307,11 @@
                         console.log('Initialisation du serverTime', this.serverTime);
                     },
 
+                    // Methode pour calculer le temps restant
+                    calculateTimeLeft(endDate, currentDate) {
+                        return Math.max(0, endDate - currentDate);
+                    },
+
                     startCountdown() {
                         if (this.isCountdownActive) {
                             console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
@@ -349,7 +338,7 @@
                             .serverTime); // Utilisation directe de l'heure serveur
                         this.serverTime += 1000; // Incrémente l'heure serveur chaque seconde simulée
 
-                        const difference = this.endDate.getTime() - currentDate.getTime();
+                        const difference = this.calculateTimeLeft(this.endDate, currentDate);
                         console.log('Heure serveur actuelle', currentDate);
                         console.log('Différence temporelle', difference);
 

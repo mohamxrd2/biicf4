@@ -53,10 +53,7 @@ class Appeloffre extends Component
     public $code_unique;
     public $ServerTime;
 
-    public $proposedPrice;
-    public $negotiationId;
-    public $isNegotiationActive = false;
-    public $remainingSeconds;
+  
     public $time;
     public $timentp;
 

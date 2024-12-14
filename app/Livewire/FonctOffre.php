@@ -13,6 +13,7 @@ use App\Notifications\Confirmation;
 use App\Notifications\OffreNegosNotif;
 use App\Notifications\OffreNotif;
 use App\Notifications\OffreNotifGroup;
+use App\Services\RecuperationTimer;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,16 @@ class FonctOffre extends Component
     public   $quantite;
     public   $username;
 
+    public $time;
+    public $error;
+
+    protected $recuperationTimer;
+
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
     public function mount($id)
     {
 
@@ -61,6 +72,10 @@ class FonctOffre extends Component
             ->toArray();
 
         $this->nomFournisseurCount = count($nomFournisseur);
+
+        // Récupération de l'heure via le service
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
     }
 
     public function sendOffre()
@@ -286,6 +301,8 @@ class FonctOffre extends Component
     public function sendoffreGrp()
     {
         try {
+
+
             $user_id = Auth::id();
             Log::info('Tentative de stockage de données', ['user_id' => $user_id]);
 
@@ -327,6 +344,7 @@ class FonctOffre extends Component
                 'formSubmitted',
                 "Notifications envoyées à {$this->nomFournisseurCount} utilisateur(s).",
             );
+
             return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
         } catch (Exception $e) {
             Log::error('Erreur lors du stockage des données', ['error' => $e->getMessage()]);

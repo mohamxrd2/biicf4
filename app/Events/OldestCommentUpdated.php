@@ -20,6 +20,7 @@ class OldestCommentUpdated implements ShouldBroadcast
     public function __construct($oldestCommentDate)
     {
         $this->oldestCommentDate = $oldestCommentDate;
+
     }
 
     public function broadcastOn()
