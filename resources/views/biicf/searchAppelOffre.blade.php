@@ -241,14 +241,13 @@
                                     });
 
                                     // Si plusieurs éléments ont la valeur minimale, appliquer un autre critère (par exemple, en fonction d'un champ `autre_critere`)
-if ($itemsWithMinValue->count() > 1) {
-    $selectedItem = $itemsWithMinValue->sortBy('created_at')->first(); // Trier par un autre critère et prendre le premier
-} else {
-    $selectedItem = $itemsWithMinValue->first(); // S'il n'y a qu'un seul élément avec la valeur minimale
+                                    if ($itemsWithMinValue->count() > 1) {
+                                        $selectedItem = $itemsWithMinValue->sortBy('created_at')->first(); // Trier par un autre critère et prendre le premier
+                                    } else {
+                                        $selectedItem = $itemsWithMinValue->first(); // S'il n'y a qu'un seul élément avec la valeur minimale
                                     }
 
                                     // Vous pouvez maintenant utiliser $selectedItem comme résultat final
-
                                     $distinctquatiteMax = $group->pluck('qteProd_max')->unique();
 
                                     // Récupérer la valeur maximale
@@ -260,10 +259,10 @@ if ($itemsWithMinValue->count() > 1) {
                                     });
 
                                     // Si plusieurs éléments ont la valeur maximale, appliquer un autre critère (par exemple, en fonction d'un champ 'autre_critere')
-if ($itemsWithMaxValue->count() > 1) {
-    $selectedItem = $itemsWithMaxValue->sortByDesc('created_at')->first(); // Trier par un autre critère (ordre décroissant) et prendre le premier
-} else {
-    $selectedItem = $itemsWithMaxValue->first(); // S'il n'y a qu'un seul élément avec la valeur maximale
+                                    if ($itemsWithMaxValue->count() > 1) {
+                                        $selectedItem = $itemsWithMaxValue->sortByDesc('created_at')->first(); // Trier par un autre critère (ordre décroissant) et prendre le premier
+                                    } else {
+                                        $selectedItem = $itemsWithMaxValue->first(); // S'il n'y a qu'un seul élément avec la valeur maximale
                                     }
 
                                     // Vous pouvez maintenant utiliser $selectedItem comme résultat final
@@ -368,10 +367,10 @@ if ($itemsWithMaxValue->count() > 1) {
                                                 value="{{ $appliedZoneValue }}">
                                             <input type="hidden" name="distinctCondProds"
                                                 value="{{ $distinctCondProds->join(', ') }}">
-                                            <input type="hidden" name="distinctquatiteMin"
-                                                value="{{ $distinctquatiteMin->join(', ') }}">
-                                            <input type="hidden" name="distinctquatiteMax"
-                                                value="{{ $distinctquatiteMax->join(', ') }}">
+                                            <input type="hidden" name="selectedItemin"
+                                                value="{{ $selectedItem->qteProd_min }}">
+                                            <input type="hidden" name="selectedItemax"
+                                                value="{{ $selectedItem->qteProd_max }} ">
                                             @foreach ($distinctUserIds as $userId)
                                                 <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                             @endforeach
@@ -405,6 +404,41 @@ if ($itemsWithMaxValue->count() > 1) {
                                 // Extraire les noms distincts et les user_id distincts
                                 $distinctNames = $group->pluck('name')->unique();
                                 $distinctTypes = $group->pluck('type')->unique();
+                                $distinctquatiteMin = $group->pluck('qteProd_min')->unique();
+
+                                // Récupérer la valeur minimale
+                                $minValue = $distinctquatiteMin->min();
+
+                                // Filtrer les éléments qui ont cette valeur minimale
+                                $itemsWithMinValue = $group->filter(function ($item) use ($minValue) {
+                                    return $item->qteProd_min == $minValue;
+                                });
+
+                                // Si plusieurs éléments ont la valeur minimale, appliquer un autre critère (par exemple, en fonction d'un champ `autre_critere`)
+if ($itemsWithMinValue->count() > 1) {
+    $selectedItem = $itemsWithMinValue->sortBy('created_at')->first(); // Trier par un autre critère et prendre le premier
+} else {
+    $selectedItem = $itemsWithMinValue->first(); // S'il n'y a qu'un seul élément avec la valeur minimale
+                                }
+
+                                // Vous pouvez maintenant utiliser $selectedItem comme résultat final
+                                $distinctquatiteMax = $group->pluck('qteProd_max')->unique();
+
+                                // Récupérer la valeur maximale
+                                $maxValue = $distinctquatiteMax->max();
+
+                                // Filtrer les éléments qui ont cette valeur maximale
+                                $itemsWithMaxValue = $group->filter(function ($item) use ($maxValue) {
+                                    return $item->qteProd_max == $maxValue;
+                                });
+
+                                // Si plusieurs éléments ont la valeur maximale, appliquer un autre critère (par exemple, en fonction d'un champ 'autre_critere')
+if ($itemsWithMaxValue->count() > 1) {
+    $selectedItem = $itemsWithMaxValue->sortByDesc('created_at')->first(); // Trier par un autre critère (ordre décroissant) et prendre le premier
+} else {
+    $selectedItem = $itemsWithMaxValue->first(); // S'il n'y a qu'un seul élément avec la valeur maximale
+                                }
+
                                 $distinctCondProds = $group->pluck('condProd')->unique();
                                 $distinctFormatProds = $group->pluck('formatProd')->unique();
                                 $distinctSpecifications = $group->pluck('specification')->unique();
@@ -464,6 +498,9 @@ if ($itemsWithMaxValue->count() > 1) {
                                                         {{ $distinctSpecifications->join(', ') }}</p>
                                                     <p><span class="font-medium text-gray-800">Particularité :</span>
                                                         {{ $distinctParticularites->join(', ') }}</p>
+                                                    <p><span class="font-medium text-gray-800">Quantité Traité :</span>
+                                                        [ {{ $selectedItem->qteProd_min }} -
+                                                        {{ $selectedItem->qteProd_max }} ]</p>
                                                 </div>
 
                                                 <!-- Bouton -->
@@ -486,6 +523,8 @@ if ($itemsWithMaxValue->count() > 1) {
                                         <input type="hidden" name="type" value="{{ $type }}">
                                         <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPrice }}">
                                         <input type="hidden" name="reference" value="{{ $reference }}">
+                                        <input type="hidden" name="selectedItemin" value="{{ $selectedItem->qteProd_min }}">
+                                        <input type="hidden" name="selectedItemax" value="{{ $selectedItem->qteProd_max }}">
                                         @foreach ($distinctUserIds as $userId)
                                             <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                         @endforeach

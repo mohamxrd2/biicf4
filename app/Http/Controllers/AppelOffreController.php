@@ -40,7 +40,7 @@ class AppelOffreController extends Controller
             ->where('user_id', '<>', $userId)
             ->orderBy('created_at', 'desc');
 
-        
+
 
         // Apply keyword filter
         if ($keyword) {
@@ -170,10 +170,7 @@ class AppelOffreController extends Controller
         // Log grouped user_ids by reference
         foreach ($filtered as $reference => $group) {
             $user_ids = $group->pluck('user_id')->unique();
-            // Log::info('User IDs grouped by reference', [
-            //     'reference' => $reference,
-            //     'user_ids' => $user_ids->toArray()
-            // ]);
+
         }
 
         // Proceed with using $filtered for further operations

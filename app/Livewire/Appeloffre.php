@@ -239,8 +239,8 @@ class Appeloffre extends Component
                 ]);
 
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated(Carbon::parse($this->time)->toIso8601String()));
-                $this->dispatch('OldestCommentUpdated', Carbon::parse($this->time)->toIso8601String());
+                broadcast(new OldestCommentUpdated($this->time));
+                $this->dispatch('OldestCommentUpdated', $this->time);
             }
 
             session()->flash('success', 'Commentaire créé avec succès!');

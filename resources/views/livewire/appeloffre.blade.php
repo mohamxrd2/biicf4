@@ -282,20 +282,16 @@
             document.addEventListener('alpine:init', () => {
                 Alpine.data('countdownTimer', (oldestCommentDate, serverTime) => ({
                     oldestCommentDate: oldestCommentDate ? new Date(oldestCommentDate) : null,
-                    serverTime: serverTime ? new Date(serverTime).getTime() :
-                    null, // Heure du serveur initiale
-                    localTimeAtLoad: Date.now(), // Temps local au moment du chargement
+                    serverTime: serverTime ? new Date(serverTime).getTime() : null,
                     hours: '--',
                     minutes: '--',
                     seconds: '--',
                     endDate: null,
                     interval: null,
-                    isCountdownActive: false, // Suivi de l'état du compte à rebours
-                    hasSubmitted: false, // Évite les soumissions multiples
+                    isCountdownActive: false,
+                    hasSubmitted: false,
 
                     init() {
-
-
                         if (this.oldestCommentDate) {
                             this.endDate = new Date(this.oldestCommentDate);
                             this.endDate.setMinutes(this.endDate.getMinutes() + 2);
@@ -314,7 +310,6 @@
                                         this.endDate = new Date(this.oldestCommentDate);
                                         this.endDate.setMinutes(this.endDate.getMinutes() + 2);
                                         this.startCountdown();
-                                        location.reload();
                                     } else {
                                         console.log('Le compte à rebours est déjà à jour.');
                                     }
@@ -344,15 +339,19 @@
                     },
 
                     updateCountdown() {
-                        const serverTime = this.serverTime; // Heure du serveur initiale
-                        const elapsedTime = Date.now() - this
-                            .localTimeAtLoad; // Temps écoulé depuis le chargement
-                        const currentDate = new Date(serverTime); // Heure actuelle basée sur le serveur
+                        if (!this.serverTime) {
+                            console.error('L\'heure du serveur est manquante.');
+                            clearInterval(this.interval);
+                            return;
+                        }
+
+                        const currentDate = new Date(this
+                            .serverTime); // Utilisation directe de l'heure serveur
+                        this.serverTime += 1000; // Incrémente l'heure serveur chaque seconde simulée
 
                         const difference = this.endDate.getTime() - currentDate.getTime();
-                        console.log('Initialisation du elapsedTime', elapsedTime);
-                        console.log('Initialisation du currentDate', currentDate);
-                        console.log('Initialisation du difference', difference);
+                        console.log('Heure serveur actuelle', currentDate);
+                        console.log('Différence temporelle', difference);
 
                         if (difference <= 0) {
                             clearInterval(this.interval);
@@ -371,13 +370,14 @@
                         if (!this.hasSubmitted) {
                             setTimeout(() => {
                                 Livewire.dispatch('compteReboursFini');
-                                this.hasSubmitted = true; // Empêcher la soumission multiple
+                                this.hasSubmitted = true;
                             }, 100);
                         }
                     },
                 }));
             });
         </script>
+
 
 
     </div>

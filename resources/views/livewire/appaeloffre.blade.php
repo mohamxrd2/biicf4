@@ -1,10 +1,6 @@
 <div>
     <form wire:submit.prevent>
-        @if ($errors->has('formError'))
-            <div class="text-red-600">
-                {{ $errors->first('formError') }}
-            </div>
-        @endif
+
         <div x-data="{ selectedOption: @entangle('selectedOption'), quantité: 1, localite: '' }">
 
             <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
@@ -372,6 +368,14 @@
                             </dl>
                         </div>
                     </div>
+
+                    <!-- Afficher les messages d'erreur -->
+                    @if (session()->has('success'))
+                        <div class="bg-red-500 text-white p-2 mt-2 rounded-md">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
                     <p class="bg-gray-100 sm:col-span-2 w-full text-gray-700 p-4 rounded-md shadow-md">
                         En soumettant ce formulaire, je certifie que les informations fournies sont exactes et
                         complètes.
@@ -383,7 +387,7 @@
                         <!-- Bouton pour l'envoi direct -->
                         <button type="button" id="submitEnvoie"
                             class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                            wire:click="submitEnvoie" wire:loading.attr="disabled" >
+                            wire:click="submitEnvoie" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -430,7 +434,6 @@
             </div>
         </div>
     </form>
-
     <script>
         function togglePeriodSelect() {
             const timeInput = document.getElementById('timePickerStart');
@@ -501,22 +504,18 @@
             const location = document.getElementById('location');
             const userBalance = {{ $wallet->balance }};
 
-
-
-
             // Vérification de la quantité
-            if (!hasError && (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity)) {
+            if ((isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity)) {
                 errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
                 errorMessageElement.classList.remove('hidden');
                 montantTotalElement.innerText = '0 FCFA';
                 submitButton.disabled = true;
                 montantTotalInput.value = 0; // Réinitialise le montant total
                 requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit
-                hasError = true;
             }
 
             // Vérification du solde utilisateur
-            if (!hasError && montantTotal > userBalance) {
+            if (montantTotal > userBalance) {
                 errorMessageElement.innerText =
                     `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
                 errorMessageElement.classList.remove('hidden');
@@ -524,21 +523,9 @@
                 submitButton.disabled = true;
                 requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
             }
-
-
-            // Vérification si le champ "location" est vide
-            if (!hasError && !location.value.trim()) {
-                errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
-                errorMessageElement.classList.remove('hidden');
-                montantTotalElement.innerText = '0 FCFA'; // Réinitialise le montant affiché
-                submitButton.disabled = true;
-                montantTotalInput.value = 0; // Met à jour l'input montant_total_input
-                requestCreditButton.classList.add('hidden'); // Masque le bouton de crédit
-                hasError = true;
-            }
-
+         
             // Si aucune erreur n'a été détectée, afficher le montant total et activer le bouton de soumission
-            if (!hasError && montantTotal <= userBalance) {
+            if (montantTotal <= userBalance) {
                 errorMessageElement.classList.add('hidden');
                 montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
                 submitButton.disabled = false;
