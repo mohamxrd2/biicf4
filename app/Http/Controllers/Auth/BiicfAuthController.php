@@ -44,7 +44,7 @@ class BiicfAuthController extends Controller
             }
         } elseif ($user && !$user->email_verified_at) {
             return back()->withErrors([
-                'error' => 'Veuillez vérifier votre adresse e-mail !',
+                'error' => 'Veuillez vérifier votre numero de telephone !',
             ])->withInput($request->only('login', 'remember_me'));
         } else {
             return back()->withErrors([

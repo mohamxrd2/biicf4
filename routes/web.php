@@ -222,8 +222,6 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
         return view('finance.wallet');
     })->name('finance.wallet');
 
-
-
     Route::get('finance/projet', function () {
         return view('finance.projet');
     })->name('finance.projet');
@@ -255,5 +253,7 @@ Route::post('biicf/signup', [UserController::class, 'createUserBiicf']);
 
 Route::get('biicf/verify-phone', [UserController::class, 'showPhoneVerificationForm'])->name('verify.phone');
 Route::post('biicf/verify-phone', [UserController::class, 'verifyPhoneCode'])->name('verify.phone.code');
+Route::get('resend-otp', [UserController::class, 'resendOtp'])->name('resend.otp');
+
 
 Route::post('biicf/logout', [BiicfAuthController::class, 'logout'])->name('biicf.logout');
