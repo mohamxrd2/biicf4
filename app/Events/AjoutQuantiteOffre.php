@@ -14,11 +14,14 @@ class AjoutQuantiteOffre implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $quantite;
 
-    public function __construct($quantite)
+    public $quantite;
+    public $codeUnique;
+
+    public function __construct($quantite, $codeUnique)
     {
         $this->quantite = $quantite;
+        $this->codeUnique = $codeUnique;
     }
 
     public function broadcastOn()
@@ -26,8 +29,11 @@ class AjoutQuantiteOffre implements ShouldBroadcast
         return new Channel('quantite-channel');
     }
 
-    public function broadcastAs()
+    public function broadcastWith()
     {
-        return 'ajout-quantite-offre';
+        return [
+            'quantite' => $this->quantite,
+            'codeUnique' => $this->codeUnique,
+        ];
     }
 }

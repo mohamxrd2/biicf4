@@ -53,7 +53,7 @@
                 </div>
             </div>
 
-            <div x-data="{ isOpen: false }" x-cloak>
+            <div x-data="{ isOpen: @entangle('isOpen') }" x-cloak>
                 @if (!$OffreGroupe->count)
                     <!-- Button to open modal -->
                     <button @click="isOpen = true"
@@ -150,7 +150,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Scripts -->
         <script>
             document.addEventListener('alpine:init', () => {

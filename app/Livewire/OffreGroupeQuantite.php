@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class OffreGroupeQuantite extends Component
@@ -31,6 +32,7 @@ class OffreGroupeQuantite extends Component
     public $quantite;
     public $oldestComment;
     public $oldestCommentDate;
+    public $isOpen;
     public $groupages = []; // Liste des groupages existants
 
     public $time;
@@ -54,48 +56,9 @@ class OffreGroupeQuantite extends Component
             // Récupération de la notification
             $this->notification = DatabaseNotification::findOrFail($id);
 
-            $this->OffreGroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
-            // Récupérer le produit lié à la notification
-            $this->produit = ProduitService::find($this->notification->data['idProd']);
-            if (!$this->produit) {
-                abort(404, 'Produit non trouvé.');
-            }
-
-            // Récupérer le commentaire le plus ancien
-            $this->oldestComment = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])
-                ->orderBy('created_at', 'asc')
-                ->first();
-
-            // Compter les participants distincts
-            $this->participants = userquantites::where('code_unique', $this->notification->data['code_unique'])
-                ->distinct('user_id')
-                ->count('user_id');
-
-            // Somme des quantités
-            $this->quantiteTotale = userquantites::where('code_unique', $this->notification->data['code_unique'])
-                ->sum('quantite');
-
-            // Participant le plus ancien
-            $this->premierFournisseur = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])
-                ->orderBy('created_at', 'asc')
-                ->first();
-
-            // Charger les groupages
-            $this->groupages = userquantites::with('user')
-                ->where('code_unique', $this->notification->data['code_unique'])
-                ->orderBy('created_at', 'asc')
-                ->get();
-
-            // Vérifier si l'utilisateur a déjà soumis une quantité
-            $this->existingQuantite = userquantites::where('code_unique', $this->notification->data['code_unique'])
-                ->where('user_id', Auth::id())
-                ->first();
-
-            // Format de la date du commentaire le plus ancien
-            $this->oldestCommentDate = $this->oldestComment
-                ? Carbon::parse($this->oldestComment->created_at)->toIso8601String()
-                : null;
-
+            $this->fetchOffreGroupe();
+            $this->fetchProduit();
+            $this->initializeGroupageData();
         } catch (Exception $e) {
             Log::error('Erreur dans mount', ['error' => $e->getMessage()]);
             session()->flash('error', 'Erreur lors du chargement des données.');
@@ -103,7 +66,59 @@ class OffreGroupeQuantite extends Component
         }
     }
 
-    protected $listeners = ['compteReboursFini'];
+    private function fetchOffreGroupe()
+    {
+        $codeUnique = $this->notification->data['code_unique'];
+        $this->OffreGroupe = OffreGroupe::where('code_unique', $codeUnique)->first();
+    }
+
+    private function fetchProduit()
+    {
+        $this->produit = ProduitService::find($this->notification->data['idProd']);
+
+        if (!$this->produit) {
+            abort(404, 'Produit non trouvé.');
+        }
+    }
+
+    private function initializeGroupageData()
+    {
+        $codeUnique = $this->notification->data['code_unique'];
+
+        $this->oldestComment = OffreGroupe::where('code_unique', $codeUnique)
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        $this->oldestCommentDate = $this->oldestComment
+            ? Carbon::parse($this->oldestComment->created_at)->toIso8601String()
+            : null;
+
+        $this->reloadGroupages($codeUnique);
+    }
+
+    private function reloadGroupages($codeUnique)
+    {
+        $this->groupages = userquantites::with('user')
+            ->where('code_unique', $codeUnique)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $this->participants = userquantites::where('code_unique', $codeUnique)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $this->quantiteTotale = userquantites::where('code_unique', $codeUnique)
+            ->sum('quantite');
+
+        $this->existingQuantite = userquantites::where('code_unique', $codeUnique)
+            ->where('user_id', Auth::id())
+            ->first();
+    }
+
+    // Ajouter un écouteur d'événements dans Livewire
+    protected $listeners = [
+        'compteReboursFini', // Cet événement appellera une méthode `compteReboursFini`
+    ];
     public function compteReboursFini()
     {
         try {
@@ -120,6 +135,19 @@ class OffreGroupeQuantite extends Component
             Log::error('Erreur lors de la fin du compte à rebours.', ['error' => $e->getMessage()]);
             session()->flash('error', 'Erreur lors de la fin du compte à rebours.');
         }
+    }
+
+    #[On('echo:quantite-channel,AjoutQuantiteOffre')]
+    public function actualiserDonnees($quantiteAjoutee, $codeUnique = null)
+    {
+        if (!$codeUnique) {
+            Log::error('Code unique non fourni lors de la mise à jour.');
+            return;
+        }
+
+        $this->quantiteTotale += $quantiteAjoutee;
+
+        $this->reloadGroupages($codeUnique);
     }
 
     public function storeoffre()
@@ -156,22 +184,13 @@ class OffreGroupeQuantite extends Component
             // Mise à jour des données locales
             $this->quantiteTotale += $validatedData['quantite'];
 
-            // Rechargement des groupages
-            $this->groupages = OffreGroupe::with('user')
-                ->where('code_unique', $codeUnique)
-                ->orderBy('created_at', 'asc')
-                ->get();
+            $this->reloadGroupages($codeUnique);
 
-            // Mise à jour des participants distincts
-            $this->participants = OffreGroupe::where('code_unique', $codeUnique)
-                ->distinct('user_id')
-                ->count('user_id');
+            // Diffusion de l'événement Laravel
+            broadcast(new AjoutQuantiteOffre($validatedData['quantite'], $codeUnique));
 
-            // Réinitialisation des champs du formulaire
-            $this->reset('quantite');
-
-            // Message de succès
-            session()->flash('success', 'Quantité ajoutée avec succès.');
+            $this->reset('quantite', 'localite');
+            $this->isOpen = false;
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'ajout de la quantité.', ['error' => $e->getMessage()]);
             session()->flash('error', 'Erreur lors de l\'ajout de la quantité.');
