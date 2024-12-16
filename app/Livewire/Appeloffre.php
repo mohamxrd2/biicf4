@@ -53,7 +53,7 @@ class Appeloffre extends Component
     public $code_unique;
     public $ServerTime;
 
-  
+
     public $time;
     public $timentp;
 
@@ -226,7 +226,7 @@ class Appeloffre extends Component
                 ->first();
 
             if (!$existingCountdown) {
-                $countdown = Countdown::create([
+                Countdown::create([
                     'user_id' => $this->id_trader,
                     'userSender' => null,
                     'start_time' => Carbon::parse($this->timentp),

@@ -8,6 +8,7 @@ use App\Models\AchatDirect;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
+use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -35,9 +36,23 @@ class LivraisonAchatdirect extends Component
     public $commentCount;
     public $produit, $nombreParticipants, $achatdirect;
     public $Valuecode_unique;
+    public $time;
+    public $error;
+
+    protected $recuperationTimer;
+
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
 
     public function mount($id)
     {
+        // Récupération de l'heure via le service
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
+
         // Récupérer la notification par son ID ou échouer
         $this->notification = DatabaseNotification::findOrFail($id);
 
@@ -152,14 +167,14 @@ class LivraisonAchatdirect extends Component
                 Countdown::create([
                     'user_id' => Auth::id(),
                     'userSender' => $this->achatdirect->userSender,
-                    'start_time' => now(),
+                    'start_time' => Carbon::parse($this->time),
                     'difference' => 'ad',
                     'code_unique' => $this->Valuecode_unique,
                     'id_achat' => $this->achatdirect->id,
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated(now()->toIso8601String()));
-                $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
+                broadcast(new OldestCommentUpdated($this->time));
+                $this->dispatch('OldestCommentUpdated', $this->time);
             }
 
             // Committer la transaction

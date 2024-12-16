@@ -32,12 +32,12 @@ class Mainleveclient extends Component
     public $appeloffre;
     public $livreur;
     public $fournisseurWallet;
+
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
         $this->livreur = User::find($this->notification->data['livreur']);
-
     }
 
     public function getCodeVerifProperty()
@@ -93,7 +93,7 @@ class Mainleveclient extends Component
             $interetFournisseur = ($valeurGelement - $prixTrade) * 0.01;
             $montantPourFournisseur = ($valeurGelement - $prixTrade) - $interetFournisseur;
 
-            $montantClient = $prixTrade +
+            // $montantClient = $prixTrade +
             $interetLivreur = $prixTrade * 0.01;
             $montantPourLivreur = $prixTrade - $interetLivreur;
 
@@ -127,7 +127,6 @@ class Mainleveclient extends Component
             // Création des transactions
             $this->createTransactionNew(Auth::user()->id, $fournisseurId, 'Réception', 'COC', $montantPourFournisseur, $this->generateIntegerReference(), 'Réception pour achat.');
             $this->createTransactionNew(Auth::user()->id, $livreurId, 'Réception', 'COC', $montantPourLivreur, $this->generateIntegerReference(), 'Réception pour livraison.');
-
             $this->createTransactionNew(Auth::user()->id, $fournisseurId, 'Envoie', 'COC', $valeurGelement, $this->generateIntegerReference(), 'Paiement pour achat.');
 
             // Gestion des commissions
@@ -227,7 +226,6 @@ class Mainleveclient extends Component
     }
 
     public function refuseColis()
-
     {
 
         $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];

@@ -65,7 +65,7 @@
                             <label class="flex items-center block mb-2 space-x-2 text-sm font-medium text-gray-700">
                                 Référence (
                                 <span>Générer</span>
-                                <input wire:click="toggleGenerateReference" type="checkbox" :disabled="locked" 
+                                <input wire:click="toggleGenerateReference" type="checkbox" :disabled="locked"
                                     class="w-4 h-4 border border-gray-300 rounded-md" />
                                 )<span class="text-red-500 10px">*</span>
                             </label>
@@ -184,7 +184,7 @@
                                 @enderror
 
                             </div>
-                           
+
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-700">Prix<span
                                         class="text-red-500 10px">*</span></label>
@@ -262,87 +262,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Localisation (commune aux deux types) -->
-                    {{-- <h1 class="mb-8 text-xl font-bold text-center">Localisation Du Produit & Service</h1>
-                    <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
-
-                        <div class="col-span-1">
-                            <label for="continent" class="block mb-2 text-sm font-medium text-gray-700">Continent<span
-                                    class="text-red-500 10px">*</span></label>
-                            <select id="continent" name="continent" wire:model='selectedContinent'
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                                <option value="">Sélectionnez un continent</option>
-                                @foreach ($continents as $continent)
-                                    <option value="{{ $continent }}">{{ $continent }}</option>
-                                @endforeach
-                            </select>
-                            @error('continent')
-                                <span class="text-sm text-red-500">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="col-span-1">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Sous-Régions<span
-                                    class="text-red-500 10px">*</span></label>
-
-                            <select id="continent" name="continent" wire:model='selectedSous_region'
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                                <option value="">Sélectionnez un continent</option>
-                                @foreach ($sousregions as $sousregion)
-                                    <option value="{{ $sousregion }}">{{ $sousregion }}</option>
-                                @endforeach
-                            </select>
-                            @error('sous_region')
-                                <span class="text-sm text-red-500">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-
-                        <div x-data="{ selectedCountry: @entangle('pays') }" class="col-span-1">
-                            <label for="country" class="block mb-2 text-sm font-semibold text-gray-800">Pays<span
-                                    class="text-red-500 10px">*</span></label>
-                            <select id="country" x-model="selectedCountry" wire:model="pays"
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <option value="" disabled selected>Choisissez un pays</option>
-                                <template x-for="country in @js($countries)" :key="country">
-                                    <option :value="country" x-text="country"></option>
-                                </template>
-                            </select>
-                            @error('pays')
-                                <span class="mt-1 text-sm text-red-500">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="col-span-1">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Département<span
-                                    class="text-red-500 10px">*</span></label>
-                            <input type="text" wire:model='depart'
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                            @error('depart')
-                                <span class="text-sm text-red-500">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="col-span-1">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Ville/Sous-Prefecture<span
-                                    class="text-red-500 10px">*</span></label>
-                            <input type="text" wire:model='ville'
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                            @error('ville')
-                                <span class="text-sm text-red-500">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="col-span-1">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Localité<span
-                                    class="text-red-500 10px">*</span></label>
-                            <input type="text" wire:model='commune'
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                            @error('commune')
-                                <span class="text-sm text-red-500">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div> --}}
 
                     <!-- Images -->
                     <h1 class="mb-8 text-xl font-bold text-center">Ajout D'Images</h1>
@@ -350,17 +269,14 @@
                         <!-- Image 1 -->
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-700">
-                                Image 1<span class="ml-1 text-red-500">*</span>
+                                Image 1 <span class="ml-1 text-red-500">*</span>
                             </label>
-                            <input type="file" wire:model="photoProd1" 
+                            <input type="file" wire:model="photoProd1"
                                 class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('photoProd1')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
-                            @if ($photoProd1 && is_object($photoProd1))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ $photoProd1->temporaryUrl() }}">
-                            @elseif ($photoProd1 && is_string($photoProd1))
+                            @if ($photoProd1 && is_string($photoProd1))
                                 <img class="object-cover w-full h-48 mt-5 rounded"
                                     src="{{ asset('post/all/' . $photoProd1) }}">
                                 <input type="hidden" name="photo1" value="{{ $photoProd1 }}">
@@ -369,16 +285,15 @@
 
                         <!-- Image 2 -->
                         <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 2<span class="ml-1 text-red-500">*</span></label>
-                            <input type="file" wire:model="photoProd2" 
+                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 2<span
+                                    class="ml-1 text-red-500">*</span></label>
+                            <input type="file" wire:model="photoProd2"
                                 class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('photoProd2')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
-                            @if ($photoProd2 && is_object($photoProd2))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ $photoProd2->temporaryUrl() }}">
-                            @elseif ($photoProd2 && is_string($photoProd2))
+
+                            @if ($photoProd2 && is_string($photoProd2))
                                 <img class="object-cover w-full h-48 mt-5 rounded"
                                     src="{{ asset('post/all/' . $photoProd2) }}">
                                 <input type="hidden" name="photo2" value="{{ $photoProd2 }}">
@@ -387,16 +302,14 @@
 
                         <!-- Image 3 -->
                         <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 3<span class="ml-1 text-red-500">*</span></label>
-                            <input type="file" wire:model="photoProd3" 
+                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 3<span
+                                    class="ml-1 text-red-500">*</span></label>
+                            <input type="file" wire:model="photoProd3"
                                 class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('photoProd3')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
-                            @if ($photoProd3 && is_object($photoProd3))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ $photoProd3->temporaryUrl() }}">
-                            @elseif ($photoProd3 && is_string($photoProd3))
+                            @if ($photoProd3 && is_string($photoProd3))
                                 <img class="object-cover w-full h-48 mt-5 rounded"
                                     src="{{ asset('post/all/' . $photoProd3) }}">
                                 <input type="hidden" name="photo3" value="{{ $photoProd3 }}">
@@ -405,16 +318,14 @@
 
                         <!-- Image 4 -->
                         <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 4<span class="ml-1 text-red-500">*</span></label>
-                            <input type="file" wire:model="photoProd4" 
+                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 4<span
+                                    class="ml-1 text-red-500">*</span></label>
+                            <input type="file" wire:model="photoProd4"
                                 class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('photoProd4')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
-                            @if ($photoProd4 && is_object($photoProd4))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ $photoProd4->temporaryUrl() }}">
-                            @elseif ($photoProd4 && is_string($photoProd4))
+                            @if ($photoProd4 && is_string($photoProd4))
                                 <img class="object-cover w-full h-48 mt-5 rounded"
                                     src="{{ asset('post/all/' . $photoProd4) }}">
                                 <input type="hidden" name="photo4" value="{{ $photoProd4 }}">

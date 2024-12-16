@@ -102,9 +102,7 @@ class AjoutProduitServices extends Component
         // Récupère toutes les catégories
         $this->categories = CategorieProduits_Servives::all();
         $this->produits = collect(); // Ensure it's an empty Collection
-        $this->fetchCountries();
         $this->user = User::find(auth()->id());
-
     }
     public function updatedSearchTerm()
     {
@@ -113,18 +111,6 @@ class AjoutProduitServices extends Component
             ->get();
     }
 
-
-
-    public function fetchCountries()
-    {
-        try {
-            $response = Http::get('https://restcountries.com/v3.1/all');
-            $this->countries = collect($response->json())->pluck('name.common')->toArray();
-        } catch (\Exception $e) {
-            // Handle the error (e.g., log it, show an error message)
-            $this->countries = [];
-        }
-    }
     public function updateProducts(array $selectedCategories)
     {
         $this->selectedCategories = $selectedCategories;
@@ -213,6 +199,7 @@ class AjoutProduitServices extends Component
     }
     public function submit()
     {
+
         $this->validate([
             'categorie' => 'required|string',
             'type' => 'required|string|in:Produit,Service',
@@ -236,10 +223,10 @@ class AjoutProduitServices extends Component
             //
 
             //photo
-            'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
-            'photoProd2' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
-            'photoProd3' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
-            'photoProd4' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd1' => $this->photoProd1 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd2' => $this->photoProd2 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd3' => $this->photoProd3 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd4' => $this->photoProd4 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
@@ -267,7 +254,6 @@ class AjoutProduitServices extends Component
             'photoProd4.dimensions' => 'La quatrième photo doit avoir des dimensions d\'au moins 500x400 pixels.',
         ]);
 
-        // 'photoProd1' => 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=100,min_height=200,max_width=1000,max_height=1000',
 
         try {
             // Création de la catégorie si elle n'existe pas encore
@@ -296,11 +282,12 @@ class AjoutProduitServices extends Component
                 'sepServ' => $this->type === 'Service' ? $this->specialite : null,
                 'description' => $this->type === 'Service' ? $this->descrip : null,
                 'quantite' => $this->type === 'Service' ? $this->Quantite : null,
-                //localisation
 
                 'user_id' => auth()->id(),
                 'categorie_id' => $categorie->id ?? null,
             ]);
+
+
 
             // Gestion des photos
 
@@ -318,6 +305,7 @@ class AjoutProduitServices extends Component
             $this->handlePhotoUpload($produitService, 'photoProd4');
 
             session()->flash('message', 'Produit ou service ajouté avec succès!');
+            $this->dispatch('formSubmitted', 'Enregistrement du produit effectué avec success');
 
             $this->resetForm(); // Réinitialise le formulaire après la soumission
 

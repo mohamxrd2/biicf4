@@ -242,9 +242,6 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
 });
 
 
-
-
-
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');
 Route::post('biicf/login', [BiicfAuthController::class, 'login']);
 

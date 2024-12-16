@@ -87,7 +87,6 @@ class Enchere extends Component
         }
     }
     protected $listeners = ['compteReboursFini'];
-
     public function compteReboursFini()
     {
         // Mettre à jour l'attribut 'finish' du demandeCredit
@@ -99,6 +98,7 @@ class Enchere extends Component
             )
         ]);
     }
+    
     public function commentoffgroup()
     {
         // Valider les données

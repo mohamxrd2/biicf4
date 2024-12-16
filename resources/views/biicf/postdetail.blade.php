@@ -234,7 +234,7 @@
     <section class="mt-5">
         @livewire('demandecredit')
     </section>
-y
+
     <div id="hs-delete-{{ $produit->id }}"
         class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto">
         <div
