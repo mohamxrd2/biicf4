@@ -9,6 +9,9 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\Livraisons; // Correctly importing the Livraisons model
+use App\Models\User;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class PostulerComponent extends Component
 {
@@ -37,36 +40,8 @@ class PostulerComponent extends Component
         'Europe',
         'Océanie'
     ];
-    public $selectedSous_region;
-    public $sousregions = [
-        'Afrique du Nord',
-        'Afrique de l\'Ouest',
-        'Afrique Centrale',
-        'Afrique de l\'Est',
-        'Afrique Australe',
-        'Amérique du Nord',
-        'Amérique Centrale',
-        'Amérique du Sud',
-        'Caraïbes',
-        'Asie de l\'Est',
-        'Asie du Sud',
-        'Asie du Sud-Est',
-        'Asie Centrale',
-        'Asie de l\'Ouest',
-        'Europe de l\'Est',
-        'Europe de l\'Ouest',
-        'Europe du Nord',
-        'Europe du Sud',
-        'Australie et Nouvelle-Zélande',
-        'Mélanésie',
-        'Polynésie',
-        'Micronésie'
-    ];
-    public $depart = '';
-    public $pays;
-    public $ville = '';
+
     public $localite;
-    public $countries = [];
 
     public $psap;
 
@@ -75,28 +50,96 @@ class PostulerComponent extends Component
         $this->livraison = Livraisons::where('user_id', Auth::id())->first();
 
         $this->psap = Psap::where('user_id', Auth::id())->first();
-        
-        $this->fetchCountries();
     }
 
-    public function fetchCountries()
-    {
-        try {
-            $response = Http::get('https://restcountries.com/v3.1/all');
-            $this->countries = collect($response->json())->pluck('name.common')->toArray();
-        } catch (\Exception $e) {
-            // Handle the error (e.g., log it, show an error message)
-            $this->countries = [];
-        }
-    }
+
     public function submit()
     {
+        try {
+            // Valider les champs du formulaire
+            $validatedData = $this->validate([
+                'experience' => 'required|string',
+                'vehicle' => 'required|string',
+                'vehicle2' => 'nullable|string',
+                'vehicle3' => 'nullable|string',
+                'zone' => 'required|string',
+                'identity' => 'required|file|mimes:jpeg,png,pdf|max:2048', // Limite la taille du fichier à 2MB
+                'permis' => 'required|file|mimes:jpeg,png,pdf|max:2048',
+                'assurance' => 'required|file|mimes:jpeg,png,pdf|max:2048',
+            ]);
+
+            // Récupérer l'utilisateur connecté
+            $user = Auth::user();
+
+            if (!$user) {
+                session()->flash('error', 'Utilisateur non authentifié.');
+                return;
+            }
+
+            // Créer une nouvelle instance de Livraisons
+            $livraison = new Livraisons();
+
+            // Assigner les valeurs de l'utilisateur connecté
+            $livraison->user_id = $user->id;
+            $livraison->continent = $user->continent;
+            $livraison->sous_region = $user->sous_region;
+            $livraison->pays = $user->country;
+            $livraison->departe = $user->departe;
+            $livraison->ville = $user->ville;
+            $livraison->commune = $user->commune;
+
+            // Assigner les données du formulaire
+            $livraison->experience = $validatedData['experience'];
+            $livraison->vehicle = $validatedData['vehicle'];
+            $livraison->vehicle2 = $validatedData['vehicle2'];
+            $livraison->vehicle3 = $validatedData['vehicle3'];
+            $livraison->zone = $validatedData['zone'];
+            $livraison->etat = $this->etat ?? null; // Assurez-vous que "etat" est facultatif
+            $livraison->pays = $this->pays ?? null;
+
+            // Sauvegarder la livraison
+            $livraison->save();
+
+            // Gestion des uploads de fichiers
+            $this->handlePhotoUpload($livraison, 'identity');
+            $this->handlePhotoUpload($livraison, 'permis');
+            $this->handlePhotoUpload($livraison, 'assurance');
+
+            // Message de succès
+            session()->flash('message', 'Votre demande a été soumise avec succès!');
+
+            // Réinitialiser les champs du formulaire
+            $this->reset([
+                'experience',
+                'vehicle',
+                'vehicle2',
+                'vehicle3',
+                'identity',
+                'permis',
+                'assurance'
+            ]);
+
+            $this->dispatch('formSubmitted', 'Enregistrement effectué avec success');
+            // actuliser la page
+            $this->livraison = Livraisons::where('user_id', Auth::id())->first();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Gérer les erreurs de validation
+            session()->flash('error', 'Veuillez corriger les erreurs ci-dessous.');
+            $this->addError('validation', $e->getMessage());
+        } catch (Exception $e) {
+            // Gérer d'autres erreurs
+            session()->flash('error', 'Une erreur est survenue lors du traitement de votre demande.');
+            // Log de l'erreur pour débogage
+            Log::error('Erreur lors de la soumission : ' . $e->getMessage());
+        }
+    }
+
+
+    public function submitPsap()
+    {
+        // Validation avec messages d'erreur personnalisés
         $this->validate([
             'experience' => 'required|string',
-            'vehicle' => 'required|string',
-            'vehicle2' => 'nullable|string',
-            'vehicle3' => 'nullable|string',
-            'zone' => 'required|string',
             'selectedContinent' => 'required|string',
             'selectedSous_region' => 'required|string',
             'pays' => 'required|string',
@@ -106,37 +149,57 @@ class PostulerComponent extends Component
             'identity' => 'required|file|mimes:jpeg,png,pdf',
             'permis' => 'required|file|mimes:jpeg,png,pdf',
             'assurance' => 'required|file|mimes:jpeg,png,pdf',
+        ], [
+            'experience.required' => 'Le champ expérience est obligatoire.',
+            'experience.string' => 'Le champ expérience doit être une chaîne de caractères.',
+            'selectedContinent.required' => 'Le champ continent est obligatoire.',
+            'selectedContinent.string' => 'Le champ continent doit être une chaîne de caractères.',
+            'selectedSous_region.required' => 'Le champ sous-région est obligatoire.',
+            'selectedSous_region.string' => 'Le champ sous-région doit être une chaîne de caractères.',
+            'pays.required' => 'Le champ pays est obligatoire.',
+            'pays.string' => 'Le champ pays doit être une chaîne de caractères.',
+            'depart.required' => 'Le champ département est obligatoire.',
+            'depart.string' => 'Le champ département doit être une chaîne de caractères.',
+            'ville.required' => 'Le champ ville est obligatoire.',
+            'ville.string' => 'Le champ ville doit être une chaîne de caractères.',
+            'localite.required' => 'Le champ localité est obligatoire.',
+            'localite.string' => 'Le champ localité doit être une chaîne de caractères.',
+            'identity.required' => 'Le fichier d\'identité est obligatoire.',
+            'identity.file' => 'Le champ identité doit être un fichier.',
+            'identity.mimes' => 'Le fichier d\'identité doit être au format jpeg, png ou pdf.',
+            'permis.required' => 'Le fichier de permis est obligatoire.',
+            'permis.file' => 'Le champ permis doit être un fichier.',
+            'permis.mimes' => 'Le fichier de permis doit être au format jpeg, png ou pdf.',
+            'assurance.required' => 'Le fichier d\'assurance est obligatoire.',
+            'assurance.file' => 'Le champ assurance doit être un fichier.',
+            'assurance.mimes' => 'Le fichier d\'assurance doit être au format jpeg, png ou pdf.',
         ]);
 
-        $livraison = new Livraisons();
-        $livraison->user_id = Auth::id();
-        $livraison->experience = $this->experience;
-        $livraison->vehicle = $this->vehicle;
-        $livraison->vehicle2 = $this->vehicle2;
-        $livraison->vehicle3 = $this->vehicle3;
-        $livraison->zone = $this->zone;
-        $livraison->continent = $this->selectedContinent;
-        $livraison->sous_region = $this->selectedSous_region;
-        $livraison->departe = $this->depart;
-        $livraison->ville = $this->ville;
-        $livraison->commune = $this->localite;
-        $livraison->etat = $this->etat;
-        $livraison->pays = $this->pays;
+        // Création du modèle PSAP
+        $psap = new Psap();
+        $psap->user_id = Auth::id();
+        $psap->experience = $this->experience;
+        $psap->continent = $this->selectedContinent;
+        $psap->sous_region = $this->selectedSous_region;
+        $psap->depart = $this->depart;
+        $psap->ville = $this->ville;
+        $psap->localite = $this->localite;
+        $psap->pays = $this->pays;
+        $psap->etat = "En cours";
 
-        $livraison->save();
 
+        $psap->save();
 
         // Gestion des photos
-        $this->handlePhotoUpload($livraison, 'identity');
-        $this->handlePhotoUpload($livraison, 'permis');
-        $this->handlePhotoUpload($livraison, 'assurance');
+        $this->handlePhotoUpload($psap, 'identity');
+        $this->handlePhotoUpload($psap, 'permis');
+        $this->handlePhotoUpload($psap, 'assurance');
 
-        session()->flash('message', 'Votre demande a été soumise avec succès!');
+        session()->flash('message', 'PSAP ajouté avec succès!');
 
-        // Clear form fields after submission
+        // Réinitialiser les champs du formulaire
         $this->reset([
             'experience',
-            'vehicle',
             'selectedContinent',
             'selectedSous_region',
             'pays',
@@ -148,83 +211,6 @@ class PostulerComponent extends Component
             'assurance'
         ]);
     }
-
-    public function submitPsap()
-{
-    // Validation avec messages d'erreur personnalisés
-    $this->validate([
-        'experience' => 'required|string',
-        'selectedContinent' => 'required|string',
-        'selectedSous_region' => 'required|string',
-        'pays' => 'required|string',
-        'depart' => 'required|string',
-        'ville' => 'required|string',
-        'localite' => 'required|string',
-        'identity' => 'required|file|mimes:jpeg,png,pdf',
-        'permis' => 'required|file|mimes:jpeg,png,pdf',
-        'assurance' => 'required|file|mimes:jpeg,png,pdf',
-    ], [
-        'experience.required' => 'Le champ expérience est obligatoire.',
-        'experience.string' => 'Le champ expérience doit être une chaîne de caractères.',
-        'selectedContinent.required' => 'Le champ continent est obligatoire.',
-        'selectedContinent.string' => 'Le champ continent doit être une chaîne de caractères.',
-        'selectedSous_region.required' => 'Le champ sous-région est obligatoire.',
-        'selectedSous_region.string' => 'Le champ sous-région doit être une chaîne de caractères.',
-        'pays.required' => 'Le champ pays est obligatoire.',
-        'pays.string' => 'Le champ pays doit être une chaîne de caractères.',
-        'depart.required' => 'Le champ département est obligatoire.',
-        'depart.string' => 'Le champ département doit être une chaîne de caractères.',
-        'ville.required' => 'Le champ ville est obligatoire.',
-        'ville.string' => 'Le champ ville doit être une chaîne de caractères.',
-        'localite.required' => 'Le champ localité est obligatoire.',
-        'localite.string' => 'Le champ localité doit être une chaîne de caractères.',
-        'identity.required' => 'Le fichier d\'identité est obligatoire.',
-        'identity.file' => 'Le champ identité doit être un fichier.',
-        'identity.mimes' => 'Le fichier d\'identité doit être au format jpeg, png ou pdf.',
-        'permis.required' => 'Le fichier de permis est obligatoire.',
-        'permis.file' => 'Le champ permis doit être un fichier.',
-        'permis.mimes' => 'Le fichier de permis doit être au format jpeg, png ou pdf.',
-        'assurance.required' => 'Le fichier d\'assurance est obligatoire.',
-        'assurance.file' => 'Le champ assurance doit être un fichier.',
-        'assurance.mimes' => 'Le fichier d\'assurance doit être au format jpeg, png ou pdf.',
-    ]);
-
-    // Création du modèle PSAP
-    $psap = new Psap();
-    $psap->user_id = Auth::id();
-    $psap->experience = $this->experience;
-    $psap->continent = $this->selectedContinent;
-    $psap->sous_region = $this->selectedSous_region;
-    $psap->depart = $this->depart;
-    $psap->ville = $this->ville;
-    $psap->localite = $this->localite;
-    $psap->pays = $this->pays;
-    $psap->etat = "En cours";
-  
-
-    $psap->save();
-
-    // Gestion des photos
-    $this->handlePhotoUpload($psap, 'identity');
-    $this->handlePhotoUpload($psap, 'permis');
-    $this->handlePhotoUpload($psap, 'assurance');
-
-    session()->flash('message', 'PSAP ajouté avec succès!');
-
-    // Réinitialiser les champs du formulaire
-    $this->reset([
-        'experience',
-        'selectedContinent',
-        'selectedSous_region',
-        'pays',
-        'depart',
-        'ville',
-        'localite',
-        'identity',
-        'permis',
-        'assurance'
-    ]);
-}
 
 
     protected function handlePhotoUpload($livreur, $photoField)

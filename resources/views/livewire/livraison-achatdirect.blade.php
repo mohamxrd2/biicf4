@@ -4,7 +4,7 @@
     <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
         <h1 class="text-lg font-bold">NEGOCIATION POUR LA LIVRAISON</h1>
 
-        <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
+        <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
             <div id="countdown" x-show="oldestCommentDate"
                 class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
                 <div x-text="hours">--</div>j
@@ -122,7 +122,8 @@
                             </div>
 
                             <!-- Texte des participants -->
-                            <p class="text-sm font-medium text-gray-100"> {{ $nombreParticipants ?? '0' }} participants</p>
+                            <p class="text-sm font-medium text-gray-100"> {{ $nombreParticipants ?? '0' }} participants
+                            </p>
                         </div>
                     </div>
 
@@ -223,23 +224,21 @@
     </div>
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('countdownTimer', (oldestCommentDate, comments) => ({
+            Alpine.data('countdownTimer', (oldestCommentDate, serverTime) => ({
                 oldestCommentDate: oldestCommentDate ? new Date(oldestCommentDate) : null,
+                serverTime: serverTime ? new Date(serverTime).getTime() : null,
                 hours: '--',
                 minutes: '--',
                 seconds: '--',
-                comments: comments || [],
-                startDate: null,
+                endDate: null,
                 interval: null,
-                isCountdownActive: false, // Nouvelle variable pour suivre l'état du compte à rebours
-                hasSubmitted: false, // Variable pour éviter la soumission multiple
+                isCountdownActive: false,
+                hasSubmitted: false,
 
                 init() {
-                    console.log('Initialisation du compteur', this.oldestCommentDate);
-
                     if (this.oldestCommentDate) {
-                        this.startDate = new Date(this.oldestCommentDate);
-                        this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                        this.endDate = new Date(this.oldestCommentDate);
+                        this.endDate.setMinutes(this.endDate.getMinutes() + 2);
                         this.startCountdown();
                     }
 
@@ -249,48 +248,59 @@
                             if (e.oldestCommentDate) {
                                 const newDate = new Date(e.oldestCommentDate);
 
-                                // Ne redémarre que si la nouvelle date est différente
                                 if (!this.oldestCommentDate || this.oldestCommentDate.getTime() !==
                                     newDate.getTime()) {
                                     this.oldestCommentDate = newDate;
-                                    this.startDate = new Date(this.oldestCommentDate);
-                                    this.startDate.setMinutes(this.startDate.getMinutes() + 2);
+                                    this.endDate = new Date(this.oldestCommentDate);
+                                    this.endDate.setMinutes(this.endDate.getMinutes() + 2);
                                     this.startCountdown();
-
-                                    // Émettre une requête Livewire pour rafraîchir les données
-                                    // Livewire.dispatch('refreshCountdown');
-                                    // console.log('done livewire refresh')
-
-                                    location.reload();
                                 } else {
-                                    console.log(
-                                        'Le compte à rebours est déjà à jour, aucun redémarrage nécessaire.'
-                                    );
+                                    console.log('Le compte à rebours est déjà à jour.');
                                 }
                             } else {
                                 console.error('oldestCommentDate est null ou incorrect !', e);
                             }
                         });
+
+                    console.log('Initialisation du oldestCommentDate', this.oldestCommentDate);
+                    console.log('Initialisation du endDate', this.endDate);
+                    console.log('Initialisation du serverTime', this.serverTime);
                 },
 
+                // Methode pour calculer le temps restant
+                calculateTimeLeft(endDate, currentDate) {
+                    return Math.max(0, endDate - currentDate);
+                },
 
                 startCountdown() {
                     if (this.isCountdownActive) {
                         console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
-                        return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
+                        return;
                     }
 
                     if (this.interval) {
                         clearInterval(this.interval);
                     }
+
                     this.updateCountdown();
                     this.interval = setInterval(this.updateCountdown.bind(this), 1000);
-                    this.isCountdownActive = true; // Marque le compte à rebours comme actif
+                    this.isCountdownActive = true;
                 },
 
                 updateCountdown() {
-                    const currentDate = new Date();
-                    const difference = this.startDate.getTime() - currentDate.getTime();
+                    if (!this.serverTime) {
+                        console.error('L\'heure du serveur est manquante.');
+                        clearInterval(this.interval);
+                        return;
+                    }
+
+                    const currentDate = new Date(this
+                        .serverTime); // Utilisation directe de l'heure serveur
+                    this.serverTime += 1000; // Incrémente l'heure serveur chaque seconde simulée
+
+                    const difference = this.calculateTimeLeft(this.endDate, currentDate);
+                    console.log('Heure serveur actuelle', currentDate);
+                    console.log('Différence temporelle', difference);
 
                     if (difference <= 0) {
                         clearInterval(this.interval);
@@ -306,12 +316,11 @@
                 endCountdown() {
                     document.getElementById('countdown').innerText = "Temps écoulé !";
 
-                    //Soumettre l'événement seulement une fois
                     if (!this.hasSubmitted) {
                         setTimeout(() => {
                             Livewire.dispatch('compteReboursFini');
-                            this.hasSubmitted = true; // Empêcher la soumission multiple
-                        }, 100); // Petit délai pour laisser le temps à l'affichage de se mettre à jour
+                            this.hasSubmitted = true;
+                        }, 100);
                     }
                 },
             }));

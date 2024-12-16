@@ -189,8 +189,7 @@ class AchatDirectGroupe extends Component
                 'title' => 'Commande effectuée avec succès',
                 'description' => 'Cliquez pour voir les détails de votre commande.',
             ]));
-            // Déclencher un événement pour signaler l'envoi de la notification
-            event(new NotificationSent($userConnecte));
+
 
 
             // Mettre à jour la table de AchatDirectModel de fond
@@ -209,8 +208,6 @@ class AchatDirectGroupe extends Component
             $owner = User::find($validated['userTrader']);
             $selectedOption = $this->selectedOption;
             Notification::send($owner, new AchatBiicf($achatUser));
-            // Après l'envoi de la notification
-            event(new NotificationSent($owner));
 
             // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
             $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
@@ -220,10 +217,15 @@ class AchatDirectGroupe extends Component
                 $notification->update(['type_achat' => $selectedOption]);
             }
 
-            $this->reset(['quantité', 'localite']);
 
+            $this->reset(['quantité', 'localite']);
+            // Après l'envoi de la notification
+            event(new NotificationSent($owner));
+            // Déclencher un événement pour signaler l'envoi de la notification
+            event(new NotificationSent($userConnecte));
             // Émettre un événement après la soumission
             $this->dispatch('formSubmitted', 'Achat Affectué Avec Success');
+            
             // Valider la transaction de base de données
             DB::commit();
         } catch (\Exception $e) {
