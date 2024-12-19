@@ -14,6 +14,7 @@ use App\Models\userquantites;
 use App\Notifications\AOGrouper;
 use App\Notifications\AppelOffre;
 use App\Notifications\Confirmation;
+use App\Services\RecuperationTimer;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,16 @@ class Appaeloffre extends Component
     public $dayPeriodFin;
     public $id;
     public $loading = false;
+    public $time;
+    public $error;
+    public $timestamp;
 
+    protected $recuperationTimer;
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
     public function mount(
         $wallet,
         $lowestPricedProduct,
@@ -61,6 +71,13 @@ class Appaeloffre extends Component
         $distinctSpecifications,
         $appliedZoneValue
     ) {
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = \Carbon\Carbon::createFromTimestamp($seconds);
+
         $this->wallet = $wallet;
         $this->lowestPricedProduct = $lowestPricedProduct;
         $this->distinctCondProds = $distinctCondProds;
@@ -94,14 +111,7 @@ class Appaeloffre extends Component
         $this->distinctSpecifications = [];
     }
 
-    // public function getIsFormValidProperty()
-    // {
-    //     return !empty($this->name) &&
-    //         !empty($this->reference) &&
-    //         !empty($this->quantité) &&
-    //         !empty($this->localite) &&
-    //         !empty($this->selectedOption);
-    // }
+
 
     public function submitEnvoie()
     {
@@ -286,6 +296,7 @@ class Appaeloffre extends Component
                 'codeunique' => $codeUnique,
                 'reference' => $this->reference,
                 'user_id' => $userId,
+                'started_at' => $this->timestamp,
             ]);
             Log::info('Appel d\'offre créé.', ['offre_id' => $offre->id]);
 
@@ -305,7 +316,7 @@ class Appaeloffre extends Component
             // Vérifier et décrémenter le solde du portefeuille
             if ($this->wallet->balance < $totalCost) {
                 Log::error('Solde insuffisant.', ['balance' => $this->wallet->balance, 'total_cost' => $totalCost]);
-                throw new \Exception("Votre solde est insuffisant pour effectuer cette transaction.");
+                throw new Exception("Votre solde est insuffisant pour effectuer cette transaction.");
             }
 
             $this->wallet->decrement('balance', $totalCost);
@@ -354,7 +365,7 @@ class Appaeloffre extends Component
 
             $idsToNotify = array_unique(array_merge($idsProprietaires, $idsLocalite));
             if (empty($idsToNotify)) {
-                throw new \Exception('Aucun utilisateur ne consomme ce produit dans votre zone économique.');
+                throw new Exception('Aucun utilisateur ne consomme ce produit dans votre zone économique.');
             }
 
             foreach ($idsToNotify as $id) {
@@ -377,24 +388,21 @@ class Appaeloffre extends Component
             Log::info('Notification de confirmation envoyée.');
             $user_connecte = User::find(Auth::id());
             event(new NotificationSent($user_connecte));
-
+            // Redirection ou traitement pour l'envoi direct
+            $this->dispatch(
+                'formSubmitted',
+                'Demande d\'appel offre grouper a été effectué avec succes.'
+            );
+            Log::info('Fin du processus de création de l\'appel d\'offre groupé.');
             DB::commit();
             Log::info('Transaction DB validée.');
-            session()->flash('success', 'Appel d\'offre groupé créé avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Erreur dans le regroupement.', ['error' => $e->getMessage()]);
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         } finally {
             $this->loading = false;
         }
-
-        // Redirection ou traitement pour l'envoi direct
-        $this->dispatch(
-            'formSubmitted',
-            'Demande d\'appel offre grouper a été effectué avec succes.'
-        );
-        Log::info('Fin du processus de création de l\'appel d\'offre groupé.');
     }
 
     protected function generateUniqueReference()

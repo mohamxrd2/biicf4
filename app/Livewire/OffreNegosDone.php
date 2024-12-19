@@ -256,6 +256,7 @@ class OffreNegosDone extends Component
 
     public function refuser()
     {
+        // dd('');
         $userId = Auth::id(); // ID de l'utilisateur actuel
         $codeUnique = $this->notification->data['code_unique']; // Récupérer le code_unique depuis la notification
 
@@ -271,33 +272,19 @@ class OffreNegosDone extends Component
 
             // Parcourir chaque entrée et effectuer les opérations nécessaires
             foreach ($userQuantites as $userQuantite) {
-                $clientId = $userQuantite->user_id; // Récupérer l'ID de l'utilisateur
-                $montantTotal = $userQuantite->quantite * $this->achatdirect->prix_unitaire; // Calculer le montant total basé sur la quantité et le prix unitaire
+                $FournisseurId = $userQuantite->user_id; // Récupérer l'ID de l'utilisateur
 
-                // Vérifier l'existence du portefeuille de l'utilisateur
-                $userWallet = Wallet::where('user_id', $clientId)->firstOrFail();
-
-                // Ajouter le montant au portefeuille de l'utilisateur
-                $userWallet->increment('balance', $montantTotal);
-
-                // Générer une référence unique
-                $reference_id = $this->generateIntegerReference();
-
-                // Créer une transaction pour ce client
-                $this->createTransaction(
-                    $userId, // ID de l'utilisateur qui a refusé
-                    $clientId, // ID du client
-                    'Réception', // Type de transaction
-                    $montantTotal, // Montant total
-                    $reference_id, // Référence unique
-                    'Achat refusé pour le code : ' . $codeUnique, // Description
-                    'effectué', // Statut
-                    'COC' // Code d'opération
-                );
+                $data = [
+                    'id' => $this->offregroupe->id,
+                    'idProd' => $this->notification->data['idProd'] ?? null,
+                    'code_unique' => $this->notification->data['code_unique'],
+                    'title' => 'Groupage Refusée',
+                    'description' => 'Le fournisseur a annulé le groupage.',
+                ];
 
                 // Envoyer une notification au client
-                $owner = User::findOrFail($clientId);
-                Notification::send($owner, new RefusAchat($codeUnique));
+                $owner = User::findOrFail($FournisseurId);
+                Notification::send($owner, new RefusAchat($data));
                 // Déclencher un événement pour signaler l'envoi de la notification
                 event(new NotificationSent($owner));
             }

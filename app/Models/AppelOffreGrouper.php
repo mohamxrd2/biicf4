@@ -29,7 +29,8 @@ class AppelOffreGrouper extends Model
         'count',
         'count2',
         'reference',
-        'user_id'
+        'user_id',
+        'started_at'
     ];
     public function User()
     {
@@ -39,5 +40,7 @@ class AppelOffreGrouper extends Model
     // Optionally, if you want prodUsers to be cast to an array automatically
     protected $casts = [
         'prodUsers' => 'array',
+        'notified' => 'boolean', // Ajout du cast pour notified
+
     ];
 }

@@ -8,13 +8,14 @@ use App\Models\gelement;
 use App\Models\Transaction;
 use App\Models\userquantites;
 use App\Models\Wallet;
+use App\Services\RecuperationTimer;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\On;
 use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Appeloffregrouper extends Component
@@ -22,109 +23,134 @@ class Appeloffregrouper extends Component
     public $notification;
     public $id;
     public $appelOffreGroup;
-    public $datePlusAncienne;
-    public $sumquantite;
-    public $appelOffreGroupcount;
+    public $oldestCommentDate;
+    public $sumquantite = 0;
+    public $appelOffreGroupcount = 0;
     public $quantite;
     public $localite;
-    public $selectedOption;
-    public $groupages;
+    public $groupages = [];
     public $existingQuantite;
-    public $modalOpen;
+    public $isOpen = false;
+    public $time;
+    public $error;
 
+    protected $recuperationTimer;
 
     public function mount($id)
     {
-        $this->notification = DatabaseNotification::findOrFail($id);
+        // Initialisation des services
+        $this->recuperationTimer = new RecuperationTimer();
+
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
+
+        // Récupération de la notification
+        $this->notification = DatabaseNotification::find($id);
+        if (!$this->notification) {
+            session()->flash('error', 'Notification introuvable.');
+            return;
+        }
+
+        $this->fetchAppelOffreGrouper();
+        $this->initializeGroupageData();
+    }
+
+    protected $listeners = ['compteReboursFini'];
+    public function compteReboursFini()
+    {
+        if ($this->appelOffreGroup) {
+            $this->appelOffreGroup->update(['count' => true]);
+            $this->dispatch('formSubmitted', 'Temps écoulé, Groupage terminé.');
+        }
+    }
+
+    private function fetchAppelOffreGrouper()
+    {
         $Idoffre = $this->notification->data['offre_id'] ?? null;
 
-        // Attempt to retrieve the grouped offer by its ID
-        $this->appelOffreGroup = ModelsAppelOffreGrouper::find($Idoffre);
-        $codesUniques = $this->appelOffreGroup->codeunique;
-        $this->datePlusAncienne = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)->min('created_at');
+        if ($Idoffre) {
+            $this->appelOffreGroup = ModelsAppelOffreGrouper::find($Idoffre);
+        }
+    }
 
+    private function initializeGroupageData()
+    {
+        if (!$this->appelOffreGroup) return;
 
-        $this->sumquantite = userquantites::where('code_unique', $codesUniques)->sum('quantite');
-        $this->appelOffreGroupcount = ModelsAppelOffreGrouper::where('codeunique', $codesUniques)
-            ->distinct('user_id') // Prend uniquement les valeurs uniques de user_id
-            ->count('user_id');   // Compte les valeurs distinctes
+        $codeUnique = $this->appelOffreGroup->codeunique;
 
-        // Charger les groupages
-        $this->groupages = userquantites::where('code_unique', $this->notification->data['code_unique'])
+        $this->oldestCommentDate = ModelsAppelOffreGrouper::where('codeunique', $codeUnique)->min('started_at');
+
+        $this->reloadGroupages($codeUnique);
+    }
+
+    private function reloadGroupages($codeUnique)
+    {
+        $this->groupages = userquantites::where('code_unique', $codeUnique)
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Vérifier si l'utilisateur a déjà soumis une quantité pour ce code unique
-        $this->existingQuantite = userquantites::where('code_unique', $this->appelOffreGroup->codeunique)
+        $this->sumquantite = userquantites::where('code_unique', $codeUnique)
+            ->sum('quantite');
+        $this->appelOffreGroupcount = userquantites::where('code_unique', $codeUnique)->distinct('user_id')->count('user_id');
+
+        $this->existingQuantite = userquantites::where('code_unique', $codeUnique)
             ->where('user_id', Auth::id())
             ->first();
     }
 
-    protected $listeners = ['compteReboursFini'];
-
-    public function compteReboursFini()
+    #[On('echo:quantite-channel,AjoutQuantiteOffre')]
+    public function actualiserDonnees($event)
     {
-        // Mettre à jour l'attribut 'finish' du demandeCredit
-        $this->appelOffreGroup->update([
-            'count' => true,
-            $this->dispatch(
-                'formSubmitted',
-                'Temps écoule, Groupage terminé.'
-            )
-        ]);
-    }
+        if (!isset($event['codeUnique'], $event['quantite'])) {
+            Log::error('Événement invalide reçu.');
+            return;
+        }
+        $this->sumquantite += $event['quantite'];
 
+        $this->reloadGroupages($event['codeUnique']);
+        session()->flash('success', "Nouvelle quantité ajoutée avec succès !");
+    }
 
     public function storeOffre()
     {
-        DB::beginTransaction(); // Démarrer une transaction
+        DB::beginTransaction();
 
         try {
-            // Valider les données du formulaire
             $validatedData = $this->validate([
-                'quantite' => 'required|integer',
+                'quantite' => 'required|integer|min:1',
                 'localite' => 'nullable|string',
             ]);
 
-            // Récupérer l'utilisateur actuel et l'appel d'offre en cours
             $user = Auth::id();
-            $appelOffreGroup = $this->appelOffreGroup;
+            $quantite = $validatedData['quantite'];
 
-            // Vérifier si le groupe d'appel d'offre existe
-            if (!$appelOffreGroup) {
+            if (!$this->appelOffreGroup) {
                 session()->flash('error', 'Appel d\'offre introuvable.');
                 return;
             }
 
             $userWallet = Wallet::where('user_id', $user)->first();
-
             if (!$userWallet) {
                 Log::error('Portefeuille introuvable.', ['userId' => $user]);
                 session()->flash('error', 'Portefeuille introuvable.');
                 return;
             }
-            // Calcul du coût total
-            $prixUnitaire = $appelOffreGroup->lowestPricedProduct ?? 0;
-            $quantite = $validatedData['quantite'];
-            $montantTotal = $prixUnitaire * $quantite;
+            $montantTotal = $this->appelOffreGroup->lowestPricedProduct * $quantite;
 
-            // Vérifier les fonds disponibles
             if ($userWallet->balance < $montantTotal) {
-                session()->flash('error', 'Fonds insuffisants pour soumettre cette quantité.');
+                session()->flash('error', 'Fonds insuffisants.');
                 return;
             }
 
-            // Décrémente le solde utilisateur
             $userWallet->decrement('balance', $montantTotal);
 
-
-
             // Vérifier si l'utilisateur a déjà soumis une quantité pour ce code unique
-            $existingQuantite = userquantites::where('code_unique', $appelOffreGroup->codeunique)
+            $existingQuantite = userquantites::where('code_unique', $this->appelOffreGroup->codeunique)
                 ->where('user_id', $user)
                 ->first();
             // Vérifier si l'utilisateur a déjà soumis une quantité pour ce code unique
-            $existingGelement = gelement::where('reference_id', $appelOffreGroup->codeunique)
+            $existingGelement = gelement::where('reference_id', $this->appelOffreGroup->codeunique)
                 ->where('id_wallet', $userWallet->id)
                 ->first();
 
@@ -140,7 +166,7 @@ class Appeloffregrouper extends Component
             } else {
                 // Création d'un nouvel enregistrement
                 userquantites::create([
-                    'code_unique' => $appelOffreGroup->codeunique,
+                    'code_unique' => $this->appelOffreGroup->codeunique,
                     'user_id' => $user,
                     'localite' => $validatedData['localite'],
                     'quantite' => $quantite,
@@ -150,48 +176,33 @@ class Appeloffregrouper extends Component
                 gelement::create([
                     'id_wallet' => $userWallet->id,
                     'amount' => $montantTotal,
-                    'reference_id' => $appelOffreGroup->codeunique,
+                    'reference_id' => $this->appelOffreGroup->codeunique,
                 ]);
             }
 
+            // Mise à jour des données locales
+            $this->sumquantite += $validatedData['quantite'];
 
-            $this->createTransaction($user, $user, 'Gele', $montantTotal, $this->generateIntegerReference(), 'Gele Pour ' . 'Groupage de ' . $appelOffreGroup->productName, 'effectué', 'COC');
+            $this->createTransaction($user, $user, 'Gele', $montantTotal, $this->generateIntegerReference(), 'Gele Pour ' . 'Groupage de ' . $this->appelOffreGroup->productName, 'effectué', 'COC');
 
+            $this->reloadGroupages($this->appelOffreGroup->codeunique);
 
-            // Mise à jour des données pour le composant Livewire
-            $this->groupages = userquantites::where('code_unique', $appelOffreGroup->codeunique)
-                ->orderBy('created_at', 'asc')
-                ->get();
-            $this->sumquantite = ModelsAppelOffreGrouper::where('codeunique', $appelOffreGroup->codeunique)
-                ->sum('quantity');
-            $this->appelOffreGroupcount = ModelsAppelOffreGrouper::where('codeunique', $appelOffreGroup->codeunique)
-                ->distinct('user_id')
-                ->count('user_id');
-
-            // Réinitialiser les champs du formulaire
-            $this->reset('quantite', 'localite');
-
-            // Fermer le modal
-            $this->modalOpen = false;
+            // Diffusion de l'événement Laravel
+            broadcast(new AjoutQuantiteOffre($validatedData['quantite'], $this->appelOffreGroup->codeunique));
 
             // Commit de la transaction
             DB::commit();
-
-            // Message de succès
-            session()->flash('success', 'Quantité ajoutée ou mise à jour avec succès');
+            // Fermer le modal
+            $this->isOpen = false;
+            $this->reset('quantite', 'localite');
+            session()->flash('success', 'Quantité ajoutée avec succès.');
         } catch (Exception $e) {
-            // Annuler les changements
             DB::rollBack();
-
-            // Log l'erreur et afficher un message d'erreur
-            Log::error('Erreur lors de l\'ajout ou mise à jour : ' . $e->getMessage());
-            session()->flash('error', 'Erreur lors de l\'ajout ou mise à jour de la quantité.');
+            Log::error("Erreur: " . $e->getMessage());
+            session()->flash('error', 'Une erreur est survenue.');
         }
     }
-    protected function generateUniqueReference()
-    {
-        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
-    }
+
     protected function generateIntegerReference(): int
     {
         // Récupère l'horodatage en millisecondes

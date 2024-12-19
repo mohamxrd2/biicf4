@@ -8,6 +8,7 @@ use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\OffreGroupe;
 use App\Models\ProduitService;
+use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
@@ -41,9 +42,23 @@ class Enchere extends Component
     public $commentCount;
     public $offgroupe;
     public $produit, $nombreParticipants, $achatdirect;
+    public $time;
+    public $error;
+
+    protected $recuperationTimer;
+
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
 
     public function mount($id)
     {
+        // Récupération de l'heure via le service
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
+
         $this->notification = DatabaseNotification::findOrFail($id);
 
         $this->id_trader = Auth::user()->id ?? null;
@@ -98,7 +113,7 @@ class Enchere extends Component
             )
         ]);
     }
-    
+
     public function commentoffgroup()
     {
         // Valider les données
@@ -136,13 +151,13 @@ class Enchere extends Component
                 Countdown::create([
                     'user_id' => Auth::id(),
                     'userSender' => $this->produit->user_id,
-                    'start_time' => now(),
+                    'start_time' => Carbon::parse($this->time),
                     'code_unique' => $this->notification->data['code_unique'],
                     'difference' => 'enchere',
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated(now()->toIso8601String()));
-                $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
+                broadcast(new OldestCommentUpdated($this->time));
+                $this->dispatch('OldestCommentUpdated', $this->time);
             }
             $this->reset(['prixTrade']);
         } catch (Exception $e) {

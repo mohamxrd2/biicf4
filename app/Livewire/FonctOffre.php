@@ -396,10 +396,10 @@ class FonctOffre extends Component
                     'quantite' => $quantite,
                     'code_unique' => $uniqueCode,
                 ]));
-                event(new NotificationSent($supplier));
 
                 Log::info('Notification envoyée', ['supplier_id' => $supplierId]);
             }
+            event(new NotificationSent($supplier));
         }
     }
 

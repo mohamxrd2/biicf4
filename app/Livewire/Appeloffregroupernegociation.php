@@ -8,6 +8,7 @@ use App\Models\AppelOffreGrouper;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
+use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
@@ -42,8 +43,25 @@ class Appeloffregroupernegociation extends Component
     public $appeloffregrp;
     public $commentCount;
     public $nombreParticipants;
+    public $time;
+    public $error;
+    public $timestamp;
+
+    protected $recuperationTimer;
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
     public function mount($id)
     {
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
+
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->id_trader = Auth::user()->id ?? null;
 
@@ -57,8 +75,9 @@ class Appeloffregroupernegociation extends Component
             ->first();
 
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
-        $this->serverTime = Carbon::now()->toIso8601String();
+        $this->oldestCommentDate = $this->oldestComment ?
+            Carbon::parse($this->oldestComment->start_time)->toIso8601String()
+            : null;
         $this->listenForMessage();
     }
 
@@ -144,17 +163,16 @@ class Appeloffregroupernegociation extends Component
                 Countdown::create([
                     'user_id' => $this->id_trader,
                     'userSender' => null,
-                    'start_time' => now(),
+                    'start_time' => $this->timestamp,
                     'code_unique' => $this->appeloffregrp->codeunique,
                     'difference' => 'appelOffreGrouper',
                     'AppelOffreGrouper_id' => $this->appeloffregrp->id,
                 ]);
                 // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated(now()->toIso8601String()));
-                $this->dispatch('OldestCommentUpdated', now()->toIso8601String());
+                broadcast(new OldestCommentUpdated($this->time));
+                $this->dispatch('OldestCommentUpdated', $this->time);
             }
 
-            session()->flash('success', 'Commentaire créé avec succès!');
 
             DB::commit();
 

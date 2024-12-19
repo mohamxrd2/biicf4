@@ -26,7 +26,7 @@ class RecuperationTimer
         try {
             // En cas d'échec, utiliser l'heure du serveur comme secours
             $this->fetchServerTime();
-            
+
         } catch (Exception $e) {
             // Initialisation de la connexion au serveur NTP
             $socket = new Socket('0.pool.ntp.org', 123);

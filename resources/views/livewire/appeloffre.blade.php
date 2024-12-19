@@ -4,7 +4,6 @@
         <!-- Barre du haut avec timer -->
         <div class="flex justify-between items-center bg-gray-200 p-4 rounded-lg mb-6">
             <h1 class="text-lg font-bold">NEGOCIATION DES FOURNISSEURS</h1>
-            @if (!$appeloffre->count)
                 <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
                     <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
 
@@ -17,7 +16,6 @@
                         <div x-text="seconds">--</div>s
                     </div>
                 </div>
-            @endif
         </div>
 
         <div class="bg-gray-100 min-h-screen">

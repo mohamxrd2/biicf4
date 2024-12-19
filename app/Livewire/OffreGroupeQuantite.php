@@ -138,16 +138,17 @@ class OffreGroupeQuantite extends Component
     }
 
     #[On('echo:quantite-channel,AjoutQuantiteOffre')]
-    public function actualiserDonnees($quantiteAjoutee, $codeUnique = null)
+    public function actualiserDonnees($event)
     {
-        if (!$codeUnique) {
+        if (!$event['codeUnique']) {
             Log::error('Code unique non fourni lors de la mise à jour.');
             return;
         }
 
-        $this->quantiteTotale += $quantiteAjoutee;
+        $this->quantiteTotale += $event['quantite'];
 
-        $this->reloadGroupages($codeUnique);
+        $this->reloadGroupages($event['codeUnique']);
+        $this->dispatch('formSubmitted', "Nouvelle quantité de {$event['quantite']} ajoutée par " . Auth::user()->name . " avec succès !");
     }
 
     public function storeoffre()
@@ -190,6 +191,7 @@ class OffreGroupeQuantite extends Component
             broadcast(new AjoutQuantiteOffre($validatedData['quantite'], $codeUnique));
 
             $this->reset('quantite', 'localite');
+
             $this->isOpen = false;
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'ajout de la quantité.', ['error' => $e->getMessage()]);

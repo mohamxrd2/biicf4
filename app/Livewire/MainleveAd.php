@@ -2,12 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Events\NotificationSent;
 use App\Models\AchatDirect;
 use App\Models\ProduitService;
 use App\Models\User;
 use App\Notifications\mainleveclient;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
@@ -20,7 +22,7 @@ class MainleveAd extends Component
     public $totalPrice;
     public $produitfat;
     public $dateLivr;
-    public $time;
+    public $time = '';
     public $client;
     public $achatdirect;
     public $fournisseur;
@@ -29,6 +31,9 @@ class MainleveAd extends Component
     public $qualite;
     public $diversite;
     public $matine; // Ajoutez cette propriété publique
+    public $livreur; // Ajoutez cette propriété publique
+    public $user; // Ajoutez cette propriété publique
+    public $showMainlever = false;
 
 
     public function mount($id)
@@ -38,8 +43,15 @@ class MainleveAd extends Component
         $this->produit = ProduitService::with('user')->find($this->achatdirect->idProd);
 
 
-        $this->fournisseur = User::find($this->achatdirect->userTrader);
+        $this->fournisseur = User::find($this->notification->data['fournisseur']);
         $this->client = User::find($this->achatdirect->userSender);
+        $this->livreur = User::find($this->notification->data['livreur']);
+        $this->user = auth()->id();
+    }
+
+    public function toggleComponent()
+    {
+        $this->showMainlever = true;
     }
 
     public function getCodeVerifProperty()
@@ -65,50 +77,79 @@ class MainleveAd extends Component
     }
     public function departlivr()
     {
-        // Rassemblez les réponses dans un tableau
-        $responses = [
-            'Quantité' => $this->quantite,
-            'Qualité' => $this->qualite,
-            'Diversité' => $this->diversite,
-        ];
+        try {
+            // Validation initiale des réponses
+            $responses = [
+                'Quantité' => $this->quantite,
+                'Qualité' => $this->qualite,
+                'Diversité' => $this->diversite,
+            ];
 
-        // Comptez le nombre de "oui"
-        $countYes = count(array_filter([$this->quantite, $this->qualite, $this->diversite], fn($value) => $value === 'oui'));
+            $countYes = count(array_filter($responses, fn($value) => strtolower($value) === 'oui'));
 
-        // Vérifiez la condition
-        if ($countYes < 2) {
-            session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
-            return;
+            if ($countYes < 2) {
+                session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
+                return;
+            }
+
+            // Validation des champs obligatoires
+            $validatedData = $this->validate([
+                'dateLivr' => 'required|date',
+                'time' => 'required|in:matin,après-midi,soir',
+            ], [
+                'dateLivr.required' => 'La date de livraison est requise.',
+                'dateLivr.date' => 'La date de livraison doit être une date valide.',
+                'time.required' => 'La période de livraison est obligatoire.',
+                'time.in' => 'Veuillez choisir une période valide : matin, après-midi ou soir.',
+            ]);
+
+            // Préparer les données pour la notification
+            $data = [
+                'code_unique' => $this->achatdirect->code_unique ?? null,
+                'fournisseur' => $this->notification->data['fournisseur'] ?? null,
+                'livreur' => Auth::id(),
+                'prixTrade' => $this->notification->data['prixTrade'] ?? null,
+                'date_livr' => $this->dateLivr,
+                'time' => $this->time,
+                'achat_id' => $this->achatdirect->id ?? null,
+                'CodeVerification' => $this->notification->data['livreurCode'] ?? null,
+                'title' => 'Réception du colis',
+                'description' => 'Procéder à la conformité du colis.',
+            ];
+
+            // Vérifications des données critiques
+            if (!$data['code_unique'] || !$data['fournisseur'] || !$data['prixTrade']) {
+                Log::error('Données manquantes pour la notification de livraison.', $data);
+                session()->flash('error', 'Des informations critiques sont manquantes pour finaliser la livraison.');
+                return;
+            }
+
+            // Envoi de la notification
+            Notification::send($this->client, new mainleveclient($data));
+            event(new NotificationSent(user: $this->client));
+
+            Log::info('Notification de livraison envoyée avec succès.', $data);
+
+            // Mise à jour de la notification
+            $this->notification->update(['reponse' => 'mainleveclient']);
+
+            // Réinitialisation et fermeture du modal
+            $this->reset('showMainlever');
+            $this->dispatchBrowserEvent('close-mainlever-modal');
+
+            session()->flash('message', 'Livraison marquée comme livrée avec succès.');
+        } catch (\Exception $e) {
+            // Gestion des exceptions
+            Log::error('Erreur lors du traitement de la livraison.', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            session()->flash('error', 'Une erreur est survenue lors du traitement de la livraison. Veuillez réessayer.');
         }
-
-        $this->validate([
-            'dateLivr' => 'required|date',
-            'time' => 'required'
-        ], [
-            'dateLivr.required' => 'La date de livraison est requise.',
-            'dateLivr.date' => 'La date de livraison doit être une date valide.',
-            'time.required' => 'La matinée ou soirée est requise.',
-        ]);
-
-        $data = [
-            'code_unique' => $this->achatdirect->code_unique,
-            'fournisseur' => $this->notification->data['fournisseur'],
-            'livreur' => Auth::id(),
-            'prixTrade' => $this->notification->data['prixTrade'],
-            'date_livr' => $this->dateLivr,
-            'time' => $this->time,
-            'achat_id' => $this->achatdirect->id,
-            'CodeVerification' => $this->notification->data['livreurCode'],
-            'title' => 'Reception du colis',
-            'description' => 'Procéder a la confirmité du colis',
-        ];
-
-        Notification::send($this->client, new mainleveclient($data));
-
-        $this->notification->update(['reponse' => 'mainleveclient']);
-
-        session()->flash('message', 'Livraison marquée comme livrée.');
     }
+
     public function render()
     {
         return view('livewire.mainleve-ad');

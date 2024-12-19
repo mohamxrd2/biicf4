@@ -19,7 +19,7 @@
                     <div class="tooltip-arrow" data-popper-arrow></div>
                 </div>
             </div>
-            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($comments) }})" class="flex items-center space-x-2">
+            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
                 <span x-show="oldestCommentDate" class="text-sm">Temps restant pour cette négociation:</span>
 
                 <div id="countdown" x-show="oldestCommentDate"
@@ -299,102 +299,8 @@
                 }
             }
         </script>
-        <script>
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('countdownTimer', (oldestCommentDate, comments) => ({
-                    oldestCommentDate: oldestCommentDate ? new Date(oldestCommentDate) : null,
-                    hours: '--',
-                    minutes: '--',
-                    seconds: '--',
-                    comments: comments || [],
-                    startDate: null,
-                    interval: null,
-                    isCountdownActive: false, // Nouvelle variable pour suivre l'état du compte à rebours
-                    hasSubmitted: false, // Variable pour éviter la soumission multiple
+        <script src="{{ asset('js/countdown.js') }}?v=1.0.0" defer></script>
 
-                    init() {
-                        console.log('Initialisation du compteur', this.oldestCommentDate);
-
-                        if (this.oldestCommentDate) {
-                            this.startDate = new Date(this.oldestCommentDate);
-                            this.startDate.setMinutes(this.startDate.getMinutes() + 2);
-                            this.startCountdown();
-                        }
-
-                        Echo.channel('oldest-comment')
-                            .listen('OldestCommentUpdated', (e) => {
-                                console.log('Événement OldestCommentUpdated reçu', e);
-                                if (e.oldestCommentDate) {
-                                    const newDate = new Date(e.oldestCommentDate);
-
-                                    // Ne redémarre que si la nouvelle date est différente
-                                    if (!this.oldestCommentDate || this.oldestCommentDate.getTime() !==
-                                        newDate.getTime()) {
-                                        this.oldestCommentDate = newDate;
-                                        this.startDate = new Date(this.oldestCommentDate);
-                                        this.startDate.setMinutes(this.startDate.getMinutes() + 2);
-                                        this.startCountdown();
-
-                                        // Émettre une requête Livewire pour rafraîchir les données
-                                        // Livewire.dispatch('refreshCountdown');
-                                        // console.log('done livewire refresh')
-
-                                        location.reload();
-                                    } else {
-                                        console.log(
-                                            'Le compte à rebours est déjà à jour, aucun redémarrage nécessaire.'
-                                        );
-                                    }
-                                } else {
-                                    console.error('oldestCommentDate est null ou incorrect !', e);
-                                }
-                            });
-                    },
-
-
-                    startCountdown() {
-                        if (this.isCountdownActive) {
-                            console.log('Le compte à rebours est déjà actif, pas de redémarrage.');
-                            return; // Ne démarre pas un nouveau compte à rebours si un est déjà en cours
-                        }
-
-                        if (this.interval) {
-                            clearInterval(this.interval);
-                        }
-                        this.updateCountdown();
-                        this.interval = setInterval(this.updateCountdown.bind(this), 1000);
-                        this.isCountdownActive = true; // Marque le compte à rebours comme actif
-                    },
-
-                    updateCountdown() {
-                        const currentDate = new Date();
-                        const difference = this.startDate.getTime() - currentDate.getTime();
-
-                        if (difference <= 0) {
-                            clearInterval(this.interval);
-                            this.endCountdown();
-                            return;
-                        }
-
-                        this.hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        this.minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                        this.seconds = Math.floor((difference % (1000 * 60)) / 1000);
-                    },
-
-                    endCountdown() {
-                        document.getElementById('countdown').innerText = "Temps écoulé !";
-
-                        //Soumettre l'événement seulement une fois
-                        if (!this.hasSubmitted) {
-                            setTimeout(() => {
-                                Livewire.dispatch('compteReboursFini');
-                                this.hasSubmitted = true; // Empêcher la soumission multiple
-                            }, 100); // Petit délai pour laisser le temps à l'affichage de se mettre à jour
-                        }
-                    },
-                }));
-            });
-        </script>
 
     </div>
 

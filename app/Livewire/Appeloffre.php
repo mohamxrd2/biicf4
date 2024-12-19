@@ -78,6 +78,7 @@ class Appeloffre extends Component
         // Récupérer le commentaire le plus ancien avec code_unique et start_time non nul
         $this->oldestComment = Countdown::where('code_unique', $this->code_unique)
             ->whereNotNull('start_time')
+            ->where('notified', false)
             ->orderBy('created_at', 'asc')
             ->first();
 
@@ -240,7 +241,6 @@ class Appeloffre extends Component
                 $this->dispatch('OldestCommentUpdated', $this->time);
             }
 
-            session()->flash('success', 'Commentaire créé avec succès!');
 
             DB::commit();
 
