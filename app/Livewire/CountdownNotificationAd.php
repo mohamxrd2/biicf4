@@ -44,6 +44,9 @@ class CountdownNotificationAd extends Component
     public $diversite;
     public $userId;
     public $userWalletFournisseur;
+    public $requiredAmount;
+    public $statusText;
+    public $statusClass;
 
 
 
@@ -78,13 +81,24 @@ class CountdownNotificationAd extends Component
                 session()->flash('error', 'Portefeuille introuvable.');
                 return;
             }
+            // Récupération du statut de la notification
+            $status = $this->getNotificationStatus($this->notification->reponse);
+            $this->statusText = $status['text'];
+            $this->statusClass = "{$status['bg']} {$status['textColor']}";
             Log::info('Portefeuille trouvé', ['userWallet' => $this->userWallet]);
         } catch (Exception $e) {
             Log::error("Erreur dans mount : " . $e->getMessage());
             session()->flash('error', 'Une erreur s\'est produite lors de la récupération des données.');
         }
     }
-
+    public function getNotificationStatus($response)
+    {
+        return match ($response) {
+            'accepter' => ['text' => 'effectué', 'bg' => 'bg-green-100', 'textColor' => 'text-green-700'],
+            'refuser' => ['text' => 'refusé', 'bg' => 'bg-red-100', 'textColor' => 'text-red-700'],
+            default => ['text' => 'en attente', 'bg' => 'bg-yellow-100', 'textColor' => 'text-yellow-700'],
+        };
+    }
     public function FactureRefuser()
     {
         try {
@@ -128,6 +142,21 @@ class CountdownNotificationAd extends Component
 
     public function valider()
     {
+        // Calcul du montant requis
+        $this->requiredAmount = floatval($this->notification->data['prixTrade']);
+
+        // Vérification des fonds disponibles dans le portefeuille
+        if ($this->userWallet->balance < $this->requiredAmount) {
+            Log::warning('Fonds insuffisants dans le portefeuille de l\'utilisateur.', [
+                'user_id' => $this->userWallet->user_id,
+                'requiredAmount' => $this->requiredAmount,
+                'currentBalance' => $this->userWallet->balance,
+            ]);
+
+            // Vous pouvez également ajouter un message pour l'utilisateur
+            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
+            return; // Arrête l'exécution de la fonction
+        }
         DB::beginTransaction();
         try {
             if ($this->notification->type_achat == 'Delivery') {
@@ -171,8 +200,6 @@ class CountdownNotificationAd extends Component
     }
     private function pour_livraison()
     {
-        // Calcul du montant requis
-        $requiredAmount = floatval($this->notification->data['prixTrade']);
 
         // Vérification de l'existence de l'achat dans les transactions gelées
         $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
@@ -188,17 +215,17 @@ class CountdownNotificationAd extends Component
         DB::beginTransaction(); // Démarre une transaction pour garantir la cohérence
         try {
             // Débit du portefeuille utilisateur
-            $this->userWallet->balance -= $requiredAmount;
+            $this->userWallet->balance -= $this->requiredAmount;
             $this->userWallet->save();
 
             Log::info('Portefeuille débité avec succès.', [
                 'user_id' => $this->userWallet->user_id,
                 'new_balance' => $this->userWallet->balance,
-                'debited_amount' => $requiredAmount
+                'debited_amount' => $this->requiredAmount
             ]);
 
             // Mise à jour du montant gelé
-            $existingGelement->amount += $requiredAmount;
+            $existingGelement->amount += $this->requiredAmount;
             $existingGelement->save();
 
             Log::info('Montant ajouté à une transaction existante', [
@@ -211,7 +238,7 @@ class CountdownNotificationAd extends Component
                 $this->user,
                 $this->user,
                 'Gele',
-                $requiredAmount,
+                $this->requiredAmount,
                 $this->generateIntegerReference(),
                 'Montant gelé pour la livraison',
                 'effectué',
@@ -224,7 +251,7 @@ class CountdownNotificationAd extends Component
             Log::error('Erreur lors du traitement de la livraison.', [
                 'message' => $e->getMessage(),
                 'user_id' => $this->userWallet->user_id,
-                'required_amount' => $requiredAmount
+                'required_amount' => $this->requiredAmount
             ]);
             session()->flash('error', 'Une erreur s\'est produite lors du traitement de la livraison.');
         }
@@ -412,15 +439,17 @@ class CountdownNotificationAd extends Component
                 $this->retait_magasin();
             } else {
                 // Préparer les données pour le fournisseur
+
                 $dataFournisseur = [
                     'code_unique' => $this->achatdirect->code_unique,
                     'fournisseurCode' => $fournisseurCode,
                     'livreurCode' => $livreurCode,
-                    'livreur' => $this->notification->data['livreur'] ?? null,
+                    'livreur' => $this->notification->data['livreur'],
+                    'fournisseur' => $this->fournisseur->id ?? null,
                     'client' => $this->achatdirect->userSender ?? null,
                     'achat_id' => $this->achatdirect->id ?? null,
                     'title' => 'Recuperation de la commande',
-                    'description' => 'Remettez le colis au livreur->',
+                    'description' => 'Remettez le colis au livreur.',
                 ];
 
                 if ($this->fournisseur) {
@@ -428,8 +457,6 @@ class CountdownNotificationAd extends Component
                     event(new NotificationSent($this->fournisseur));
 
                     Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
-                } else {
-                    Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
                 }
 
                 // Préparer les données pour le livreur
@@ -438,6 +465,7 @@ class CountdownNotificationAd extends Component
                     'livreurCode' => $livreurCode,
                     'fournisseurCode' => $fournisseurCode,
                     'fournisseur' => $this->fournisseur->id ?? null,
+                    'livreur' => $this->notification->data['livreur'],
                     'client' => $this->achatdirect->userSender ?? null,
                     'achat_id' => $this->achatdirect->id ?? null,
                     'prixTrade' => $this->notification->data['prixTrade'] ?? null,
@@ -449,8 +477,6 @@ class CountdownNotificationAd extends Component
                     event(new NotificationSent($this->livreur));
 
                     Log::info('Notification envoyée au livreur', ['livreurId' => $this->livreur->id, 'code' => $livreurCode]);
-                } else {
-                    Log::warning("Livreur introuvable pour la notification ID : " . $this->notification->id);
                 }
             }
             $this->notification->update(['reponse' => 'mainleveclient']);

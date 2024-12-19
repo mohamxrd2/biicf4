@@ -29,6 +29,11 @@ class UnreadNotificationCount extends Component
     {
         $user = Auth::guard('web')->user();
         $this->unreadCount = $user ? $user->unreadNotifications->count() : 0;
+        // Écouter dynamiquement le canal avec l'ID utilisateur
+        // $this->dispatch('echo:listen', [
+        //     'channel' => "private-App.Models.User.{$this->userId}",
+        //     'event' => 'NotificationSent',
+        // ]);
     }
 
     public function render()

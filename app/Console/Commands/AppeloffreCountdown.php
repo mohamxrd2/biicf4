@@ -28,11 +28,19 @@ class AppeloffreCountdown extends Command
         DB::beginTransaction(); // Démarre une transaction
 
         try {
-            $appelOffreGroups = AppelOffreGrouper::where('notified', false)
-                ->where('created_at', '<=', now()->subMinutes(2))
+            $appelOffreGroups = AppelOffreGrouper::where('count', true)
+                ->where('started_at', '<=', now()->subMinutes(2))
+                ->where(function ($query) {
+                    $query->whereNull('notified') // Inclut les notified null
+                        ->orWhere('notified', false); // Inclut les notified false
+                })
                 ->get();
 
+            // Transformer la collection en JSON pour le log
+
+
             foreach ($appelOffreGroups as $appelOffreGroup) {
+
                 $this->processAppelOffreGroup($appelOffreGroup);
             }
             DB::commit(); // Si tout se passe bien, commit les modifications

@@ -32,7 +32,9 @@ class Mainleveclient extends Component
     public $appeloffre;
     public $livreur;
     public $fournisseurWallet;
+    public $showMainlever = false;
 
+    
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
@@ -40,6 +42,10 @@ class Mainleveclient extends Component
         $this->livreur = User::find($this->notification->data['livreur']);
     }
 
+    public function toggleComponent()
+    {
+        $this->showMainlever = true;
+    }
     public function getCodeVerifProperty()
     {
         // Nettoie le code en enlevant les espaces blancs
@@ -58,7 +64,7 @@ class Mainleveclient extends Component
         ]);
 
         if (trim($this->code_verif) === trim($this->notification->data['CodeVerification'])) {
-            session()->flash('succes', 'Code valide.');
+            session()->flash('succes', 'Code valide. Procédez a la main lévee');
         } else {
             session()->flash('error', 'Code invalide.');
         }

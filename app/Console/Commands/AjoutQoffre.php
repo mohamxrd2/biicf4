@@ -27,8 +27,6 @@ class AjoutQoffre extends Command
 
     public function handle()
     {
-
-
         $offrecountdowns = OffreGroupe::where('count', true)
             ->where('created_at', '<=', now()->subMinutes(2))
             ->get();

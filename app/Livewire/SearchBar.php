@@ -142,7 +142,7 @@ class SearchBar extends Component
 
             // Pagination des résultats
             $results = $produits->paginate(10);
-
+            $resultCount = $results->count();
             // Récupération des requêtes de recherche les plus fréquentes
             $searchQueries = SearchQuery::select('query', DB::raw('COUNT(*) as count'))
                 ->groupBy('query')
@@ -155,6 +155,7 @@ class SearchBar extends Component
 
             return view('livewire.search-bar', [
                 'produits' => $results,
+                'resultCount' => $resultCount,
                 'searchQueries' => $searchQueries,
             ]);
         } catch (Exception $e) {
