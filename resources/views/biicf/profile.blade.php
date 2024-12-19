@@ -79,14 +79,11 @@
                 @endif
 
                 @if ($user->user_joint)
-                {{-- <div class="mb-3">
-                    <p class="font-semibold text-sm">Nom de l'utilisateur lié</p>
-                    @if($userJoint)
-                        <p class="text-sm text-gray-400">{{ $userJoint->name }}</p>
-                    @else
-                        <p class="text-sm text-gray-400">Aucun utilisateur lié</p>
-                    @endif
-                </div> --}}
+                <div class="mb-3">
+                    <p class="font-semibold text-sm">Vous etes livé a un utilisateur pour la double authentification</p>
+                   
+                 
+                </div>
                 
 
                     

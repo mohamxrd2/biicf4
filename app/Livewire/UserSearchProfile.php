@@ -13,6 +13,8 @@ class UserSearchProfile extends Component
     public $user_id;
     public $selectedUserId;
 
+    // Supprimer protected $listeners car on utilise maintenant #[On('xxx')]
+    
     public function mount()
     {
         $this->users = [];
@@ -22,9 +24,8 @@ class UserSearchProfile extends Component
     {
         if (!empty($this->search)) {
             $currentUserId = auth()->id();
-
             $this->users = User::where('username', 'like', '%' . $this->search . '%')
-                ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
+                ->where('id', '!=', $currentUserId)
                 ->get();
         } else {
             $this->users = [];
@@ -47,22 +48,27 @@ class UserSearchProfile extends Component
             'user_id.exists' => 'Cet utilisateur n\'existe pas.',
         ]);
 
-        // lié l'utlisatteur
+        try {
+            $userConnected = Auth::id();
+            $user = User::findOrFail($userConnected);
+            $user->user_joint = $this->user_id;
+            $user->save();
 
-        $userConncted = Auth::id();
-        $user = User::where('id', $userConncted)->first();
+            session()->flash('success', 'Utilisateur ajouté avec succès.');
+            
+            // Réinitialiser le formulaire
+            $this->reset(['search', 'user_id', 'users']);
+            
+            // Dispatch l'événement de rafraîchissement
+            $this->dispatch('user-added');
+            
+            // Rafraîchir le composant
+            $this->dispatch('refresh');
 
-        $user->user_joint = $this->user_id;
-        $user->save();
-
-        session()->flash('message', 'Utilisateur ajouté avec succès.');
-        $this->resetForm();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Une erreur est survenue lors de l\'ajout de l\'utilisateur.');
+        }
     }
-    private function resetForm()
-    {
-        $this->search = '';
-    }
-
 
     public function render()
     {

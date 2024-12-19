@@ -1,11 +1,13 @@
 <?php
 
-use App\Livewire\DetailsCreditProjet;
+use App\Livewire\Cfa;
 use App\Livewire\ProjetDetails;
 use App\Livewire\RechargeAgent;
 use App\Livewire\DetailLivraison;
 use App\Http\Controllers\OffreNegos;
 
+use Illuminate\Support\Facades\Auth;
+use App\Livewire\DetailsCreditProjet;
 use App\Livewire\WithdrawalComponent;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SmsController;
@@ -27,7 +29,6 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
-use App\Livewire\Cfa;
 
 Route::get('/', function () {
     return view('index');
@@ -253,4 +254,11 @@ Route::post('biicf/verify-phone', [UserController::class, 'verifyPhoneCode'])->n
 Route::get('resend-otp', [UserController::class, 'resendOtp'])->name('resend.otp');
 
 
-Route::post('biicf/logout', [BiicfAuthController::class, 'logout'])->name('biicf.logout');
+//Route::post('biicf/logout', [BiicfAuthController::class, 'logout'])->name('biicf.logout');
+
+Route::post('biicf/logout', function () {
+    Auth::logout();
+    session()->invalidate(); // Invalide la session active
+    session()->regenerateToken(); // Regénère le token CSRF pour plus de sécurité
+    return redirect()->route('biicf.login'); // Redirige vers la page de login
+})->name('biicf.logout');

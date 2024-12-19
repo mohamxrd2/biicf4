@@ -21,7 +21,8 @@ class DepositClient extends Component
 {
     use WithFileUploads;
 
-    public $amount;
+    public  $amount;
+
     public $receipt;
 
     public $deposit_type = '';
@@ -40,13 +41,21 @@ class DepositClient extends Component
 
     public function mount()
     {
+      
+
 
         $this->resetForm();
     }
     public function updatedAmount($value)
     {
-        // Calculer le montant avec 10 % en plus, arrondi au multiple de 5 le plus proche
-        $this->roi = round(($value * 1.10) / 5) * 5;
+        if (is_numeric($value) && $value > 0) {
+            // Calculer le montant avec 1%
+            $montantAvecPourcentage = $value + ($value * 0.01);
+            // Arrondir au multiple de 5 supérieur
+            $this->roi = ceil($montantAvecPourcentage / 5) * 5;
+        } else {
+            $this->roi = '';
+        }
     }
 
     public function submitDeposit()
@@ -216,10 +225,10 @@ class DepositClient extends Component
     public function resetForm()
     {
         $this->deposit_type = "";
-        $this->amount = "";
+        $this->amount =  null;
         $this->user_id = "";
         $this->receipt = null;
-        $this->roi = "";
+        $this->roi = null;
     }
     protected function generateUniqueReference()
     {
