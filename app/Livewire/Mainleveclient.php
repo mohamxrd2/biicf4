@@ -11,6 +11,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Notifications\Confirmation;
+use App\Notifications\RefusAchat;
 use App\Notifications\RefusVerif;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -32,9 +33,12 @@ class Mainleveclient extends Component
     public $appeloffre;
     public $livreur;
     public $fournisseurWallet;
+    public $quantite;
+    public $qualite;
+    public $diversite;
     public $showMainlever = false;
 
-    
+
     public function mount($id)
     {
         $this->notification = DatabaseNotification::findOrFail($id);
@@ -71,6 +75,20 @@ class Mainleveclient extends Component
     }
     public function acceptColis()
     {
+        // Validation initiale des réponses
+        $responses = [
+            'Quantité' => $this->quantite,
+            'Qualité' => $this->qualite,
+            'Diversité' => $this->diversite,
+        ];
+
+        $countYes = count(array_filter($responses, fn($value) => strtolower($value) === 'oui'));
+
+        if ($countYes < 2) {
+            session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
+            return;
+        }
+
         DB::beginTransaction();
         try {
             $dataType = $this->achatdirect ? 'achatdirect' : ($this->appeloffre ? 'appeloffre' : null);
@@ -234,59 +252,89 @@ class Mainleveclient extends Component
     public function refuseColis()
     {
 
-        $this->totalPrice = (int) ($this->notification->data['quantite'] * $this->notification->data['prixProd']) + $this->notification->data['prixTrade'];
-        $produit = ProduitService::find($this->notification->data['idProd']);
+        DB::beginTransaction();
+        try {
+            $dataType = $this->achatdirect ? 'achatdirect' : ($this->appeloffre ? 'appeloffre' : null);
 
-        $montantTotal = $this->totalPrice;
+            if (!$dataType) {
+                throw new Exception('Aucune donnée d\'achat direct ou d\'appel d\'offre n\'est disponible.');
+            }
 
+            $gelement = gelement::where('reference_id', $this->notification->data['code_unique'])->first();
+            if (!$gelement) {
+                throw new Exception('Référence introuvable dans la table gelement.');
+            }
 
+            $valeurGelement = $gelement->amount;
+            Log::info('Valeur récupérée depuis la table gelement', ['valeur' => $valeurGelement]);
 
+            // Récupération des portefeuilles
+            $fournisseurId = $this->notification->data['fournisseur'];
+            $livreurId = $this->notification->data['livreur'];
 
-        $livreur = User::find($this->notification->data['id_livreur']);
+            $livreurWallet = Wallet::where('user_id', $livreurId)->firstOrFail();
 
-        $fournisseur = User::find($this->notification->data['id_trader']);
+            // Calculs pour les montants et intérêts
+            $prixTrade = $this->notification->data['prixTrade'];
 
+            // $montantClient = $prixTrade +
+            $interetLivreur = $prixTrade * 0.01;
+            $montantPourLivreur = $prixTrade - $interetLivreur;
 
-        $client = User::find($this->notification->data['id_client']);
+            $totalInterets = $interetLivreur;
 
-        $clientWallet = Wallet::where('user_id', $this->notification->data['id_client'])->first();
+            Log::info('Montants et intérêts calculés', [
+                'montantPourLivreur' => $montantPourLivreur,
+                'totalInterets' => $totalInterets,
+            ]);
 
-        if (!$clientWallet) {
-            session()->flash('error', 'Portefeuille du client introuvable.');
-            return;
+            // Mise à jour des portefeuilles
+            $livreurWallet->increment('balance', $montantPourLivreur);
+
+            Log::info('Portefeuilles mis à jour', [
+                'fournisseur_id' => $fournisseurId,
+                'livreur_id' => $livreurId,
+            ]);
+
+            // Préparation des notifications
+            $data = [
+                'code_unique' => $this->notification->data['code_unique'],
+                'achat_id' => $this->notification->data['achat_id'],
+                'title' => 'Transaction réussie',
+                'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
+            ];
+
+            Notification::send(User::find($fournisseurId), new RefusAchat([
+                'code_unique' => $this->notification->data['code_unique'],
+                'id' => $this->notification->data['achat_id'],
+                'title' => 'Facture Refusée',
+                'description' => 'Le prix de la facture ne convient pas au client',
+            ]));
+
+            Notification::send(User::find($this->notification->data['livreur']), new Confirmation($data));
+            // Création des transactions
+            $this->createTransactionNew(Auth::user()->id, $livreurId, 'Réception', 'COC', $montantPourLivreur, $this->generateIntegerReference(), 'Réception pour livraison.');
+
+            // Mise à jour de la notification
+            $this->notification->update(['reponse' => 'refuser']);
+            Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
+            session()->flash('succes', 'Le payement a été éffecuté avec succes.');
+
+            DB::commit();
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            Log::error('Portefeuille introuvable.', ['message' => $e->getMessage()]);
+            session()->flash('error', 'Un portefeuille requis est introuvable.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur lors de l\'acceptation du colis.', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
 
-        $livreurWallet = Wallet::where('user_id', $this->notification->data['id_livreur'])->first();
 
-        if (!$livreurWallet) {
-            session()->flash('error', 'Portefeuille du livreur introuvable.');
-            return;
-        }
-
-        $clientWallet->increment('balance', $montantTotal);
-
-        $livreurWallet->increment('balance', $this->notification->data['prixTrade']);
-
-
-
-        $referenceId = $this->generateIntegerReference();
-
-        $this->createTransactionNew($this->notification->data['id_trader'], $this->notification->data['id_client'], 'Réception', 'COC', $montantTotal, $referenceId, 'Refus de recupération de ' . $produit->name);
-
-
-
-        $this->createTransactionNew($this->notification->data['id_client'], $$this->notification->data['id_livreur'], 'Réception', 'COC', $this->notification->data['prixTrade'], $referenceId, 'Réception pour livraison de ' . $produit->name);
-
-        Notification::send($livreur, new RefusVerif('Le colis à été refuser !'));
-
-        Notification::send($fournisseur, new RefusVerif('Le colis à été refuser !'));
-
-        Notification::send($client, new RefusVerif('Le colis à été refuser !'));
-
-
-
-
-        $this->notification->update(['reponse' => 'refuseVereif']);
     }
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
