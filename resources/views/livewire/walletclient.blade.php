@@ -510,11 +510,6 @@
                             </div>
 
 
-
-
-
-
-
                         </div>
                     @elseif ($currentPage === 'envoie')
                         @livewire('transfert-argent')

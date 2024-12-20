@@ -48,5 +48,16 @@
     </div>
 
     <!-- Message de confirmation -->
+
+
+    <script>
+        // Écouter l'événement de rafraîchissement
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('user-added', () => {
+                // Rafraîchir la page ou effectuer d'autres actions
+                location.reload();
+            });
+        });
+    </script>
    
 </div>

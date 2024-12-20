@@ -15,14 +15,16 @@ class SearchBar extends Component
 {
     use WithPagination;
 
-    public $keyword;
-    public $zone_economique;
-    public $type;
-    public $qte;
-    public $prix;
-    public $searchResults;
+    protected $paginationTheme = 'tailwind';
 
-    protected $updatesQueryString = [
+    public $keyword = '';
+    public $zone_economique = '';
+    public $type = '';
+    public $qte = '';
+    public $prix = '';
+    public $resultCount = 0;
+
+    protected $queryString = [
         'keyword' => ['except' => ''],
         'zone_economique' => ['except' => ''],
         'type' => ['except' => ''],
@@ -35,58 +37,69 @@ class SearchBar extends Component
         $this->fill(request()->only('keyword', 'zone_economique', 'type', 'qte', 'prix'));
     }
 
-    public $modalOpen;
-
-    public function accepter()
+    public function updatedKeyword()
     {
-        $this->modalOpen = false;
+        $this->resetPage();
     }
 
-    public function search()
+    public function updatedZoneEconomique()
     {
-        // Cette méthode est appelée lors de la soumission du formulaire
-        Log::info('Recherche déclenchée', [
-            'keyword' => $this->keyword,
-            'zone_economique' => $this->zone_economique,
-            'type' => $this->type,
-            'qte' => $this->qte,
-            'prix' => $this->prix,
-        ]);
+        $this->resetPage();
+    }
 
-        // Stocker les informations de recherche
-        $this->searchResults = [
-            'keyword' => $this->keyword,
-            'zone_economique' => $this->zone_economique,
-            'type' => $this->type,
-            'qte' => $this->qte,
-            'prix' => $this->prix,
+    public function updatedType()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedQte()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPrix()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters()
+    {
+        $this->reset(['keyword', 'zone_economique', 'type', 'qte', 'prix']);
+        $this->resetPage();
+    }
+
+    public function applyFilters()
+    {
+        $this->resetPage();
+    }
+
+    private function getStats()
+    {
+        return [
+            'total_products' => ProduitService::where('statuts', 'Accepté')->count(),
+            'total_credits' => ProduitService::where('statuts', 'Accepté')->sum('prix'),
         ];
-
-        SearchQuery::create([
-            'query' => $this->keyword,
-        ]);
     }
 
     public function render()
     {
         try {
-            // Initialiser la requête
-            $produits = ProduitService::with('user')
+            $query = ProduitService::with('user')
                 ->where('statuts', 'Accepté')
                 ->orderBy('created_at', 'desc');
 
             // Filtrage par mot-clé
-            if ($this->keyword) {
+            if (!empty($this->keyword)) {
                 $keyword = strtolower(trim($this->keyword));
-                $produits->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%']);
+                $query->where(function($q) use ($keyword) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                      ->orWhereRaw('LOWER(description) LIKE ?', ['%' . $keyword . '%']);
+                });
             }
 
-            // Charger les informations de l'utilisateur
-            $user = auth()->user();
-            if ($user && $this->zone_economique) {
-                $normalizedZoneEconomique = strtolower(trim($this->zone_economique));
-
-                // Normaliser les informations de localisation de l'utilisateur
+            // Filtrage par zone économique
+            if (!empty($this->zone_economique) && auth()->check()) {
+                $user = auth()->user();
                 $userLocation = [
                     'commune' => strtolower($user->commune),
                     'ville' => strtolower($user->ville),
@@ -96,74 +109,73 @@ class SearchBar extends Component
                     'continent' => strtolower($user->continent),
                 ];
 
-                // Appliquer le filtre en fonction de la zone choisie
-                switch ($normalizedZoneEconomique) {
-                    case 'proximite':
-                        $produits->whereHas('user', fn($query) => $query->whereRaw('LOWER(commune) = ?', [$userLocation['commune']]));
-                        break;
-                    case 'locale':
-                        $produits->whereHas('user', fn($query) => $query->whereRaw('LOWER(ville) = ?', [$userLocation['ville']]));
-                        break;
-                    case 'departementale':
-                        $produits->whereHas('user', fn($query) => $query->whereRaw('LOWER(departement) = ?', [$userLocation['departement']]));
-                        break;
-                    case 'nationale':
-                        $produits->whereHas('user', fn($query) => $query->whereRaw('LOWER(pays) = ?', [$userLocation['pays']]));
-                        break;
-                    case 'sous_regionale':
-                        $produits->whereHas('user', fn($query) => $query->whereRaw('LOWER(sous_region) = ?', [$userLocation['sous_region']]));
-                        break;
-                    case 'continentale':
-                        $produits->whereHas('user', fn($query) => $query->whereRaw('LOWER(continent) = ?', [$userLocation['continent']]));
-                        break;
-                    default:
-                        Log::warning('Zone économique non reconnue', ['zone_economique' => $this->zone_economique]);
-                        break;
+                $zoneMap = [
+                    'proximite' => ['field' => 'commune', 'value' => $userLocation['commune']],
+                    'locale' => ['field' => 'ville', 'value' => $userLocation['ville']],
+                    'departementale' => ['field' => 'departement', 'value' => $userLocation['departement']],
+                    'nationale' => ['field' => 'pays', 'value' => $userLocation['pays']],
+                    'sous_regionale' => ['field' => 'sous_region', 'value' => $userLocation['sous_region']],
+                    'continentale' => ['field' => 'continent', 'value' => $userLocation['continent']],
+                ];
+
+                if (isset($zoneMap[$this->zone_economique])) {
+                    $zone = $zoneMap[$this->zone_economique];
+                    $query->whereHas('user', function($q) use ($zone) {
+                        $q->whereRaw("LOWER({$zone['field']}) = ?", [$zone['value']]);
+                    });
                 }
             }
 
             // Filtrage par type
-            if ($this->type) {
-                $produits->where('type', $this->type);
+            if (!empty($this->type)) {
+                $query->where('type', $this->type);
             }
 
             // Filtrage par prix
-            if ($this->prix) {
-                $produits->where('prix', '<=', $this->prix);
+            if (!empty($this->prix)) {
+                $query->where('prix', '<=', $this->prix);
             }
 
             // Filtrage par quantité
-            if ($this->qte) {
-                $produits->where(function ($query) {
-                    $query->where('qteProd_min', '<=', $this->qte)
-                        ->where('qteProd_max', '>=', $this->qte);
+            if (!empty($this->qte)) {
+                $query->where(function ($q) {
+                    $q->where('qteProd_min', '<=', $this->qte)
+                      ->where('qteProd_max', '>=', $this->qte);
                 });
             }
 
-            // Pagination des résultats
-            $results = $produits->paginate(10);
-            $resultCount = $results->count();
-            // Récupération des requêtes de recherche les plus fréquentes
-            $searchQueries = SearchQuery::select('query', DB::raw('COUNT(*) as count'))
+            // Pagination
+            $produits = $query->paginate(12);
+            $this->resultCount = $produits->total();
+
+            // Recherches populaires
+            $popularSearches = SearchQuery::select('query', DB::raw('COUNT(*) as count'))
                 ->groupBy('query')
                 ->orderBy('count', 'desc')
                 ->limit(5)
                 ->get();
 
-            // Journalisation des résultats
-            Log::info('Résultats paginés récupérés', ['results_count' => $results->count()]);
+            // Statistiques
+            $stats = $this->getStats();
 
             return view('livewire.search-bar', [
-                'produits' => $results,
-                'resultCount' => $resultCount,
-                'searchQueries' => $searchQueries,
+                'produits' => $produits,
+                'resultCount' => $this->resultCount,
+                'popularSearches' => $popularSearches,
+                'stats' => $stats,
             ]);
+
         } catch (Exception $e) {
-            // Gestion des erreurs et journalisation
-            Log::error('Erreur lors du rendu de la recherche', ['error' => $e->getMessage()]);
+            Log::error('Erreur lors de la recherche', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return view('livewire.search-bar', [
-                'produits' => collect(), // Retourne une collection vide en cas d'erreur
-                'searchQueries' => collect(),
+                'produits' => collect(),
+                'resultCount' => 0,
+                'popularSearches' => collect(),
+                'stats' => $this->getStats(),
             ]);
         }
     }
