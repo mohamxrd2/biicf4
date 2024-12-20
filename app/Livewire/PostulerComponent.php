@@ -122,6 +122,7 @@ class PostulerComponent extends Component
             $this->dispatch('formSubmitted', 'Enregistrement effectué avec success');
             // actuliser la page
             $this->livraison = Livraisons::where('user_id', Auth::id())->first();
+            $this->restForm();
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Gérer les erreurs de validation
             session()->flash('error', 'Veuillez corriger les erreurs ci-dessous.');
@@ -140,30 +141,14 @@ class PostulerComponent extends Component
         // Validation avec messages d'erreur personnalisés
         $this->validate([
             'experience' => 'required|string',
-            'selectedContinent' => 'required|string',
-            'selectedSous_region' => 'required|string',
-            'pays' => 'required|string',
-            'depart' => 'required|string',
-            'ville' => 'required|string',
-            'localite' => 'required|string',
+           
             'identity' => 'required|file|mimes:jpeg,png,pdf',
             'permis' => 'required|file|mimes:jpeg,png,pdf',
             'assurance' => 'required|file|mimes:jpeg,png,pdf',
         ], [
             'experience.required' => 'Le champ expérience est obligatoire.',
             'experience.string' => 'Le champ expérience doit être une chaîne de caractères.',
-            'selectedContinent.required' => 'Le champ continent est obligatoire.',
-            'selectedContinent.string' => 'Le champ continent doit être une chaîne de caractères.',
-            'selectedSous_region.required' => 'Le champ sous-région est obligatoire.',
-            'selectedSous_region.string' => 'Le champ sous-région doit être une chaîne de caractères.',
-            'pays.required' => 'Le champ pays est obligatoire.',
-            'pays.string' => 'Le champ pays doit être une chaîne de caractères.',
-            'depart.required' => 'Le champ département est obligatoire.',
-            'depart.string' => 'Le champ département doit être une chaîne de caractères.',
-            'ville.required' => 'Le champ ville est obligatoire.',
-            'ville.string' => 'Le champ ville doit être une chaîne de caractères.',
-            'localite.required' => 'Le champ localité est obligatoire.',
-            'localite.string' => 'Le champ localité doit être une chaîne de caractères.',
+            
             'identity.required' => 'Le fichier d\'identité est obligatoire.',
             'identity.file' => 'Le champ identité doit être un fichier.',
             'identity.mimes' => 'Le fichier d\'identité doit être au format jpeg, png ou pdf.',
@@ -179,12 +164,7 @@ class PostulerComponent extends Component
         $psap = new Psap();
         $psap->user_id = Auth::id();
         $psap->experience = $this->experience;
-        $psap->continent = $this->selectedContinent;
-        $psap->sous_region = $this->selectedSous_region;
-        $psap->depart = $this->depart;
-        $psap->ville = $this->ville;
-        $psap->localite = $this->localite;
-        $psap->pays = $this->pays;
+      
         $psap->etat = "En cours";
 
 
@@ -198,19 +178,27 @@ class PostulerComponent extends Component
         session()->flash('message', 'PSAP ajouté avec succès!');
 
         // Réinitialiser les champs du formulaire
-        $this->reset([
-            'experience',
-            'selectedContinent',
-            'selectedSous_region',
-            'pays',
-            'depart',
-            'ville',
-            'localite',
-            'identity',
-            'permis',
-            'assurance'
-        ]);
+      $this->resetForm();
     }
+    public function removeIdentity()
+{
+    $this->identity = null;
+}
+
+public function removePermis()
+{
+    $this->permis = null;
+}
+
+public function removeAssurance()
+{
+    $this->assurance = null;
+}
+
+public function resetForm()
+{
+    $this->reset(['experience', 'identity', 'permis', 'assurance','experience', 'vehicle', 'vehicle2', 'vehicle3', 'zone',]);
+}
 
 
     protected function handlePhotoUpload($livreur, $photoField)
