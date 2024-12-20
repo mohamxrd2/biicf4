@@ -11,21 +11,14 @@ use App\Models\AchatDirect as AchatDirectModel;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Transaction;
-use App\Events\MyEvent;
 use App\Events\NotificationSent;
-use App\Models\AchatGrouper;
-use App\Models\Consommation;
 use App\Models\CrediScore;
 use App\Models\gelement;
-use App\Models\NotificationLog;
 use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
-use App\Notifications\AchatGroupBiicf;
 use App\Notifications\Confirmation;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\On;
 use Illuminate\Support\Str;
 
 class AchatDirectGroupe extends Component
@@ -87,17 +80,82 @@ class AchatDirectGroupe extends Component
 
     public function AchatDirectForm()
     {
+        // Valider les données
+        $validated = $this->validateData();
 
+        $userId = Auth::id();
+        if (!$userId) {
+            Log::error('Utilisateur non authentifié.');
+            session()->flash('error', 'Utilisateur non authentifié.');
+            return;
+        }
+
+        $montantTotal = $validated['quantité'] * $validated['prix'];
+        $userWallet = $this->getUserWallet($userId);
+        if (!$userWallet || !$this->hasSufficientFunds($userWallet, $montantTotal)) {
+            return;
+        }
+
+        // Commencer la transaction
+        DB::beginTransaction();
+        try {
+            $codeUnique = $this->generateUniqueReference();
+            if (!$codeUnique) {
+                throw new \Exception('Code unique non généré.');
+            }
+
+            // Traiter l'achat
+            $achat = $this->createPurchase($validated, $montantTotal, $codeUnique);
+
+            // Mettre à jour le portefeuille
+            $this->updateWalletBalance($userWallet, $montantTotal);
+
+            // Créer les transactions
+            $reference_id = $this->generateIntegerReference();
+            $this->createTransaction(
+                $userId,
+                $validated['userTrader'],
+                'Gele',
+                $montantTotal,
+                $reference_id,
+                'Gele Pour Achat de ' . $validated['nameProd'],
+                'effectué',
+                'COC'
+            );
+
+            // Gérer les notifications
+            $this->sendNotifications($validated, $achat, $codeUnique);
+
+            DB::commit();
+
+            // Réinitialiser les champs du formulaire
+            $this->resetForm();
+
+            // Émettre un événement de succès
+            $this->dispatch('formSubmitted', 'Achat Affectué Avec Succès');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur lors de l\'achat direct.', [
+                'error' => $e->getMessage(),
+                'userId' => $userId,
+                'data' => $validated,
+            ]);
+            session()->flash('error', 'Une erreur est survenue.');
+        }
+    }
+
+    private function validateData()
+    {
         $validated = $this->validate([
             'quantité' => 'required|integer',
             'localite' => 'required|string|max:255',
             'selectedOption' => 'required|string',
-            'dateTot' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
-            'dateTard' => $this->selectedOption == 'Take Away' ? 'required|date' : 'nullable|date',
-            'timeStart' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
-            'timeEnd' => $this->selectedOption == 'Take Away' ? 'nullable|date_format:H:i' : 'nullable|date_format:H:i',
-            'dayPeriod' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
-            'dayPeriodFin' => $this->selectedOption == 'Take Away' ? 'nullable|string' : 'nullable|string',
+            'dateTot' => $this->selectedOption === 'Take Away' ? 'required|date' : 'nullable|date',
+            'dateTard' => 'nullable|date',
+            'timeStart' => 'nullable|date_format:H:i',
+            'timeEnd' => 'nullable|date_format:H:i',
+            'dayPeriod' => 'nullable|string',
+            'dayPeriodFin' => 'nullable|string',
             'userTrader' => 'required|exists:users,id',
             'nameProd' => 'required|string',
             'userSender' => 'required|exists:users,id',
@@ -106,138 +164,104 @@ class AchatDirectGroupe extends Component
             'prix' => 'required|numeric',
         ]);
 
-        // dd($validated);
-
-        Log::info('Validation réussie.', $validated);
-
-        $userId = Auth::id();
-        $montantTotal = $validated['quantité'] * $validated['prix'];
-
-        if (!$userId) {
-            Log::error('Utilisateur non authentifié.');
-            session()->flash('error', 'Utilisateur non authentifié.');
-            return;
+        if ($this->selectedOption === 'Take Away') {
+            $this->validateTimeStartAndDayPeriod();
         }
 
-        $userWallet = Wallet::where('user_id', $userId)->first();
-
-        if (!$userWallet) {
-            Log::error('Portefeuille introuvable.', ['userId' => $userId]);
-            session()->flash('error', 'Portefeuille introuvable.');
-            return;
+        return $validated;
+    }
+    private function validateTimeStartAndDayPeriod()
+    {
+        if (empty($this->timeStart) && empty($this->dayPeriod)) {
+            $this->addError('timeStart', 'Vous devez remplir soit Heure de début soit Période.');
+            $this->addError('dayPeriod', 'Vous devez remplir soit Heure de début soit Période.');
+        } elseif (!empty($this->timeStart) && !empty($this->dayPeriod)) {
+            $this->addError('timeStart', 'Vous ne pouvez pas remplir les deux champs en même temps.');
+            $this->addError('dayPeriod', 'Vous ne pouvez pas remplir les deux champs en même temps.');
+        } else {
+            $this->resetErrorBag(['timeStart', 'dayPeriod']);
         }
+    }
 
+
+
+    private function getUserWallet($userId)
+    {
+        return Wallet::where('user_id', $userId)->first();
+    }
+
+    private function hasSufficientFunds($userWallet, $montantTotal)
+    {
         if ($userWallet->balance < $montantTotal) {
-            Log::warning('Fonds insuffisants pour effectuer cet achat.', [
-                'userId' => $userId,
+            Log::warning('Fonds insuffisants.', [
+                'userId' => $userWallet->user_id,
                 'requiredAmount' => $montantTotal,
                 'walletBalance' => $userWallet->balance,
             ]);
             session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-            return;
+            return false;
         }
-
-        ($codeUnique = $this->generateUniqueReference());
-        if (!$codeUnique) {
-            Log::error('Code unique non généré.');
-            throw new \Exception('Code unique non généré.');
-        }
-
-        // // Commencez une transaction de base de données
-        DB::beginTransaction();
-        try {
-            // Mettre à jour le solde du portefeuille
-            $userWallet->decrement('balance', $montantTotal);
-
-            // Générer une référence de transaction
-            $reference_id = $this->generateIntegerReference();
-
-            // Mettre à jour la table de AchatDirectModel de fond
-            $achat = AchatDirectModel::create([
-                'nameProd' => $validated['nameProd'],
-                'quantité' => $validated['quantité'],
-                'montantTotal' => $montantTotal,
-                'localite' => $validated['localite'],
-                'date_tot' => $validated['dateTot'],
-                'date_tard' => $validated['dateTard'],
-                'timeStart' => $validated['timeStart'],
-                'timeEnd' => $validated['timeEnd'],
-                'dayPeriod' => $validated['dayPeriod'],
-                'dayPeriodFin' => $validated['dayPeriodFin'],
-                'userTrader' => $validated['userTrader'],
-                'userSender' => $validated['userSender'],
-                'specificite' => $this->produit->specification,
-                'photoProd' => $validated['photoProd'],
-                'idProd' => $validated['idProd'],
-                'code_unique' => $codeUnique, // Utiliser la variable vérifiée
-
-            ]);
-            // Mettre à jour la table de gelement de fond
-            gelement::create([
-                'id_wallet' => $userWallet->id,
-                'amount' => $montantTotal,
-                'reference_id' => $codeUnique,
-            ]);
-
-            // Confirmation pour l'utilisateur
-            $userConnecte = User::find($validated['userSender']);
-            Notification::send($userConnecte, new Confirmation([
-                'nameProd' => $validated['nameProd'],
-                'idProd' => $validated['idProd'],
-                'code_unique' => $codeUnique,
-                'idAchat' => $achat->id,
-                'title' => 'Commande effectuée avec succès',
-                'description' => 'Cliquez pour voir les détails de votre commande.',
-            ]));
-
-
-
-            // Mettre à jour la table de AchatDirectModel de fond
-            $achatUser = [
-                'nameProd' => $validated['nameProd'],
-                'idProd' => $validated['idProd'],
-                'code_unique' => $codeUnique,
-                'idAchat' => $achat->id,
-                'title' => 'Nouvelle commande',
-                'description' => 'veuillez verifiez si le produit est disponible.',
-            ];
-
-            // Créer  transactions
-            $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Gele Pour ' . 'Achat de ' . $validated['nameProd'], 'effectué', 'COC');
-
-            $owner = User::find($validated['userTrader']);
-            $selectedOption = $this->selectedOption;
-            Notification::send($owner, new AchatBiicf($achatUser));
-
-            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-            $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
-
-            if ($notification) {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => $selectedOption]);
-            }
-
-
-            $this->reset(['quantité', 'localite']);
-            // Après l'envoi de la notification
-            event(new NotificationSent($owner));
-            // Déclencher un événement pour signaler l'envoi de la notification
-            event(new NotificationSent($userConnecte));
-            // Émettre un événement après la soumission
-            $this->dispatch('formSubmitted', 'Achat Affectué Avec Success');
-            
-            // Valider la transaction de base de données
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Erreur lors de l\'achat direct.', [
-                'error' => $e->getMessage(),
-                'userId' => $userId,
-                'data' => $validated,
-            ]);
-            session()->flash('error', 'Une erreur est survenue ');
-        }
+        return true;
     }
+
+    private function updateWalletBalance($userWallet, $montantTotal)
+    {
+        $userWallet->decrement('balance', $montantTotal);
+    }
+
+    private function createPurchase($validated, $montantTotal, $codeUnique)
+    {
+        return AchatDirectModel::create([
+            'nameProd' => $validated['nameProd'],
+            'quantité' => $validated['quantité'],
+            'montantTotal' => $montantTotal,
+            'localite' => $validated['localite'],
+            'date_tot' => $validated['dateTot'],
+            'date_tard' => $validated['dateTard'],
+            'timeStart' => $validated['timeStart'],
+            'timeEnd' => $validated['timeEnd'],
+            'dayPeriod' => $validated['dayPeriod'],
+            'dayPeriodFin' => $validated['dayPeriodFin'],
+            'userTrader' => $validated['userTrader'],
+            'userSender' => $validated['userSender'],
+            'specificite' => $this->produit->specification,
+            'photoProd' => $validated['photoProd'],
+            'idProd' => $validated['idProd'],
+            'code_unique' => $codeUnique,
+        ]);
+    }
+
+    private function sendNotifications($validated, $achat, $codeUnique)
+    {
+        $userConnecte = User::find($validated['userSender']);
+        Notification::send($userConnecte, new Confirmation([
+            'nameProd' => $validated['nameProd'],
+            'idProd' => $validated['idProd'],
+            'code_unique' => $codeUnique,
+            'idAchat' => $achat->id,
+            'title' => 'Commande effectuée avec succès',
+            'description' => 'Cliquez pour voir les détails de votre commande.',
+        ]));
+
+        $achatUser = [
+            'nameProd' => $validated['nameProd'],
+            'idProd' => $validated['idProd'],
+            'code_unique' => $codeUnique,
+            'idAchat' => $achat->id,
+            'title' => 'Nouvelle commande',
+            'description' => 'Veuillez vérifier si le produit est disponible.',
+        ];
+
+        $owner = User::find($validated['userTrader']);
+        Notification::send($owner, new AchatBiicf($achatUser));
+    }
+
+    private function resetForm()
+    {
+        $this->reset(['quantité', 'localite']);
+    }
+
+
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Bt51\NTP\Socket;
 use Bt51\NTP\Client;
+use DateTime;
 
 class RecuperationTimer
 {
@@ -26,7 +27,6 @@ class RecuperationTimer
         try {
             // En cas d'échec, utiliser l'heure du serveur comme secours
             $this->fetchServerTime();
-
         } catch (Exception $e) {
             // Initialisation de la connexion au serveur NTP
             $socket = new Socket('0.pool.ntp.org', 123);
@@ -34,7 +34,15 @@ class RecuperationTimer
 
             // Récupération de l'heure depuis le serveur NTP
             $this->timentp = $ntp->getTime();
-            $this->time = Carbon::parse($this->timentp)->toIso8601String();
+            // Vérification que l'heure récupérée est valide
+            if ($this->timentp instanceof DateTime) {
+                // Conversion en millisecondes
+                $timestampSeconds = $this->timentp->getTimestamp();
+                $this->time  = $timestampSeconds * 1000;
+
+                // Ajout des millisecondes supplémentaires (si nécessaire)
+                $this->time  += (int)($this->timentp->format('u') / 1000);
+            }
         }
 
         return $this->time;

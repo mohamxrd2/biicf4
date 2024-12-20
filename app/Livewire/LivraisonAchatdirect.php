@@ -38,6 +38,9 @@ class LivraisonAchatdirect extends Component
     public $Valuecode_unique;
     public $time;
     public $error;
+    public $prixLePlusBas;
+    public $offreIniatiale;
+    public $timestamp;
 
     protected $recuperationTimer;
 
@@ -52,6 +55,10 @@ class LivraisonAchatdirect extends Component
         // Récupération de l'heure via le service
         $this->time = $this->recuperationTimer->getTime();
         $this->error = $this->recuperationTimer->error;
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
 
         // Récupérer la notification par son ID ou échouer
         $this->notification = DatabaseNotification::findOrFail($id);
@@ -80,7 +87,7 @@ class LivraisonAchatdirect extends Component
 
         // Assurez-vous que la date est en format ISO 8601 pour JavaScript
         $this->oldestCommentDate = $this->oldestComment
-            ? $this->oldestComment->created_at->toIso8601String()
+            ? Carbon::parse($this->oldestComment->start_time)->toIso8601String()
             : null;
 
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
@@ -98,6 +105,14 @@ class LivraisonAchatdirect extends Component
             ->orderBy('prixTrade', 'asc')
             ->get();
 
+        $this->prixLePlusBas = Comment::where('code_unique', $this->Valuecode_unique)
+            ->whereNotNull('prixTrade')
+            ->min('prixTrade');
+
+        $this->offreIniatiale = Comment::where('code_unique', $this->Valuecode_unique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('prixTrade', 'asc')
+            ->first(); // Récupère le premier commentaire trié
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -110,19 +125,36 @@ class LivraisonAchatdirect extends Component
         }
     }
 
-    protected $listeners = ['compteReboursFini'];
+    protected $listeners = ['compteReboursFini', 'refreshCountdown'];
 
-    public function compteReboursFini()
+    // public function compteReboursFini()
+    // {
+    //     // Mettre à jour l'attribut 'finish' du demandeCredit
+    //     $this->achatdirect->update([
+    //         'count' => true,
+    //         $this->dispatch(
+    //             'formSubmitted',
+    //             'Temps écoule, Négociation terminé.'
+    //         )
+    //     ]);
+    // }
+    public function handleCountdownUpdate($event)
     {
-        // Mettre à jour l'attribut 'finish' du demandeCredit
-        $this->achatdirect->update([
-            'count' => true,
-            $this->dispatch(
-                'formSubmitted',
-                'Temps écoule, Négociation terminé.'
-            )
+        $this->oldestCommentDate = $event['time'];
+        $this->time = $this->recuperationTimer->getTime();
+
+        $this->dispatch('countdownUpdated', [
+            'oldestCommentDate' => $this->oldestCommentDate,
+            'serverTime' => $this->time
         ]);
     }
+
+    public function refreshCountdown()
+    {
+        $this->time = $this->recuperationTimer->getTime();
+        $this->dispatch('timeUpdated',  $this->time);
+    }
+
     public function commentFormLivr()
     {
         // Valider les données
@@ -167,7 +199,7 @@ class LivraisonAchatdirect extends Component
                 Countdown::create([
                     'user_id' => Auth::id(),
                     'userSender' => $this->achatdirect->userSender,
-                    'start_time' => Carbon::parse($this->time),
+                    'start_time' => $this->timestamp,
                     'difference' => 'ad',
                     'code_unique' => $this->Valuecode_unique,
                     'id_achat' => $this->achatdirect->id,

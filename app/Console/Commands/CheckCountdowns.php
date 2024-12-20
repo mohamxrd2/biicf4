@@ -39,9 +39,9 @@ class CheckCountdowns extends Command
                 ->with(['sender', 'achat', 'appelOffre'])
                 ->get();
 
-            foreach ($countdowns as $countdown) {
-                $this->processCountdown($countdown);
-            }
+            // foreach ($countdowns as $countdown) {
+            //     $this->processCountdown($countdown);
+            // }
 
             DB::commit(); // Si tout se passe bien, commit les modifications
         } catch (\Exception $e) {
