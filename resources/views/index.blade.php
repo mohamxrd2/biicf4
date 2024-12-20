@@ -354,7 +354,6 @@
                         <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Statut API</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
-                        <li><a href="{{ route('admin.dashboard') }}" class="text-gray-400 hover:text-white transition-colors">Dashboard</a></li>
                     </ul>
                 </div>
             </div>
