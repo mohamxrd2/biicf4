@@ -74,10 +74,10 @@
                 <!-- Mode de réception -->
                 <div class="mb-4" oninput="updateMontantTotalDirect()">
                     <h2 class="text-lg font-bold mb-2">Mode de réception</h2>
-                
+
                     <!-- Option: Livraison à domicile -->
-                    <input type="radio" name="selectedOption" value="Delivery" 
-                        @click="selectedOption = 'Delivery'" 
+                    <input type="radio" name="selectedOption" value="Delivery"
+                        @click="selectedOption = 'Delivery'"
                         id="deliveryOption" class="hidden">
                     <label for="deliveryOption" class="flex items-center p-4 rounded-lg border-2 transition-all w-full mb-4"
                         :class="{
@@ -105,10 +105,10 @@
                             <span class="font-semibold text-blue-800">Prix apres confirmation</span>
                         </div>
                     </label>
-                
+
                     <!-- Option: Retrait en magasin -->
                     <input type="radio" name="selectedOption" value="Take Away"
-                        @click="selectedOption = 'Take Away'" 
+                        @click="selectedOption = 'Take Away'"
                         id="takeAwayOption" class="hidden">
                     <label for="takeAwayOption" class="flex items-center p-4 rounded-lg border-2 transition-all w-full"
                         :class="{

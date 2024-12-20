@@ -87,15 +87,30 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm text-gray-600">Offre initiale</div>
-            <div class="text-lg font-bold">15 000 €</div>
+            <div class="text-lg font-bold">{{ $offreIniatiale ? $offreIniatiale->prixTrade . ' FCFA' : 'N/A' }}</div>
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600">Meilleure offre</div>
-            <div class="text-lg font-bold text-green-600">14 500 €</div>
+            <div class="text-sm  text-gray-600">Meilleure offre</div>
+            <div class="text-lg font-bold">{{ $prixLePlusBas ? $prixLePlusBas . ' FCFA' : 'N/A' }}</div>
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm text-gray-600">Temps restant</div>
-            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
+            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})"
+                x-init="$nextTick(() => {
+                    init();
+
+                    // Écouter les mises à jour du temps
+                    Livewire.on('timeUpdated', ({ time }) => {
+                        serverTime = new Date(time).getTime();
+                    });
+
+                    
+
+                    // Refresh countdown every 15 seconds
+                    setInterval(() => {
+                        $wire.refreshCountdown();
+                    }, 15000);
+                })"class="flex items-center space-x-2">
                 <div id="countdown" x-show="oldestCommentDate"
                     class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
                     <div x-text="hours">--</div>j
@@ -107,9 +122,6 @@
             </div>
         </div>
     </div>
-
-
-
 
     <div class="container mx-auto px-4" x-data="{ showDetails: false, showOffers: false }">
         <!-- Détails du produit -->
@@ -218,8 +230,7 @@
                             @endphp
                             @foreach ($comments as $comment)
                                 <!-- Message -->
-                                <div
-                                    class="bg-gray-100 p-4 rounded-lg shadow-sm transition-transform transform hover:scale-105">
+                                <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
                                     <div class="flex items-start gap-3">
                                         <!-- Photo utilisateur -->
                                         <img src="{{ asset($comment->user->photo) }}" alt="Profile Picture"
@@ -314,8 +325,7 @@
             }))
         })
     </script>
-
-    <script src="{{ asset('js/countdown.js') }}?v=1.0.0" defer></script>
+    <script src="{{ asset('js/countdown.js') }}?v=1.0.0" defer></script>*
 
 
 </div>
