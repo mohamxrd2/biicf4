@@ -106,6 +106,12 @@ class AchatDirectGroupe extends Component
 
             // Traiter l'achat
             $achat = $this->createPurchase($validated, $montantTotal, $codeUnique);
+            // Vérification de l'existence de l'achat dans les transactions gelées
+            gelement::create([
+                'reference_id' => $codeUnique,
+                'id_wallet' => $userWallet->id,
+                'amount' => $montantTotal,
+            ]);
 
             // Mettre à jour le portefeuille
             $this->updateWalletBalance($userWallet, $montantTotal);
@@ -229,13 +235,6 @@ class AchatDirectGroupe extends Component
             'idProd' => $validated['idProd'],
             'code_unique' => $codeUnique,
         ]);
-
-        // Vérification de l'existence de l'achat dans les transactions gelées
-        gelement::create([
-            'reference_id'=> $codeUnique,
-            'id_wallet'=>,
-            'amount'=>,
-        ]);
     }
 
     private function sendNotifications($validated, $achat, $codeUnique)
@@ -265,9 +264,14 @@ class AchatDirectGroupe extends Component
         // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
         $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
 
-        if ($notification && $this->selectedOption === 'Take Away') {
-            // Mettez à jour le champ 'type_achat' dans la notification
-            $notification->update(['type_achat' => 'Delivery']);
+        if ($notification) {
+            if ($this->selectedOption === 'Take Away') {
+                // Mettez à jour le champ 'type_achat' dans la notification
+                $notification->update(['type_achat' => 'Take Away']);
+            } else {
+                // Mettez à jour le champ 'type_achat' dans la notification
+                $notification->update(['type_achat' => 'Delivery']);
+            }
         }
     }
 
@@ -370,11 +374,6 @@ class AchatDirectGroupe extends Component
 
         // Récupérer le portefeuille de l'utilisateur
         $userWallet = Wallet::where('user_id', $userId)->first();
-
-
-
-
-        // $this->verifierEtEnvoyerNotification();
 
         return view('livewire.achat-direct-groupe', compact(
             'produit',
