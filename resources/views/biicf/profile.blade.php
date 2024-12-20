@@ -106,7 +106,7 @@
                     @if ($user->actor_type == 'Institution' && $user->user_joint == null)
                         <div class="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                             <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4">
-                                Double Authentification
+                                Double Verification
                             </h3>
                             <livewire:user-search-profile />
                         </div>
@@ -120,10 +120,10 @@
                                 </svg>
                                 <div>
                                     <h3 class="text-lg font-semibold text-green-800 dark:text-green-300">
-                                        Double Authentification Activée
+                                        Double Verification Activée
                                     </h3>
                                     <p class="text-sm text-green-600 dark:text-green-400">
-                                        Votre compte est sécurisé avec la double authentification
+                                        Votre compte est sécurisé avec la double verification
                                     </p>
                                 </div>
                             </div>
