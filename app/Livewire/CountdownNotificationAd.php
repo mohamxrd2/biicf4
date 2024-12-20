@@ -140,6 +140,8 @@ class CountdownNotificationAd extends Component
 
             // Mise à jour de l'état de la notification
             $this->notification->update(['reponse' => 'refuser']);
+            $this->reset('showMainlever');
+
             session()->flash('success', 'La facture a été refusée et les notifications ont été envoyées.');
         } catch (Exception $e) {
             Log::error("Erreur dans FactureRefuser : " . $e->getMessage());

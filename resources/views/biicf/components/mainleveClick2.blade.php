@@ -124,7 +124,7 @@
                         <span wire:loading.remove>J'accepte</span>
                         <span wire:loading>Traitement...</span>
                     </button>
-                    <button type="button" wire:click='refuseVerif'
+                    <button type="button" wire:click='FactureRefuser'
                         class="ml-4 px-6 py-2.5 bg-gray-200 text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-300 focus:ring-4 focus:ring-gray-400 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
                         Je refuse
                     </button>
