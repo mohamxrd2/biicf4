@@ -15,7 +15,7 @@ document.addEventListener("alpine:init", () => {
         init() {
             if (this.oldestCommentDate) {
                 this.endDate = new Date(this.oldestCommentDate);
-                this.endDate.setMinutes(this.endDate.getMinutes() + 5);
+                this.endDate.setMinutes(this.endDate.getMinutes() + 2);
                 this.startCountdown();
             }
 
@@ -34,17 +34,11 @@ document.addEventListener("alpine:init", () => {
                             this.oldestCommentDate = newDate;
                             this.endDate = new Date(this.oldestCommentDate);
                             this.endDate.setMinutes(
-                                this.endDate.getMinutes() + 5
+                                this.endDate.getMinutes() + 2
                             );
                             this.startCountdown();
-                        } else {
-                            console.log("Le compte à rebours est déjà à jour.");
+                            location.reload();
                         }
-                    } else {
-                        console.error(
-                            "oldestCommentDate est null ou incorrect !",
-                            e
-                        );
                     }
                 }
             );
@@ -56,27 +50,7 @@ document.addEventListener("alpine:init", () => {
             console.log("Initialisation du endDate", this.endDate);
             console.log("Initialisation du serverTime", this.serverTime);
         },
-        
-        countdownUpdated(data) {
-            if (!data || !data.oldestCommentDate || !data.serverTime) {
-                console.error("Invalid data received from Livewire:", data);
-                return;
-            }
 
-            const newServerTime = new Date(data.serverTime).getTime();
-            if (isNaN(newServerTime)) {
-                console.error("Invalid server time received");
-                return;
-            }
-
-            this.oldestCommentDate = new Date(data.oldestCommentDate);
-            this.serverTime = newServerTime;
-            this.endDate = new Date(this.oldestCommentDate);
-            this.endDate.setMinutes(
-                this.endDate.getMinutes() + this.COUNTDOWN_MINUTES
-            );
-            this.startCountdown();
-        },
         // Methode pour calculer le temps restant
         calculateTimeLeft(endDate, currentDate) {
             return Math.max(0, endDate - currentDate);

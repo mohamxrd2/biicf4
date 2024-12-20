@@ -95,22 +95,7 @@
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm text-gray-600">Temps restant</div>
-            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})"
-                x-init="$nextTick(() => {
-                    init();
-
-                    // Écouter les mises à jour du temps
-                    Livewire.on('timeUpdated', ({ time }) => {
-                        serverTime = new Date(time).getTime();
-                    });
-
-                    
-
-                    // Refresh countdown every 15 seconds
-                    setInterval(() => {
-                        $wire.refreshCountdown();
-                    }, 15000);
-                })"class="flex items-center space-x-2">
+            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
                 <div id="countdown" x-show="oldestCommentDate"
                     class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
                     <div x-text="hours">--</div>j

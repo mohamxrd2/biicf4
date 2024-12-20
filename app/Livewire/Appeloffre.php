@@ -9,6 +9,7 @@ use App\Models\AppelOffreUser;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
+use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use DateTime;
 use Exception;
@@ -55,17 +56,26 @@ class Appeloffre extends Component
 
 
     public $time;
-    public $timentp;
+    public $error;
+    public $prixLePlusBas;
+    public $offreIniatiale;
+    public $timestamp;
+    protected $recuperationTimer;
 
-    public $error = null; // Message d'erreur en cas de problème
-    protected $timeServers = [
-        'https://worldtimeapi.org/api/timezone/Etc/UTC',
-        'http://worldclockapi.com/api/json/utc/now',
-        'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
-    ];
-
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
     public function mount($id)
     {
+        // Récupération de l'heure via le service
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
 
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appelOffre']);
@@ -92,58 +102,7 @@ class Appeloffre extends Component
 
 
         $this->listenForMessage();
-
-
-        // Initialisation de la connexion au serveur NTP
-        try {
-            $socket = new Socket('0.pool.ntp.org', 123);
-            $ntp = new Client($socket);
-
-            // Récupération de l'heure depuis le serveur NTP
-            $this->timentp = $ntp->getTime();
-            $this->ServerTime = Carbon::parse($this->timentp)->toIso8601String();
-        } catch (Exception $e) {
-            // En cas d'échec, utiliser l'heure du serveur comme secours
-            $this->fetchServerTime();
-        }
-        $this->fetchServerTime();
     }
-
-
-
-
-    public function fetchServerTime()
-    {
-        foreach ($this->timeServers as $server) {
-            try {
-                $response = Http::timeout(5)->get($server);
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $this->time = $this->parseTimeFromResponse($data);
-                    $this->error = null; // Réinitialise l'erreur
-                    return;
-                }
-            } catch (Exception $e) {
-                $this->error = "Erreur avec le serveur : {$e->getMessage()}";
-                continue;
-            }
-        }
-    }
-
-    private function parseTimeFromResponse($data)
-    {
-        if (isset($data['datetime'])) {
-            return strtotime($data['datetime']) * 1000;
-        } elseif (isset($data['currentDateTime'])) {
-            return strtotime($data['currentDateTime']) * 1000;
-        } elseif (isset($data['dateTime'])) {
-            return strtotime($data['dateTime']) * 1000;
-        }
-
-        throw new Exception('Format de réponse invalide.');
-    }
-
 
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage()
@@ -151,11 +110,19 @@ class Appeloffre extends Component
         // Déboguer pour vérifier la structure de l'événement
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->comments = Comment::with('user')
-            ->where('code_unique', $this->appeloffre->code_unique)
+            ->where('code_unique', $this->code_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->get();
 
+        $this->prixLePlusBas = Comment::where('code_unique', $this->code_unique)
+            ->whereNotNull('prixTrade')
+            ->min('prixTrade');
+
+        $this->offreIniatiale = Comment::where('code_unique', $this->code_unique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('prixTrade', 'asc')
+            ->first(); // Récupère le premier commentaire trié
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -194,10 +161,10 @@ class Appeloffre extends Component
             'prixTrade' => 'required|numeric',
         ]);
 
-        // if ($this->prixTrade < $this->appeloffre->lowestPricedProduct) {
-        //     session()->flash('error', 'Commentaire créé avec succès!');
-        //     return;
-        // }
+        if ($this->prixTrade > $this->appeloffre->lowestPricedProduct) {
+            session()->flash('error', 'Prix trop elevee!');
+            return;
+        }
         DB::beginTransaction();
 
         try {
@@ -230,7 +197,7 @@ class Appeloffre extends Component
                 Countdown::create([
                     'user_id' => $this->id_trader,
                     'userSender' => null,
-                    'start_time' => Carbon::parse($this->timentp),
+                    'start_time' => $this->timestamp,
                     'code_unique' => $this->code_unique,
                     'difference' => $this->notification->type_achat == 'Delivery' ? 'appelOffreD' : 'appelOffreR',
                     'id_appeloffre' => $this->appeloffre->id,
@@ -240,7 +207,6 @@ class Appeloffre extends Component
                 broadcast(new OldestCommentUpdated($this->time));
                 $this->dispatch('OldestCommentUpdated', $this->time);
             }
-
 
             DB::commit();
 

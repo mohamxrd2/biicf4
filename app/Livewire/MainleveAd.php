@@ -135,7 +135,6 @@ class MainleveAd extends Component
 
             // Réinitialisation et fermeture du modal
             $this->reset('showMainlever');
-            $this->dispatchBrowserEvent('close-mainlever-modal');
 
             session()->flash('message', 'Livraison marquée comme livrée avec succès.');
         } catch (\Exception $e) {

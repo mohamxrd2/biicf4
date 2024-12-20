@@ -15,7 +15,7 @@ document.addEventListener("alpine:init", () => {
         init() {
             if (this.oldestCommentDate) {
                 this.endDate = new Date(this.oldestCommentDate);
-                this.endDate.setMinutes(this.endDate.getMinutes() + 10);
+                this.endDate.setMinutes(this.endDate.getMinutes() + 2);
                 this.startCountdown();
             }
         },

@@ -47,6 +47,8 @@ class CountdownNotificationAd extends Component
     public $requiredAmount;
     public $statusText;
     public $statusClass;
+    public $showMainlever = false;
+
 
 
 
@@ -90,6 +92,11 @@ class CountdownNotificationAd extends Component
             Log::error("Erreur dans mount : " . $e->getMessage());
             session()->flash('error', 'Une erreur s\'est produite lors de la récupération des données.');
         }
+    }
+
+    public function toggleComponent()
+    {
+        $this->showMainlever = true;
     }
     public function getNotificationStatus($response)
     {
@@ -480,7 +487,8 @@ class CountdownNotificationAd extends Component
                 }
             }
             $this->notification->update(['reponse' => 'mainleveclient']);
-
+            // Réinitialisation et fermeture du modal
+            $this->reset('showMainlever');
             session()->flash('message', 'Livraison marquée comme livrée.');
             DB::commit();
         } catch (Exception $e) {

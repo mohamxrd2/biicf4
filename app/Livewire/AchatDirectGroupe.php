@@ -229,6 +229,13 @@ class AchatDirectGroupe extends Component
             'idProd' => $validated['idProd'],
             'code_unique' => $codeUnique,
         ]);
+
+        // Vérification de l'existence de l'achat dans les transactions gelées
+        gelement::create([
+            'reference_id'=> $codeUnique,
+            'id_wallet'=>,
+            'amount'=>,
+        ]);
     }
 
     private function sendNotifications($validated, $achat, $codeUnique)
@@ -254,6 +261,14 @@ class AchatDirectGroupe extends Component
 
         $owner = User::find($validated['userTrader']);
         Notification::send($owner, new AchatBiicf($achatUser));
+
+        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
+        $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
+
+        if ($notification && $this->selectedOption === 'Take Away') {
+            // Mettez à jour le champ 'type_achat' dans la notification
+            $notification->update(['type_achat' => 'Delivery']);
+        }
     }
 
     private function resetForm()

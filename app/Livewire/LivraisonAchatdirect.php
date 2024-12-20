@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Events\CommentSubmitted;
 use App\Events\OldestCommentUpdated;
+use App\Events\ServerTimeUpdated;
 use App\Models\AchatDirect;
 use App\Models\Comment;
 use App\Models\Countdown;
@@ -125,35 +126,22 @@ class LivraisonAchatdirect extends Component
         }
     }
 
-    protected $listeners = ['compteReboursFini', 'refreshCountdown'];
+    protected $listeners = [
+        'compteReboursFini',
+    ];
 
-    // public function compteReboursFini()
-    // {
-    //     // Mettre à jour l'attribut 'finish' du demandeCredit
-    //     $this->achatdirect->update([
-    //         'count' => true,
-    //         $this->dispatch(
-    //             'formSubmitted',
-    //             'Temps écoule, Négociation terminé.'
-    //         )
-    //     ]);
-    // }
-    public function handleCountdownUpdate($event)
+    public function compteReboursFini()
     {
-        $this->oldestCommentDate = $event['time'];
-        $this->time = $this->recuperationTimer->getTime();
-
-        $this->dispatch('countdownUpdated', [
-            'oldestCommentDate' => $this->oldestCommentDate,
-            'serverTime' => $this->time
+        // Mettre à jour l'attribut 'finish' du demandeCredit
+        $this->achatdirect->update([
+            'count' => true,
         ]);
+        $this->dispatch(
+            'formSubmitted',
+            'Temps écoule, Négociation terminé.'
+        );
     }
 
-    public function refreshCountdown()
-    {
-        $this->time = $this->recuperationTimer->getTime();
-        $this->dispatch('timeUpdated',  $this->time);
-    }
 
     public function commentFormLivr()
     {
