@@ -1,397 +1,480 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Créer un compte</title>
+    <title>Inscription | BIICF</title>
 
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/css/intlTelInput.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Créer votre compte</h1>
+                <p class="text-gray-600 mt-2">Complétez les informations suivantes pour vous inscrire</p>
+            </div>
 
-    <div class="h-[100vh] flex justify-center items-center p-4">
-
-        <div class="p-4 bg-white w-full ">
-
-
-            <p class="text-center my-5 text-2xl">Creer un compte</p>
-
-            <!-- Stepper -->
-            <div data-hs-stepper="" class="">
-                <!-- Stepper Nav -->
-                <ul class="relative flex flex-row gap-x-2 overflow-x-auto">
-                    <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
-                        data-hs-stepper-nav-item='{ "index": 1 }'>
-                        <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
-                            <span
-                                class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
-                                <span class="hs-stepper-success:hidden hs-stepper-completed:hidden">1</span>
-                                <svg class="hidden flex-shrink-0 size-3 hs-stepper-success:block"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </span>
-                            <span class="ms-2 text-sm font-medium text-gray-800">
-                                Information personnel
-                            </span>
-                        </span>
-                        <div
-                            class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600">
-
+            <!-- Stepper Progress -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="w-full flex items-center">
+                        <div class="relative flex flex-col items-center flex-1">
+                            <div
+                                class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold step-active">
+                                1
+                            </div>
+                            <p class="text-sm font-medium text-gray-700 mt-2">Informations personnelles</p>
                         </div>
-                    </li>
-
-                    <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group"
-                        data-hs-stepper-nav-item='{ "index": 2  }'>
-                        <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
-                            <span
-                                class="size-7 flex justify-center items-center flex-shrink-0 bg-gray-100 font-medium text-gray-800 rounded-full group-focus:bg-gray-200 hs-stepper-active:bg-blue-600 hs-stepper-active:text-white hs-stepper-success:bg-blue-600 hs-stepper-success:text-white hs-stepper-completed:bg-teal-500 hs-stepper-completed:group-focus:bg-teal-600">
-                                <span class="hs-stepper-success:hidden hs-stepper-completed:hidden">2</span>
-                                <svg class="hidden flex-shrink-0 size-3 hs-stepper-success:block"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </span>
-                            <span class="ms-2 text-sm font-medium text-gray-800">
-                                Localisation & Contact
-                            </span>
-                        </span>
-                        <div
-                            class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600">
+                        <div class="flex-1 h-1 bg-gray-200 step-line"></div>
+                        <div class="relative flex flex-col items-center flex-1">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold">
+                                2
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 mt-2">Localisation & Contact</p>
                         </div>
-                    </li>
-                    <!-- End Item -->
-                </ul>
-                @if ($errors->any())
-                    <div class="m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
-                        <strong class="font-bold">Attention!</strong>
-                        <ul class="mt-2">
-                            @foreach ($errors->all() as $error)
-                                <li class="list-disc list-inside">{{ $error }}</li>
-                            @endforeach
-                        </ul>
                     </div>
-                @endif
-                <!-- End Stepper Nav -->
-                <form action="{{ route('biicf.signup') }}" method="POST">
-                    @csrf
-                    <!-- Stepper Content -->
-                    <div class="mt-5 sm:mt-8">
-                        <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{"index": 1 }'>
+                </div>
+            </div>
 
-                            <div
-                                class="p-4 bg-gray-50 flex flex-col justify-center items-center gap-2 border border-dashed border-gray-200 rounded-xl h-full">
+            <!-- Form -->
+            <form id="signupForm" action="{{ route('biicf.signup') }}" method="POST" class="space-y-6">
+                @csrf
 
-
-                                <div class="flex justify-start lg:w-1/2">
-                                    @include('admin.components.input2', [
-                                        'type' => 'text',
-                                        'name' => 'name',
-                                        'placeholder' => 'Nom ou raison social',
-                                    ])
-
-
-
-                                    @include('admin.components.input2', [
-                                        'type' => 'text',
-                                        'name' => 'last-name',
-                                        'placeholder' => 'Prénom',
-                                    ])
-                                </div>
-
-
-                                <div class="flex justify-start lg:w-1/2">
-                                    @include('admin.components.input2', [
-                                        'type' => 'text',
-                                        'name' => 'username',
-                                        'placeholder' => 'Nom d\'utlisateur',
-                                    ])
-                                    @include('admin.components.input2', [
-                                        'name' => 'email',
-                                        'type' => 'email',
-                                        'placeholder' => 'Email',
-                                        // Ajoutez d'autres attributs au besoin
-                                    ])
-                                </div>
-
-                                @include('admin.components.input', [
-                                    'type' => 'password',
-                                    'name' => 'password',
-                                    'placeholder' => 'Mot de passe',
-                                ])
-
-                                @include('admin.components.input', [
-                                    'type' => 'password',
-                                    'name' => 'repeat-password',
-                                    'placeholder' => 'Confirmer mot de passe',
-                                ])
-
-
-                                <div class="flex justify-start lg:w-1/2">
-                                    @include('admin.components.select', [
-                                        'name' => 'user_type',
-                                        'title' => 'Type d\'acteur',
-                                        'options' => [
-                                            'Personne physique',
-                                            'Personne morale',
-                                            'Service public',
-                                            'Institution',
-                                            'Organisme',
-                                            'Communauté',
-                                            'Menage',
-                                        ],
-                                    ])
-                                    @include('admin.components.select', [
-                                        'name' => 'invest_type',
-                                        'title' => 'Type d\'investisseur',
-                                        'options' => [
-                                            'Bank/IFD',
-                                            'Pgm Public/Para-Public',
-                                            'Fonds d’investissement',
-                                            'Particulier',
-                                        ],
-                                    ])
-                                </div>
-
-
-                                @include('admin.components.select', [
-                                    'name' => 'investisement',
-                                    'title' => 'Proportion à investir / Choisissez une tranche(FCFA)',
-                                    'options' => [
-                                        '1-500.000',
-                                        '500.001-1.000.000',
-                                        '1.000.001-5.000.000',
-                                        '5.000.001-10.000.000',
-                                        '10.000.001-50.000.000',
-                                        '50.000.001 et plus',
-                                    ],
-                                ])
-
-
-
-                            </div>
-
-
+                <!-- Step 1 -->
+                <div id="step1" class="space-y-6">
+                    <!-- Nom et Prénom -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom ou raison sociale *</label>
+                            <input type="text" name="name"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
-                        <!-- End First Contnet -->
 
-                        <!-- First Contnet -->
-                        <div data-hs-stepper-content-item='{"index": 2 }' style="display: none;">
-                            <div
-                                class="p-4 bg-gray-50 flex flex-col justify-center items-center border border-dashed border-gray-200 rounded-xl h-full">
-
-                                <div class="flex justify-start lg:w-1/2">
-
-                                    <input id="phone" type="tel" name="phone"
-                                        class="py-3 px-4 mb-2 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-
-
-                                    <select id="address-country" name="country"
-                                        class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"></select>
-
-                                </div>
-                                <!-- Champ pour le continent -->
-                                <input id="continent" type="text" placeholder="Continent" name="continent"
-                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-
-                                <!-- Champ pour la sous-région -->
-                                <input id="subregion" type="text" placeholder="Sous-région" name="sous_region"
-                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-
-                                @include('admin.components.input', [
-                                    'name' => 'departement',
-                                    'type' => 'text',
-                                    'placeholder' => 'Saisissez votre departement',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-
-                                @include('admin.components.input', [
-                                    'name' => 'ville',
-                                    'type' => 'text',
-                                    'placeholder' => 'Saisissez votre ville',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-                                @include('admin.components.input', [
-                                    'name' => 'commune',
-                                    'type' => 'text',
-                                    'placeholder' => 'Saisissez votre commune',
-                                    // Ajoutez d'autres attributs au besoin
-                                ])
-
-                                <input type="number" name="parrain"
-                                    class="py-3 px-4 mb-2 block w-full lg:w-1/2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                                    placeholder="Code de parrainage (Optionnel)">
-
-
-
-
-                                <!-- CSS for intl-tel-input -->
-                                <link rel="stylesheet"
-                                    href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/css/intlTelInput.css">
-
-                                <!-- JS for intl-tel-input -->
-                                <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/intlTelInput.min.js"></script>
-
-                                <script>
-                                    // Sélection des éléments DOM
-                                    const input = document.querySelector("#phone");
-                                    const addressDropdown = document.querySelector("#address-country");
-                                    const continentInput = document.querySelector("#continent");
-                                    const subregionInput = document.querySelector("#subregion");
-
-                                    // Obtenez les données des pays via intl-tel-input
-                                    const countryData = window.intlTelInputGlobals.getCountryData();
-
-                                    // Remplir le sélecteur de pays dans l'adresse
-                                    for (let i = 0; i < countryData.length; i++) {
-                                        const country = countryData[i];
-                                        const optionNode = document.createElement("option");
-                                        optionNode.value = country.iso2;
-                                        const textNode = document.createTextNode(country.name);
-                                        optionNode.appendChild(textNode);
-                                        addressDropdown.appendChild(optionNode);
-                                    }
-
-                                    // Initialisation du plugin intl-tel-input sur le champ du téléphone
-                                    const iti = window.intlTelInput(input, {
-                                        initialCountry: "CI", // Définit un pays par défaut (exemple: Côte d'Ivoire)
-                                        separateDialCode: true,
-                                        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/utils.js" // Pour le formatage et les placeholders
-                                    });
-
-                                    // Synchroniser le sélecteur de pays avec le champ de téléphone
-                                    addressDropdown.value = iti.getSelectedCountryData().iso2;
-
-                                    // Fonction pour récupérer continent et sous-région via l'API Restcountries
-                                    async function getRegionData(countryCode) {
-                                        try {
-                                            const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
-                                            const data = await response.json();
-                                            const countryInfo = data[0];
-
-                                            // Mettre à jour le contenu des inputs avec le continent et la sous-région
-                                            continentInput.value = countryInfo.region;
-                                            subregionInput.value = countryInfo.subregion;
-                                        } catch (error) {
-                                            console.error("Erreur lors de la récupération des informations régionales:", error);
-                                        }
-                                    }
-
-                                    // Mettre à jour les infos lors d'un changement dans le champ de téléphone
-                                    input.addEventListener('countrychange', () => {
-                                        const countryCode = iti.getSelectedCountryData().iso2;
-                                        addressDropdown.value = countryCode;
-                                        getRegionData(countryCode); // Récupérer et afficher les infos régionales
-                                    });
-
-                                    // Mettre à jour le champ de téléphone et les infos régionales lors du changement de pays
-                                    addressDropdown.addEventListener('change', () => {
-                                        const countryCode = addressDropdown.value;
-                                        iti.setCountry(countryCode);
-                                        getRegionData(countryCode); // Récupérer et afficher les infos régionales
-                                    });
-
-                                    // Récupérer les infos régionales pour le pays par défaut
-                                    getRegionData(iti.getSelectedCountryData().iso2);
-
-
-                                    // Lors de la soumission du formulaire, ajouter l'indicatif au numéro de téléphone
-                                    document.querySelector('form').addEventListener('submit', (e) => {
-                                        e.preventDefault(); // Empêche l'envoi du formulaire pour test
-
-                                        // Récupérer le numéro complet (avec indicatif)
-                                        const fullPhoneNumber = iti.getNumber();
-
-                                        // Ajouter le numéro complet au champ ou l'envoyer à la base de données
-                                        input.value = fullPhoneNumber;
-
-                                        // Envoyer le formulaire
-                                        e.target.submit();
-                                    });
-                                </script>
-
-
-                            </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
+                            <input type="text" name="last-name"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
-                        <!-- End First Contnet -->
-
-                        <!-- Final Contnet -->
-                        <div data-hs-stepper-content-item='{"isFinal": true}' style="display: none;">
-                            <div
-                                class="p-4 h-48 bg-gray-50 flex justify-center items-center border border-dashed border-gray-200 rounded-xl">
-                                <h3>
-                                    Enregistrement terminé !
-                                </h3>
-                            </div>
-                        </div>
-                        <!-- End Final Contnet -->
-
-                        <!-- Button Group -->
-                        <div class="mt-3 flex justify-between items-center gap-x-2">
-                            <button type="button"
-                                class="py-2 px-3 inline-flex items-center gap-x-1 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                                data-hs-stepper-back-btn="">
-                                <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m15 18-6-6 6-6"></path>
-                                </svg>
-                                Retour
-                            </button>
-                            <button type="button"
-                                class="py-2 px-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                                data-hs-stepper-next-btn="">
-                                Suivant
-                                <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m9 18 6-6-6-6"></path>
-                                </svg>
-                            </button>
-                            <button type="submit"
-                                class=" py-2 px-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                                data-hs-stepper-finish-btn="" style="display: none;">
-                                Terminé
-                            </button>
-                            <button type="button"
-                                class="py-2 px-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                                data-hs-stepper-reset-btn="" style="display: none;">
-                                Reinitialisé
-                            </button>
-                        </div>
-                        <!-- End Button Group -->
                     </div>
-                    <!-- End Stepper Content -->
 
-                </form>
-                <div class="w-full mt-3 text-center">
-                    <p class="mt-2 text-sm text-gray-600">
-                        Vous avez déjà un compte?
-                        <a class="text-blue-600 decoration-2  font-medium" href="{{ route('biicf.login') }}">
-                            Se connecter
-                        </a>
-                    </p>
+                    <!-- Nom d'utilisateur et Email -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'utilisateur *</label>
+                            <input type="text" name="username"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
 
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                            <input type="email" name="email"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Mot de passe -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe *</label>
+                            <div class="relative">
+                                <input type="password" name="password" id="password"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                    required>
+                                <button type="button"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    onclick="togglePassword('password')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe
+                                *</label>
+                            <div class="relative">
+                                <input type="password" name="repeat-password" id="repeat-password"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                    required>
+                                <button type="button"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    onclick="togglePassword('repeat-password')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Type d'acteur et Type d'investisseur -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Type d'acteur *</label>
+                            <select name="user_type"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                                <option value="">Sélectionnez un type</option>
+                                <option value="Personne physique">Personne physique</option>
+                                <option value="Personne morale">Personne morale</option>
+                                <option value="Service public">Service public</option>
+                                <option value="Institution">Institution</option>
+                                <option value="Organisme">Organisme</option>
+                                <option value="Communauté">Communauté</option>
+                                <option value="Menage">Ménage</option>
+                            </select>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Type d'investisseur *</label>
+                            <select name="invest_type"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                                <option value="">Sélectionnez un type</option>
+                                <option value="Bank/IFD">Bank/IFD</option>
+                                <option value="Pgm Public/Para-Public">Pgm Public/Para-Public</option>
+                                <option value="Fonds d'investissement">Fonds d'investissement</option>
+                                <option value="Particulier">Particulier</option>
+                            </select>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Proportion à investir -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Proportion à investir *</label>
+                        <select name="investisement"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                            <option value="">Choisissez une tranche (FCFA)</option>
+                            <option value="1-500.000">1-500.000</option>
+                            <option value="500.001-1.000.000">500.001-1.000.000</option>
+                            <option value="1.000.001-5.000.000">1.000.001-5.000.000</option>
+                            <option value="5.000.001-10.000.000">5.000.001-10.000.000</option>
+                            <option value="10.000.001-50.000.000">10.000.001-50.000.000</option>
+                            <option value="50.000.001 et plus">50.000.001 et plus</option>
+                        </select>
+                        <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                    </div>
                 </div>
 
-            </div>
-            <!-- End Stepper -->
+                <!-- Step 2 -->
+                <div id="step2" class="hidden space-y-6">
+                    <!-- Téléphone et Pays -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de téléphone *</label>
+                            <input type="tel" id="phone" name="phone"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pays *</label>
+                            <select id="address-country" name="country"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                                <option value="">Sélectionnez un pays</option>
+                            </select>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Continent et Sous-région -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Continent</label>
+                            <input type="text" id="continent" name="continent"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50" readonly>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sous-région</label>
+                            <input type="text" id="subregion" name="sous_region"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Département et Ville -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Département *</label>
+                            <input type="text" name="departement"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ville *</label>
+                            <input type="text" name="ville"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Commune et Code de parrainage -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Commune *</label>
+                            <input type="text" name="commune"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Code de parrainage</label>
+                            <input type="number" name="parrain"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Optionnel">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8">
+                    <button type="button" id="prevBtn"
+                        class="hidden px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        Retour
+                    </button>
+
+                    <button type="button" id="nextBtn"
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Suivant
+                    </button>
+
+                    <button type="submit" id="submitBtn"
+                        class="hidden px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Créer mon compte
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center mt-6 text-gray-600">
+                Déjà inscrit?
+                <a href="{{ route('biicf.login') }}" class="text-blue-600 hover:text-blue-700 font-medium">
+                    Connectez-vous
+                </a>
+            </p>
         </div>
-
-
-
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/intlTelInput.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('signupForm');
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            let currentStep = 1;
+
+            // Validation des champs
+            function validateStep1() {
+                const inputs = step1.querySelectorAll('input[required], select[required]');
+                let isValid = true;
+
+                inputs.forEach(input => {
+                    if (!input.value) {
+                        isValid = false;
+                        showError(input, 'Ce champ est requis');
+                    } else {
+                        hideError(input);
+                    }
+                });
+
+                return isValid;
+            }
+
+            function showError(input, message) {
+                const errorSpan = input.nextElementSibling;
+                errorSpan.textContent = message;
+                errorSpan.classList.remove('hidden');
+                input.classList.add('border-red-500');
+            }
+
+            function hideError(input) {
+                const errorSpan = input.nextElementSibling;
+                errorSpan.classList.add('hidden');
+                input.classList.remove('border-red-500');
+            }
+
+            // Navigation entre les étapes
+            nextBtn.addEventListener('click', () => {
+                if (currentStep === 1 && validateStep1()) {
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    prevBtn.classList.remove('hidden');
+                    nextBtn.classList.add('hidden');
+                    submitBtn.classList.remove('hidden');
+                    currentStep = 2;
+                    updateProgress();
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentStep === 2) {
+                    step2.classList.add('hidden');
+                    step1.classList.remove('hidden');
+                    prevBtn.classList.add('hidden');
+                    nextBtn.classList.remove('hidden');
+                    submitBtn.classList.add('hidden');
+                    currentStep = 1;
+                    updateProgress();
+                }
+            });
+
+            function updateProgress() {
+                const steps = document.querySelectorAll('.step-active');
+                const lines = document.querySelectorAll('.step-line');
+
+                steps.forEach((step, index) => {
+                    if (index < currentStep) {
+                        step.classList.add('bg-blue-600');
+                        step.classList.remove('bg-gray-200');
+                    } else {
+                        step.classList.remove('bg-blue-600');
+                        step.classList.add('bg-gray-200');
+                    }
+                });
+
+                lines.forEach((line, index) => {
+                    if (index < currentStep - 1) {
+                        line.classList.add('bg-blue-600');
+                        line.classList.remove('bg-gray-200');
+                    } else {
+                        line.classList.remove('bg-blue-600');
+                        line.classList.add('bg-gray-200');
+                    }
+                });
+            }
+        });
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+
+        // Validation en temps réel des mots de passe
+        document.getElementById('repeat-password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const repeatPassword = this.value;
+            const errorSpan = this.nextElementSibling.nextElementSibling;
+
+            if (password !== repeatPassword) {
+                errorSpan.textContent = 'Les mots de passe ne correspondent pas';
+                errorSpan.classList.remove('hidden');
+                this.classList.add('border-red-500');
+            } else {
+                errorSpan.classList.add('hidden');
+                this.classList.remove('border-red-500');
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation du téléphone
+        const phoneInput = document.querySelector("#phone");
+        const iti = window.intlTelInput(phoneInput, {
+            initialCountry: "CI",
+            separateDialCode: true,
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/utils.js"
+        });
+
+        // Remplissage du sélecteur de pays
+        const countrySelect = document.querySelector("#address-country");
+        const countryData = window.intlTelInputGlobals.getCountryData();
+        
+        countryData.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.iso2;
+            option.textContent = country.name;
+            countrySelect.appendChild(option);
+        });
+
+        // Synchronisation du pays sélectionné
+        countrySelect.value = iti.getSelectedCountryData().iso2;
+
+        // Mise à jour des informations régionales
+        async function updateRegionInfo(countryCode) {
+            try {
+                const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+                const data = await response.json();
+                if (data && data[0]) {
+                    document.getElementById('continent').value = data[0].region || '';
+                    document.getElementById('subregion').value = data[0].subregion || '';
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des informations:', error);
+            }
+        }
+
+        // Événements de changement
+        phoneInput.addEventListener('countrychange', () => {
+            const countryData = iti.getSelectedCountryData();
+            countrySelect.value = countryData.iso2;
+            updateRegionInfo(countryData.iso2);
+        });
+
+        countrySelect.addEventListener('change', () => {
+            iti.setCountry(countrySelect.value);
+            updateRegionInfo(countrySelect.value);
+        });
+
+        // Validation du formulaire
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!iti.isValidNumber()) {
+                e.preventDefault();
+                const errorMsg = document.querySelector("#phone").nextElementSibling;
+                errorMsg.textContent = "Numéro de téléphone invalide";
+                errorMsg.classList.remove('hidden');
+                return false;
+            }
+            
+            // Ajout du numéro complet au formulaire
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'full_phone';
+            hiddenInput.value = iti.getNumber();
+            this.appendChild(hiddenInput);
+        });
+
+        // Initialisation des données régionales
+        updateRegionInfo(iti.getSelectedCountryData().iso2);
+    });
+    </script>
 </body>
 
 </html>

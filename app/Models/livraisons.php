@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Livraisons extends Model
 {
@@ -17,7 +18,7 @@ class Livraisons extends Model
         'vehicle3',
         'zone',
         'continent',
-        'sous_region', // Updated to snake_case
+        'sous_region', 
         'pays',
         'departe',
         'commune',
