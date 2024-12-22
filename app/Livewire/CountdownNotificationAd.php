@@ -386,6 +386,43 @@ class CountdownNotificationAd extends Component
                 $currentParrain = $nextParrain;
             }
         }
+        if ($this->userId->parrain){
+            $currentParrain = $this->userId;
+
+            for ($level = 1; $level <= 2; $level++) {
+                if (!$currentParrain->parrain) break;
+
+                $nextParrain = User::find($currentParrain->parrain);
+                $wallet = Wallet::where('user_id', $nextParrain->id)->first();
+
+                if ($wallet) {
+                    $commissionAmount = $commissions * 0.01;
+                    $wallet->balance += $commissionAmount;
+                    $wallet->save();
+
+                    Log::info("Commission envoyée au parrain niveau $level", [
+                        'parrain_id' => $nextParrain->id,
+                        'commissions' => $commissionAmount,
+                    ]);
+
+                    $this->createTransaction(
+                        $this->user,
+                        $nextParrain->id,
+                        'Commission',
+                        $commissionAmount,
+                        $this->generateIntegerReference(),
+                        'Commission de BICF',
+                        'effectué',
+                        'COC'
+                    );
+
+                    $commissions -= $commissionAmount;
+                }
+
+                $currentParrain = $nextParrain;
+            }
+
+        }
 
         // Commission pour l'admin
         $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
