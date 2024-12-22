@@ -6,6 +6,7 @@ use App\Events\NotificationSent;
 use App\Models\AppelOffreGrouper;
 use App\Models\AppelOffreUser;
 use App\Models\Consommation;
+use App\Models\Countdown;
 use App\Models\gelement;
 use App\Models\ProduitService;
 use App\Models\Transaction;
@@ -15,6 +16,7 @@ use App\Notifications\AOGrouper;
 use App\Notifications\AppelOffre;
 use App\Notifications\Confirmation;
 use App\Services\RecuperationTimer;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -71,12 +73,7 @@ class Appaeloffre extends Component
         $distinctSpecifications,
         $appliedZoneValue
     ) {
-        $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = \Carbon\Carbon::createFromTimestamp($seconds);
+        $this->timeServer();
 
         $this->wallet = $wallet;
         $this->lowestPricedProduct = $lowestPricedProduct;
@@ -93,7 +90,46 @@ class Appaeloffre extends Component
         $this->id = ProduitService::where('reference', $reference)
             ->first();
     }
+    public function timeServer()
+    {
+        // Faire plusieurs tentatives de récupération pour plus de précision
+        $attempts = 3;
+        $times = [];
 
+        for ($i = 0; $i < $attempts; $i++) {
+            // Récupération de l'heure via le service
+            $currentTime = $this->recuperationTimer->getTime();
+            if ($currentTime) {
+                $times[] = $currentTime;
+            }
+            // Petit délai entre chaque tentative
+            usleep(50000); // 50ms
+        }
+
+        if (empty($times)) {
+            // Si aucune tentative n'a réussi, utiliser l'heure système
+            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
+            $this->time = now()->timestamp * 1000;
+        } else {
+            // Utiliser la médiane des temps récupérés pour plus de précision
+            sort($times);
+            $medianIndex = floor(count($times) / 2);
+            $this->time = $times[$medianIndex];
+            $this->error = null;
+        }
+
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
+
+        // Log pour debug
+        Log::info('Timer actualisé', [
+            'timestamp' => $this->timestamp,
+            'time_ms' => $this->time,
+            'attempts' => count($times)
+        ]);
+    }
     public function resetForm()
     {
         $this->name = '';
@@ -111,118 +147,58 @@ class Appaeloffre extends Component
         $this->distinctSpecifications = [];
     }
 
-
-
     public function submitEnvoie()
     {
+        // Actualiser le timer avant de commencer
+        $this->timeServer();
+
         $this->loading = true;
         $userId = Auth::id();
 
-        // Validation des données du formulaire
-        $validatedData = $this->validate([
-            'quantité' => 'required|integer|min:1',
-            'localite' => 'required|string|max:255',
-            'selectedOption' => 'required|string',
-            'dateTot' => 'required|date|before_or_equal:dateTard',
-            'dateTard' => 'required|date|after_or_equal:dateTot',
-            'timeStart' => 'nullable|date_format:H:i',
-            'timeEnd' => 'nullable|date_format:H:i',
-            'dayPeriod' => 'nullable|string|max:255',
-            'dayPeriodFin' => 'nullable|string|max:255',
-        ]);
-
-        // Calculer le coût total
-        $totalCost = $validatedData['quantité'] * $this->lowestPricedProduct;
-
-        // Vérification du solde avant décrémentation
-        if ($this->wallet->balance < $totalCost) {
-            $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
-
-            session()->flash('success', "Solde insuffisant pour effectuer cette transaction.");
-            return;
-        }
-
-        // Gestion de la transaction avec la base de données
         DB::beginTransaction();
+
         try {
-            // Décrémenter le solde du portefeuille
-            $this->wallet->decrement('balance', $totalCost);
-
-            // Insérer dans la table `appel_offres`
-            $appelOffre = AppelOffreUser::create([
-                'product_name' => $this->name,
-                'quantity' => $validatedData['quantité'],
-                'payment' => 'comptant',
-                'livraison' => $validatedData['selectedOption'],
-                'date_tot' => $validatedData['dateTot'],
-                'date_tard' => $validatedData['dateTard'],
-                'time_start' => $validatedData['timeStart'],
-                'time_end' => $validatedData['timeEnd'],
-                'day_period' => $validatedData['dayPeriod'],
-                'day_periodFin' => $validatedData['dayPeriodFin'],
-                'specification' => $this->distinctSpecifications,
-                'reference' => $this->reference,
-                'localite' => $validatedData['localite'],
-                'id_prod' => $this->id,
-                'code_unique' => $this->generateUniqueReference(),
-                'lowestPricedProduct' => $this->lowestPricedProduct,
-                'prodUsers' => json_encode($this->prodUsers),
-                'image' => $validatedData['image'] ?? null,
-                'id_sender' => $userId,
+            // Étape 1 : Valider les données du formulaire
+            $validatedData = $this->validate([
+                'quantité' => 'required|integer|min:1',
+                'localite' => 'required|string|max:255',
+                'selectedOption' => 'required|string',
+                'dateTot' => 'required|date|before_or_equal:dateTard',
+                'dateTard' => 'required|date|after_or_equal:dateTot',
+                'timeStart' => 'nullable|date_format:H:i',
+                'timeEnd' => 'nullable|date_format:H:i',
+                'dayPeriod' => 'nullable|string|max:255',
+                'dayPeriodFin' => 'nullable|string|max:255',
             ]);
 
-            // Créer la transaction
-            $this->createTransaction(
-                $userId,
-                $userId,
-                'Gele',
-                $totalCost,
-                $this->generateIntegerReference(),
-                'Gele Pour Achat de ' . $this->name,
-                'effectué',
-                'COC'
-            );
+            // Étape 2 : Calculer le coût total
+            $totalCost = $this->calculateTotalCost($validatedData['quantité']);
 
-            // Mettre à jour la table de gelement de fond
-            gelement::create([
-                'id_wallet' => $this->wallet->id,
-                'amount' => $totalCost,
-                'reference_id' => $this->generateUniqueReference(),
+            // Étape 3 : Vérifier le solde disponible
+            $this->checkWalletBalance($totalCost);
+
+            // Étape 4 : Créer un appel d'offre et gérer les transactions
+            $appelOffre = $this->createAppelOffre($validatedData, $totalCost, $userId);
+
+            // Étape 5 : Gérer les notifications des utilisateurs
+            $this->notifyUsers($appelOffre);
+
+            Countdown::create([
+                'user_id' => $userId,
+                'userSender' => null,
+                'start_time' => $this->timestamp,
+                'code_unique' => $appelOffre->code_unique,
+                'difference' => $validatedData['selectedOption'] == 'Delivery' ? 'appelOffreD' : 'appelOffreR',
+                'id_appeloffre' => $appelOffre->id,
             ]);
 
-            // Envoyer des notifications aux utilisateurs cibles
-            foreach ($this->prodUsers as $prodUser) {
-                $owner = User::find($prodUser);
+            // Étape 6 : Réinitialiser le formulaire
+            $this->resetFormulaire();
 
-                if ($owner) {
-                    $data = [
-                        'id_appelOffre' => $appelOffre->id,
-                        'code_unique' => $appelOffre->code_unique,
-                        'difference' => 'single',
-                    ];
-
-                    Notification::send($owner, new AppelOffre($data));
-
-                    // Mettre à jour la notification
-                    $notification = $owner->notifications()
-                        ->where('type', AppelOffre::class)
-                        ->latest()
-                        ->first();
-
-                    if ($notification) {
-                        $notification->update(['type_achat' => $validatedData['selectedOption']]);
-                    }
-
-                    // Déclencher un événement
-                    event(new NotificationSent($owner));
-                }
-            }
-
-            // Réinitialiser le formulaire après succès
-            $this->resetForm();
-            $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
-
+            // Confirmer la transaction
             DB::commit();
+
+            $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
         } catch (Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Erreur lors de la validation : ' . $e->getMessage());
@@ -230,6 +206,114 @@ class Appaeloffre extends Component
             $this->loading = false;
         }
     }
+
+    private function calculateTotalCost($quantity)
+    {
+        return $quantity * $this->lowestPricedProduct;
+    }
+    private function checkWalletBalance($totalCost)
+    {
+        if ($this->wallet->balance < $totalCost) {
+            session()->flash('error', "Solde insuffisant pour effectuer cette transaction.");
+            throw new Exception("Solde insuffisant.");
+        }
+    }
+    private function createAppelOffre($validatedData, $totalCost, $userId)
+    {
+        // Décrémenter le solde
+        $this->wallet->decrement('balance', $totalCost);
+
+        $code_unique = $this->generateUniqueReference();
+
+        // Créer un appel d'offre
+        $appelOffre = AppelOffreUser::create([
+            'product_name' => $this->name,
+            'quantity' => $validatedData['quantité'],
+            'payment' => 'comptant',
+            'livraison' => $validatedData['selectedOption'],
+            'date_tot' => $validatedData['dateTot'],
+            'date_tard' => $validatedData['dateTard'],
+            'time_start' => $validatedData['timeStart'],
+            'time_end' => $validatedData['timeEnd'],
+            'day_period' => $validatedData['dayPeriod'],
+            'day_periodFin' => $validatedData['dayPeriodFin'],
+            'specification' => $this->distinctSpecifications,
+            'reference' => $this->reference,
+            'localite' => $validatedData['localite'],
+            'id_prod' => $this->id,
+            'code_unique' => $code_unique,
+            'lowestPricedProduct' => $this->lowestPricedProduct,
+            'prodUsers' => json_encode($this->prodUsers),
+            'image' => $validatedData['image'] ?? null,
+            'id_sender' => $userId,
+        ]);
+
+        // Créer une transaction
+        $this->createTransaction(
+            $userId,
+            $userId,
+            'Gele',
+            $totalCost,
+            $this->generateIntegerReference(),
+            'Gele Pour Achat de ' . $this->name,
+            'effectué',
+            'COC'
+        );
+
+        // Mettre à jour la table des gels
+        gelement::create([
+            'id_wallet' => $this->wallet->id,
+            'amount' => $totalCost,
+            'reference_id' => $code_unique,
+        ]);
+
+        return $appelOffre;
+    }
+    private function notifyUsers($appelOffre)
+    {
+        foreach ($this->prodUsers as $prodUser) {
+            $owner = User::find($prodUser);
+
+            if ($owner) {
+                $data = [
+                    'id_appelOffre' => $appelOffre->id,
+                    'code_unique' => $appelOffre->code_unique,
+                    'difference' => 'single',
+                ];
+
+                Notification::send($owner, new AppelOffre($data));
+
+                // Mettre à jour la notification
+                $notification = $owner->notifications()
+                    ->where('type', AppelOffre::class)
+                    ->latest()
+                    ->first();
+
+                if ($notification) {
+                    $notification->update(['type_achat' => $this->selectedOption]);
+                }
+
+                // Déclencher un événement
+                event(new NotificationSent($owner));
+            }
+        }
+    }
+    private function resetFormulaire()
+    {
+        $this->reset([
+            'quantité',
+            'localite',
+            'selectedOption',
+            'dateTot',
+            'dateTard',
+            'timeStart',
+            'timeEnd',
+            'dayPeriod',
+            'dayPeriodFin',
+        ]);
+    }
+
+
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
@@ -247,8 +331,9 @@ class Appaeloffre extends Component
 
     public function submitGroupe()
     {
-        Log::info('Début du processus de création de l\'appel d\'offre groupé.');
-
+        // Actualiser le timer avant de commencer
+        $this->timeServer();
+        
         // Vérifier si une zone économique est sélectionnée
         if (!$this->appliedZoneValue) {
             Log::warning('Aucune zone économique sélectionnée.');
@@ -342,6 +427,15 @@ class Appaeloffre extends Component
                 'reference_id' => $codeUnique,
             ]);
             Log::info('Gel des fonds enregistré.');
+
+            Countdown::create([
+                'user_id' => $userId,
+                'userSender' => null,
+                'start_time' => $this->timestamp,
+                'code_unique' => $codeUnique,
+                'difference' => 'quantiteGrouper',
+                'AppelOffreGrouper_id' => $offre->id,
+            ]);
 
             // Notifications aux utilisateurs intéressés
             $idsProprietaires = Consommation::where('name', $offre->productName)

@@ -168,34 +168,7 @@ class LivraisonAchatdirect extends Component
             $this->reset(['prixTrade']);
 
             broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
-
-            // Vérifier si 'code_unique' existe dans les données de notification
-            $this->comments = Comment::with('user')
-                ->where('code_unique', $this->Valuecode_unique)
-                ->whereNotNull('prixTrade')
-                ->orderBy('prixTrade', 'asc')
-                ->get();
-
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->Valuecode_unique)
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
-
-            if (!$existingCountdown) {
-                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-                Countdown::create([
-                    'user_id' => Auth::id(),
-                    'userSender' => $this->achatdirect->userSender,
-                    'start_time' => $this->timestamp,
-                    'difference' => 'ad',
-                    'code_unique' => $this->Valuecode_unique,
-                    'id_achat' => $this->achatdirect->id,
-                ]);
-                // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated($this->time));
-                $this->dispatch('OldestCommentUpdated', $this->time);
-            }
+            $this->listenForMessage();
 
             // Committer la transaction
             DB::commit();

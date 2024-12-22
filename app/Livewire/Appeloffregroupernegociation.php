@@ -46,7 +46,8 @@ class Appeloffregroupernegociation extends Component
     public $time;
     public $error;
     public $timestamp;
-
+    public $prixLePlusBas;
+    public $offreIniatiale;
     protected $recuperationTimer;
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
@@ -92,6 +93,15 @@ class Appeloffregroupernegociation extends Component
             ->orderBy('prixTrade', 'asc')
             ->get();
 
+
+        $this->prixLePlusBas = Comment::where('code_unique', $this->code_unique)
+            ->whereNotNull('prixTrade')
+            ->min('prixTrade');
+
+        $this->offreIniatiale = Comment::where('code_unique', $this->code_unique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('prixTrade', 'asc')
+            ->first(); // Récupère le premier commentaire trié
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {

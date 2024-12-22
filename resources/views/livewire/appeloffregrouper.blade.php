@@ -156,6 +156,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/countdown2.js') }}?v=1.0.0" defer></script>
+    <script src="{{ asset('js/countdown.js') }}?v=1.0.0" defer></script>
 
 </div>

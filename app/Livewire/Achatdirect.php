@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Events\NotificationSent;
 use App\Models\AchatDirect as ModelsAchatDirect;
+use App\Models\Countdown;
+use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Wallet;
@@ -50,11 +52,23 @@ class Achatdirect extends Component
     public $produits;
     public $achatdirect;
     public $prixFin;
+    public $time;
+    public $error;
+    public $timestamp;
 
 
+    protected $recuperationTimer;
+
+    // Injection de la classe RecuperationTimer via le constructe
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
 
     public function mount($id)
     {
+
+        $this->timeServer();
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->produits = ProduitService::find($this->notification->data['idProd']);
         $this->achatdirect = ModelsAchatDirect::find($this->notification->data['achat_id']);
@@ -67,8 +81,19 @@ class Achatdirect extends Component
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
     }
 
+    public function timeServer()
+    {
+        // Récupération de l'heure via le service
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
+    }
     public function ciblageLivreurs()
     {
+
         // Vérification de l'existence de 'userSender' dans les données de la notification
         $this->Idsender = $this->achatdirect->userSender ?? null;
 
@@ -179,6 +204,15 @@ class Achatdirect extends Component
                     }
                 }
             }
+
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $this->achatdirect->userSender,
+                'start_time' => $this->timestamp,
+                'difference' => 'ad',
+                'code_unique' => $this->notification->data['code_unique'],
+                'id_achat' => $this->achatdirect->id,
+            ]);
 
             // Mettre à jour la notification
             $this->notification->update(['reponse' => 'accepte']);

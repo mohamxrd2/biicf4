@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Events\NotificationSent;
 use App\Models\AppelOffreGrouper;
+use App\Models\Countdown;
 use App\Models\User;
 use App\Models\UserQuantites;
 use App\Notifications\AppelOffreGrouperNotification;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Notification;
 
 class AppeloffreCountdown extends Command
 {
-    protected $signature = 'app:appeloffre';
+    protected $signature = 'app:appeloffreGrouper';
     protected $description = 'Gère les notifications pour les appels d\'offres soumis';
 
     public function __construct()
@@ -28,21 +29,28 @@ class AppeloffreCountdown extends Command
         DB::beginTransaction(); // Démarre une transaction
 
         try {
-            $appelOffreGroups = AppelOffreGrouper::where('count', true)
-                ->where('started_at', '<=', now()->subMinutes(2))
-                ->where(function ($query) {
-                    $query->whereNull('notified') // Inclut les notified null
-                        ->orWhere('notified', false); // Inclut les notified false
-                })
+
+            $countdowns = Countdown::where('notified', false)
+                ->where('start_time', '<=', now()->subMinutes(2))
+                ->where('difference', 'quantiteGrouper')
+                ->with(['sender', 'achat', 'appelOffre','appelOffreGrouper'])
                 ->get();
 
-            // Transformer la collection en JSON pour le log
+            // Récupérer tous les codes uniques des Countdown non notifiés
+            $codeUniques = $countdowns->pluck('code_unique')->unique();
 
+            // Récupérer les AppelOffreGrouper correspondants
+            $appelsOffreGroups = AppelOffreGrouper::whereIn('codeunique', $codeUniques)->get();
 
-            foreach ($appelOffreGroups as $appelOffreGroup) {
+            // Log des données pour vérification
+            Log::info('Countdowns expirés:', $countdowns->toArray());
+            Log::info('Groupes d\'AppelOffre correspondants:', $appelsOffreGroups->toArray());
 
+            // Traiter chaque AppelOffreGroup
+            foreach ($appelsOffreGroups as $appelOffreGroup) {
                 $this->processAppelOffreGroup($appelOffreGroup);
             }
+
             DB::commit(); // Si tout se passe bien, commit les modifications
         } catch (\Exception $e) {
             DB::rollBack(); // Si une erreur se produit, annule les modifications

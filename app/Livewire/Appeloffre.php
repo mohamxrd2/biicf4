@@ -179,34 +179,7 @@ class Appeloffre extends Component
             ]);
 
             broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
-
-            // Vérifier si 'code_unique' existe dans les données de notification
-            $this->comments = Comment::with('user')
-                ->where('code_unique', $this->appeloffre->code_unique)
-                ->whereNotNull('prixTrade')
-                ->orderBy('prixTrade', 'asc')
-                ->get();
-
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->code_unique)
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
-
-            if (!$existingCountdown) {
-                Countdown::create([
-                    'user_id' => $this->id_trader,
-                    'userSender' => null,
-                    'start_time' => $this->timestamp,
-                    'code_unique' => $this->code_unique,
-                    'difference' => $this->notification->type_achat == 'Delivery' ? 'appelOffreD' : 'appelOffreR',
-                    'id_appeloffre' => $this->appeloffre->id,
-                ]);
-
-                // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated($this->time));
-                $this->dispatch('OldestCommentUpdated', $this->time);
-            }
+            $this->listenForMessage();
 
             DB::commit();
 

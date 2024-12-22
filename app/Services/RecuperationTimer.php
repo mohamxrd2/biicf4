@@ -4,16 +4,19 @@ namespace App\Services;
 
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Bt51\NTP\Socket;
 use Bt51\NTP\Client;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 
 class RecuperationTimer
 {
     public $time;
     public $timentp;
-    public $error = null; // Message d'erreur en cas de problème
+    public $error = null;
+    private $lastTime = null;
 
     protected $timeServers = [
         'https://worldtimeapi.org/api/timezone/Etc/UTC',
@@ -21,54 +24,71 @@ class RecuperationTimer
         'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
     ];
 
-    // Méthode principale pour obtenir l'heure
     public function getTime()
     {
         try {
-            // En cas d'échec, utiliser l'heure du serveur comme secours
-            $this->fetchServerTime();
+            // Récupérer le dernier temps connu depuis le cache
+            $this->lastTime = Cache::get('last_server_time');
+
+            // Obtenir le nouveau temps
+            $newTime = $this->fetchCurrentTime();
+
+            // Si on a un temps précédent, vérifier la cohérence
+            if ($this->lastTime) {
+                // Si le nouveau temps est inférieur au dernier temps connu
+                if ($newTime < $this->lastTime) {
+                    // Utiliser le dernier temps connu + un petit incrément
+                    $newTime = $this->lastTime + 1000; // Ajouter 1 seconde
+                }
+            }
+
+            // Mettre à jour le cache avec le nouveau temps
+            Cache::put('last_server_time', $newTime, now()->addMinutes(60));
+
+            $this->time = $newTime;
+            return $this->time;
+
         } catch (Exception $e) {
-            // Initialisation de la connexion au serveur NTP
+            // En cas d'erreur, utiliser le dernier temps connu ou l'heure système
+            $this->error = "Erreur de synchronisation : {$e->getMessage()}";
+            return $this->lastTime ?? (now()->timestamp * 1000);
+        }
+    }
+
+    private function fetchCurrentTime()
+    {
+        // Essayer d'abord les serveurs de temps externes
+        try {
+            foreach ($this->timeServers as $server) {
+                $response = Http::timeout(5)->get($server);
+                if ($response->successful()) {
+                    return $this->parseTimeFromResponse($response->json());
+                }
+            }
+        } catch (Exception $e) {
+            // Logger l'erreur mais continuer avec NTP
+            Log::warning("Erreur avec les serveurs de temps externes: " . $e->getMessage());
+        }
+
+        // Si les serveurs externes échouent, essayer NTP
+        try {
             $socket = new Socket('0.pool.ntp.org', 123);
             $ntp = new Client($socket);
-
-            // Récupération de l'heure depuis le serveur NTP
             $this->timentp = $ntp->getTime();
-            // Vérification que l'heure récupérée est valide
+
             if ($this->timentp instanceof DateTime) {
-                // Conversion en millisecondes
                 $timestampSeconds = $this->timentp->getTimestamp();
-                $this->time  = $timestampSeconds * 1000;
-
-                // Ajout des millisecondes supplémentaires (si nécessaire)
-                $this->time  += (int)($this->timentp->format('u') / 1000);
+                return $timestampSeconds * 1000 + (int)($this->timentp->format('u') / 1000);
             }
+        } catch (Exception $e) {
+            // Logger l'erreur mais continuer avec l'heure système
+            Log::warning("Erreur avec NTP: " . $e->getMessage());
         }
 
-        return $this->time;
+        // En dernier recours, utiliser l'heure système
+        return now()->timestamp * 1000;
     }
 
-    // Méthode pour récupérer l'heure depuis différents serveurs
-    private function fetchServerTime()
-    {
-        foreach ($this->timeServers as $server) {
-            try {
-                $response = Http::timeout(5)->get($server);
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $this->time = $this->parseTimeFromResponse($data);
-                    $this->error = null; // Réinitialise l'erreur
-                    return;
-                }
-            } catch (Exception $e) {
-                $this->error = "Erreur avec le serveur : {$e->getMessage()}";
-                continue;
-            }
-        }
-    }
-
-    // Méthode pour parser la réponse des serveurs
     private function parseTimeFromResponse($data)
     {
         if (isset($data['datetime'])) {

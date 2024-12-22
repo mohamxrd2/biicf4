@@ -15,33 +15,9 @@ document.addEventListener("alpine:init", () => {
         init() {
             if (this.oldestCommentDate) {
                 this.endDate = new Date(this.oldestCommentDate);
-                this.endDate.setMinutes(this.endDate.getMinutes() + 2);
+                this.endDate.setMinutes(this.endDate.getMinutes() + 7);
                 this.startCountdown();
             }
-
-            Echo.channel("oldest-comment").listen(
-                "OldestCommentUpdated",
-                (e) => {
-                    console.log("Événement OldestCommentUpdated reçu", e);
-                    if (e.oldestCommentDate) {
-                        const newDate = new Date(e.oldestCommentDate);
-
-                        if (
-                            !this.oldestCommentDate ||
-                            this.oldestCommentDate.getTime() !==
-                                newDate.getTime()
-                        ) {
-                            this.oldestCommentDate = newDate;
-                            this.endDate = new Date(this.oldestCommentDate);
-                            this.endDate.setMinutes(
-                                this.endDate.getMinutes() + 2
-                            );
-                            this.startCountdown();
-                            location.reload();
-                        }
-                    }
-                }
-            );
 
             console.log(
                 "Initialisation du oldestCommentDate",

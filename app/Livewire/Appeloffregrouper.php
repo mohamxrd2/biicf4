@@ -4,11 +4,13 @@ namespace App\Livewire;
 
 use App\Events\AjoutQuantiteOffre;
 use App\Models\AppelOffreGrouper as ModelsAppelOffreGrouper;
+use App\Models\Countdown;
 use App\Models\gelement;
 use App\Models\Transaction;
 use App\Models\userquantites;
 use App\Models\Wallet;
 use App\Services\RecuperationTimer;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -30,26 +32,31 @@ class Appeloffregrouper extends Component
     public $localite;
     public $groupages = [];
     public $existingQuantite;
+    public $oldestComment;
     public $isOpen = false;
     public $time;
     public $error;
 
     protected $recuperationTimer;
 
+    // Constructeur pour initialiser RecuperationTimer
+    public function boot()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
+
     public function mount($id)
     {
-        // Initialisation des services
-        $this->recuperationTimer = new RecuperationTimer();
-
-        $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
-
         // Récupération de la notification
         $this->notification = DatabaseNotification::find($id);
         if (!$this->notification) {
             session()->flash('error', 'Notification introuvable.');
             return;
         }
+
+        // Récupérer l'heure du serveur
+        $this->time = $this->recuperationTimer->getTime();
+        $this->error = $this->recuperationTimer->error;
 
         $this->fetchAppelOffreGrouper();
         $this->initializeGroupageData();
@@ -79,7 +86,17 @@ class Appeloffregrouper extends Component
 
         $codeUnique = $this->appelOffreGroup->codeunique;
 
-        $this->oldestCommentDate = ModelsAppelOffreGrouper::where('codeunique', $codeUnique)->min('started_at');
+        // Récupérer le commentaire le plus ancien avec code_unique et start_time non nul
+        $this->oldestComment = Countdown::where('code_unique', $codeUnique)
+            ->whereNotNull('start_time')
+            ->where('notified', false)
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
+        $this->oldestCommentDate = $this->oldestComment
+            ? Carbon::parse($this->oldestComment->start_time)->toIso8601String()
+            : null;
 
         $this->reloadGroupages($codeUnique);
     }
@@ -225,6 +242,28 @@ class Appeloffregrouper extends Component
         $transaction->status = $status;
         $transaction->save();
     }
+
+    public function refreshServerTime()
+    {
+        try {
+            if (!$this->recuperationTimer) {
+                $this->recuperationTimer = new RecuperationTimer();
+            }
+
+            $currentTime = $this->recuperationTimer->getTime();
+            return [
+                'serverTime' => $currentTime,
+                'timestamp' => now()->timestamp * 1000
+            ];
+        } catch (Exception $e) {
+            Log::error('Erreur de synchronisation du temps:', ['error' => $e->getMessage()]);
+            return [
+                'serverTime' => now()->timestamp * 1000,
+                'timestamp' => now()->timestamp * 1000
+            ];
+        }
+    }
+
     public function render()
     {
         return view('livewire.appeloffregrouper');
