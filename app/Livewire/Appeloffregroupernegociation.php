@@ -135,10 +135,10 @@ class Appeloffregroupernegociation extends Component
             'prixTrade' => 'required|numeric',
         ]);
 
-        // if ($this->prixTrade > $this->appeloffregrp->lowestPricedProduct) {
-        //     session()->flash('error', 'Commentaire créé avec succès!');
-        //     return;
-        // }
+        if ($this->prixTrade <  $this->appeloffregrp->lowestPricedProduct) {
+            session()->flash('error', 'prix trop haut!');
+            return;
+        }
 
         DB::beginTransaction();
 
@@ -155,33 +155,6 @@ class Appeloffregroupernegociation extends Component
 
             broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
 
-            // Vérifier si 'code_unique' existe dans les données de notification
-            $this->comments = Comment::with('user')
-                ->where('code_unique', $this->appeloffregrp->codeunique)
-                ->whereNotNull('prixTrade')
-                ->orderBy('prixTrade', 'asc')
-                ->get();
-
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->appeloffregrp->codeunique)
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
-
-            if (!$existingCountdown) {
-                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-                Countdown::create([
-                    'user_id' => $this->id_trader,
-                    'userSender' => null,
-                    'start_time' => $this->timestamp,
-                    'code_unique' => $this->appeloffregrp->codeunique,
-                    'difference' => 'appelOffreGrouper',
-                    'AppelOffreGrouper_id' => $this->appeloffregrp->id,
-                ]);
-                // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated($this->time));
-                $this->dispatch('OldestCommentUpdated', $this->time);
-            }
 
 
             DB::commit();
