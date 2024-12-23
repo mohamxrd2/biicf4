@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +15,7 @@ class AchatDirect extends Model
         'photoProd',
         'nameProd',
         'quantité',
+        'prix',
         'montantTotal',
         'message',
         'localite',

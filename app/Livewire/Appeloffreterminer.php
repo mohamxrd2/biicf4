@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Events\NotificationSent;
 use App\Models\AchatDirect;
 use App\Models\AppelOffreUser;
+use App\Models\Countdown;
 use App\Models\userquantites;
 use App\Notifications\AllerChercher;
 use App\Notifications\CountdownNotificationAp;
@@ -22,6 +23,7 @@ use App\Notifications\CountdownNotification;
 use App\Notifications\CountdownNotificationAd;
 use App\Notifications\livraisonAchatdirect;
 use App\Notifications\RefusAchat;
+use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Exception;
 use Intervention\Image\Facades\Image;
@@ -59,11 +61,23 @@ class Appeloffreterminer extends Component
     public $produitService;
     public $photoProd;
     public $textareaValue;
+    public $timestamp;
+    public $time;
+    public $error;
+    protected $recuperationTimer;
+
+    // Injection de la classe RecuperationTimer via le constructeur
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
 
 
 
     public function mount($id)
     {
+        $this->timeServer();
+
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appeloffre']);
 
@@ -146,6 +160,8 @@ class Appeloffreterminer extends Component
 
     public function accepter()
     {
+        $this->timeServer();
+
         // Validation des entrées
         $validated = $this->validate([
             'photoProd' => 'required|image|max:1024', // Limite à 1 MB
@@ -181,6 +197,7 @@ class Appeloffreterminer extends Component
             // Enregistrer l'achat dans la table AchatDirectModel
             $achatdirect = AchatDirect::create([
                 'photoProd' => $photoName,  // Quantité récupérée de userquantites
+                'prix' => $this->notification->data['prixTrade'],  
                 'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
                 'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
                 'montantTotal' => $this->prixTotal,
@@ -205,6 +222,14 @@ class Appeloffreterminer extends Component
 
             ];
 
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $userId,
+                'start_time' => $this->timestamp,
+                'difference' => 'ad',
+                'code_unique' => $data['code_livr'],
+                'id_achat' => $achatdirect->id,
+            ]);
             // Vérifier l'existence de l'identifiant du produit
             if (!$data['idProd']) {
                 throw new Exception('Identifiant du produit introuvable.');
@@ -236,7 +261,46 @@ class Appeloffreterminer extends Component
             session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
         }
     }
+    public function timeServer()
+    {
+        // Faire plusieurs tentatives de récupération pour plus de précision
+        $attempts = 3;
+        $times = [];
 
+        for ($i = 0; $i < $attempts; $i++) {
+            // Récupération de l'heure via le service
+            $currentTime = $this->recuperationTimer->getTime();
+            if ($currentTime) {
+                $times[] = $currentTime;
+            }
+            // Petit délai entre chaque tentative
+            usleep(50000); // 50ms
+        }
+
+        if (empty($times)) {
+            // Si aucune tentative n'a réussi, utiliser l'heure système
+            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
+            $this->time = now()->timestamp * 1000;
+        } else {
+            // Utiliser la médiane des temps récupérés pour plus de précision
+            sort($times);
+            $medianIndex = floor(count($times) / 2);
+            $this->time = $times[$medianIndex];
+            $this->error = null;
+        }
+
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
+
+        // Log pour debug
+        Log::info('Timer actualisé', [
+            'timestamp' => $this->timestamp,
+            'time_ms' => $this->time,
+            'attempts' => count($times)
+        ]);
+    }
     public function refuser()
     {
         $userId = Auth::id();

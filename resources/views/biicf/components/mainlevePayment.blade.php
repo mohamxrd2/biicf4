@@ -23,7 +23,7 @@
                     <h3 class="text-xl font-semibold text-blue-800 dark:text-blue-300">Prix à payer</h3>
                 </div>
                 <p class="text-4xl font-bold text-blue-900 dark:text-white tracking-wider">
-                    {{ number_format($notification->data['montant'] ?? 0, 0, ',', ' ') }} FCFA
+                    {{ number_format($gelement->amount ?? 0, 0, ',', ' ') }} FCFA
                 </p>
             </div>
 

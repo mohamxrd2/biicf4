@@ -253,6 +253,7 @@ class Appeloffreterminergrouper extends Component
                 // Enregistrer l'achat dans la table AchatDirectModel
                 $achatdirect = AchatDirect::create([
                     'photoProd' => $photoName,  // Quantité récupérée de userquantites
+                    'prix' => $this->notification->data['prixTrade'],
                     'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
                     'quantité' => $quantite,  // Quantité récupérée de userquantites
                     'montantTotal' => $quantite * $this->notification->data['prixTrade'],

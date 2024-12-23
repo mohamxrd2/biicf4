@@ -38,6 +38,7 @@ class Mainleveclient extends Component
     public $user;
     public $userWallet;
     public $diversite;
+    public $gelement;
     public $showMainlever = false;
 
 
@@ -49,6 +50,10 @@ class Mainleveclient extends Component
 
         $this->user = Auth::id(); // Initialisation de $user avec l'utilisateur authentifié
         $this->userWallet = Wallet::where('user_id', $this->user)->first();
+
+        $this->gelement = gelement::where('reference_id', $this->notification->data['code_unique'])
+            ->where('id_wallet', $this->userWallet->id)
+            ->first();
     }
 
     public function toggleComponent()
@@ -102,15 +107,11 @@ class Mainleveclient extends Component
                 throw new Exception('Aucune donnée d\'achat direct ou d\'appel d\'offre n\'est disponible.');
             }
 
-            $gelement = gelement::where('reference_id', $this->notification->data['code_unique'])
-                ->where('id_wallet', $this->userWallet->id)
-                ->first();
-
-            if (!$gelement) {
+            if (!$this->gelement) {
                 throw new Exception('Référence introuvable dans la table gelement.');
             }
 
-            $valeurGelement = $gelement->amount;
+            $valeurGelement = $this->gelement->amount;
             Log::info('Valeur récupérée depuis la table gelement', ['valeur' => $valeurGelement]);
 
             // Récupération des portefeuilles

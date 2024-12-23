@@ -273,7 +273,7 @@ class CountdownNotificationAd extends Component
                 $this->createTransaction(
                     $this->user,
                     $this->user,
-                    'Reception',
+                    'Réception',
                     $montantExcédent,
                     $this->generateIntegerReference(),
                     'Retour des fonds en plus',
@@ -281,15 +281,6 @@ class CountdownNotificationAd extends Component
                     'COC'
                 );
             }
-
-            // // Mise à jour du montant total de la transaction
-            // $this->achatdirect->montantTotal = $totalMontantRequis;
-            // $this->achatdirect->save();
-
-            Log::info('Montant total de la transaction mis à jour.', [
-                'achat_id' => $this->achatdirect->id,
-                'new_total' => $this->achatdirect->montantTotal
-            ]);
 
             // Création de la transaction
             $this->createTransaction(
