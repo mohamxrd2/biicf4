@@ -282,9 +282,9 @@ class CountdownNotificationAd extends Component
                 );
             }
 
-            // Mise à jour du montant total de la transaction
-            $this->achatdirect->montantTotal = $totalMontantRequis;
-            $this->achatdirect->save();
+            // // Mise à jour du montant total de la transaction
+            // $this->achatdirect->montantTotal = $totalMontantRequis;
+            // $this->achatdirect->save();
 
             Log::info('Montant total de la transaction mis à jour.', [
                 'achat_id' => $this->achatdirect->id,
