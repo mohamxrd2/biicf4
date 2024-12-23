@@ -416,7 +416,7 @@
         // Remplissage du sélecteur de pays
         const countrySelect = document.querySelector("#address-country");
         const countryData = window.intlTelInputGlobals.getCountryData();
-        
+
         countryData.forEach(country => {
             const option = document.createElement('option');
             option.value = country.iso2;
@@ -462,7 +462,7 @@
                 errorMsg.classList.remove('hidden');
                 return false;
             }
-            
+
             // Ajout du numéro complet au formulaire
             const hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';

@@ -151,8 +151,8 @@
                                 <ul class="space-y-4">
                                     @php
                                         $specifications = [
-                                            'Quantité Total groupe' => $appeloffregrp->quantity . ' unités',
-                                            'Nombre de clients' => $appeloffregrp->quantity,
+                                            'Quantité Total groupe' => $sumquantite . ' unités',
+                                            'Nombre de clients' => $appelOffreGroupcount,
                                             'reference du produit' => $appeloffregrp->reference . ' unités',
                                             'Mode payement' => $appeloffregrp->payment,
                                             'Lieu de livraison' => $appeloffregrp->localite,
@@ -254,7 +254,7 @@
                         <!-- Zone de saisie -->
                         <div class="border-t p-4">
                             <form wire:submit.prevent="commentFormLivr">
-                                @if (!$appeloffregrp->count)
+                                @if (!$appeloffregrp->count2)
                                     <div class="flex space-x-4">
                                         <div class="flex-1">
                                             <div class="relative">

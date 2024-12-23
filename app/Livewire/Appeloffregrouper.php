@@ -243,26 +243,7 @@ class Appeloffregrouper extends Component
         $transaction->save();
     }
 
-    public function refreshServerTime()
-    {
-        try {
-            if (!$this->recuperationTimer) {
-                $this->recuperationTimer = new RecuperationTimer();
-            }
 
-            $currentTime = $this->recuperationTimer->getTime();
-            return [
-                'serverTime' => $currentTime,
-                'timestamp' => now()->timestamp * 1000
-            ];
-        } catch (Exception $e) {
-            Log::error('Erreur de synchronisation du temps:', ['error' => $e->getMessage()]);
-            return [
-                'serverTime' => now()->timestamp * 1000,
-                'timestamp' => now()->timestamp * 1000
-            ];
-        }
-    }
 
     public function render()
     {

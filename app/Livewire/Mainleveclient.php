@@ -160,6 +160,7 @@ class Mainleveclient extends Component
             $this->notification->update(['reponse' => 'Confirmation']);
             Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
             session()->flash('succes', 'Le payement a été éffecuté avec succes.');
+            $this->reset('showMainlever');
 
             DB::commit();
         } catch (ModelNotFoundException $e) {
@@ -333,8 +334,6 @@ class Mainleveclient extends Component
             ]);
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
-
-
     }
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void

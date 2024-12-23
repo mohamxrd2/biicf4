@@ -8,6 +8,7 @@ use App\Models\AppelOffreGrouper;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
+use App\Models\userquantites;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Exception;
@@ -48,6 +49,8 @@ class Appeloffregroupernegociation extends Component
     public $timestamp;
     public $prixLePlusBas;
     public $offreIniatiale;
+    public $sumquantite;
+    public $appelOffreGroupcount;
     protected $recuperationTimer;
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
@@ -80,6 +83,10 @@ class Appeloffregroupernegociation extends Component
             Carbon::parse($this->oldestComment->start_time)->toIso8601String()
             : null;
         $this->listenForMessage();
+
+        $this->sumquantite = userquantites::where('code_unique', $this->appeloffregrp->codeunique)
+            ->sum('quantite');
+        $this->appelOffreGroupcount = userquantites::where('code_unique', $this->appeloffregrp->codeunique)->distinct('user_id')->count('user_id');
     }
 
     #[On('echo:comments,CommentSubmitted')]
@@ -135,10 +142,10 @@ class Appeloffregroupernegociation extends Component
             'prixTrade' => 'required|numeric',
         ]);
 
-        if ($this->prixTrade <  $this->appeloffregrp->lowestPricedProduct) {
-            session()->flash('error', 'prix trop haut!');
-            return;
-        }
+        // if ($this->prixTrade >  $this->appeloffregrp->lowestPricedProduct) {
+        //     session()->flash('error', 'prix trop haut!');
+        //     return;
+        // }
 
         DB::beginTransaction();
 
@@ -153,12 +160,9 @@ class Appeloffregroupernegociation extends Component
                 'id_sender' => json_encode($this->appeloffregrp->prodUsers),
             ]);
 
-            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
-
-
+            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id));
 
             DB::commit();
-
             $this->reset(['prixTrade']);
         } catch (Exception $e) {
             // Gérer l'exception, enregistrer l'erreur dans les logs et afficher un message d'erreur

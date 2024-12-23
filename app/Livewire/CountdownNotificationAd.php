@@ -211,12 +211,13 @@ class CountdownNotificationAd extends Component
     {
 
         // Vérification de l'existence de l'achat dans les transactions gelées
-        $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
+        $existingGelement = gelement::where('reference_id', $this->achatdirect->code_unique)
+            ->where('id_wallet', $this->userWallet->id)
             ->first();
 
         if (!$existingGelement) {
             Log::warning('Aucune transaction gelée existante trouvée.', [
-                'reference_id' => $this->notification->data['code_unique']
+                'reference_id' => $this->achatdirect->code_unique
             ]);
             return; // Arrête la fonction si aucune transaction n'est trouvée
         }
@@ -395,7 +396,7 @@ class CountdownNotificationAd extends Component
                 $currentParrain = $nextParrain;
             }
         }
-        if ($this->userId->parrain){
+        if ($this->userId->parrain) {
             $currentParrain = $this->userId;
 
             for ($level = 1; $level <= 2; $level++) {
@@ -430,7 +431,6 @@ class CountdownNotificationAd extends Component
 
                 $currentParrain = $nextParrain;
             }
-
         }
 
         // Commission pour l'admin
