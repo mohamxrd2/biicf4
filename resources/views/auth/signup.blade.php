@@ -405,75 +405,80 @@
             }
         });
         document.addEventListener('DOMContentLoaded', function() {
-        // Initialisation du téléphone
-        const phoneInput = document.querySelector("#phone");
-        const iti = window.intlTelInput(phoneInput, {
-            initialCountry: "CI",
-            separateDialCode: true,
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/utils.js"
-        });
+            // Initialisation du téléphone
+            const phoneInput = document.querySelector("#phone");
+            const iti = window.intlTelInput(phoneInput, {
+                initialCountry: "CI",
+                separateDialCode: true,
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/js/utils.js"
+            });
 
-        // Remplissage du sélecteur de pays
-        const countrySelect = document.querySelector("#address-country");
-        const countryData = window.intlTelInputGlobals.getCountryData();
+            // Remplissage du sélecteur de pays
+            const countrySelect = document.querySelector("#address-country");
+            const countryData = window.intlTelInputGlobals.getCountryData();
 
-        countryData.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country.iso2;
-            option.textContent = country.name;
-            countrySelect.appendChild(option);
-        });
+            countryData.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.iso2;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            });
 
-        // Synchronisation du pays sélectionné
-        countrySelect.value = iti.getSelectedCountryData().iso2;
+            // Synchronisation du pays sélectionné
+            countrySelect.value = iti.getSelectedCountryData().iso2;
 
-        // Mise à jour des informations régionales
-        async function updateRegionInfo(countryCode) {
-            try {
-                const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
-                const data = await response.json();
-                if (data && data[0]) {
-                    document.getElementById('continent').value = data[0].region || '';
-                    document.getElementById('subregion').value = data[0].subregion || '';
+            // Mise à jour des informations régionales
+            async function updateRegionInfo(countryCode) {
+                try {
+                    const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+                    const data = await response.json();
+                    if (data && data[0]) {
+                        document.getElementById('continent').value = data[0].region || '';
+                        document.getElementById('subregion').value = data[0].subregion || '';
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des informations:', error);
                 }
-            } catch (error) {
-                console.error('Erreur lors de la récupération des informations:', error);
-            }
-        }
-
-        // Événements de changement
-        phoneInput.addEventListener('countrychange', () => {
-            const countryData = iti.getSelectedCountryData();
-            countrySelect.value = countryData.iso2;
-            updateRegionInfo(countryData.iso2);
-        });
-
-        countrySelect.addEventListener('change', () => {
-            iti.setCountry(countrySelect.value);
-            updateRegionInfo(countrySelect.value);
-        });
-
-        // Validation du formulaire
-        document.querySelector('form').addEventListener('submit', function(e) {
-            if (!iti.isValidNumber()) {
-                e.preventDefault();
-                const errorMsg = document.querySelector("#phone").nextElementSibling;
-                errorMsg.textContent = "Numéro de téléphone invalide";
-                errorMsg.classList.remove('hidden');
-                return false;
             }
 
-            // Ajout du numéro complet au formulaire
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'full_phone';
-            hiddenInput.value = iti.getNumber();
-            this.appendChild(hiddenInput);
-        });
+            // Événements de changement
+            phoneInput.addEventListener('countrychange', () => {
+                const countryData = iti.getSelectedCountryData();
+                countrySelect.value = countryData.iso2;
+                updateRegionInfo(countryData.iso2);
+            });
 
-        // Initialisation des données régionales
-        updateRegionInfo(iti.getSelectedCountryData().iso2);
-    });
+            countrySelect.addEventListener('change', () => {
+                iti.setCountry(countrySelect.value);
+                updateRegionInfo(countrySelect.value);
+            });
+
+            // Validation du formulaire
+            document.querySelector('form').addEventListener('submit', function(e) {
+                if (!iti.isValidNumber()) {
+                    e.preventDefault();
+                    const errorMsg = document.querySelector("#phone").nextElementSibling;
+                    errorMsg.textContent = "Numéro de téléphone invalide";
+                    errorMsg.classList.remove('hidden');
+                    return false;
+                }
+
+                e.preventDefault(); // Empêche l'envoi du formulaire pour test
+
+                // Récupérer le numéro complet (avec indicatif)
+                const fullPhoneNumber = iti.getNumber();
+
+                // Ajouter le numéro complet au champ ou l'envoyer à la base de données
+                phoneInput.value = fullPhoneNumber;
+
+                // Envoyer le formulaire
+                e.target.submit();
+
+            });
+
+            // Initialisation des données régionales
+            updateRegionInfo(iti.getSelectedCountryData().iso2);
+        });
     </script>
 </body>
 
