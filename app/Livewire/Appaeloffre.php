@@ -313,8 +313,6 @@ class Appaeloffre extends Component
         ]);
     }
 
-
-
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
@@ -333,7 +331,7 @@ class Appaeloffre extends Component
     {
         // Actualiser le timer avant de commencer
         $this->timeServer();
-        
+
         // Vérifier si une zone économique est sélectionnée
         if (!$this->appliedZoneValue) {
             Log::warning('Aucune zone économique sélectionnée.');

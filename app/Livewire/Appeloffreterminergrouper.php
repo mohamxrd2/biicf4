@@ -265,9 +265,7 @@ class Appeloffreterminergrouper extends Component
                     'idProd' => $this->produit->id,
                     'code_unique' => $codeUnique,
                 ]);
-
-
-
+                
                 // Préparer les données pour la notification
                 $data = [
                     'idProd' => $this->produit->id,
@@ -279,6 +277,7 @@ class Appeloffreterminergrouper extends Component
                     'description' => 'Cliquez pour particicper a la negociation',
 
                 ];
+
                 Countdown::create([
                     'user_id' => Auth::id(),
                     'userSender' => $userId,
@@ -287,6 +286,7 @@ class Appeloffreterminergrouper extends Component
                     'code_unique' => $data['code_livr'],
                     'id_achat' => $achatdirect->id,
                 ]);
+
                 if (!$data['idProd']) {
                     throw new Exception('Identifiant du produit introuvable.');
                 }

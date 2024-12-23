@@ -44,7 +44,8 @@ class Enchere extends Component
     public $produit, $nombreParticipants, $achatdirect;
     public $time;
     public $error;
-
+    public $prixLePlusBas;
+    public $offreIniatiale;
     protected $recuperationTimer;
 
     // Injection de la classe RecuperationTimer via le constructeur
@@ -90,7 +91,14 @@ class Enchere extends Component
             ->orderBy('prixTrade', 'desc')
             ->get();
 
+        $this->prixLePlusBas = Comment::where('code_unique', $this->notification->data['code_unique'])
+            ->whereNotNull('prixTrade')
+            ->min('prixTrade');
 
+        $this->offreIniatiale = Comment::where('code_unique', $this->notification->data['code_unique'])
+            ->whereNotNull('prixTrade')
+            ->orderBy('prixTrade', 'asc')
+            ->first(); // Récupère le premier commentaire trié
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
             $this->commentCount = $this->comments->count();
@@ -131,34 +139,9 @@ class Enchere extends Component
                 'id_prod' => $this->produit->id,
             ]);
 
-            broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
+            broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id));
+            $this->listenForMessage();
 
-            // Vérifier si 'code_unique' existe dans les données de notification
-            $this->comments = Comment::with('user')
-                ->where('code_unique', $this->notification->data['code_unique'])
-                ->whereNotNull('prixTrade')
-                ->orderBy('prixTrade', 'desc')
-                ->get();
-
-            // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-            $existingCountdown = Countdown::where('code_unique', $this->notification->data['code_unique'])
-                ->where('notified', false)
-                ->orderBy('start_time', 'desc')
-                ->first();
-
-            if (!$existingCountdown) {
-                // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-                Countdown::create([
-                    'user_id' => Auth::id(),
-                    'userSender' => $this->produit->user_id,
-                    'start_time' => Carbon::parse($this->time),
-                    'code_unique' => $this->notification->data['code_unique'],
-                    'difference' => 'enchere',
-                ]);
-                // Émettre l'événement 'CountdownStarted' pour démarrer le compte à rebours en temps réel
-                broadcast(new OldestCommentUpdated($this->time));
-                $this->dispatch('OldestCommentUpdated', $this->time);
-            }
             $this->reset(['prixTrade']);
         } catch (Exception $e) {
             // dd($e)->getMessage();

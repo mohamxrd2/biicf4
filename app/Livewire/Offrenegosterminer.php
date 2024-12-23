@@ -142,6 +142,7 @@ class Offrenegosterminer extends Component
             // Mettre à jour la table de AchatDirectModel de fond
             $achat = AchatDirect::create([
                 'nameProd' => $validated['nameProd'],
+                'prix' => $this->notification->data['prixTrade'],
                 'quantité' => $validated['quantité'],
                 'montantTotal' => $montantTotal,
                 'localite' => $validated['localite'],
@@ -159,6 +160,7 @@ class Offrenegosterminer extends Component
                 'code_unique' => $codeUnique, // Utiliser la variable vérifiée
 
             ]);
+
             // Mettre à jour la table de gelement de fond
             gelement::create([
                 'id_wallet' => $userWallet->id,

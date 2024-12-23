@@ -127,10 +127,6 @@ class CheckCountdowns extends Command
                 $this->sendEnchereNotification($commentToUse, $details);
                 break;
 
-            // case 'offreGrouper':
-            //     $this->sendGroupedNotification($commentToUse, $details);
-            //     break;
-
             case 'ad':
                 $this->sendAdNotification($countdown, $details);
                 break;
@@ -163,10 +159,6 @@ class CheckCountdowns extends Command
         Log::info('Notification "offredirect" envoyée.', ['user_id' => $commentToUse->user->id]);
     }
 
-    // private function sendGroupedNotification($commentToUse, $details)
-    // {
-    //     Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
-    // }
 
     private function sendAdNotification($countdown, $details)
     {

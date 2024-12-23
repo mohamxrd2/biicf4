@@ -14,6 +14,7 @@ use App\Notifications\OffreNegosNotif;
 use App\Notifications\OffreNotif;
 use App\Notifications\OffreNotifGroup;
 use App\Services\RecuperationTimer;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -36,6 +37,7 @@ class FonctOffre extends Component
 
     public $time;
     public $error;
+    public $timestamp;
 
     protected $recuperationTimer;
 
@@ -46,6 +48,7 @@ class FonctOffre extends Component
     }
     public function mount($id)
     {
+        $this->timeServer();
 
         // Récupérer le produit ou échouer
         $this->produit = ProduitService::findOrFail($id);
@@ -77,7 +80,46 @@ class FonctOffre extends Component
         $this->time = $this->recuperationTimer->getTime();
         $this->error = $this->recuperationTimer->error;
     }
+    public function timeServer()
+    {
+        // Faire plusieurs tentatives de récupération pour plus de précision
+        $attempts = 3;
+        $times = [];
 
+        for ($i = 0; $i < $attempts; $i++) {
+            // Récupération de l'heure via le service
+            $currentTime = $this->recuperationTimer->getTime();
+            if ($currentTime) {
+                $times[] = $currentTime;
+            }
+            // Petit délai entre chaque tentative
+            usleep(50000); // 50ms
+        }
+
+        if (empty($times)) {
+            // Si aucune tentative n'a réussi, utiliser l'heure système
+            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
+            $this->time = now()->timestamp * 1000;
+        } else {
+            // Utiliser la médiane des temps récupérés pour plus de précision
+            sort($times);
+            $medianIndex = floor(count($times) / 2);
+            $this->time = $times[$medianIndex];
+            $this->error = null;
+        }
+
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
+
+        // Log pour debug
+        Log::info('Timer actualisé', [
+            'timestamp' => $this->timestamp,
+            'time_ms' => $this->time,
+            'attempts' => count($times)
+        ]);
+    }
     public function sendOffre()
     {
 
@@ -159,6 +201,8 @@ class FonctOffre extends Component
 
     public function sendoffneg()
     {
+        $this->timeServer();
+
         $user_id = Auth::guard('web')->id();
 
         try {
@@ -184,6 +228,14 @@ class FonctOffre extends Component
                 'differance' => 'grouper',
             ]);
 
+            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
+            Countdown::create([
+                'user_id' => Auth::id(),
+                'userSender' => $produit->user_id,
+                'start_time' => $this->timestamp,
+                'code_unique' => $code_unique,
+                'difference' => 'enchere',
+            ]);
 
             // Récupérer les utilisateurs consommant ce produit
             $idsProprietaires = $this->getConsommateurs($referenceProduit, $user_id);
@@ -243,9 +295,6 @@ class FonctOffre extends Component
             ->toArray();
     }
 
-    /**
-     * Récupérer la valeur de la zone économique en fonction de l'utilisateur.
-     */
     private function getZoneValue(string $zoneEconomique, $user)
     {
         $mapping = [
@@ -258,10 +307,6 @@ class FonctOffre extends Component
         ];
         return $mapping[$zoneEconomique] ?? null;
     }
-
-    /**
-     * Récupérer les IDs des utilisateurs dans une zone donnée.
-     */
     private function getUsersInZone(array $idsProprietaires, string $appliedZoneValue): array
     {
         return User::whereIn('id', $idsProprietaires)
@@ -277,9 +322,6 @@ class FonctOffre extends Component
             ->toArray();
     }
 
-    /**
-     * Envoyer des notifications aux utilisateurs spécifiés.
-     */
     private function notifyUsers(array $idsToNotify,  $produit, string $code_unique): void
     {
         foreach ($idsToNotify as $userId) {
@@ -302,6 +344,7 @@ class FonctOffre extends Component
     {
         try {
 
+            $this->timeServer();
 
             $user_id = Auth::id();
             Log::info('Tentative de stockage de données', ['user_id' => $user_id]);
@@ -339,6 +382,15 @@ class FonctOffre extends Component
                 'produit_id' => $produit->id,
                 'zone_economique' => $this->zoneEconomique,
             ], $produit, $user_id, $uniqueCode);
+
+
+            Countdown::create([
+                'user_id' => $user_id,
+                'userSender' => null,
+                'start_time' => $this->timestamp,
+                'code_unique' => $uniqueCode,
+                'difference' => 'offreGrouper',
+            ]);
 
             $this->dispatch(
                 'formSubmitted',

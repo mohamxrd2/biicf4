@@ -51,10 +51,6 @@ class AppeloffreCountdown extends Command
             // Récupérer les AppelOffreGrouper correspondants
             $appelsOffreGroups = AppelOffreGrouper::whereIn('codeunique', $codeUniques)->get();
 
-            // Log des données pour vérification
-            Log::info('Countdowns expirés:', $countdowns->toArray());
-            Log::info('Groupes d\'AppelOffre correspondants:', $appelsOffreGroups->toArray());
-
             // Traiter chaque AppelOffreGroup
             foreach ($appelsOffreGroups as $appelOffreGroup) {
                 $this->processAppelOffreGroup($appelOffreGroup, $countdowns);

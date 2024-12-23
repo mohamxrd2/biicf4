@@ -86,11 +86,11 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm text-gray-600">Offre initiale</div>
-            {{-- <div class="text-lg font-bold">{{ $offgroupe->lowestPricedProduct . ' FCFA' }}</div> --}}
+            <div class="text-lg font-bold">{{ $offgroupe->lowestPricedProduct . ' FCFA' }}</div>
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm  text-gray-600">Meilleure offre</div>
-            {{-- <div class="text-lg font-bold">{{ $prixLePlusBas ? $prixLePlusBas . ' FCFA' : 'N/A' }}</div> --}}
+            <div class="text-lg font-bold">{{ $prixLePlusBas ? $prixLePlusBas . ' FCFA' : 'N/A' }}</div>
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm text-gray-600">Temps restant</div>
@@ -188,39 +188,6 @@
         <div class="flex-1 w-full md:w-auto">
             <!-- Discussion de négociation -->
             <div class="bg-white shadow-lg rounded-lg p-2">
-
-                <!-- En-tête -->
-                <div class="bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg rounded-lg p-4 text-white mb-4">
-                    <h3 class="text-2xl font-bold flex items-center mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
-                        </svg>
-                        Discussion de négociation
-                    </h3>
-                    <div class="flex flex-row items-center space-x-2 relative">
-
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" data-tooltip-target="tooltip-coc"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-white w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                        </svg>
-
-                        <!-- Tooltip -->
-                        <div id="tooltip-coc" role="tooltip"
-                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                            Le prix le plus haut remportera la négociation. <br />
-                            Le gagnant recevra une notification.
-                            <div class="tooltip-arrow" data-popper-arrow></div>
-                        </div>
-
-                        <!-- Texte des participants -->
-                        <p class="text-sm font-medium text-gray-100"> {{ $nombreParticipants ?? '0' }}
-                            participants
-                        </p>
-                    </div>
-                </div>
 
                 <!-- Tableau des offres -->
                 <div class="bg-white rounded-lg shadow-lg mb-6">
