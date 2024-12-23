@@ -35,6 +35,8 @@ class Mainleveclient extends Component
     public $fournisseurWallet;
     public $quantite;
     public $qualite;
+    public $user;
+    public $userWallet;
     public $diversite;
     public $showMainlever = false;
 
@@ -44,6 +46,9 @@ class Mainleveclient extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
         $this->livreur = User::find($this->notification->data['livreur']);
+
+        $this->user = Auth::id(); // Initialisation de $user avec l'utilisateur authentifié
+        $this->userWallet = Wallet::where('user_id', $this->user)->first();
     }
 
     public function toggleComponent()
@@ -97,7 +102,10 @@ class Mainleveclient extends Component
                 throw new Exception('Aucune donnée d\'achat direct ou d\'appel d\'offre n\'est disponible.');
             }
 
-            $gelement = gelement::where('reference_id', $this->notification->data['code_unique'])->first();
+            $gelement = gelement::where('reference_id', $this->notification->data['code_unique'])
+                ->where('id_wallet', $this->userWallet->id)
+                ->first();
+
             if (!$gelement) {
                 throw new Exception('Référence introuvable dans la table gelement.');
             }

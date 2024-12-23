@@ -234,6 +234,11 @@ class CountdownNotificationAd extends Component
                 'debited_amount' => $this->requiredAmount
             ]);
 
+            // Calcul du montant total requis pour la transaction
+            $totalMontantRequis = $this->achatdirect->montantTotal + $this->notification->data['prixTrade'];
+            $montantExcédent = $existingGelement->amount + $this->requiredAmount - $totalMontantRequis;
+
+
             // Mise à jour du montant gelé
             $existingGelement->amount += $this->requiredAmount;
             $existingGelement->save();
@@ -241,6 +246,49 @@ class CountdownNotificationAd extends Component
             Log::info('Montant ajouté à une transaction existante', [
                 'transaction_id' => $existingGelement->id,
                 'new_amount' => $existingGelement->amount
+            ]);
+
+            // Vérification et traitement de l'excédent
+            if ($montantExcédent > 0) {
+                // Réattribuer l'excédent au portefeuille utilisateur
+                $this->userWallet->balance += $montantExcédent;
+                $this->userWallet->save();
+
+                Log::info('Excédent retourné au portefeuille utilisateur.', [
+                    'user_id' => $this->userWallet->user_id,
+                    'returned_amount' => $montantExcédent,
+                    'final_balance' => $this->userWallet->balance
+                ]);
+
+                // Réduire le montant gelé du montant excédent
+                $existingGelement->amount -= $montantExcédent;
+                $existingGelement->save();
+
+                Log::info('Montant excédent déduit de la transaction gelée.', [
+                    'transaction_id' => $existingGelement->id,
+                    'updated_amount' => $existingGelement->amount
+                ]);
+
+                // Création de la transaction
+                $this->createTransaction(
+                    $this->user,
+                    $this->user,
+                    'Reception',
+                    $montantExcédent,
+                    $this->generateIntegerReference(),
+                    'Retour des fonds en plus',
+                    'effectué',
+                    'COC'
+                );
+            }
+
+            // Mise à jour du montant total de la transaction
+            $this->achatdirect->montantTotal = $totalMontantRequis;
+            $this->achatdirect->save();
+
+            Log::info('Montant total de la transaction mis à jour.', [
+                'achat_id' => $this->achatdirect->id,
+                'new_total' => $this->achatdirect->montantTotal
             ]);
 
             // Création de la transaction
@@ -254,6 +302,7 @@ class CountdownNotificationAd extends Component
                 'effectué',
                 'COC'
             );
+
 
             DB::commit(); // Valide la transaction
         } catch (Exception $e) {

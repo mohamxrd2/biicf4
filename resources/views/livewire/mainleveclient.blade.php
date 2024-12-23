@@ -1,7 +1,6 @@
 <div>
     @if ($showMainlever)
         @include('biicf.components.mainlevePayment')
-       {{ $this->notification->data['code_unique']}}
     @else
 
         <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
