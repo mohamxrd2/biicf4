@@ -94,6 +94,8 @@
             <div class="text-lg font-bold">{{ $prixLePlusBas ? $prixLePlusBas . ' FCFA' : 'N/A' }}</div>
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
+            <livewire:countdown />
+
             <div class="text-sm text-gray-600">Temps restant</div>
             <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
                 <div id="countdown" x-show="oldestCommentDate"
