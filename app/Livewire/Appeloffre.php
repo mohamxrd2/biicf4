@@ -161,12 +161,8 @@ class Appeloffre extends Component
             'prixTrade' => 'required|numeric',
         ]);
 
-        if ($this->prixTrade > $this->appeloffre->lowestPricedProduct) {
-            session()->flash('error', 'Prix trop elevee!');
-            return;
-        }
+        
         DB::beginTransaction();
-
         try {
 
 
