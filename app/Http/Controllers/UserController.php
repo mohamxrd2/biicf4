@@ -324,7 +324,7 @@ class UserController extends Controller
             'commune.required' => 'Le champ commune est requis.',
         ]);
 
-        // dd($validatedData);
+        dd($validatedData);
 
         try {
             $user = new User();
