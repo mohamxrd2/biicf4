@@ -71,6 +71,14 @@ return [
             'after_commit' => false,
         ],
 
+        'countdown' => [
+            'driver' => 'redis',
+            'connection' => 'default',
+            'queue' => 'countdown',
+            'retry_after' => 90,
+            'block_for' => null,
+        ],
+
     ],
 
     /*

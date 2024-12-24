@@ -14,14 +14,17 @@ class Countdown extends Model
         'user_id',
         'userSender',
         'start_time',
-        'notified',
-        'code_unique',
+        'end_time',
+        'time_remaining',
+        'is_active',
         'difference',
-        'id_achat',
-        'id_appeloffre',
-        'AppelOffreGrouper_id'
+        'code_unique',
+        'id_achat'
     ];
-
+    protected $casts = [
+        'end_time' => 'datetime',
+        'is_active' => 'boolean',
+    ];
     // Méthodes relationnelles
     public function user()
     {
