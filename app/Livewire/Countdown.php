@@ -88,15 +88,10 @@ class Countdown extends Component
         $this->timeRemaining = 300;
 
         // Spécifie explicitement la connexion database
-        ProcessCountdown::dispatch($countdown->id)
-            ->onConnection('database')
-            ->onQueue('default');
+        ProcessCountdown::dispatch($countdown->id);
+
         event(new CountdownStarted(300));
-        // Spécifie explicitement la connexion database
-        ProcessCountdown::dispatch($countdown->id)
-            ->onConnection('database')
-            ->onQueue('default');
-        event(new CountdownStarted(300));
+
     }
 
     /**

@@ -22,7 +22,6 @@ class ProcessCountdown implements ShouldQueue
     public function __construct($countdownId)
     {
         $this->countdownId = $countdownId;
-        $this->onQueue('default');  // Spécifie explicitement la queue
 
     }
 
