@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\TestQueueJob;
 use App\Livewire\Cfa;
 use App\Livewire\ProjetDetails;
 use App\Livewire\RechargeAgent;
@@ -137,7 +138,10 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('notif', [NotificationController::class, 'index'])->name('biicf.notif');
     Route::get('notification/{id}', [NotificationController::class, 'show'])->name('notification.show');
 
-
+    Route::get('test-queue', function () {
+        TestQueueJob::dispatch();
+        return 'Job dispatché !';
+    });
     //accepter ou refuser la cmmande
     // Route::post('notification/accepter', [AchatDirectController::class, 'accepter'])->name('achatD.accepter');
     // Route::post('notification/refuser', [AchatDirectController::class, 'refuser'])->name('achatD.refuser');

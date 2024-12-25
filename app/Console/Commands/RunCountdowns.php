@@ -1,27 +1,22 @@
 <?php
 
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
+use App\Events\CountdownTick;
 
 class RunCountdowns extends Command
 {
-    protected $signature = 'countdowns:work';
-    protected $description = 'Démarre le worker pour traiter les files d\'attente des countdowns';
-
+    protected $signature = 'countdown:run';
+    protected $description = 'Run the countdown timer';
     public function handle()
     {
-        $this->info('Démarrage du worker pour les countdowns...');
-
-        // Exécuter une seule fois au lieu d'une boucle infinie
-        Artisan::call('queue:work', [
-            '--queue' => 'default',
-            '--tries' => 1,
-            '--timeout' => 30,
-            '--sleep' => 3,
-            '--max-jobs' => 100,
-            '--stop-when-empty' => true
-        ]);
+        $timeRemaining = 300; // 5 minutes
+        while ($timeRemaining > 0) {
+            broadcast(new CountdownTick($timeRemaining));
+            sleep(1);
+            $timeRemaining--;
+        }
     }
 }
