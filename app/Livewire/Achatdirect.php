@@ -89,7 +89,7 @@ class Achatdirect extends Component
         // Convertir en secondes
         $seconds = intval($this->time / 1000);
         // Créer un objet Carbon pour le timestamp
-        dd($this->timestamp = Carbon::createFromTimestamp($seconds), now());
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
     }
     public function ciblageLivreurs()
     {
