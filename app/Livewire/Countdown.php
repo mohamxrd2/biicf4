@@ -92,7 +92,6 @@ class Countdown extends Component
             ->onConnection('database')
             ->onQueue('default');
         event(new CountdownStarted(300));
-        
     }
 
     /**

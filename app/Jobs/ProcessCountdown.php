@@ -36,36 +36,32 @@ class ProcessCountdown implements ShouldQueue
 
         $lockKey = "countdown_lock_{$this->countdownId}";
 
-        // Vérifier si un autre processus est déjà en cours
-        if (Cache::has($lockKey)) {
-            return;
-        }
+        // Utiliser un verrou plus court
+        if (Cache::add($lockKey, true, 1)) {
+            try {
+                $timeRemaining = $countdown->end_time->diffInSeconds(now());
 
-        // Acquérir le verrou
-        Cache::put($lockKey, true, 2);
+                if ($timeRemaining <= 0) {
+                    $countdown->update([
+                        'is_active' => false,
+                        'time_remaining' => 0
+                    ]);
+                    broadcast(new CountdownTick(0));
+                    return;
+                }
 
-        try {
-            $timeRemaining = $countdown->end_time->diffInSeconds(now());
+                $countdown->update(['time_remaining' => $timeRemaining]);
+                broadcast(new CountdownTick($timeRemaining));
 
-            if ($timeRemaining <= 0) {
-                $countdown->update([
-                    'is_active' => false,
-                    'time_remaining' => 0
-                ]);
-                broadcast(new CountdownTick(0));
-                return;
+                // Réduire la fréquence des ticks pour moins de charge
+                if ($timeRemaining > 1) {
+                    dispatch(new self($this->countdownId))
+                        ->onConnection('database')
+                        ->delay(now()->addSeconds(2));
+                }
+            } finally {
+                Cache::forget($lockKey);
             }
-
-            // Mettre à jour le temps restant
-            $countdown->update(['time_remaining' => $timeRemaining]);
-            broadcast(new CountdownTick($timeRemaining));
-
-            // Programmer le prochain tick
-            if ($timeRemaining > 1) {
-                dispatch(new self($this->countdownId))->delay(now()->addSecond());
-            }
-        } finally {
-            Cache::forget($lockKey);
         }
     }
 
