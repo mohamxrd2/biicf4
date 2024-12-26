@@ -7,7 +7,6 @@
 
             <!-- Compte à rebours -->
             <livewire:countdown :id="$id" />
-
         </div>
 
         <!-- Détails -->

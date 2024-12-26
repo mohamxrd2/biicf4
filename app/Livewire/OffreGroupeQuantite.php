@@ -54,10 +54,6 @@ class OffreGroupeQuantite extends Component
             // Récupération de la notification
             $this->notification = DatabaseNotification::findOrFail($id);
 
-            // Récupérer l'heure du serveur
-            $this->time = $this->recuperationTimer->getTime();
-            $this->error = $this->recuperationTimer->error;
-
             $this->fetchOffreGroupe();
             $this->fetchProduit();
             $this->initializeGroupageData();
@@ -86,19 +82,6 @@ class OffreGroupeQuantite extends Component
     private function initializeGroupageData()
     {
         $codeUnique = $this->notification->data['code_unique'];
-
-        // Récupérer le commentaire le plus ancien avec code_unique et start_time non nul
-        $this->oldestComment = Countdown::where('code_unique', $codeUnique)
-            ->whereNotNull('start_time')
-            ->where('notified', false)
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment
-            ? Carbon::parse($this->oldestComment->start_time)->toIso8601String()
-            : null;
-
 
         $this->reloadGroupages($codeUnique);
     }
