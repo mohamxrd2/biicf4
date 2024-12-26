@@ -6,6 +6,8 @@ use App\Events\CountdownStarted;
 use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect;
 use App\Models\Countdown as ModelsCountdown;
+use App\Services\RecuperationTimer;
+use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -20,14 +22,23 @@ class Countdown extends Component
     public $countdownId = null;
     public $achatdirect;
     public $valueCodeUnique;
+    public $time;
+    public $error;
+    public $timestamp;
 
-    /**
-     * Initialise le composant avec les données nécessaires.
-     *
-     * @param int $id
-     */
+    protected $recuperationTimer;
+
+    // Injection de la classe RecuperationTimer via le constructe
+    public function __construct()
+    {
+        $this->recuperationTimer = new RecuperationTimer();
+    }
     public function mount($id)
     {
+
+        // Actualiser le timer avant de commencer
+        $this->timeServer();
+
         $this->notification = DatabaseNotification::findOrFail($id);
 
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
@@ -48,7 +59,7 @@ class Countdown extends Component
         if ($activeCountdown) {
             // Vérifiez si 'end_time' est défini et non null
             if ($activeCountdown->end_time) {
-                $this->timeRemaining = max(0, $activeCountdown->end_time->diffInSeconds(now()));
+                $this->timeRemaining = max(0, $activeCountdown->end_time->diffInSeconds($this->timestamp));
             } else {
                 // Définir un temps restant par défaut si 'end_time' est null
                 $this->timeRemaining = 0;
@@ -61,44 +72,46 @@ class Countdown extends Component
         }
     }
 
-    /**
-     * Démarre un nouveau décompte.
-     */
-    public function startCountdown()
+    public function timeServer()
     {
-        // Vérifier qu'il n'y a pas déjà un compte à rebours actif
-        if (ModelsCountdown::where('is_active', true)->exists()) {
-            return;
+        // Faire plusieurs tentatives de récupération pour plus de précision
+        $attempts = 3;
+        $times = [];
+
+        for ($i = 0; $i < $attempts; $i++) {
+            // Récupération de l'heure via le service
+            $currentTime = $this->recuperationTimer->getTime();
+            if ($currentTime) {
+                $times[] = $currentTime;
+            }
+            // Petit délai entre chaque tentative
+            usleep(50000); // 50ms
         }
 
-        $countdown = ModelsCountdown::create([
-            'user_id' => Auth::id(),
-            'userSender' => $this->achatdirect->userSender,
-            'start_time' => now(),
-            'difference' => 'ad',
-            'code_unique' => $this->valueCodeUnique,
-            'id_achat' => $this->achatdirect->id,
-            'time_remaining' => 300,
-            'end_time' => now()->addMinutes(5),
-            'is_active' => true,
+        if (empty($times)) {
+            // Si aucune tentative n'a réussi, utiliser l'heure système
+            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
+            $this->time = now()->timestamp * 1000;
+        } else {
+            // Utiliser la médiane des temps récupérés pour plus de précision
+            sort($times);
+            $medianIndex = floor(count($times) / 2);
+            $this->time = $times[$medianIndex];
+            $this->error = null;
+        }
+
+        // Convertir en secondes
+        $seconds = intval($this->time / 1000);
+        // Créer un objet Carbon pour le timestamp
+        $this->timestamp = Carbon::createFromTimestamp($seconds);
+
+        // Log pour debug
+        Log::info('Timer actualisé', [
+            'timestamp' => $this->timestamp,
+            'time_ms' => $this->time,
+            'attempts' => count($times)
         ]);
-
-        $this->countdownId = $countdown->id;
-        $this->isRunning = true;
-        $this->timeRemaining = 300;
-
-        // Spécifie explicitement la connexion database
-        ProcessCountdown::dispatch($countdown->id)
-            ->onConnection('database')
-            ->onQueue('default');
-        event(new CountdownStarted(300));
     }
-
-    /**
-     * Écouteurs pour les événements diffusés.
-     *
-     * @return array
-     */
     public function getListeners()
     {
         return [
@@ -133,7 +146,7 @@ class Countdown extends Component
         $this->timeRemaining = $event['time'];
 
         // Mettre à jour l'état
-        if ($this->timeRemaining <= 0) {
+        if ($this->timeRemaining <= 1) {
             $this->isRunning = false;
             $countdown = ModelsCountdown::find($this->countdownId);
             if ($countdown) {
@@ -142,16 +155,26 @@ class Countdown extends Component
                     'time_remaining' => 0
                 ]);
             }
+
+            // Mettre à jour l'attribut 'finish' du demandeCredit
+            $this->achatdirect->update([
+                'count' => true,
+
+            ]);
+
+            $this->dispatch(
+                'formSubmitted',
+                'Temps écoule, Négociation terminé.'
+            );
         }
     }
 
-    /**
-     * Rend la vue du composant.
-     *
-     * @return \Illuminate\View\View
-     */
+
     public function render()
     {
-        return view('livewire.countdown');
+
+        return view('livewire.countdown', [
+            'timeRemaining' => $this->timeRemaining,
+        ]);
     }
 }

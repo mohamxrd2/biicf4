@@ -71,7 +71,6 @@ class Appeloffre extends Component
     {
         // Récupération de l'heure via le service
         $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
         // Convertir en secondes
         $seconds = intval($this->time / 1000);
         // Créer un objet Carbon pour le timestamp
@@ -141,10 +140,6 @@ class Appeloffre extends Component
         // Mettre à jour l'attribut 'finish' du demandeCredit
         $this->appeloffre->update([
             'count' => true,
-            $this->dispatch(
-                'formSubmitted',
-                'Temps écoule, Négociation terminé.'
-            )
 
         ]);
         $this->dispatch(

@@ -37,29 +37,17 @@ class LivraisonAchatdirect extends Component
     public $commentCount;
     public $produit, $nombreParticipants, $achatdirect;
     public $Valuecode_unique;
-    public $time;
-    public $error;
     public $prixLePlusBas;
     public $offreIniatiale;
+    public $time;
+    public $error;
     public $timestamp;
+    public $lastActivity;
+    public $isNegociationActive;
 
-    protected $recuperationTimer;
-
-    // Injection de la classe RecuperationTimer via le constructeur
-    public function __construct()
-    {
-        $this->recuperationTimer = new RecuperationTimer();
-    }
 
     public function mount($id)
     {
-        // Récupération de l'heure via le service
-        $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
 
         // Récupérer la notification par son ID ou échouer
         $this->notification = DatabaseNotification::findOrFail($id);
@@ -79,17 +67,6 @@ class LivraisonAchatdirect extends Component
             ? ($this->notification->data['code_unique'] ?? null)
             : $this->achatdirect->code_unique;
 
-        // Récupérer le plus ancien commentaire associé à ce code unique
-        $this->oldestComment = Countdown::where('code_unique', $this->Valuecode_unique)
-            ->where('notified', false)
-            ->whereNotNull('start_time')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment
-            ? Carbon::parse($this->oldestComment->start_time)->toIso8601String()
-            : null;
 
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
@@ -98,22 +75,24 @@ class LivraisonAchatdirect extends Component
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage()
     {
-        // Déboguer pour vérifier la structure de l'événement
-        // Vérifier si 'code_unique' existe dans les données de notification
+        // Récupérer les commentaires
         $this->comments = Comment::with('user')
             ->where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->get();
 
+        // Prix le plus bas
         $this->prixLePlusBas = Comment::where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
+        // Offre initiale (la plus ancienne)
         $this->offreIniatiale = Comment::where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')
-            ->orderBy('prixTrade', 'asc')
-            ->first(); // Récupère le premier commentaire trié
+            ->orderBy('created_at', 'asc')
+            ->first();
+        $this->isNegociationActive = !$this->achatdirect->count;
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -145,9 +124,23 @@ class LivraisonAchatdirect extends Component
 
     public function commentFormLivr()
     {
-        // Valider les données
+        // Récupérer d'abord l'offre initiale pour la validation
+        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // Valider les données avec une règle personnalisée
         $validatedData = $this->validate([
-            'prixTrade' => 'required|numeric'
+            'prixTrade' => [
+                'required',
+                'numeric',
+                function ($attribute, $value, $fail) use ($offreInitiale) {
+                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
+                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
+                    }
+                }
+            ]
         ]);
 
         DB::beginTransaction();

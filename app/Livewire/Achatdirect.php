@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Events\CountdownStarted;
 use App\Events\NotificationSent;
+use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect as ModelsAchatDirect;
 use App\Models\Countdown;
 use App\Services\RecuperationTimer;
@@ -55,6 +57,9 @@ class Achatdirect extends Component
     public $time;
     public $error;
     public $timestamp;
+    public $countdownId;
+    public $isRunning;
+    public $timeRemaining;
 
 
     protected $recuperationTimer;
@@ -83,13 +88,43 @@ class Achatdirect extends Component
 
     public function timeServer()
     {
-        // Récupération de l'heure via le service
-        $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
+        // Faire plusieurs tentatives de récupération pour plus de précision
+        $attempts = 3;
+        $times = [];
+
+        for ($i = 0; $i < $attempts; $i++) {
+            // Récupération de l'heure via le service
+            $currentTime = $this->recuperationTimer->getTime();
+            if ($currentTime) {
+                $times[] = $currentTime;
+            }
+            // Petit délai entre chaque tentative
+            usleep(50000); // 50ms
+        }
+
+        if (empty($times)) {
+            // Si aucune tentative n'a réussi, utiliser l'heure système
+            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
+            $this->time = now()->timestamp * 1000;
+        } else {
+            // Utiliser la médiane des temps récupérés pour plus de précision
+            sort($times);
+            $medianIndex = floor(count($times) / 2);
+            $this->time = $times[$medianIndex];
+            $this->error = null;
+        }
+
         // Convertir en secondes
         $seconds = intval($this->time / 1000);
         // Créer un objet Carbon pour le timestamp
         $this->timestamp = Carbon::createFromTimestamp($seconds);
+
+        // Log pour debug
+        Log::info('Timer actualisé', [
+            'timestamp' => $this->timestamp,
+            'time_ms' => $this->time,
+            'attempts' => count($times)
+        ]);
     }
     public function ciblageLivreurs()
     {
@@ -159,6 +194,8 @@ class Achatdirect extends Component
 
     public function accepter()
     {
+        $this->timeServer();
+
         $validated = $this->validate([
             'photoProd' => 'required|image|max:1024', // Limite à 1 MB
             'textareaValue' => 'required',
@@ -184,12 +221,13 @@ class Achatdirect extends Component
                 'textareaContent' => $validated['textareaValue'],
                 'photoProd' => $photoName,
                 'achat_id' => $this->achatdirect->id,
-
             ];
 
             if (!$data['idProd']) {
                 throw new Exception('Identifiant du produit introuvable.');
             }
+
+            $this->startCountdown($data['code_livr']);
 
             // Envoyer les notifications aux livreurs
             if ($this->livreursIds->isNotEmpty()) {
@@ -205,14 +243,7 @@ class Achatdirect extends Component
                 }
             }
 
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $this->achatdirect->userSender,
-                'start_time' => $this->timestamp,
-                'difference' => 'ad',
-                'code_unique' => $this->notification->data['code_unique'],
-                'id_achat' => $this->achatdirect->id,
-            ]);
+
 
             // Mettre à jour la notification
             $this->notification->update(['reponse' => 'accepte']);
@@ -228,7 +259,35 @@ class Achatdirect extends Component
             session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
         }
     }
+    public function startCountdown($code_livr)
+    {
+        // Utiliser firstOrCreate pour éviter les doublons
+        $countdown = Countdown::firstOrCreate(
+            ['is_active' => true],
+            [
+                'user_id' => Auth::id(),
+                'userSender' => $this->achatdirect->userSender,
+                'start_time' => $this->timestamp,
+                'difference' => 'ad',
+                'code_unique' => $code_livr,
+                'id_achat' => $this->achatdirect->id,
+                'time_remaining' => 300,
+                'end_time' => $this->timestamp->addMinutes(5),
+                'is_active' => true,
+            ]
+        );
 
+        if ($countdown->wasRecentlyCreated) {
+            $this->countdownId = $countdown->id;
+            $this->isRunning = true;
+            $this->timeRemaining = 300;
+
+            ProcessCountdown::dispatch($countdown->id)
+                ->onConnection('database')
+                ->onQueue('default');
+            event(new CountdownStarted(300));
+        }
+    }
     public function refuser()
     {
         $userId = Auth::id();
