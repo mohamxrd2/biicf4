@@ -17,25 +17,33 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use App\Services\RecuperationTimer;
+use Carbon\Carbon;
 
 class CheckCountdowns extends Command
 {
     protected $signature = 'check:countdowns';
     protected $description = 'Check countdowns and send notifications if time is up';
+    private $recuperationTimer;
 
-    public function __construct()
+    public function __construct(RecuperationTimer $recuperationTimer)
     {
         parent::__construct();
+        $this->recuperationTimer = $recuperationTimer;
     }
 
     public function handle()
     {
-        DB::beginTransaction(); // Démarre une transaction
+        DB::beginTransaction();
 
         try {
+            // Récupérer l'heure du serveur
+            $serverTime = Carbon::createFromTimestamp(
+                intval($this->recuperationTimer->getTime() / 1000)
+            )->subMinutes(2);
 
             $countdowns = Countdown::where('notified', false)
-                ->where('start_time', '<=', now()->subMinutes(2))
+                ->where('start_time', '<=', $serverTime)
                 ->with(['sender', 'achat', 'appelOffre'])
                 ->get();
 
@@ -43,12 +51,13 @@ class CheckCountdowns extends Command
                 $this->processCountdown($countdown);
             }
 
-            DB::commit(); // Si tout se passe bien, commit les modifications
+            DB::commit();
         } catch (\Exception $e) {
-            DB::rollBack(); // Si une erreur se produit, annule les modifications
-
-            // Enregistrer l'erreur dans les logs
-            Log::error('Erreur lors du traitement des countdowns.', ['error' => $e->getMessage()]);
+            DB::rollBack();
+            Log::error('Erreur lors du traitement des countdowns.', [
+                'error' => $e->getMessage(),
+                'server_time' => $serverTime ?? null
+            ]);
         }
     }
 
@@ -166,13 +175,20 @@ class CheckCountdowns extends Command
         Notification::send($countdown->sender, new CountdownNotificationAd($details));
         // event(new NotificationSent($countdown->sender));
 
-        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-        $notification = $countdown->sender->notifications()->where('type', CountdownNotificationAd::class)->latest()->first();
-
+        $notification = $countdown->sender->notifications()
+            ->where('type', CountdownNotificationAd::class)
+            ->latest()
+            ->first();
         if ($notification) {
-            // Mettez à jour le champ 'type_achat' dans la notification
             $notification->update(['type_achat' => 'Delivery']);
+            Log::info('Notification mise à jour avec succès', ['notification_id' => $notification->id]);
+        } else {
+            Log::warning('Aucune notification trouvée pour le countdown', ['countdown_id' => $countdown->id]);
         }
+
+
+
+
 
         // Étape 2 : Récupérer le commentaire avec le prix le plus bas
         $lowestPriceComment = $this->getLowestPriceComment($countdown->code_unique); // On passe le code_unique depuis $commentToUse

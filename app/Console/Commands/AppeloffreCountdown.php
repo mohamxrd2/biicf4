@@ -34,7 +34,6 @@ class AppeloffreCountdown extends Command
     public function handle()
     {
         $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
 
         DB::beginTransaction(); // Démarre une transaction
 

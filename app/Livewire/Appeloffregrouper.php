@@ -56,20 +56,12 @@ class Appeloffregrouper extends Component
 
         // Récupérer l'heure du serveur
         $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
 
         $this->fetchAppelOffreGrouper();
         $this->initializeGroupageData();
     }
 
-    protected $listeners = ['compteReboursFini'];
-    public function compteReboursFini()
-    {
-        if ($this->appelOffreGroup) {
-            $this->appelOffreGroup->update(['count' => true]);
-            $this->dispatch('formSubmitted', 'Temps écoulé, Groupage terminé.');
-        }
-    }
+
 
     private function fetchAppelOffreGrouper()
     {
@@ -86,17 +78,6 @@ class Appeloffregrouper extends Component
 
         $codeUnique = $this->appelOffreGroup->codeunique;
 
-        // Récupérer le commentaire le plus ancien avec code_unique et start_time non nul
-        $this->oldestComment = Countdown::where('code_unique', $codeUnique)
-            ->whereNotNull('start_time')
-            ->where('notified', false)
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment
-            ? Carbon::parse($this->oldestComment->start_time)->toIso8601String()
-            : null;
 
         $this->reloadGroupages($codeUnique);
     }

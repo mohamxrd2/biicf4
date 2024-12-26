@@ -52,6 +52,11 @@ class Appeloffregroupernegociation extends Component
     public $sumquantite;
     public $appelOffreGroupcount;
     protected $recuperationTimer;
+    public $lastActivity;
+    public $isNegociationActive;
+
+    protected $listeners = ['negotiationEnded' => '$refresh'];
+
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
     {
@@ -59,29 +64,13 @@ class Appeloffregroupernegociation extends Component
     }
     public function mount($id)
     {
-        $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
 
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->id_trader = Auth::user()->id ?? null;
 
         $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelGrouper']);
 
-        // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $this->oldestComment = Countdown::where('code_unique', $this->appeloffregrp->codeunique)
-            ->whereNotNull('start_time')
-            ->where('notified', false)
-            ->orderBy('created_at', 'asc')
-            ->first();
 
-        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment ?
-            Carbon::parse($this->oldestComment->start_time)->toIso8601String()
-            : null;
         $this->listenForMessage();
 
         $this->sumquantite = userquantites::where('code_unique', $this->appeloffregrp->codeunique)
@@ -121,31 +110,37 @@ class Appeloffregroupernegociation extends Component
         }
     }
 
-    protected $listeners = ['compteReboursFini'];
-    public function compteReboursFini()
-    {
-        // Mettre à jour l'attribut 'finish' du demandeCredit
-        $this->appeloffregrp->update([
-            'count2' => true,
-            $this->dispatch(
-                'formSubmitted',
-                'Temps écoule, Négociation terminé.'
-            )
-        ]);
-    }
 
     public function commentFormLivr()
     {
 
-        // Récupérer l'utilisateur authentifié
-        $this->validate([
-            'prixTrade' => 'required|numeric',
-        ]);
+        // Vérifier si la négociation est terminée
+        if ($this->appeloffregrp->count) {
+            $this->dispatch(
+                'formSubmitted',
+                'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
+            );
+            return;
+        }
 
-        // if ($this->prixTrade >  $this->appeloffregrp->lowestPricedProduct) {
-        //     session()->flash('error', 'prix trop haut!');
-        //     return;
-        // }
+        // Récupérer d'abord l'offre initiale pour la validation
+        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // Valider les données avec une règle personnalisée
+        $validatedData = $this->validate([
+            'prixTrade' => [
+                'required',
+                'numeric',
+                function ($attribute, $value, $fail) use ($offreInitiale) {
+                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
+                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
+                    }
+                }
+            ]
+        ]);
 
         DB::beginTransaction();
 
@@ -161,6 +156,7 @@ class Appeloffregroupernegociation extends Component
             ]);
 
             broadcast(new CommentSubmitted($this->prixTrade,  $comment->id));
+            $this->listenForMessage();
 
             DB::commit();
             $this->reset(['prixTrade']);

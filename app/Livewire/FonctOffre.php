@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Events\CountdownStarted;
 use App\Events\NotificationSent;
+use App\Jobs\ProcessCountdown;
 use App\Models\Consommation;
 use App\Models\Countdown;
 use App\Models\OffreGroupe;
@@ -38,7 +40,9 @@ class FonctOffre extends Component
     public $time;
     public $error;
     public $timestamp;
-
+    public $countdownId;
+    public $isRunning;
+    public $timeRemaining;
     protected $recuperationTimer;
 
     // Injection de la classe RecuperationTimer via le constructeur
@@ -78,7 +82,6 @@ class FonctOffre extends Component
 
         // Récupération de l'heure via le service
         $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
     }
     public function timeServer()
     {
@@ -228,14 +231,9 @@ class FonctOffre extends Component
                 'differance' => 'grouper',
             ]);
 
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $produit->user_id,
-                'start_time' => $this->timestamp,
-                'code_unique' => $code_unique,
-                'difference' => 'enchere',
-            ]);
+            $difference = 'enchere';
+
+            $this->startCountdown($difference, $code_unique);
 
             // Récupérer les utilisateurs consommant ce produit
             $idsProprietaires = $this->getConsommateurs($referenceProduit, $user_id);
@@ -282,9 +280,33 @@ class FonctOffre extends Component
         }
     }
 
-    /**
-     * Récupérer les IDs des consommateurs d'un produit.
-     */
+    public function startCountdown($code_unique, $difference)
+    {
+        // Utiliser firstOrCreate pour éviter les doublons
+        $countdown = Countdown::firstOrCreate(
+            ['is_active' => true],
+            [
+                'user_id' => Auth::id(),
+                'start_time' => $this->timestamp,
+                'code_unique' => $code_unique,
+                'difference' => $difference,
+                'time_remaining' => 300,
+                'end_time' => $this->timestamp->addMinutes(5),
+                'is_active' => true,
+            ]
+        );
+
+        if ($countdown->wasRecentlyCreated) {
+            $this->countdownId = $countdown->id;
+            $this->isRunning = true;
+            $this->timeRemaining = 300;
+
+            ProcessCountdown::dispatch($countdown->id)
+                ->onConnection('database')
+                ->onQueue('default');
+            event(new CountdownStarted(300));
+        }
+    }
     private function getConsommateurs(string $referenceProduit, int $user_id): array
     {
         return Consommation::where('reference', $referenceProduit)
@@ -384,13 +406,8 @@ class FonctOffre extends Component
             ], $produit, $user_id, $uniqueCode);
 
 
-            Countdown::create([
-                'user_id' => $user_id,
-                'userSender' => null,
-                'start_time' => $this->timestamp,
-                'code_unique' => $uniqueCode,
-                'difference' => 'offreGrouper',
-            ]);
+            $difference = 'offreGrouper';
+            $this->startCountdown($uniqueCode, $difference);
 
             $this->dispatch(
                 'formSubmitted',

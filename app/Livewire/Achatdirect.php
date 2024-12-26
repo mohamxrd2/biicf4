@@ -60,8 +60,6 @@ class Achatdirect extends Component
     public $countdownId;
     public $isRunning;
     public $timeRemaining;
-
-
     protected $recuperationTimer;
 
     // Injection de la classe RecuperationTimer via le constructe

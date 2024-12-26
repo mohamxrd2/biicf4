@@ -6,27 +6,8 @@
             <h2 class="text-3xl font-bold text-gray-800">Ajout de Quantités</h2>
 
             <!-- Compte à rebours -->
-            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center justify-center space-x-4">
-                <div id="countdown" x-show="oldestCommentDate"
-                    class="bg-red-100 text-red-600 font-bold px-6 py-3 rounded-full shadow-md flex items-center space-x-3">
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h3m0 0h3m-3 0v3m0-3V9"></path>
-                        </svg>
-                        <div x-text="hours" class="text-2xl font-semibold">--</div><span class="text-lg">h</span>
-                    </div>
-                    <span>:</span>
-                    <div class="flex items-center space-x-1">
-                        <div x-text="minutes" class="text-2xl font-semibold">--</div><span class="text-lg">m</span>
-                    </div>
-                    <span>:</span>
-                    <div class="flex items-center space-x-1">
-                        <div x-text="seconds" class="text-2xl font-semibold">--</div><span class="text-lg">s</span>
-                    </div>
-                </div>
-            </div>
+            <livewire:countdown :id="$id" />
+
         </div>
 
         <!-- Détails -->

@@ -5,6 +5,8 @@ namespace App\Livewire;
 use App\Events\CountdownStarted;
 use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect;
+use App\Models\AppelOffreGrouper;
+use App\Models\AppelOffreUser;
 use App\Models\Countdown as ModelsCountdown;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
@@ -22,9 +24,12 @@ class Countdown extends Component
     public $countdownId = null;
     public $achatdirect;
     public $valueCodeUnique;
+    public $appelOffreGroup;
+    public $appeloffre;
     public $time;
     public $error;
     public $timestamp;
+    public $appeloffregrp;
 
     protected $recuperationTimer;
 
@@ -39,14 +44,10 @@ class Countdown extends Component
         // Actualiser le timer avant de commencer
         $this->timeServer();
 
-        $this->notification = DatabaseNotification::findOrFail($id);
+        $this->loadNotificationData($id);
 
-        $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
 
-        // Déterminer la valeur de $valueCodeUnique
-        $this->valueCodeUnique = $this->notification->type_achat === 'appelOffreGrouper'
-            ? ($this->notification->data['code_unique'] ?? null)
-            : $this->achatdirect->code_unique;
+
 
         // Récupérer le décompte actif
         $activeCountdown = ModelsCountdown::where('code_unique', $this->valueCodeUnique)
@@ -72,6 +73,39 @@ class Countdown extends Component
         }
     }
 
+    private function loadNotificationData($id)
+    {
+        $this->notification = DatabaseNotification::findOrFail($id);
+
+        switch ($this->notification->type) {
+            case 'App\Notifications\AchatBiicf':
+                $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
+
+                $this->valueCodeUnique = $this->notification->type_achat === 'appelOffreGrouper'
+                    ? ($this->notification->data['code_unique'] ?? null)
+                    : $this->achatdirect->code_unique;
+                break;
+            case 'App\Notifications\AppelOffre':
+                $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appelOffre']);
+
+                $this->valueCodeUnique = $this->appeloffre->code_unique;
+                break;
+            case 'App\Notifications\AOGrouper':
+                $this->appelOffreGroup = AppelOffreGrouper::find($this->notification->data['offre_id']);
+
+                $this->valueCodeUnique = $this->appelOffreGroup->codeunique;
+                break;
+            case 'App\Notifications\AppelOffreGrouperNotification':
+                $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelGrouper']);
+
+                $this->valueCodeUnique = $this->appeloffregrp->codeunique;
+                break;
+
+
+            default:
+                throw new \InvalidArgumentException("Type de notification non pris en charge : {$this->notification->type_achat}");
+        }
+    }
     public function timeServer()
     {
         // Faire plusieurs tentatives de récupération pour plus de précision
@@ -156,15 +190,17 @@ class Countdown extends Component
                 ]);
             }
 
-            // Mettre à jour l'attribut 'finish' du demandeCredit
+            // Mettre à jour l'attribut 'count' et émettre un événement
             $this->achatdirect->update([
                 'count' => true,
-
             ]);
+
+            // Émettre un événement pour rafraîchir le composant parent
+            $this->dispatch('negotiationEnded')->to('livraison-achatdirect');
 
             $this->dispatch(
                 'formSubmitted',
-                'Temps écoule, Négociation terminé.'
+                'Temps écoulé, Négociation terminée.'
             );
         }
     }

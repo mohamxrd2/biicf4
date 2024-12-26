@@ -46,19 +46,12 @@ class Enchere extends Component
     public $error;
     public $prixLePlusBas;
     public $offreIniatiale;
-    protected $recuperationTimer;
+    protected $isNegociationActive;
 
-    // Injection de la classe RecuperationTimer via le constructeur
-    public function __construct()
-    {
-        $this->recuperationTimer = new RecuperationTimer();
-    }
+
 
     public function mount($id)
     {
-        // Récupération de l'heure via le service
-        $this->time = $this->recuperationTimer->getTime();
-        $this->error = $this->recuperationTimer->error;
 
         $this->notification = DatabaseNotification::findOrFail($id);
 
@@ -68,15 +61,7 @@ class Enchere extends Component
         $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
 
 
-        // Récupérer le commentaire le plus ancien avec code_unique et prixTrade non nul
-        $this->oldestComment = Countdown::where('code_unique', $this->notification->data['code_unique'])
-            ->whereNotNull('start_time')
-            ->where('notified', false)
-            ->orderBy('created_at', 'asc')
-            ->first();
 
-        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment ? $this->oldestComment->created_at->toIso8601String() : null;
         $this->listenForMessage();
     }
 
@@ -99,6 +84,9 @@ class Enchere extends Component
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->first(); // Récupère le premier commentaire trié
+
+        $this->isNegociationActive = !$this->achatdirect->count;
+
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
             $this->commentCount = $this->comments->count();
@@ -109,24 +97,36 @@ class Enchere extends Component
             $this->nombreParticipants = 0;
         }
     }
-    protected $listeners = ['compteReboursFini'];
-    public function compteReboursFini()
-    {
-        // Mettre à jour l'attribut 'finish' du demandeCredit
-        $this->offgroupe->update([
-            'count' => true,
-            $this->dispatch(
-                'formSubmitted',
-                'Temps écoule, Négociation terminé.'
-            )
-        ]);
-    }
+
 
     public function commentoffgroup()
     {
-        // Valider les données
+        // Vérifier si la négociation est terminée
+        if ($this->offgroupe->count) {
+            $this->dispatch(
+                'formSubmitted',
+                'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
+            );
+            return;
+        }
+
+        // Récupérer d'abord l'offre initiale pour la validation
+        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // Valider les données avec une règle personnalisée
         $validatedData = $this->validate([
-            'prixTrade' => 'required|numeric'
+            'prixTrade' => [
+                'required',
+                'numeric',
+                function ($attribute, $value, $fail) use ($offreInitiale) {
+                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
+                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
+                    }
+                }
+            ]
         ]);
 
         try {

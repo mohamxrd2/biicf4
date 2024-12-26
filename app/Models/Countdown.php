@@ -19,7 +19,9 @@ class Countdown extends Model
         'is_active',
         'difference',
         'code_unique',
-        'id_achat'
+        'id_achat',
+        'id_appeloffre',
+        'AppelOffreGrouper_id',
     ];
     protected $casts = [
         'end_time' => 'datetime',

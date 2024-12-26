@@ -45,6 +45,7 @@ class LivraisonAchatdirect extends Component
     public $lastActivity;
     public $isNegociationActive;
 
+    protected $listeners = ['negotiationEnded' => '$refresh'];
 
     public function mount($id)
     {
@@ -105,25 +106,18 @@ class LivraisonAchatdirect extends Component
         }
     }
 
-    protected $listeners = [
-        'compteReboursFini',
-    ];
-
-    public function compteReboursFini()
-    {
-        // Mettre à jour l'attribut 'finish' du demandeCredit
-        $this->achatdirect->update([
-            'count' => true,
-        ]);
-        $this->dispatch(
-            'formSubmitted',
-            'Temps écoule, Négociation terminé.'
-        );
-    }
-
 
     public function commentFormLivr()
     {
+        // Vérifier si la négociation est terminée
+        if ($this->achatdirect->count) {
+            $this->dispatch(
+                'formSubmitted',
+                'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
+            );
+            return;
+        }
+
         // Récupérer d'abord l'offre initiale pour la validation
         $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')

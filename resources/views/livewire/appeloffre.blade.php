@@ -6,7 +6,12 @@
                 <div class="flex justify-between items-center text-white">
                     <span class="text-sm flex items-center">
                         <i class="fas fa-clock mr-2"></i>
-                        Dernière activité: il y a 5 minutes
+                        Dernière activité:
+                        @if ($lastActivity)
+                            {{ \Carbon\Carbon::parse($lastActivity)->diffForHumans() }}
+                        @else
+                            Aucune activité
+                        @endif
                     </span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" data-tooltip-target="tooltip-coc"
                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-white w-6 h-6">
@@ -74,7 +79,18 @@
                         <div class="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
                             <div class="text-center">
                                 <span class="text-gray-600 text-sm block">Offres reçues</span>
-                                <span class="text-2xl font-bold text-blue-600">12</span>
+                                @if ($commentCount > 0)
+                                    <span class="text-2xl font-bold text-blue-600">{{ $commentCount }}</span>
+                                @else
+                                    <div class="flex items-center justify-center space-x-2 mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                        </svg>
+                                        <span class="text-sm text-gray-500">Aucune offre</span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -82,28 +98,41 @@
             </div>
         </div>
     </div>
+
     <!-- Informations de la négociation -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm text-gray-600">Offre initiale</div>
-            <div class="text-lg font-bold">{{ $appeloffre->lowestPricedProduct . ' FCFA' }}</div>
+            @if ($offreIniatiale)
+                <div class="text-lg font-bold">{{ $offreIniatiale->prixTrade . ' FCFA' }}</div>
+            @else
+                <div class="flex items-center space-x-2 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span class="text-sm text-gray-500">Aucune offre initiale</span>
+                </div>
+            @endif
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm  text-gray-600">Meilleure offre</div>
-            <div class="text-lg font-bold">{{ $prixLePlusBas ? $prixLePlusBas . ' FCFA' : 'N/A' }}</div>
+            @if ($prixLePlusBas)
+                <div class="text-lg font-bold">{{ $prixLePlusBas . ' FCFA' }}</div>
+            @else
+                <div class="flex items-center space-x-2 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-sm text-gray-500">Aucune offre soumise</span>
+                </div>
+            @endif
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600">Temps restant</div>
-            <div id="countdown-container" x-data="countdownTimer({{ json_encode($oldestCommentDate) }}, {{ json_encode($time) }})" class="flex items-center space-x-2">
-                <div id="countdown" x-show="oldestCommentDate"
-                    class="bg-red-200 text-red-600 font-bold px-4 py-2 rounded-lg flex items-center">
-                    <div x-text="hours">--</div>j
-                    <span>:</span>
-                    <div x-text="minutes">--</div>m
-                    <span>:</span>
-                    <div x-text="seconds">--</div>s
-                </div>
-            </div>
+            <livewire:countdown :id="$id" />
         </div>
     </div>
     <div class="container mx-auto px-4" x-data="{ showDetails: false, showOffers: false }">
@@ -176,7 +205,7 @@
                 </div>
             </div>
         </div>
-
+        
         <!-- Tableau des offres -->
         <div class="bg-white rounded-lg shadow-lg mb-6">
             <div class="p-6">
@@ -194,65 +223,94 @@
                     <div class="border rounded-lg mb-4">
                         <!-- Messages -->
                         <div
-                            class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-200 font-normal space-y-3 relative dark:border-slate-700/40">
-                            <!-- L'investisseur unique et tous les autres utilisateurs voient la partie de négociation -->
-                            @php
-                                // Trouver le plus petit taux dans la liste des commentaires
-                                $minPrice = $comments->min('prixTrade');
-
-                                // Trouver le commentaire le plus ancien avec le taux minimal
-                                $oldestMinPriceComment = $comments
-                                    ->where('prixTrade', $minPrice)
-                                    ->sortBy('created_at')
-                                    ->first();
-                            @endphp
-                            @foreach ($comments as $comment)
-                                <!-- Message -->
-                                <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
-                                    <div class="flex items-start gap-3">
-                                        <!-- Photo utilisateur -->
-                                        <img src="{{ asset($comment->user->photo) }}" alt="Profile Picture"
-                                            class="w-10 h-10 rounded-full object-cover shadow-md" />
-                                        <div class="flex-1">
-                                            <!-- Informations utilisateur -->
-                                            <div class="flex justify-between items-center">
-                                                <span
-                                                    class="font-semibold text-gray-800 text-sm">{{ $comment->user->name }}</span>
-                                                <span class="text-xs text-gray-400">{{ $comment->created_at }}</span>
-                                            </div>
-                                            <!-- Message -->
-                                            <p class="text-sm text-gray-600">
-                                                Je peux descendre le prix a <span class="text-green-500 font-semibold">
-                                                    {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                            </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <!-- Offre et bouton -->
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-lg font-bold text-gray-800">
-                                            {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
-                                        </span>
-                                        @if ($comment->id == $oldestMinPriceComment->id)
-                                            <button
-                                                class="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium py-2 px-4 bg-green-50 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="w-5 h-5 text-yellow-400" viewBox="0 0 20 20"
-                                                    fill="currentColor">
-                                                    <path
-                                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.588 4.89a1 1 0 00.95.69h5.127c.969 0 1.371 1.24.588 1.81l-4.15 3.02a1 1 0 00-.364 1.118l1.588 4.89c.3.921-.755 1.688-1.54 1.118l-4.15-3.02a1 1 0 00-1.176 0l-4.15 3.02c-.785.57-1.838-.197-1.539-1.118l1.588-4.89a1 1 0 00-.364-1.118L2.792 9.317c-.783-.57-.38-1.81.588-1.81h5.127a1 1 0 00.95-.69l1.588-4.89z" />
-                                                </svg>
-                                                Meilleure offre
-                                            </button>
-                                        @endif
+                            class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-200 font-normal space-y-3 relative">
+                            @if ($appeloffre->count)
+                                <div class="flex flex-col items-center justify-center h-full">
+                                    <div class="bg-red-50 p-4 rounded-lg text-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-12 w-12 text-red-400 mx-auto mb-3" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <h3 class="text-lg font-semibold text-red-800 mb-1">Négociation terminée</h3>
+                                        <p class="text-red-600">Cette session de négociation est clôturée.</p>
                                     </div>
                                 </div>
-                            @endforeach
+                            @elseif($comments->isEmpty())
+                                <div class="flex flex-col items-center justify-center h-full">
+                                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-12 w-12 text-blue-400 mx-auto mb-3" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        <h3 class="text-lg font-semibold text-blue-800 mb-1">Aucune offre pour le
+                                            moment</h3>
+                                        <p class="text-blue-600">Soyez le premier à faire une offre !</p>
+                                    </div>
+                                </div>
+                            @else
+                                @php
+                                    $minPrice = $comments->min('prixTrade');
+                                    $oldestMinPriceComment = $comments
+                                        ->where('prixTrade', $minPrice)
+                                        ->sortBy('created_at')
+                                        ->first();
+                                @endphp
+                                @foreach ($comments as $comment)
+                                    <!-- Message -->
+                                    <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
+                                        <div class="flex items-start gap-3">
+                                            <!-- Photo utilisateur -->
+                                            <img src="{{ asset($comment->user->photo) }}" alt="Profile Picture"
+                                                class="w-10 h-10 rounded-full object-cover shadow-md" />
+                                            <div class="flex-1">
+                                                <!-- Informations utilisateur -->
+                                                <div class="flex justify-between items-center">
+                                                    <span
+                                                        class="font-semibold text-gray-800 text-sm">{{ $comment->user->name }}</span>
+                                                    <span
+                                                        class="text-xs text-gray-400">{{ $comment->created_at }}</span>
+                                                </div>
+                                                <!-- Message -->
+                                                <p class="text-sm text-gray-600">
+                                                    Je peux faire <span class="text-green-500 font-semibold">
+                                                        {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
+                                                </span> la livraison.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <!-- Offre et bouton -->
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-lg font-bold text-gray-800">
+                                                {{ number_format($comment->prixTrade, 2, ',', ' ') }} FCFA</p>
+                                            </span>
+                                            @if ($comment->id == $oldestMinPriceComment->id)
+                                                <button
+                                                    class="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium py-2 px-4 bg-green-50 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="w-5 h-5 text-yellow-400" viewBox="0 0 20 20"
+                                                        fill="currentColor">
+                                                        <path
+                                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.588 4.89a1 1 0 00.95.69h5.127c.969 0 1.371 1.24.588 1.81l-4.15 3.02a1 1 0 00-.364 1.118l1.588 4.89c.3.921-.755 1.688-1.54 1.118l-4.15-3.02a1 1 0 00-1.176 0l-4.15 3.02c-.785.57-1.838-.197-1.539-1.118l1.588-4.89a1 1 0 00-.364-1.118L2.792 9.317c-.783-.57-.38-1.81.588-1.81h5.127a1 1 0 00.95-.69l1.588-4.89z" />
+                                                    </svg>
+                                                    Meilleure offre
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
                         </div>
 
                         <!-- Zone de saisie -->
                         <div class="border-t p-4">
                             <form wire:submit.prevent="commentFormLivr">
+                                @error('prixTrade')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                                 @if (!$appeloffre->count)
                                     <div class="flex space-x-4">
                                         <div class="flex-1">
@@ -282,6 +340,11 @@
                                                 </svg>
                                             </span>
                                         </button>
+
+                                    </div>
+                                @else
+                                    <div class="text-center text-gray-500 py-2">
+                                        <span class="text-sm">La période de négociation est terminée</span>
                                     </div>
                                 @endif
 
@@ -321,7 +384,6 @@
             }))
         })
     </script>
-    <script src="{{ asset('js/countdown.js') }}?v=1.0.0" defer></script>
 
 
 

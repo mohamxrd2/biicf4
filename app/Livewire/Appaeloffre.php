@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Events\CountdownStarted;
 use App\Events\NotificationSent;
+use App\Jobs\ProcessCountdown;
 use App\Models\AppelOffreGrouper;
 use App\Models\AppelOffreUser;
 use App\Models\Consommation;
@@ -53,6 +55,9 @@ class Appaeloffre extends Component
     public $time;
     public $error;
     public $timestamp;
+    public $countdownId;
+    public $isRunning;
+    public $timeRemaining;
 
     protected $recuperationTimer;
     // Injection de la classe RecuperationTimer via le constructeur
@@ -170,6 +175,7 @@ class Appaeloffre extends Component
                 'dayPeriod' => 'nullable|string|max:255',
                 'dayPeriodFin' => 'nullable|string|max:255',
             ]);
+            $code_unique = $this->generateUniqueReference();
 
             // Étape 2 : Calculer le coût total
             $totalCost = $this->calculateTotalCost($validatedData['quantité']);
@@ -178,19 +184,16 @@ class Appaeloffre extends Component
             $this->checkWalletBalance($totalCost);
 
             // Étape 4 : Créer un appel d'offre et gérer les transactions
-            $appelOffre = $this->createAppelOffre($validatedData, $totalCost, $userId);
+            $appelOffre = $this->createAppelOffre($validatedData, $totalCost, $userId, $code_unique);
 
             // Étape 5 : Gérer les notifications des utilisateurs
             $this->notifyUsers($appelOffre);
+            $difference = $this->selectedOption == 'Delivery' ? 'appelOffreD' : 'appelOffreR';
+            $AppelOffreGrouper_id = 'id_appeloffre';
+            $id = $this->appelOffre->id;
+            $this->startCountdown($id, $AppelOffreGrouper_id, $difference, $code_unique, $difference);
 
-            Countdown::create([
-                'user_id' => $userId,
-                'userSender' => null,
-                'start_time' => $this->timestamp,
-                'code_unique' => $appelOffre->code_unique,
-                'difference' => $validatedData['selectedOption'] == 'Delivery' ? 'appelOffreD' : 'appelOffreR',
-                'id_appeloffre' => $appelOffre->id,
-            ]);
+
 
             // Étape 6 : Réinitialiser le formulaire
             $this->resetFormulaire();
@@ -206,7 +209,36 @@ class Appaeloffre extends Component
             $this->loading = false;
         }
     }
+    public function startCountdown($code_unique, $selectedOption, $difference, $AppelOffreGrouper_id, $id)
+    {
+        // Utiliser firstOrCreate pour éviter les doublons
+        $countdown = Countdown::firstOrCreate(
+            ['is_active' => true],
+            [
+                'user_id' => Auth::id(),
+                'userSender' => null,
+                'start_time' => $this->timestamp,
+                'code_unique' => $code_unique,
+                'difference' => $difference,
+                $AppelOffreGrouper_id => $id,
+                'time_remaining' => 300,
+                'end_time' => $this->timestamp->addMinutes(5),
+                'is_active' => true,
+            ]
 
+        );
+
+        if ($countdown->wasRecentlyCreated) {
+            $this->countdownId = $countdown->id;
+            $this->isRunning = true;
+            $this->timeRemaining = 300;
+
+            ProcessCountdown::dispatch($countdown->id)
+                ->onConnection('database')
+                ->onQueue('default');
+            event(new CountdownStarted(300));
+        }
+    }
     private function calculateTotalCost($quantity)
     {
         return $quantity * $this->lowestPricedProduct;
@@ -218,12 +250,11 @@ class Appaeloffre extends Component
             throw new Exception("Solde insuffisant.");
         }
     }
-    private function createAppelOffre($validatedData, $totalCost, $userId)
+    private function createAppelOffre($validatedData, $totalCost, $userId, $code_unique)
     {
         // Décrémenter le solde
         $this->wallet->decrement('balance', $totalCost);
 
-        $code_unique = $this->generateUniqueReference();
 
         // Créer un appel d'offre
         $appelOffre = AppelOffreUser::create([
@@ -426,14 +457,11 @@ class Appaeloffre extends Component
             ]);
             Log::info('Gel des fonds enregistré.');
 
-            Countdown::create([
-                'user_id' => $userId,
-                'userSender' => null,
-                'start_time' => $this->timestamp,
-                'code_unique' => $codeUnique,
-                'difference' => 'quantiteGrouper',
-                'AppelOffreGrouper_id' => $offre->id,
-            ]);
+
+            $difference = 'quantiteGrouper';
+            $AppelOffreGrouper_id = 'AppelOffreGrouper_id';
+            $id = $offre->id;
+            $this->startCountdown($id, $difference, $AppelOffreGrouper_id, $codeUnique, $difference);
 
             // Notifications aux utilisateurs intéressés
             $idsProprietaires = Consommation::where('name', $offre->productName)

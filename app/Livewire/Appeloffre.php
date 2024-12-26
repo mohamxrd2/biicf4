@@ -61,20 +61,17 @@ class Appeloffre extends Component
     public $offreIniatiale;
     public $timestamp;
     protected $recuperationTimer;
-
+    public $lastActivity;
+    public $isNegociationActive;
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
     {
         $this->recuperationTimer = new RecuperationTimer();
     }
+    protected $listeners = ['negotiationEnded' => '$refresh'];
+
     public function mount($id)
     {
-        // Récupération de l'heure via le service
-        $this->time = $this->recuperationTimer->getTime();
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
 
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appelOffre']);
@@ -83,21 +80,6 @@ class Appeloffre extends Component
 
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->code_unique = $this->notification->data['code_unique'];
-
-        // Récupérer le commentaire le plus ancien avec code_unique et start_time non nul
-        $this->oldestComment = Countdown::where('code_unique', $this->code_unique)
-            ->whereNotNull('start_time')
-            ->where('notified', false)
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Assurez-vous que la date est en format ISO 8601 pour JavaScript
-        $this->oldestCommentDate = $this->oldestComment
-            ? Carbon::parse($this->oldestComment->start_time)->toIso8601String()
-            : null;
-
-        // Debug pour vérifier le résultat
-        // dd($this->oldestCommentDate);
 
 
         $this->listenForMessage();
@@ -114,15 +96,20 @@ class Appeloffre extends Component
             ->orderBy('prixTrade', 'asc')
             ->get();
 
-        $this->prixLePlusBas = Comment::where('code_unique', $this->code_unique)
+        // Prix le plus bas
+        $this->prixLePlusBas = Comment::where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
-        $this->offreIniatiale = Comment::where('code_unique', $this->code_unique)
+        // Offre initiale (la plus ancienne)
+        $this->offreIniatiale = Comment::where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')
-            ->orderBy('prixTrade', 'asc')
-            ->first(); // Récupère le premier commentaire trié
+            ->orderBy('created_at', 'asc')
+            ->first();
 
+        $this->isNegociationActive = !$this->achatdirect->count;
+
+        // Assure
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
             $this->commentCount = $this->comments->count();
@@ -134,32 +121,37 @@ class Appeloffre extends Component
         }
     }
 
-    protected $listeners = ['compteReboursFini'];
-    public function compteReboursFini()
-    {
-        // Mettre à jour l'attribut 'finish' du demandeCredit
-        $this->appeloffre->update([
-            'count' => true,
-
-        ]);
-        $this->dispatch(
-            'formSubmitted',
-            'Temps écoule, Négociation terminé.'
-        );
-    }
 
     public function commentFormLivr()
     {
 
-        // Récupérer l'utilisateur authentifié
-        $this->validate([
-            'prixTrade' => 'required|numeric',
-        ]);
-
-        if ($this->prixTrade > $this->appeloffre->lowestPricedProduct) {
-            session()->flash('error', 'Prix trop elevee!');
+        // Vérifier si la négociation est terminée
+        if ($this->achatdirect->count) {
+            $this->dispatch(
+                'formSubmitted',
+                'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
+            );
             return;
         }
+
+        // Récupérer d'abord l'offre initiale pour la validation
+        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+            ->whereNotNull('prixTrade')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // Valider les données avec une règle personnalisée
+        $validatedData = $this->validate([
+            'prixTrade' => [
+                'required',
+                'numeric',
+                function ($attribute, $value, $fail) use ($offreInitiale) {
+                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
+                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
+                    }
+                }
+            ]
+        ]);
         DB::beginTransaction();
 
         try {
