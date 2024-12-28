@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Events\CountdownStarted;
 use App\Events\NotificationSent;
+use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect;
 use App\Models\Countdown;
 use App\Models\offregroupe as ModelsAchatDirect;
@@ -66,6 +68,9 @@ class OffreNegosDone extends Component
     public $time;
     public $error;
     public $timestamp;
+    public $isRunning = false;
+    public $countdownId;
+    public $timeRemaining;
 
     protected $recuperationTimer;
     // Injection de la classe RecuperationTimer via le constructeur
@@ -218,104 +223,121 @@ class OffreNegosDone extends Component
     public function accepter()
     {
         $this->timeServer();
-
         $validated = $this->validate([
-            'photoProd' => 'required|image|max:1024', // Limite à 1 MB
+            'photoProd' => 'required|image|max:1024',
             'textareaValue' => 'required',
         ]);
 
         DB::beginTransaction();
         try {
-            // Vérifier si le code_unique existe dans la table userquantites
-            $codeUnique = $this->offregroupe->code_unique; // Assurez-vous que ce champ est correctement défini dans la requête
+            // Vérifier le code unique
+            $codeUnique = $this->offregroupe->code_unique;
             $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
 
             if ($userQuantites->isEmpty()) {
-                session()->flash('error', 'Code unique introuvable dans la table userquantites.');
-                return;
+                throw new Exception('Code unique introuvable dans la table userquantites.');
             }
 
-            // Téléchargez la photo
+            // Télécharger la photo
             $photoName = $this->handlePhotoUpload('photoProd');
 
-            // Parcourir chaque enregistrement dans userquantites et enregistrer l'achat pour chaque utilisateur
-            foreach ($userQuantites as $userQuantite) {
-                $userId = $userQuantite->user_id; // Récupérer l'ID utilisateur
-                $quantite = $userQuantite->quantite; // Quantité saisie par l'utilisateur
+            // Calculer la quantité totale
+            $quantiteTotal = $userQuantites->sum('quantite');
 
-                $userWallet = Wallet::where('user_id', $userId)->first();
-                if (!$userWallet) {
-                    Log::warning('Portefeuille introuvable pour l\'utilisateur', ['user_id' => $userId]);
-                    continue; // Passez au suivant si le portefeuille est manquant
-                }
+            // Créer l'achat direct
+            $achatdirect = AchatDirect::create([
+                'photoProd' => $photoName,
+                'prix' => $this->offregroupe->produit->prix,
+                'nameProd' => $this->produit->name,
+                'quantité' => $quantiteTotal,
+                'montantTotal' => $this->prixFin,
+                'localite' => 'cocody',
+                'date_tot' => now(),
+                'date_tard' => now(),
+                'userTrader' => Auth::id(),
+                'userSender' => $this->offregroupe->user_id,
+                'idProd' => $this->produit->id,
+                'code_unique' => $codeUnique,
+            ]);
 
-                // Enregistrer l'achat dans la table AchatDirectModel
-                $achatdirect = AchatDirect::create([
-                    'photoProd' => $photoName,  // Quantité récupérée de userquantites
-                    'prix' => $this->offregroupe->produit->prix,
-                    'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
-                    'quantité' => $quantite,  // Quantité récupérée de userquantites
-                    'montantTotal' => $this->prixFin,
-                    'localite' => 'cocody',
-                    'date_tot' => now(),
-                    'date_tard' => now(),
-                    'userTrader' => Auth::id(),
-                    'userSender' => $this->offregroupe->user_id,  // Utilisateur qui a saisi l'achat
-                    'idProd' => $this->produit->id,
-                    'code_unique' => $codeUnique,
-                ]);
+            // Préparer les données pour la notification
+            $data = [
+                'idProd' => $this->produit->id,
+                'code_livr' => $this->generateUniqueReference(),
+                'textareaContent' => $validated['textareaValue'],
+                'photoProd' => $photoName,
+                'achat_id' => $achatdirect->id,
+                'title' => 'Negociations des livreurs',
+                'description' => 'Cliquez pour participer a la negociation',
+            ];
 
-                // Préparer les données pour la notification
-                $data = [
-                    'idProd' => $this->produit->id,
-                    'code_livr' => $this->notification->data['code_unique'],
-                    'textareaContent' => $validated['textareaValue'],
-                    'photoProd' => $photoName,
-                    'achat_id' => $achatdirect->id ?? null,
-                    'title' => 'Negociations des livreurs',
-                    'description' => 'Cliquez pour particicper a la negociation',
+            // Démarrer le compte à rebours pour chaque utilisateur
+            $this->startCountdown($data['code_livr'], $this->offregroupe->user_id, $achatdirect->id);
 
-                ];
 
-                Countdown::create([
-                    'user_id' => Auth::id(),
-                    'userSender' => $userId,
-                    'start_time' => $this->timestamp,
-                    'difference' => 'ad',
-                    'code_unique' => $data['code_livr'],
-                    'id_achat' => $achatdirect->id,
-                ]);
+            // Envoyer les notifications aux livreurs
+            if ($this->livreursIds->isNotEmpty()) {
+                foreach ($this->livreursIds as $livreurId) {
+                    $livreur = User::find($livreurId);
+                    if ($livreur) {
+                        Notification::send($livreur, new livraisonAchatdirect($data));
 
-                if (!$data['idProd']) {
-                    throw new Exception('Identifiant du produit introuvable.');
-                }
+                        $notification = $livreur->notifications()
+                            ->where('type', livraisonAchatdirect::class)
+                            ->latest()
+                            ->first();
 
-                // Envoyer une notification aux livreurs pour la négociation
-                if ($this->livreursIds->isNotEmpty()) {
-                    foreach ($this->livreursIds as $livreurId) {
-                        $livreur = User::find($livreurId);
-                        if ($livreur) {
-                            Notification::send($livreur, new livraisonAchatdirect($data));
-                            event(new NotificationSent($livreur));
-                            Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
+                        if ($notification) {
+                            $notification->update(['type_achat' => 'OffreGrouper']);
+                            Log::info('Notification mise à jour avec succès', ['notification_id' => $notification->id]);
                         }
+
+                        event(new NotificationSent($livreur));
                     }
                 }
             }
 
-            // Mettre à jour la notification après le traitement de tous les utilisateurs
+            // Mettre à jour la notification
             $this->notification->update(['reponse' => 'accepte']);
 
             DB::commit();
 
-            // Retourner une confirmation
-            $this->dispatch('formSubmitted', 'Commande acceptée avec succès. Notifications envoyées à tous les livreurs.');
+            $this->dispatch('formSubmitted', 'Commande acceptée avec succès. Notifications envoyées aux livreurs.');
             $this->modalOpen = false;
         } catch (Exception $e) {
-            // Annuler la transaction et gérer l'erreur
             DB::rollBack();
+            Log::error('Erreur lors du traitement de l\'achat', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
-            Log::error('Erreur lors du traitement de l\'achat', ['message' => $e->getMessage()]);
+        }
+    }
+    public function startCountdown($code_livr, $userId, $achatdirect_id)
+    {
+        // Utiliser firstOrCreate pour éviter les doublons
+        $countdown = Countdown::firstOrCreate(
+            ['is_active' => true],
+            [
+                'user_id' => Auth::id(),
+                'userSender' => $userId,
+                'start_time' => $this->timestamp,
+                'difference' => 'ad',
+                'code_unique' => $code_livr,
+                'id_achat' => $achatdirect_id,
+                'time_remaining' => 300,
+                'end_time' => $this->timestamp->addMinutes(5),
+                'is_active' => true,
+            ]
+        );
+        if ($countdown->wasRecentlyCreated) {
+            $this->countdownId = $countdown->id;
+            $this->isRunning = true;
+            $this->timeRemaining = 300;
+            ProcessCountdown::dispatch($countdown->id)
+                ->onConnection('database')
+                ->onQueue('default');
+            event(new CountdownStarted(300));
         }
     }
 

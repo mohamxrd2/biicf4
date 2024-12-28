@@ -40,52 +40,68 @@ class Enchere extends Component
     public $prixTrade;
     public $namefourlivr;
     public $commentCount;
-    public $offgroupe;
-    public $produit, $nombreParticipants, $achatdirect;
+    public $produit, $nombreParticipants, $offgroupe;
     public $time;
     public $error;
+    public $lastActivity;
     public $prixLePlusBas;
     public $offreIniatiale;
-    protected $isNegociationActive;
+    public $isNegociationActive;
 
 
 
     public function mount($id)
     {
+        try {
+            $this->notification = DatabaseNotification::findOrFail($id);
+            $this->id_trader = Auth::user()->id ?? null;
+            $this->idProd = $this->notification->data['idProd'] ?? null;
 
-        $this->notification = DatabaseNotification::findOrFail($id);
+            if (!$this->idProd) {
+                throw new Exception("ID du produit manquant");
+            }
 
-        $this->id_trader = Auth::user()->id ?? null;
-        $this->idProd = $this->notification->data['idProd'] ?? null;
-        $this->produit = ProduitService::find($this->idProd);
-        $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
+            $this->produit = ProduitService::findOrFail($this->idProd);
+            $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->firstOrFail();
 
+            $countdown = Countdown::where('code_unique', $this->offgroupe->code_unique)
+                ->where('is_active', false)
+                ->first();
+            if ($countdown && !$this->offgroupe->count) {
+                $this->offgroupe->update(['count' => true]);
+            }
 
-
-        $this->listenForMessage();
+            $this->listenForMessage();
+        } catch (Exception $e) {
+            Log::error('Erreur dans le montage de l\'enchère', [
+                'error' => $e->getMessage(),
+                'notification_id' => $id
+            ]);
+            throw $e;
+        }
     }
 
     #[On('echo:comments,CommentSubmitted')]
     public function listenForMessage()
     {
-        // Déboguer pour vérifier la structure de l'événement
-        // Vérifier si 'code_unique' existe dans les données de notification
+        $code_unique = $this->notification->data['code_unique'];
+
         $this->comments = Comment::with('user')
-            ->where('code_unique', $this->notification->data['code_unique'])
+            ->where('code_unique', $code_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'desc')
             ->get();
 
-        $this->prixLePlusBas = Comment::where('code_unique', $this->notification->data['code_unique'])
+        $this->prixLePlusBas = Comment::where('code_unique', $code_unique)
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
-        $this->offreIniatiale = Comment::where('code_unique', $this->notification->data['code_unique'])
+        $this->offreIniatiale = Comment::where('code_unique', $code_unique)
             ->whereNotNull('prixTrade')
-            ->orderBy('prixTrade', 'asc')
-            ->first(); // Récupère le premier commentaire trié
+            ->orderBy('created_at', 'asc')
+            ->first();
 
-        $this->isNegociationActive = !$this->achatdirect->count;
+        $this->isNegociationActive = !$this->offgroupe->count;
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -101,57 +117,54 @@ class Enchere extends Component
 
     public function commentoffgroup()
     {
-        // Vérifier si la négociation est terminée
         if ($this->offgroupe->count) {
-            $this->dispatch(
-                'formSubmitted',
-                'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
-            );
+            $this->dispatch('formSubmitted', 'La négociation est terminée.');
             return;
         }
 
-        // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Valider les données avec une règle personnalisée
-        $validatedData = $this->validate([
-            'prixTrade' => [
-                'required',
-                'numeric',
-                function ($attribute, $value, $fail) use ($offreInitiale) {
-                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
-                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
-                    }
-                }
-            ]
-        ]);
+        $code_unique = $this->notification->data['code_unique'];
 
         try {
+            DB::beginTransaction();
 
-            // Créer un commentaire
+            $validatedData = $this->validate([
+                'prixTrade' => [
+                    'required',
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($code_unique) {
+                        $offreInitiale = Comment::where('code_unique', $code_unique)
+                            ->whereNotNull('prixTrade')
+                            ->orderBy('created_at', 'asc')
+                            ->first();
+
+                        if ($offreInitiale && $value >= $offreInitiale->prixTrade) {
+                            $fail("Le prix doit être inférieur à {$offreInitiale->prixTrade}");
+                        }
+                    }
+                ]
+            ]);
+
             $comment = Comment::create([
                 'prixTrade' => $validatedData['prixTrade'],
-                'code_unique' => $this->notification->data['code_unique'],
+                'code_unique' => $code_unique,
                 'id_trader' => Auth::id(),
                 'id_prod' => $this->produit->id,
             ]);
 
-            broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id));
-            $this->listenForMessage();
+            broadcast(new CommentSubmitted($validatedData['prixTrade'], $comment->id))->toOthers();
 
-            $this->reset(['prixTrade']);
-        } catch (Exception $e) {
-            // dd($e)->getMessage();
-            // En cas d'erreur, redirection avec un message d'erreur
-            return redirect()->back()->with('error', 'Erreur lors de la soumission de l\'offre: ' . $e->getMessage());
+            DB::commit();
+            $this->reset('prixTrade');
+            $this->listenForMessage();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur lors de l\'enchère', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+            session()->flash('error', 'Erreur lors de l\'enchère: ' . $e->getMessage());
         }
     }
-
-
-
 
     public function render()
     {

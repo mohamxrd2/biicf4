@@ -190,8 +190,8 @@ class Appaeloffre extends Component
             $this->notifyUsers($appelOffre);
             $difference = $this->selectedOption == 'Delivery' ? 'appelOffreD' : 'appelOffreR';
             $AppelOffreGrouper_id = 'id_appeloffre';
-            $id = $this->appelOffre->id;
-            $this->startCountdown($id, $AppelOffreGrouper_id, $difference, $code_unique, $difference);
+            $id = $appelOffre->id;
+            $this->startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id);
 
 
 
@@ -209,7 +209,7 @@ class Appaeloffre extends Component
             $this->loading = false;
         }
     }
-    public function startCountdown($code_unique, $selectedOption, $difference, $AppelOffreGrouper_id, $id)
+    public function startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id)
     {
         // Utiliser firstOrCreate pour éviter les doublons
         $countdown = Countdown::firstOrCreate(
@@ -461,7 +461,7 @@ class Appaeloffre extends Component
             $difference = 'quantiteGrouper';
             $AppelOffreGrouper_id = 'AppelOffreGrouper_id';
             $id = $offre->id;
-            $this->startCountdown($id, $difference, $AppelOffreGrouper_id, $codeUnique, $difference);
+            $this->startCountdown($codeUnique, $difference, $AppelOffreGrouper_id, $id);
 
             // Notifications aux utilisateurs intéressés
             $idsProprietaires = Consommation::where('name', $offre->productName)

@@ -135,7 +135,7 @@
             <livewire:countdown :id="$id" />
         </div>
     </div>
-    <div class="container mx-auto px-4" x-data="{ showDetails: false, showOffers: false }">
+    <div class="container mx-auto px-4" x-data="{ showDetails: true, showOffers: true }">
 
         <!-- Détails du produit -->
         <div class="bg-white rounded-lg shadow-lg mb-6 overflow-hidden">
@@ -205,7 +205,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Tableau des offres -->
         <div class="bg-white rounded-lg shadow-lg mb-6">
             <div class="p-6">
@@ -379,8 +379,8 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('negotiation', () => ({
-                showDetails: false,
-                showOffers: false,
+                showDetails: true,
+                showOffers: true,
             }))
         })
     </script>

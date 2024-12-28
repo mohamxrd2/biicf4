@@ -8,6 +8,7 @@ use App\Models\AchatDirect;
 use App\Models\AppelOffreGrouper;
 use App\Models\AppelOffreUser;
 use App\Models\Countdown as ModelsCountdown;
+use App\Models\OffreGroupe;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
@@ -30,6 +31,9 @@ class Countdown extends Component
     public $error;
     public $timestamp;
     public $appeloffregrp;
+    public $offgroupe;
+    public $etat;
+    public $OffreGroupe;
 
     protected $recuperationTimer;
 
@@ -45,9 +49,6 @@ class Countdown extends Component
         $this->timeServer();
 
         $this->loadNotificationData($id);
-
-
-
 
         // Récupérer le décompte actif
         $activeCountdown = ModelsCountdown::where('code_unique', $this->valueCodeUnique)
@@ -75,37 +76,129 @@ class Countdown extends Component
 
     private function loadNotificationData($id)
     {
-        $this->notification = DatabaseNotification::findOrFail($id);
+        try {
+            $this->notification = DatabaseNotification::findOrFail($id);
+            $this->valueCodeUnique = null;
 
-        switch ($this->notification->type) {
-            case 'App\Notifications\AchatBiicf':
-                $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
+            switch ($this->notification->type) {
+                case 'App\Notifications\livraisonAchatdirect':
+                    if (isset($this->notification->data['achat_id'])) {
+                        $this->achatdirect = AchatDirect::findOrFail($this->notification->data['achat_id']);
+                        $this->valueCodeUnique = $this->notification->type_achat === 'appelOffreGrouper'
+                            ? ($this->notification->data['code_unique'] ?? null)
+                            : $this->achatdirect->code_unique;
+                        $this->etat = $this->achatdirect->count;
 
-                $this->valueCodeUnique = $this->notification->type_achat === 'appelOffreGrouper'
-                    ? ($this->notification->data['code_unique'] ?? null)
-                    : $this->achatdirect->code_unique;
-                break;
-            case 'App\Notifications\AppelOffre':
-                $this->appeloffre = AppelOffreUser::find($this->notification->data['id_appelOffre']);
+                        return true;
+                    }
+                    break;
 
-                $this->valueCodeUnique = $this->appeloffre->code_unique;
-                break;
-            case 'App\Notifications\AOGrouper':
-                $this->appelOffreGroup = AppelOffreGrouper::find($this->notification->data['offre_id']);
+                case 'App\Notifications\AppelOffre':
+                    if (isset($this->notification->data['id_appelOffre'])) {
+                        $this->appeloffre = AppelOffreUser::findOrFail($this->notification->data['id_appelOffre']);
+                        $this->valueCodeUnique = $this->appeloffre->code_unique;
+                        $this->etat = $this->appeloffre->count;
 
-                $this->valueCodeUnique = $this->appelOffreGroup->codeunique;
-                break;
-            case 'App\Notifications\AppelOffreGrouperNotification':
-                $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelGrouper']);
+                        return true;
+                    }
+                    break;
 
-                $this->valueCodeUnique = $this->appeloffregrp->codeunique;
-                break;
+                case 'App\Notifications\OffreNotifGroup':
+                    if (isset($this->notification->data['code_unique'])) {
+                        $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->firstOrFail();
+                        $this->valueCodeUnique = $this->offgroupe->code_unique;
+                        $this->etat = $this->offgroupe->count;
 
+                        return true;
+                    }
+                    break;
 
-            default:
-                throw new \InvalidArgumentException("Type de notification non pris en charge : {$this->notification->type_achat}");
+                case 'App\Notifications\AOGrouper':
+                    if (isset($this->notification->data['offre_id'])) {
+                        $this->appelOffreGroup = AppelOffreGrouper::findOrFail($this->notification->data['offre_id']);
+                        $this->valueCodeUnique = $this->appelOffreGroup->codeunique;
+                        $this->etat = $this->appelOffreGroup->count;
+
+                        return true;
+                    }
+                    break;
+
+                case 'App\Notifications\AppelOffreGrouperNotification':
+                    if (isset($this->notification->data['id_appelGrouper'])) {
+                        $this->appeloffregrp = AppelOffreGrouper::findOrFail($this->notification->data['id_appelGrouper']);
+                        $this->valueCodeUnique = $this->appeloffregrp->codeunique;
+                        $this->etat = $this->appeloffregrp->count;
+
+                        return true;
+                    }
+                    break;
+                case 'App\Notifications\OffreNegosNotif':
+                    if (isset($this->notification->data['code_unique'])) {
+                        $this->OffreGroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
+                        $this->valueCodeUnique = $this->OffreGroupe->code_unique;
+                        $this->etat = $this->OffreGroupe->count;
+
+                        return true;
+                    }
+                    break;
+            }
+
+            Log::warning('Code unique non trouvé pour la notification', [
+                'notification_id' => $id,
+                'type' => $this->notification->type
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du chargement des données de notification', [
+                'notification_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return false;
         }
     }
+
+    private function updateModelCount()
+    {
+        try {
+            switch ($this->notification->type) {
+                case 'App\Notifications\livraisonAchatdirect':
+                    $this->achatdirect->update(['count' => true]);
+                    $this->dispatch('negotiationEnded')->to('livraison-achatdirect');
+                    break;
+
+                case 'App\Notifications\AppelOffre':
+                    $this->appeloffre->update(['count' => true]);
+                    $this->dispatch('negotiationEnded')->to('appeloffre');
+                    break;
+
+                case 'App\Notifications\OffreNotifGroup':
+                    $this->offgroupe->update(['count' => true]);
+                    $this->dispatch('negotiationEnded')->to('enchere');
+                    break;
+                case 'App\Notifications\OffreNegosNotif':
+                    $this->OffreGroupe->update(['count' => true]);
+                    $this->dispatch('negotiationEnded')->to('offre-groupe-quantite');
+                    break;
+                case 'App\Notifications\AOGrouper':
+                    $this->appelOffreGroup->update(['count' => true]);
+                    $this->dispatch('negotiationEnded')->to('appel-offre-grouper');
+                    break;
+
+                case 'App\Notifications\AppelOffreGrouperNotification':
+                    $this->appeloffregrp->update(['count' => true]);
+                    $this->dispatch('negotiationEnded')->to('appel-offre-grouper');
+                    break;
+            }
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour du modèle', [
+                'type' => $this->notification->type,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
     public function timeServer()
     {
         // Faire plusieurs tentatives de récupération pour plus de précision
@@ -154,32 +247,21 @@ class Countdown extends Component
         ];
     }
 
-    /**
-     * Gère l'événement CountdownStarted.
-     *
-     * @param array $event
-     */
     public function handleCountdownStart($event)
     {
         $this->timeRemaining = $event['time'];
         $this->isRunning = true;
     }
 
-    /**
-     * Gère l'événement CountdownTick.
-     *
-     * @param array $event
-     */
+
     public function handleCountdownTick($event)
     {
-        // Vérifier si le compte à rebours est actif
         if (!$this->isRunning) {
             return;
         }
 
         $this->timeRemaining = $event['time'];
 
-        // Mettre à jour l'état
         if ($this->timeRemaining <= 1) {
             $this->isRunning = false;
             $countdown = ModelsCountdown::find($this->countdownId);
@@ -190,13 +272,9 @@ class Countdown extends Component
                 ]);
             }
 
-            // Mettre à jour l'attribut 'count' et émettre un événement
-            $this->achatdirect->update([
-                'count' => true,
-            ]);
-
-            // Émettre un événement pour rafraîchir le composant parent
-            $this->dispatch('negotiationEnded')->to('livraison-achatdirect');
+            if ($this->loadNotificationData($this->id)) {
+                $this->updateModelCount();
+            }
 
             $this->dispatch(
                 'formSubmitted',

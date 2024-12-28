@@ -49,8 +49,6 @@ class OffreGroupeQuantite extends Component
     public function mount($id)
     {
         try {
-
-
             // Récupération de la notification
             $this->notification = DatabaseNotification::findOrFail($id);
 
@@ -68,6 +66,13 @@ class OffreGroupeQuantite extends Component
     {
         $codeUnique = $this->notification->data['code_unique'];
         $this->OffreGroupe = OffreGroupe::where('code_unique', $codeUnique)->first();
+
+        $countdown = Countdown::where('code_unique', $codeUnique)
+            ->where('is_active', false)
+            ->first();
+        if ($countdown && !$this->OffreGroupe->count) {
+            $this->OffreGroupe->update(['count' => true]);
+        }
     }
 
     private function fetchProduit()
@@ -105,27 +110,7 @@ class OffreGroupeQuantite extends Component
             ->first();
     }
 
-    // Ajouter un écouteur d'événements dans Livewire
-    protected $listeners = [
-        'compteReboursFini', // Cet événement appellera une méthode `compteReboursFini`
-    ];
-    public function compteReboursFini()
-    {
-        try {
-            // Vérifier que le groupe d'appel d'offre est valide
-            if (!$this->OffreGroupe) {
-                throw new Exception('Groupe d\'appel d\'offres introuvable.');
-            }
-            // Mettre à jour l'attribut 'finish'
-            $this->OffreGroupe->update(['count' => true]);
-
-            // Émettre un événement Livewire pour notifier la fin
-            $this->dispatch('formSubmitted', 'Temps écoulé, groupage terminé.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la fin du compte à rebours.', ['error' => $e->getMessage()]);
-            session()->flash('error', 'Erreur lors de la fin du compte à rebours.');
-        }
-    }
+    
 
     #[On('echo:quantite-channel,AjoutQuantiteOffre')]
     public function actualiserDonnees($event)

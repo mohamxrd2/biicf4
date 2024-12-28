@@ -64,10 +64,22 @@ class LivraisonAchatdirect extends Component
         }
 
         // Déterminer la valeur de $Valuecode_unique
-        $this->Valuecode_unique = $this->notification->type_achat == 'appelOffreGrouper'
-            ? ($this->notification->data['code_unique'] ?? null)
-            : $this->achatdirect->code_unique;
+        switch ($this->notification->type_achat) {
+            case 'appelOffreGrouper':
+            case 'OffreGrouper':
+                $this->Valuecode_unique = $this->notification->data['code_unique'] ?? null;
+                break;
+            default:
+                $this->Valuecode_unique = $this->achatdirect->code_unique;
+        }
 
+        $countdown = Countdown::where('code_unique', $this->Valuecode_unique)
+            ->where('is_active', false)
+            ->first();
+
+        if ($countdown && !$this->achatdirect->count) {
+            $this->achatdirect->update(['count' => true]);
+        }
 
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();

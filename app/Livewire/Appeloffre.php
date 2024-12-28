@@ -81,6 +81,13 @@ class Appeloffre extends Component
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->code_unique = $this->notification->data['code_unique'];
 
+        $countdown = Countdown::where('code_unique', $this->code_unique)
+            ->where('is_active', false)
+            ->first();
+
+        if ($countdown && !$this->appeloffre->count) {
+            $this->appeloffre->update(['count' => true]);
+        }
 
         $this->listenForMessage();
     }
@@ -97,17 +104,17 @@ class Appeloffre extends Component
             ->get();
 
         // Prix le plus bas
-        $this->prixLePlusBas = Comment::where('code_unique', $this->Valuecode_unique)
+        $this->prixLePlusBas = Comment::where('code_unique', $this->code_unique)
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
         // Offre initiale (la plus ancienne)
-        $this->offreIniatiale = Comment::where('code_unique', $this->Valuecode_unique)
+        $this->offreIniatiale = Comment::where('code_unique', $this->code_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('created_at', 'asc')
             ->first();
 
-        $this->isNegociationActive = !$this->achatdirect->count;
+        $this->isNegociationActive = !$this->appeloffre->count;
 
         // Assure
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
@@ -135,7 +142,7 @@ class Appeloffre extends Component
         }
 
         // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+        $offreInitiale = Comment::where('code_unique', $this->code_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('created_at', 'asc')
             ->first();

@@ -2,14 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Consommation;
 use App\Models\Countdown;
 use App\Models\OffreGroupe;
-use App\Models\ProduitService;
-use App\Models\User;
 use App\Models\userquantites;
 use App\Notifications\OffreNegosDone;
-use App\Services\RecuperationTimer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,62 +14,80 @@ use Illuminate\Support\Facades\Notification;
 class AjoutQoffre extends Command
 {
     protected $signature = 'app:ajout-qoffre';
-
     protected $description = 'Check if the time is finished to submit a notification to consumption user';
 
     public function handle()
     {
-        $countdowns = $countdowns = Countdown::where('notified', false)
-            ->where('start_time', '<=', now()->subMinutes(2))
-            ->where('difference', 'offreGrouper')
-            ->with(['sender', 'achat', 'appelOffre', 'appelOffreGrouper'])
-            ->get();
+        try {
+            // Récupérer les countdowns non notifiés qui ont dépassé 2 minutes
+            $countdowns = Countdown::where('notified', false)
+                ->where('start_time', '<=', now()->subMinutes(2))
+                ->where('difference', 'offreGrouper')
+                ->with(['sender', 'achat', 'appelOffre', 'appelOffreGrouper'])
+                ->get();
 
-        $codeUniques = $countdowns->pluck('code_unique')->unique();
+            if ($countdowns->isEmpty()) {
+                Log::info('Aucun countdown à traiter.');
+                return;
+            }
 
-        $OffreGroupes = OffreGroupe::whereIn('code_unique', $codeUniques)->get();
+            Log::info('Traitement de ' . $countdowns->count() . ' countdowns.');
 
-        if ($countdowns->isEmpty()) {
-            Log::info('No countdowns found to process.');
+            // Récupérer les offres groupées associées
+            $codeUniques = $countdowns->pluck('code_unique')->unique();
+            $offreGroupes = OffreGroupe::whereIn('code_unique', $codeUniques)
+                ->with(['user', 'produit'])
+                ->get();
+
+            foreach ($offreGroupes as $offre) {
+                DB::beginTransaction();
+                try {
+                    $this->processOffre($offre, $countdowns);
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('Erreur lors du traitement de l\'offre ' . $offre->code_unique, [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur générale dans AjoutQoffre', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    protected function processOffre(OffreGroupe $offre, $countdowns)
+    {
+        // Vérifier si l'offre a un utilisateur associé
+        if (!$offre->user) {
+            Log::error('Utilisateur non trouvé pour l\'offre: ' . $offre->code_unique);
             return;
         }
 
-        Log::info('Found ' . $countdowns->count() . ' countdowns to process.');
-
-        foreach ($OffreGroupes as $offre) {
-            $this->processCountdown($offre, $countdowns);
-        }
-    }
-
-    protected function processCountdown($offre, $countdowns)
-    {
-
-        $codeUnique = $offre->code_unique;
-        $quantitesParUser = $this->getUserQuantities($codeUnique);
-
-        Log::info('Quantities per user for unique code ' . $codeUnique . ': ' . json_encode($quantitesParUser));
-
-        $sender = $offre->user;
-
-        if (!$sender) {
-            Log::error('Sender not found for countdown: ' . $codeUnique);
+        // Récupérer les quantités par utilisateur
+        $quantitesParUser = $this->getUserQuantities($offre->code_unique);
+        if (empty($quantitesParUser)) {
+            Log::warning('Aucune quantité trouvée pour le code unique: ' . $offre->code_unique);
             return;
         }
 
-        $this->sendNotification($offre, $sender, $quantitesParUser);
-        // Marquer les Countdown liés comme notifiés
-        $this->markCountdownsAsNotified($countdowns, $codeUnique);
-    }
-    private function markCountdownsAsNotified($countdowns, $codeUnique)
-    {
-        $countdownsToUpdate = $countdowns->where('code_unique', $codeUnique);
-        foreach ($countdownsToUpdate as $countdown) {
-            $countdown->update(['notified' => true]);
-        }
+        // Envoyer la notification
+        $this->sendNotification($offre, $quantitesParUser);
 
-        Log::info('Countdowns marqués comme notifiés:', $countdownsToUpdate->toArray());
+        // Marquer les countdowns comme notifiés
+        $this->markCountdownsAsNotified($countdowns, $offre->code_unique);
+
+        Log::info('Traitement terminé pour l\'offre: ' . $offre->code_unique, [
+            'quantites' => $quantitesParUser,
+            'user_id' => $offre->user->id
+        ]);
     }
-    protected function getUserQuantities($codeUnique)
+
+    protected function getUserQuantities(string $codeUnique): array
     {
         return userquantites::where('code_unique', $codeUnique)
             ->get()
@@ -82,29 +96,25 @@ class AjoutQoffre extends Command
             ->toArray();
     }
 
-    protected function sendNotification($offre, $sender, $quantitesParUser)
+    protected function sendNotification(OffreGroupe $offre, array $quantitesParUser): void
     {
-        try {
-            DB::beginTransaction();
+        $notificationData = [
+            'quantite_totale' => array_sum($quantitesParUser),
+            'details_par_user' => $quantitesParUser,
+            'idProd' => $offre->produit_id,
+            'id_sender' => $offre->user->id,
+            'code_unique' => $offre->code_unique,
+        ];
 
-            Notification::send($sender, new OffreNegosDone([
-                'quantite_totale' => array_sum($quantitesParUser),
-                'details_par_user' => $quantitesParUser,
-                'idProd' => $offre->produit_id,
-                'id_sender' => $offre->sender->id ?? null,
-                'code_unique' => $offre->code_unique,
-            ]));
+        Notification::send($offre->user, new OffreNegosDone($notificationData));
+        $offre->update(['notified' => true]);
+    }
 
-            Log::info('Notification sent to user:', ['sender' => $sender->id]);
-
-            $offre->update(['notified' => true]);
-
-            DB::commit();
-
-            Log::info('Updated countdown notified status for unique code: ' . $offre->code_unique);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error processing countdown with code ' . $offre->code_unique . ': ' . $e->getMessage());
-        }
+    protected function markCountdownsAsNotified($countdowns, string $codeUnique): void
+    {
+        $countdowns->where('code_unique', $codeUnique)
+            ->each(function ($countdown) {
+                $countdown->update(['notified' => true]);
+            });
     }
 }

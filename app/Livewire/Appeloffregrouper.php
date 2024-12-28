@@ -54,9 +54,6 @@ class Appeloffregrouper extends Component
             return;
         }
 
-        // Récupérer l'heure du serveur
-        $this->time = $this->recuperationTimer->getTime();
-
         $this->fetchAppelOffreGrouper();
         $this->initializeGroupageData();
     }
@@ -69,6 +66,13 @@ class Appeloffregrouper extends Component
 
         if ($Idoffre) {
             $this->appelOffreGroup = ModelsAppelOffreGrouper::find($Idoffre);
+        }
+
+        $countdown = Countdown::where('code_unique', $this->appelOffreGroup->codeunique)
+            ->where('is_active', false)
+            ->first();
+        if ($countdown && !$this->appelOffreGroup->count) {
+            $this->appelOffreGroup->update(['count' => true]);
         }
     }
 

@@ -233,7 +233,7 @@ class FonctOffre extends Component
 
             $difference = 'enchere';
 
-            $this->startCountdown($difference, $code_unique);
+            $this->startCountdown($code_unique, $difference);
 
             // Récupérer les utilisateurs consommant ce produit
             $idsProprietaires = $this->getConsommateurs($referenceProduit, $user_id);

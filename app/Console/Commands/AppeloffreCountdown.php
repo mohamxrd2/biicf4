@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Events\CountdownStarted;
 use App\Events\NotificationSent;
+use App\Jobs\ProcessCountdown;
 use App\Models\AppelOffreGrouper;
 use App\Models\Countdown;
 use App\Models\User;
@@ -11,6 +13,7 @@ use App\Notifications\AppelOffreGrouperNotification;
 use App\Notifications\Confirmation;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +28,9 @@ class AppeloffreCountdown extends Command
     public $time;
     public $error;
     public $timestamp;
+    public $countdownId;
+    public $isRunning;
+    public $timeRemaining;
     public function __construct()
     {
         parent::__construct();
@@ -75,20 +81,53 @@ class AppeloffreCountdown extends Command
         $this->notifyUsersQuantites($appelOffreGroup, $codeUnique);
         $this->notifyProdUsers($appelOffreGroup, $codeUnique);
 
+        $difference = 'appelOffreGrouper';
+        $AppelOffreGrouper_id = $appelOffreGroup->id;
+        $this->startCountdown($this->generateUniqueReference(), $difference, $AppelOffreGrouper_id, $countdowns);
+
         // Créer un nouveau countdown pour l'AppelOffreGroup
         Countdown::create([
             'user_id' => $countdowns->where('code_unique', $codeUnique)->pluck('user_id')->unique()->first(),
             'userSender' => null,
             'start_time' => $this->timestamp,
-            'code_unique' => $codeUnique,
+            'code_unique' => $this->generateUniqueReference(),
             'difference' => 'appelOffreGrouper',
             'AppelOffreGrouper_id' => $appelOffreGroup->id,
         ]);
 
         // Marquer les Countdown liés comme notifiés
         $this->markCountdownsAsNotified($countdowns, $codeUnique);
+        $this->markAppelOffreAsNotified($appelOffreGroup);
     }
+    public function startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $countdowns)
+    {
+        // Utiliser firstOrCreate pour éviter les doublons
+        $countdown = Countdown::firstOrCreate(
+            ['is_active' => true],
+            [
+                'user_id' => $countdowns->where('code_unique', $code_unique)->pluck('user_id')->unique()->first(),
+                'userSender' => null,
+                'start_time' => $this->timestamp,
+                'code_unique' => $code_unique,
+                'difference' => $difference,
+                'AppelOffreGrouper_id' => $AppelOffreGrouper_id,
+                'time_remaining' => 300,
+                'end_time' => $this->timestamp->addMinutes(5),
+                'is_active' => true,
+            ]
+        );
 
+        if ($countdown->wasRecentlyCreated) {
+            $this->countdownId = $countdown->id;
+            $this->isRunning = true;
+            $this->timeRemaining = 300;
+
+            ProcessCountdown::dispatch($countdown->id)
+                ->onConnection('database')
+                ->onQueue('default');
+            event(new CountdownStarted(300));
+        }
+    }
     private function markCountdownsAsNotified($countdowns, $codeUnique)
     {
         $countdownsToUpdate = $countdowns->where('code_unique', $codeUnique);
@@ -98,7 +137,10 @@ class AppeloffreCountdown extends Command
 
         Log::info('Countdowns marqués comme notifiés:', $countdownsToUpdate->toArray());
     }
-
+    protected function generateUniqueReference()
+    {
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
+    }
     public function timeServer()
     {
         // Faire plusieurs tentatives de récupération pour plus de précision
