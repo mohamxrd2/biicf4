@@ -7,21 +7,39 @@ use App\Models\OffreGroupe;
 use App\Models\userquantites;
 use App\Notifications\OffreNegosDone;
 use Illuminate\Console\Command;
+use App\Services\RecuperationTimer;
+use App\Services\TimeSync\TimeSyncService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Carbon\Carbon;
 
 class AjoutQoffre extends Command
 {
     protected $signature = 'app:ajout-qoffre';
     protected $description = 'Check if the time is finished to submit a notification to consumption user';
+    protected $recuperationTimer;
+    public $time;
+    public $error;
+    public $timestamp;
+    public $countdownId;
+    public $isRunning;
+    public $timeRemaining;
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->recuperationTimer = new RecuperationTimer();
+    }
     public function handle()
     {
         try {
-            // Récupérer les countdowns non notifiés qui ont dépassé 2 minutes
+            $timeSync = new TimeSyncService($this->recuperationTimer);
+            $result = $timeSync->getSynchronizedTime();
+            $serverTime = $result['timestamp']->subMinutes(2);
+
             $countdowns = Countdown::where('notified', false)
-                ->where('start_time', '<=', now()->subMinutes(2))
+                ->where('start_time', '<=', $serverTime)
                 ->where('difference', 'offreGrouper')
                 ->with(['sender', 'achat', 'appelOffre', 'appelOffreGrouper'])
                 ->get();
@@ -31,32 +49,36 @@ class AjoutQoffre extends Command
                 return;
             }
 
-            Log::info('Traitement de ' . $countdowns->count() . ' countdowns.');
+            DB::beginTransaction();
 
-            // Récupérer les offres groupées associées
             $codeUniques = $countdowns->pluck('code_unique')->unique();
             $offreGroupes = OffreGroupe::whereIn('code_unique', $codeUniques)
                 ->with(['user', 'produit'])
                 ->get();
 
             foreach ($offreGroupes as $offre) {
-                DB::beginTransaction();
                 try {
                     $this->processOffre($offre, $countdowns);
-                    DB::commit();
                 } catch (\Exception $e) {
                     DB::rollBack();
                     Log::error('Erreur lors du traitement de l\'offre ' . $offre->code_unique, [
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
                     ]);
+                    throw $e;
                 }
             }
+
+            DB::commit();
         } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
             Log::error('Erreur générale dans AjoutQoffre', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            throw $e;
         }
     }
 
@@ -80,11 +102,6 @@ class AjoutQoffre extends Command
 
         // Marquer les countdowns comme notifiés
         $this->markCountdownsAsNotified($countdowns, $offre->code_unique);
-
-        Log::info('Traitement terminé pour l\'offre: ' . $offre->code_unique, [
-            'quantites' => $quantitesParUser,
-            'user_id' => $offre->user->id
-        ]);
     }
 
     protected function getUserQuantities(string $codeUnique): array
@@ -95,7 +112,15 @@ class AjoutQoffre extends Command
             ->map(fn($group) => $group->sum('quantite'))
             ->toArray();
     }
+    public function timeServer()
+    {
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
 
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
+    }
     protected function sendNotification(OffreGroupe $offre, array $quantitesParUser): void
     {
         $notificationData = [

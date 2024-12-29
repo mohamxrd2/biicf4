@@ -24,16 +24,12 @@ class projetCountdown extends Command
             ->where('start_time', '<=', now()->subMinutes(1))
             ->get();
 
-        // Log pour vérifier le nombre de countdowns récupérés
-        Log::info('Nombre de countdowns récupérés : ', ['countdown_count' => $countdowns->count()]);
 
         foreach ($countdowns as $countdown) {
             if ($countdown->difference === 'projet_taux') {
                 // Récupérer le code unique
                 $code_unique = $countdown->code_unique;
 
-                // Log pour le traitement d'un countdown spécifique
-                Log::info('Traitement du countdown', context: ['countdown_id' => $countdown->id, 'code_unique' => $code_unique]);
 
                 // Retrouver l'enregistrement avec le taux le plus bas, et en cas d'égalité, prendre le plus ancien
                 $lowestTauxComment = CommentTaux::with('investisseur')
@@ -49,8 +45,6 @@ class projetCountdown extends Command
                         'taux' => $lowestTauxComment->taux
                     ]);
 
-                    // Log pour signaler que le countdown est prêt pour une notification
-                    Log::info('Préparation des détails de la notification.', ['countdown' => $countdown->id]);
 
                     $taux = $lowestTauxComment->taux;
                     $id_invest = $lowestTauxComment->id_invest;
@@ -80,8 +74,6 @@ class projetCountdown extends Command
                         'type_financement' => $projet->type_financement,
                     ];
 
-                    // Log avant d'envoyer la notification
-                    Log::info('Envoi de la notification pour le credit.', ['id_invest' => $id_invest]);
 
                     // Récupérer l'utilisateur (investisseur)
                     $owner = User::find($id_invest);
@@ -89,9 +81,6 @@ class projetCountdown extends Command
                     // Vérifier que l'utilisateur existe avant d'envoyer la notification
                     if ($owner) {
                         Notification::send($owner, new GagnantProjetNotifications($details));
-
-                        // Log après l'envoi de la notification
-                        Log::info('Notification envoyée.', ['notification_details' => $details]);
 
                         // Mettre à jour l'état du countdown après la notification
                         $countdown->update(['notified' => true]);

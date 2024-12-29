@@ -39,30 +39,20 @@ class RappelPortionsJournalCredits extends Command
     {
         // Date du jour
         $dateDuJour = Carbon::today()->toDateString();
-        Log::info('Date du jour : ' . $dateDuJour);
 
         // Récupérer tous les crédits
         $credits = credits_groupé::where('statut', 'en cours')->get();
-        Log::info('Nombre de credits avec statut "en cours" : ' . $credits->count());
 
         foreach ($credits as $credit) {
-            Log::info('Credit ID : ' . $credit->id . ' - Emprunteur ID : ' . $credit->emprunteur_id);
 
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
             if ($dateDuJour <= $credit->date_fin) {
-                Log::info('Le crédit avec ID ' . $credit->id . ' est actif aujourd\'hui.');
 
 
                 $portionCapital = $credit->montant;
                 $portionInteret = $credit->taux_interet;
 
                 $montantTotal = $credit->portion_journaliere;
-
-                Log::info("Montants récupérés pour le crédit ID: " . $credit->id, [
-                    'portion_capital' => $portionCapital,
-                    'portion_interet' => $portionInteret,
-                    'montant_total' => $montantTotal
-                ]);
 
                 // Récupérer le wallet de l'utilisateur
                 $wallet = Wallet::where('user_id', $credit->emprunteur_id)->first();
@@ -80,7 +70,7 @@ class RappelPortionsJournalCredits extends Command
                     if ($balanceSuffisante) {
                         // Récupérer l'emprunteur associé au crédit
                         $emprunteur = User::find($credit->emprunteur_id);
-                        Log::info('emprunteur ID : ' . $credit->emprunteur_id);
+
                         if (!$emprunteur) {
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
                         }
@@ -104,15 +94,10 @@ class RappelPortionsJournalCredits extends Command
                         if ($credit->montan_restantt == 0) {
                             $credit->statut = "remboursé";
 
-
                             $this->remboursementCredit($credit, $wallet);
                         }
 
-
                         $credit->save();
-
-
-                        Log::info("Début de la transaction pour l'utilisateur ID: " . $credit->emprunteur_id);
 
                         $this->remboursement(
                             $credit->id,
@@ -128,7 +113,6 @@ class RappelPortionsJournalCredits extends Command
 
 
                         Notification::send($emprunteur, new PortionJournaliere($credit, $portionCapital, $portionInteret));
-                        Log::info('Notification envoyée pour le crédit ID : ' . $credit->id);
 
                         // Après l'envoi de la notification
                         event(new NotificationSent($emprunteur));
@@ -136,7 +120,6 @@ class RappelPortionsJournalCredits extends Command
                     } elseif ($wallet->balance < $montantTotal) {
                         // Récupérer l'emprunteur associé au crédit
                         $emprunteur = User::find($credit->emprunteur_id);
-                        Log::info('emprunteur ID : ' . $credit->emprunteur_id);
                         if (!$emprunteur) {
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $credit->id);
                         }
@@ -145,8 +128,6 @@ class RappelPortionsJournalCredits extends Command
 
                         // Après l'envoi de la notification
                         event(new NotificationSent($emprunteur));
-
-                        Log::info('Notification envoyée pour solde insuffisant.');
                     }
 
                     DB::commit();
@@ -279,7 +260,7 @@ class RappelPortionsJournalCredits extends Command
 
                 //Commission de BICF et des differants parrains
 
-                
+
 
                 if ($investisseur->parrain) {
 
@@ -344,7 +325,7 @@ class RappelPortionsJournalCredits extends Command
                             $commissions = $commissions - $commissions * 0.01;
                         }
 
-                        
+
                     }
                 }
 

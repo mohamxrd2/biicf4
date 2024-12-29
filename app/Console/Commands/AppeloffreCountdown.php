@@ -12,6 +12,7 @@ use App\Models\UserQuantites;
 use App\Notifications\AppelOffreGrouperNotification;
 use App\Notifications\Confirmation;
 use App\Services\RecuperationTimer;
+use App\Services\TimeSync\TimeSyncService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
@@ -39,13 +40,18 @@ class AppeloffreCountdown extends Command
 
     public function handle()
     {
-        $this->time = $this->recuperationTimer->getTime();
 
         DB::beginTransaction(); // Démarre une transaction
 
         try {
+            // Récupérer l'heure du serveur
+            // Utiliser TimeSyncService pour l'heure du serveur
+            $timeSync = new TimeSyncService($this->recuperationTimer);
+            $result = $timeSync->getSynchronizedTime();
+            $serverTime = $result['timestamp']->subMinutes(2);
+
             $countdowns = Countdown::where('notified', false)
-                ->where('start_time', '<=', now()->subMinutes(2))
+                ->where('start_time', '<=', $serverTime)
                 ->where('difference', 'quantiteGrouper')
                 ->with(['sender', 'achat', 'appelOffre', 'appelOffreGrouper'])
                 ->get();
@@ -72,32 +78,43 @@ class AppeloffreCountdown extends Command
 
     private function processAppelOffreGroup($appelOffreGroup, $countdowns)
     {
-        // Actualiser le timer avant de commencer
-        $this->timeServer();
+        try {
+            // Actualiser le timer avant de commencer
+            $this->timeServer();
 
-        $codeUnique = $appelOffreGroup->codeunique;
+            $codeUnique = $appelOffreGroup->codeunique;
 
-        // Notifications aux utilisateurs
-        $this->notifyUsersQuantites($appelOffreGroup, $codeUnique);
-        $this->notifyProdUsers($appelOffreGroup, $codeUnique);
+            // Vérifier si l'appelOffreGroup est valide
+            if (!$appelOffreGroup || !$codeUnique) {
+                Log::error('AppelOffreGroup invalide', [
+                    'id' => $appelOffreGroup->id ?? 'non défini'
+                ]);
+                return;
+            }
 
-        $difference = 'appelOffreGrouper';
-        $AppelOffreGrouper_id = $appelOffreGroup->id;
-        $this->startCountdown($this->generateUniqueReference(), $difference, $AppelOffreGrouper_id, $countdowns);
+            // Notifications aux utilisateurs
+            $this->notifyUsersQuantites($appelOffreGroup, $codeUnique);
+            $this->notifyProdUsers($appelOffreGroup, $codeUnique);
 
-        // Créer un nouveau countdown pour l'AppelOffreGroup
-        Countdown::create([
-            'user_id' => $countdowns->where('code_unique', $codeUnique)->pluck('user_id')->unique()->first(),
-            'userSender' => null,
-            'start_time' => $this->timestamp,
-            'code_unique' => $this->generateUniqueReference(),
-            'difference' => 'appelOffreGrouper',
-            'AppelOffreGrouper_id' => $appelOffreGroup->id,
-        ]);
+            $difference = 'appelOffreGrouper';
+            $AppelOffreGrouper_id = $appelOffreGroup->id;
 
-        // Marquer les Countdown liés comme notifiés
-        $this->markCountdownsAsNotified($countdowns, $codeUnique);
-        $this->markAppelOffreAsNotified($appelOffreGroup);
+            // Générer un code unique et démarrer le countdown
+            $newCodeUnique = $this->generateUniqueReference();
+            $this->startCountdown($newCodeUnique, $difference, $AppelOffreGrouper_id, $countdowns);
+
+            // Marquer comme notifié
+            $this->markCountdownsAsNotified($countdowns, $codeUnique);
+            $this->markAppelOffreAsNotified($appelOffreGroup);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur dans processAppelOffreGroup', [
+                'appelOffreGroup_id' => $appelOffreGroup->id ?? 'non défini',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
     public function startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $countdowns)
     {
@@ -134,8 +151,6 @@ class AppeloffreCountdown extends Command
         foreach ($countdownsToUpdate as $countdown) {
             $countdown->update(['notified' => true]);
         }
-
-        Log::info('Countdowns marqués comme notifiés:', $countdownsToUpdate->toArray());
     }
     protected function generateUniqueReference()
     {
@@ -143,43 +158,12 @@ class AppeloffreCountdown extends Command
     }
     public function timeServer()
     {
-        // Faire plusieurs tentatives de récupération pour plus de précision
-        $attempts = 3;
-        $times = [];
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
 
-        for ($i = 0; $i < $attempts; $i++) {
-            // Récupération de l'heure via le service
-            $currentTime = $this->recuperationTimer->getTime();
-            if ($currentTime) {
-                $times[] = $currentTime;
-            }
-            // Petit délai entre chaque tentative
-            usleep(50000); // 50ms
-        }
-
-        if (empty($times)) {
-            // Si aucune tentative n'a réussi, utiliser l'heure système
-            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
-            $this->time = now()->timestamp * 1000;
-        } else {
-            // Utiliser la médiane des temps récupérés pour plus de précision
-            sort($times);
-            $medianIndex = floor(count($times) / 2);
-            $this->time = $times[$medianIndex];
-            $this->error = null;
-        }
-
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
-
-        // Log pour debug
-        Log::info('Timer actualisé', [
-            'timestamp' => $this->timestamp,
-            'time_ms' => $this->time,
-            'attempts' => count($times)
-        ]);
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
     }
     private function notifyUsersQuantites($appelOffreGroup, $codeUnique)
     {
@@ -208,9 +192,6 @@ class AppeloffreCountdown extends Command
         $prodUsers = $appelOffreGroup->prodUsers;
 
         if (!$prodUsers) {
-            Log::warning('Aucun prodUser trouvé pour cet appel d\'offre', [
-                'code_unique' => $codeUnique,
-            ]);
             return;
         }
 

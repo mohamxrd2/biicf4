@@ -13,6 +13,7 @@ use App\Notifications\CountdownNotificationAg;
 use App\Notifications\CountdownNotificationAp;
 use App\Notifications\NegosTerminer;
 use App\Notifications\Confirmation;
+use App\Services\TimeSync\TimeSyncService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +26,9 @@ class CheckCountdowns extends Command
     protected $signature = 'check:countdowns';
     protected $description = 'Check countdowns and send notifications if time is up';
     private $recuperationTimer;
+    public $time;
+    public $error;
+    public $timestamp;
 
     public function __construct(RecuperationTimer $recuperationTimer)
     {
@@ -37,10 +41,10 @@ class CheckCountdowns extends Command
         DB::beginTransaction();
 
         try {
-            // Récupérer l'heure du serveur
-            $serverTime = Carbon::createFromTimestamp(
-                intval($this->recuperationTimer->getTime() / 1000)
-            )->subMinutes(2);
+            // Utiliser TimeSyncService pour l'heure du serveur
+            $timeSync = new TimeSyncService($this->recuperationTimer);
+            $result = $timeSync->getSynchronizedTime();
+            $serverTime = $result['timestamp']->subMinutes(2);
 
             $countdowns = Countdown::where('notified', false)
                 ->where('start_time', '<=', $serverTime)
@@ -83,9 +87,7 @@ class CheckCountdowns extends Command
                 $this->cleanUp($codeUnique);
                 $countdown->update(['notified' => true]);
             }
-        } else {
-            Log::warning('Aucun commentaire trouvé pour ce countdown.', ['code_unique' => $codeUnique]);
-        }
+        };
     }
 
     private function getLowestPriceComment($codeUnique)
@@ -96,7 +98,14 @@ class CheckCountdowns extends Command
             ->orderBy('created_at', 'asc')
             ->first();
     }
-
+    public function timeServer()
+    {
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
+    }
     private function getHighestPriceComment($codeUnique)
     {
         return Comment::with('user')
@@ -125,36 +134,54 @@ class CheckCountdowns extends Command
 
     private function sendNotificationBasedOnType($countdown, $commentToUse, $details)
     {
-        $difference = $countdown->difference;
+        try {
+            $difference = $countdown->difference;
 
-        switch ($difference) {
-            case 'appelOffreGrouper':
-                $this->sendGroupedOfferNotification($commentToUse, $details);
-                break;
+            if (!$commentToUse || !$commentToUse->user) {
+                Log::warning('Commentaire ou utilisateur manquant pour la notification', [
+                    'countdown_id' => $countdown->id,
+                    'difference' => $difference
+                ]);
+                return;
+            }
 
-            case 'enchere':
-                $this->sendEnchereNotification($commentToUse, $details);
-                break;
+            switch ($difference) {
+                case 'appelOffreGrouper':
+                    $this->sendGroupedOfferNotification($commentToUse, $details);
+                    break;
 
-            case 'ad':
-                $this->sendAdNotification($countdown, $details);
-                break;
+                case 'enchere':
+                    $this->sendEnchereNotification($commentToUse, $details);
+                    break;
 
+                case 'ad':
+                    $this->sendAdNotification($countdown, $details);
+                    break;
 
-            case 'appelOffreD':
-            case 'appelOffreR':
-                $this->sendSingleOfferNotification($countdown, $commentToUse, $details);
-                break;
+                case 'appelOffreD':
+                case 'appelOffreR':
+                    $this->sendSingleOfferNotification($countdown, $commentToUse, $details);
+                    break;
 
-            default:
-                Log::warning('Type de notification inconnu.', ['difference' => $difference]);
+                default:
+                    Log::warning('Type de notification inconnu.', [
+                        'difference' => $difference,
+                        'countdown_id' => $countdown->id
+                    ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi de la notification', [
+                'countdown_id' => $countdown->id,
+                'difference' => $difference,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
         }
     }
 
     private function sendGroupedOfferNotification($commentToUse, $details)
     {
         Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
-        Log::info('Notification "appelOffreGrouper" envoyée.', ['user_id' => $commentToUse->user->id]);
     }
 
     private function sendEnchereNotification($commentToUse, $details)
@@ -165,7 +192,6 @@ class CheckCountdowns extends Command
         $details['idProd'] = $commentToUse->id_prod ?? null;
 
         Notification::send($commentToUse->user, new NegosTerminer($details));
-        Log::info('Notification "offredirect" envoyée.', ['user_id' => $commentToUse->user->id]);
     }
 
 
@@ -181,14 +207,7 @@ class CheckCountdowns extends Command
             ->first();
         if ($notification) {
             $notification->update(['type_achat' => 'Delivery']);
-            Log::info('Notification mise à jour avec succès', ['notification_id' => $notification->id]);
-        } else {
-            Log::warning('Aucune notification trouvée pour le countdown', ['countdown_id' => $countdown->id]);
         }
-
-
-
-
 
         // Étape 2 : Récupérer le commentaire avec le prix le plus bas
         $lowestPriceComment = $this->getLowestPriceComment($countdown->code_unique); // On passe le code_unique depuis $commentToUse
@@ -202,11 +221,6 @@ class CheckCountdowns extends Command
             // Envoyer la notification avec les détails mis à jour
             Notification::send($lowestPriceComment->user, new Confirmation($details));
             // event(new NotificationSent($lowestPriceComment->sender));
-        } else {
-            Log::warning('Aucun commentaire avec le prix le plus bas trouvé.', [
-                'code_unique' => $countdown->code_unique,
-                'details' => $details,
-            ]);
         }
     }
 
@@ -215,7 +229,6 @@ class CheckCountdowns extends Command
         $details['id_trader'] = $commentToUse->id_trader ?? null;
 
         Notification::send($commentToUse->user, new AppelOffreTerminer($details));
-        Log::info('Commentaires sent to .', ['user trader' => $commentToUse->user]);
         // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
         $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
 
@@ -236,6 +249,5 @@ class CheckCountdowns extends Command
     private function cleanUp($codeUnique)
     {
         Comment::where('code_unique', $codeUnique)->delete();
-        Log::info('Commentaires supprimés.', ['code_unique' => $codeUnique]);
     }
 }

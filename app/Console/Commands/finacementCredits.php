@@ -39,25 +39,22 @@ class finacementCredits extends Command
     {
         // Récupérer la date actuelle
         $dateActuelle = Carbon::today();
-        Log::info('Date actuelle récupérée: ' . $dateActuelle);
 
         // Récupérer les credits où 'count' est égal à true et dont la date de fin est passée
         $credits = DemandeCredi::where('count', true)
             ->whereDate('date_fin', '<', $dateActuelle)
             ->where('status',  'en cours') // Exclure ceux dont le statut est 'terminer'
-            ->where('type_financement','offre-composite')
+            ->where('type_financement', 'offre-composite')
             ->whereNotNull('bailleur')
             ->where('type_financement', 'offre-composite')
             ->get();
 
-        Log::info('credits récupérés groupe: ' . $credits->count() . ' credits');
 
         // Tableau pour stocker les résultats
         $resultatsInvestisseurs = [];
 
         // Parcourir les credits sélectionnés pour remplir la nouvelle table
         foreach ($credits as $credit) {
-            Log::info('Traitement du remplissement de table credit ID: ' . $credit->id . ' pour l\'utilisateur ID: ' . $credit->id_user);
 
             // Récupérer les montants financés par chaque investisseur pour le credit en sommant les montants si plusieurs enregistrements existent
             $investissements = AjoutMontant::where('id_demnd_credit', $credit->id)
@@ -65,7 +62,6 @@ class finacementCredits extends Command
                 ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
                 ->get();
 
-            Log::info('Investissements associés au credit ID ' . $credit->id . ': ' . $investissements->count() . ' investisseurs (somme totale par investisseur)');
 
             // Parcourir les investissements pour chaque investisseur dans le credit
             foreach ($investissements as $investissement) {
@@ -75,8 +71,6 @@ class finacementCredits extends Command
                     'investisseur_id' => $investissement->id_invest,
                     'montant_finance' => $investissement->total_montant, // Montant total financé par cet investisseur
                 ];
-
-                Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le credit ID: ' . $credit->id);
             }
 
             // Insertion dans la table projets_accordés
@@ -86,13 +80,10 @@ class finacementCredits extends Command
                 $debut = Carbon::parse($credit->date_fin);
                 $durer = Carbon::parse($credit->duree);
                 $jours = $debut->diffInDays($durer);
-                Log::info('nbre date:' . $jours);
 
                 $montantComission = $credit->montant  * 0.01;
                 $montantTotal = $credit->montant  * (1 + $credit->taux / 100) + $montantComission;
-                $portion_journaliere =($jours > 0) ? ($montantTotal + $montantComission)  / $jours : 0;
-
-                Log::info('credit user ID: ' . $credit->id_user);
+                $portion_journaliere = ($jours > 0) ? ($montantTotal + $montantComission)  / $jours : 0;
 
                 $creditGrp = credits_groupé::create([
                     'emprunteur_id' => $credit->id_user, // Assurez-vous que la relation est bien définie
@@ -110,8 +101,6 @@ class finacementCredits extends Command
                 // Après avoir inséré toutes les informations pour un demande_id donné,
                 // mettre à jour le statut de tous les crédits ayant le même demande_id à "terminer".
                 DemandeCredi::where('demande_id', $credit->demande_id)->update(['status' => 'terminer']);
-
-                Log::info('credit ID: ' . $credit->id . ' inséré dans la table projets_accordés');
             } catch (Exception $e) {
                 Log::error('Erreur lors de l\'insertion du credit ID ' . $credit->id . ' dans la table projets_accordés: ' . $e->getMessage());
             }
@@ -127,10 +116,7 @@ class finacementCredits extends Command
                     'statut' => 'en cours',  // Statut du remboursement
                     'description' => $credit->objet_financement,  // Statut du remboursement
                 ]);
-                Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le credit ID: ' . $credit->id);
             }
         }
-
-        Log::info('Traitement des credits terminé. Nombre total de résultats d\'investisseurs: ' . count($resultatsInvestisseurs));
     }
 }

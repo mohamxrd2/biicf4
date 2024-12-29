@@ -27,8 +27,8 @@ class creditCountdown extends Command
             ->where('start_time', '<=', now()->subMinutes(1))
             ->get();
 
-        // Log pour vérifier le nombre de countdowns récupérés
-        Log::info('Nombre de countdowns récupérés : ', ['countdown_count' => $countdowns->count()]);
+
+
 
         foreach ($countdowns as $countdown) {
             // Traitement spécifique en fonction de la différence
@@ -48,15 +48,7 @@ class creditCountdown extends Command
 
                 // Vérifier si un commentaire avec le taux le plus bas a été trouvé
                 if ($lowestTauxComment) {
-                    Log::info('Commentaire avec le taux le plus bas récupéré.', [
-                        'comment_taux_id' => $lowestTauxComment->id,
-                        'taux' => $lowestTauxComment->taux,
-                    ]);
-
                     if ($countdown->difference === 'credit_taux') {
-                        Log::info('Préparation des détails de la notification.', [
-                            'countdown_id' => $countdown->id,
-                        ]);
 
                         $taux = $lowestTauxComment->taux;
                         $id_invest = $lowestTauxComment->id_invest;
@@ -84,8 +76,7 @@ class creditCountdown extends Command
                             'type_financement' => $credit->type_financement,
                         ];
 
-                        // Récupérer l'utilisateur (investisseur)
-                        Log::info('Début du traitement pour l\'investisseur.', ['id_invest' => $id_invest]);
+
                         $owner = User::find($id_invest);
                         if (!$owner) {
                             Log::warning('Utilisateur introuvable.', ['id_invest' => $id_invest]);
@@ -96,7 +87,6 @@ class creditCountdown extends Command
 
                         // Vérifier si le décodage a produit un tableau valide
                         if (!is_array($investisseurs)) {
-                            Log::warning('La liste des investisseurs n\'est pas un tableau valide.', ['id_investisseurs' => $credit->id_investisseurs]);
                             $investisseurs = []; // Initialiser un tableau vide en cas de problème
                         } else {
                             Log::info('Liste des investisseurs décodée avec succès.', ['investisseurs' => $investisseurs]);
@@ -104,31 +94,22 @@ class creditCountdown extends Command
 
 
                         // Exclure l'investisseur courant ($id_invest)
-                        Log::info('Exclusion de l\'investisseur courant.', ['id_invest' => $id_invest]);
                         $investisseurs = array_filter($investisseurs, function ($investisseur) use ($id_invest) {
                             return $investisseur != $id_invest; // Utiliser != pour éviter un problème de comparaison
                         });
 
                         // Réindexer les clés
                         $investisseurs = array_values($investisseurs);
-                        Log::info('Liste des investisseurs après exclusion et réindexation.', ['investisseurs' => $investisseurs]);
 
                         // Récupérer les informations sur le montant
                         $gelement = gelement::where('reference_id', $ID)->first();
                         if ($gelement) {
                             $montant = $gelement->amount;
-                            Log::info('Montant récupéré pour le gelement.', ['reference_id' => $ID, 'amount' => $montant]);
                         } else {
                             $montant = 0;
                             Log::warning('Aucun gelement trouvé pour la référence.', ['reference_id' => $ID]);
                         }
 
-                        // Dernier log pour vérifier la fin du traitement
-                        Log::info('Fin du traitement pour l\'investisseur.', [
-                            'id_invest' => $id_invest,
-                            'investisseurs_final' => $investisseurs,
-                            'montant' => $montant
-                        ]);
 
                         // Vérifier que l'utilisateur existe avant d'envoyer la notification
                         if ($owner) {
@@ -136,10 +117,6 @@ class creditCountdown extends Command
 
                             // Envoi de la notification
                             Notification::send($owner, new GagnantProjetNotifications($details));
-                            Log::info('Notification envoyée à l\'investisseur principal.', [
-                                'user_id' => $id_invest,
-                                'notification_details' => $details,
-                            ]);
 
                             // Mise à jour des portefeuilles des autres investisseurs
                             foreach ($investisseurs as $investisseur) {
@@ -147,10 +124,7 @@ class creditCountdown extends Command
 
                                 if ($userWallet) {
                                     $userWallet->increment('balance', $montant);
-                                    Log::info('Portefeuille mis à jour.', [
-                                        'user_id' => $investisseur,
-                                        'montant_ajouté' => $montant,
-                                    ]);
+
 
                                     // Création de la transaction
                                     $this->createTransactionNew(
@@ -162,12 +136,6 @@ class creditCountdown extends Command
                                         $referenceId,
                                         'Restitution d\'argent'
                                     );
-                                    Log::info('Transaction créée.', [
-                                        'from' => $credit->id_user,
-                                        'to' => $investisseur,
-                                        'montant' => $montant,
-                                        'reference' => $referenceId,
-                                    ]);
                                     // Mettre à jour l'état du countdown après la notification
                                 } else {
                                     Log::warning('Portefeuille non trouvé pour un investisseur.', ['user_id' => $investisseur]);

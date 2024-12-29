@@ -38,30 +38,18 @@ class RappelPortionsJournalProjets extends Command
     {
         // Date du jour
         $dateDuJour = Carbon::today()->toDateString();
-        Log::info('Date du jour : ' . $dateDuJour);
 
         // Récupérer tous les crédits
         $projets = projets_accordé::where('statut', 'en cours')->orderBy('id')->get();
-        Log::info('Nombre de projets avec statut "en cours" : ' . $projets->count());
 
         foreach ($projets as $projet) {
-            Log::info('Projet ID : ' . $projet->id . ' - Emprunteur ID : ' . $projet->emprunteur_id);
-
             // Vérifier si la date du jour est entre la date de début et la date de fin du crédit
             if ($dateDuJour <= $projet->date_fin) {
-                Log::info("Traitement du projet ID : " . $projet->id . '$projet->date_debut : ' . $projet->date_debut . ' - $projet->date_fin : ' . $projet->date_fin);
-
 
                 $portionCapital = $projet->montant;
                 $portionInteret = $projet->taux_interet;
 
                 $montantTotal = $projet->portion_journaliere;
-
-                Log::info("Montants récupérés pour le crédit ID: " . $projet->id, [
-                    'portion_capital' => $portionCapital,
-                    'portion_interet' => $portionInteret,
-                    'montant_total' => $montantTotal
-                ]);
 
                 $wallet = Wallet::where('user_id', $projet->emprunteur_id)->first();
                 $crp = Crp::where('id_wallet', $wallet->id)->first();
@@ -78,7 +66,7 @@ class RappelPortionsJournalProjets extends Command
                     if ($balanceSuffisante) {
                         // Récupérer l'emprunteur associé au crédit
                         $emprunteur = User::find($projet->emprunteur_id);
-                        Log::info('emprunteur ID : ' . $projet->emprunteur_id);
+
                         if (!$emprunteur) {
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $projet->id);
                         }
@@ -108,9 +96,6 @@ class RappelPortionsJournalProjets extends Command
 
                         $projet->save();
 
-
-                        Log::info("Début de la transaction pour l'utilisateur ID: " . $projet->emprunteur_id);
-
                         $this->remboursement(
                             $projet->id,
                             $this->generateIntegerReference(),
@@ -125,7 +110,6 @@ class RappelPortionsJournalProjets extends Command
 
 
                         Notification::send($emprunteur, new PortionJournaliere($projet, $portionCapital, $portionInteret));
-                        Log::info('Notification envoyée pour le crédit ID : ' . $projet->id);
 
                         // Après l'envoi de la notification
                         event(new NotificationSent($emprunteur));
@@ -133,7 +117,6 @@ class RappelPortionsJournalProjets extends Command
                     } elseif ($wallet->balance < $montantTotal) {
                         // Récupérer l'emprunteur associé au crédit
                         $emprunteur = User::find($projet->emprunteur_id);
-                        Log::info('emprunteur ID : ' . $projet->emprunteur_id);
                         if (!$emprunteur) {
                             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $projet->id);
                         }
@@ -142,8 +125,6 @@ class RappelPortionsJournalProjets extends Command
 
                         // Après l'envoi de la notification
                         event(new NotificationSent($emprunteur));
-
-                        Log::info('Notification envoyée pour solde insuffisant.');
                     }
 
                     DB::commit();
@@ -181,8 +162,6 @@ class RappelPortionsJournalProjets extends Command
             }
         }
 
-        // Log des IDs des investisseurs
-        Log::info('Liste des IDs des investisseurs : ' . implode(', ', $investisseursIds));
 
         DB::beginTransaction();
         try {
@@ -194,14 +173,6 @@ class RappelPortionsJournalProjets extends Command
                     $ancienSoldeCrp = $crp->Solde;
                     $crp->Solde -= $projet->montant;
                     $crp->save();
-
-                    // Log de la mise à jour
-                    Log::info('Mise à jour de la table CRP', [
-                        'id_wallet' => $wallet->id,
-                        'ancien_solde' => $ancienSoldeCrp,
-                        'nouveau_solde' => $crp->Solde,
-                        'montant_débité' => $projet->montant
-                    ]);
                 }
             } else {
                 Log::warning('Aucun enregistrement trouvé dans CRP pour id_wallet', [
@@ -212,27 +183,17 @@ class RappelPortionsJournalProjets extends Command
             $montantTotalInvestisseurs = array_sum($investisseursMontants); // Total envoyé aux investisseurs
 
             foreach ($investisseursMontants as $id => $montant) {
-                // Log de l'opération
-                Log::info("Investisseur ID $id a financé : $montant");
+
+
 
                 // Mise à jour de la table COI
                 $walletInvestisseurs = Wallet::where('user_id', $id)->first();
-                Log::info('wallet de l\'investisseur', [
-                    'id_wallet' => $walletInvestisseurs->id,
-
-                ]);
 
                 // Mise à jour de la table COI
                 $coi = Coi::where('id_wallet', $walletInvestisseurs->id)->first();
                 if ($coi) {
                     $coi->Solde += $montant;
                     $coi->save();
-                    // Log de la mise à jour
-                    Log::info('Mise à jour de la table CRP', [
-                        'id_wallet' => $walletInvestisseurs->id,
-                        'nouveau_solde' => $coi->Solde,
-                        'montant_débité' => $montant
-                    ]);
                 }
 
                 $this->createTransaction(
@@ -261,7 +222,7 @@ class RappelPortionsJournalProjets extends Command
 
                 // Envoi de la notification
                 $investisseur = User::find($id);
-                Log::info('Investisseur ID : ' . $id);
+
                 if (!$investisseur) {
                     throw new Exception("Investisseur non trouvé pour le crédit ID : " . $projet->id);
                 }
@@ -282,12 +243,6 @@ class RappelPortionsJournalProjets extends Command
                         // Ajouter le montant restant à l'administrateur
                         $walletAdmin->balance += $montantRestant;
                         $walletAdmin->save();
-
-                        // Log de la mise à jour
-                        Log::info('Montant restant envoyé à l\'administrateur', [
-                            'admin_id' => $admin->id,
-                            'montant' => $montantRestant
-                        ]);
 
                         // Créer une transaction vers l'administrateur
                         $this->createTransactionAdmin(

@@ -38,7 +38,6 @@ class finacementProjetAccorde extends Command
     {
         // Récupérer la date actuelle
         $dateActuelle = Carbon::today();
-        Log::info('Date actuelle récupérée: ' . $dateActuelle);
 
         // Récupérer les projets où 'count' est égal à true et dont la date de fin est passée
         $projets = Projet::where('count', true)
@@ -47,29 +46,18 @@ class finacementProjetAccorde extends Command
             ->where('type_financement', 'groupé')
             ->get();
 
-        Log::info('Projets récupérés: ' . $projets->count() . ' projets');
-
         // Tableau pour stocker les résultats
         $resultatsInvestisseurs = [];
         $actionsData = [];
 
         // Parcourir les projets sélectionnés pour remplir la nouvelle table
         foreach ($projets as $projet) {
-            Log::info('Traitement du projet ID: ' . $projet->id);
-
-            // Enregistre une confirmation dans les logs
-            Log::info('Projet mis à jour avec succès', [
-                'id' => $projet->id,
-                'nouvel_etat' => $projet->etat,
-            ]);
 
             // Récupérer les montants financés par chaque investisseur pour le projet en sommant les montants si plusieurs enregistrements existent
             $investissements = AjoutMontant::where('id_projet', $projet->id)
                 ->select('id_invest', DB::raw('SUM(montant) as total_montant'))
                 ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
                 ->get();
-
-            Log::info('Investissements associés au projet ID ' . $projet->id . ': ' . $investissements->count() . ' investisseurs (somme totale par investisseur)');
 
             // Parcourir les investissements pour chaque investisseur dans le projet
             foreach ($investissements as $investissement) {
@@ -79,9 +67,6 @@ class finacementProjetAccorde extends Command
                     'investisseur_id' => $investissement->id_invest,
                     'montant_finance' => $investissement->total_montant, // Montant total financé par cet investisseur
                 ];
-
-                // Log des informations sur chaque investisseur et son montant total financé
-                Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
 
             //Vérifier si des actions ont été prises pour le même projet dans la table AjoutAction
@@ -90,13 +75,11 @@ class finacementProjetAccorde extends Command
                 ->groupBy('id_invest') // Regroupe par id_invest pour sommer les montants multiples
                 ->get();
 
-            Log::info('Investissements associés aux actions pour le projet ID ' . $projet->id . ': ' . $actions->count() . ' investisseurs (somme totale par investisseur)');
 
             // Si des actions existent, les ajouter à un tableau JSON
             if ($actions->count() > 0) {
 
                 foreach ($actions as $action) {
-                    Log::info('Investisseur ID: ' . $action->id_invest . ' a financé un total de ' . $action->total_montant . ' avec ' . $action->nombre_actions . ' actions pour le projet ID: ' . $projet->id);
 
                     // Ajouter chaque action au tableau avec des informations pertinentes
                     $actionsData[] = [
@@ -114,13 +97,11 @@ class finacementProjetAccorde extends Command
                 $debut = Carbon::parse($projet->date_fin);
                 $durer = Carbon::parse($projet->duree);
                 $jours = $debut->diffInDays($durer);
-                Log::info('nbre date:' . $jours);
 
                 $montantComission = $projet->montant  * 0.01;
                 $montantTotal = ($projet->montant  * (1 + $projet->taux / 100)) + $montantComission;
                 $portion_journaliere = ($jours > 0) ? ($montantTotal + $montantComission)  / $jours : 0;
 
-                Log::info('projet user ID: ' . $projet->id_user);
 
                 projets_accordé::create([
                     'emprunteur_id' => $projet->id_user, // Assurez-vous que la relation est bien définie
@@ -136,8 +117,6 @@ class finacementProjetAccorde extends Command
                     'statut' => 'en cours',
                     'description' => $projet->name,
                 ]);
-
-                Log::info('Projet ID: ' . $projet->id . ' inséré dans la table projets_accordés');
             } catch (Exception $e) {
                 Log::error('Erreur lors de l\'insertion du projet ID ' . $projet->id . ' dans la table projets_accordés: ' . $e->getMessage());
             }
@@ -153,7 +132,6 @@ class finacementProjetAccorde extends Command
                     'statut' => 'en cours',  // Statut du remboursement
                     'description' => $projet->objet_financement,  // Statut du remboursement
                 ]);
-                Log::info('Investisseur ID: ' . $investissement->id_invest . ' a financé un total de ' . $investissement->total_montant . ' pour le projet ID: ' . $projet->id);
             }
 
             // Mise à jour de l'état du projet
@@ -161,8 +139,5 @@ class finacementProjetAccorde extends Command
             $projet->update(['etat' => 'terminer']);  // Met à jour l'état du projet
 
         }
-
-        // Log de fin de traitement
-        Log::info('Traitement des projets terminé. Nombre total de résultats d\'investisseurs: ' . count($resultatsInvestisseurs));
     }
 }
