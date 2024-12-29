@@ -97,6 +97,8 @@ class AjoutProduitServices extends Component
     public $countries = [];
     public $user;
 
+    public $isSubmitting = false;
+
     public function mount()
     {
         // Récupère toutes les catégories
@@ -199,6 +201,11 @@ class AjoutProduitServices extends Component
     }
     public function submit()
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
+        $this->isSubmitting = true;
 
         $this->validate([
             'categorie' => 'required|string',
@@ -312,6 +319,8 @@ class AjoutProduitServices extends Component
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'ajout du produit ou service: ' . $e->getMessage());
             session()->flash('error', 'Une erreur est survenue lors de l\'ajout du produit ou service.');
+        } finally {
+            $this->isSubmitting = false;
         }
     }
     // Méthode pour réinitialiser les champs du formulaire

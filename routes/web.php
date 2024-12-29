@@ -142,14 +142,9 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
         TestQueueJob::dispatch();
         return 'Job dispatché !';
     });
-    //accepter ou refuser la cmmande
-    // Route::post('notification/accepter', [AchatDirectController::class, 'accepter'])->name('achatD.accepter');
-    // Route::post('notification/refuser', [AchatDirectController::class, 'refuser'])->name('achatD.refuser');
 
 
     // routes/web.php
-    Route::post('notification/acceptergroupe', [AchatGroupController::class, 'accepter'])->name('achatG.accepter');
-    Route::post('notification/refusergroupe', [AchatGroupController::class, 'refuser'])->name('achatG.refuser');
     Route::get('publication', [ProduitServiceController::class, 'postBiicf'])->name('biicf.post');
     Route::post('publication/ajouter', [UserController::class, 'storePub'])->name('biicf.pubstore');
     Route::delete('publication/supprimer/{produit}', [ProduitServiceController::class, 'destroyProductBiicf'])->name('biicf.pubdeleteBiicf');
@@ -186,23 +181,6 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('formumelaire-appel-offre/store', [AppelOffreController::class, 'storeAppel'])->name('biicf.formstore');
     Route::post('formumelaire-appel-offre/comment', [AppelOffreController::class, 'comment'])->name('biicf.comment');
     Route::post('formumelaire-appel-offregroupe/store', [AppelOffreController::class, 'formstoreGroupe'])->name('biicf.formstoreGroupe');
-
-    // Route pour afficher les détails de l'offre et ajouter des quantités
-    // Route::get('formumelaire-appel-offregroupe/{id}', [AppelOffreController::class, 'detailoffre'])->name('biicf.detailoffre');
-
-    // Route pour stocker l'ajout de quantités à l'offre
-    // Route::post('formumelaire-appel-offregroupe/storeoffre', [AppelOffreController::class, 'storeoffre'])->name('biicf.storeoffre');
-
-    // Route::post('offreClient/store', [OffreClientControllerr::class, 'sendoffre'])->name('biicf.sendoffre');
-
-    // Route::post('offregroupClient/store', [OffreGroupClientController::class, 'sendoffGrp'])->name('biicf.sendoffregrp');
-    // Route::post('offregroupClient/comment', [OffreGroupClientController::class, 'commentoffgroup'])->name('biicf.offgrpcomment');
-
-    // Route::post('offreneg/store', [OffreNegos::class, 'store'])->name('biicf.sendoffreneg');
-    // Route::post('offreneg/ajouter', [OffreNegos::class, 'add'])->name('biicf.addquantity');
-    // Route::post('offreneg/accepeter', [OffreNegos::class, 'accepter'])->name('biicf.offNAccept');
-
-    // Route::post('offrenegroup', [OffreNegos::class, 'offregroupneg'])->name('biicf.offregroupneg');
 
     Route::get('postuler', function () {
         return view('biicf.postuler');

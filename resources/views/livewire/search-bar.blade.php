@@ -93,7 +93,7 @@
                             Réinitialiser les filtres
                         </button>
 
-                        <button 
+                        <button
                             class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700
                     text-white text-sm font-medium rounded-lg transition-colors duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

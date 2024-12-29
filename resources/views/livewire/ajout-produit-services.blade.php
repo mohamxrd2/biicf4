@@ -114,7 +114,7 @@
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-700">Conditionnement</label>
                                 <input type="text" wire:model='conditionnement' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex:sac,sachet...">
                                 @error('conditionnement')
                                     <span class="text-sm text-red-500">{{ $message }}</span>
                                 @enderror
@@ -123,7 +123,7 @@
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-700">Format</label>
                                 <input type="text" wire:model='format' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Indiquez le format du produit">
                                 @error('format')
                                     <span class="text-sm text-red-500">{{ $message }}</span>
                                 @enderror
@@ -132,7 +132,7 @@
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-700">Particularité</label>
                                 <input type="text" wire:model='particularite' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
+                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Precicez la particularité du produit">
                                 @error('particularite')
                                     <span class="text-sm text-red-500">{{ $message }}</span>
                                 @enderror
@@ -276,10 +276,16 @@
                             @error('photoProd1')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
-                            @if ($photoProd1 && is_string($photoProd1))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ asset('post/all/' . $photoProd1) }}">
-                                <input type="hidden" name="photo1" value="{{ $photoProd1 }}">
+
+                            <!-- Prévisualisation Image 1 -->
+                            @if ($photoProd1)
+                                <div class="mt-2">
+                                    @if (is_string($photoProd1))
+                                        <img src="{{ asset('post/all/' . $photoProd1) }}" class="w-full h-32 object-cover rounded-md">
+                                    @else
+                                        <img src="{{ $photoProd1->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                    @endif
+                                </div>
                             @endif
                         </div>
 
@@ -293,10 +299,15 @@
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
 
-                            @if ($photoProd2 && is_string($photoProd2))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ asset('post/all/' . $photoProd2) }}">
-                                <input type="hidden" name="photo2" value="{{ $photoProd2 }}">
+                            <!-- Prévisualisation Image 2 -->
+                            @if ($photoProd2)
+                                <div class="mt-2">
+                                    @if (is_string($photoProd2))
+                                        <img src="{{ asset('post/all/' . $photoProd2) }}" class="w-full h-32 object-cover rounded-md">
+                                    @else
+                                        <img src="{{ $photoProd2->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                    @endif
+                                </div>
                             @endif
                         </div>
 
@@ -309,10 +320,16 @@
                             @error('photoProd3')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
-                            @if ($photoProd3 && is_string($photoProd3))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ asset('post/all/' . $photoProd3) }}">
-                                <input type="hidden" name="photo3" value="{{ $photoProd3 }}">
+
+                            <!-- Prévisualisation Image 3 -->
+                            @if ($photoProd3)
+                                <div class="mt-2">
+                                    @if (is_string($photoProd3))
+                                        <img src="{{ asset('post/all/' . $photoProd3) }}" class="w-full h-32 object-cover rounded-md">
+                                    @else
+                                        <img src="{{ $photoProd3->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                    @endif
+                                </div>
                             @endif
                         </div>
 
@@ -325,18 +342,40 @@
                             @error('photoProd4')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
-                            @if ($photoProd4 && is_string($photoProd4))
-                                <img class="object-cover w-full h-48 mt-5 rounded"
-                                    src="{{ asset('post/all/' . $photoProd4) }}">
-                                <input type="hidden" name="photo4" value="{{ $photoProd4 }}">
+
+                            <!-- Prévisualisation Image 4 -->
+                            @if ($photoProd4)
+                                <div class="mt-2">
+                                    @if (is_string($photoProd4))
+                                        <img src="{{ asset('post/all/' . $photoProd4) }}" class="w-full h-32 object-cover rounded-md">
+                                    @else
+                                        <img src="{{ $photoProd4->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                    @endif
+                                </div>
                             @endif
                         </div>
                     </div>
 
                     <!-- Boutons d'action -->
                     <div class="text-right">
-                        <button type="reset" class="p-2 text-white bg-red-500 rounded-md">Annuler</button>
-                        <button type="submit" class="p-2 text-white bg-green-500 rounded-md">Enregistrer</button>
+                        <button type="reset" class="p-2 text-white bg-red-500 rounded-md hover:bg-red-600">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                            wire:loading.attr="disabled"
+                            wire:target="submit"
+                            class="p-2 text-white bg-green-500 rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="submit">
+                                Enregistrer
+                            </span>
+                            <span wire:loading wire:target="submit">
+                                <svg class="inline w-4 h-4 mr-2 animate-spin" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Traitement en cours...
+                            </span>
+                        </button>
                     </div>
             </form>
         </div>

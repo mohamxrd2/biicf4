@@ -44,7 +44,7 @@ class CheckCountdowns extends Command
             // Utiliser TimeSyncService pour l'heure du serveur
             $timeSync = new TimeSyncService($this->recuperationTimer);
             $result = $timeSync->getSynchronizedTime();
-            $serverTime = $result['timestamp']->subMinutes(2);
+            $serverTime = $result['timestamp']->subMinutes(3);
 
             $countdowns = Countdown::where('notified', false)
                 ->where('start_time', '<=', $serverTime)
