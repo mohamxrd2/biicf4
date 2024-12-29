@@ -23,6 +23,7 @@ class SearchBar extends Component
     public $qte = '';
     public $prix = '';
     public $resultCount = 0;
+    public $error = null;
 
     protected $queryString = [
         'keyword' => ['except' => ''],
@@ -34,51 +35,95 @@ class SearchBar extends Component
 
     public function mount()
     {
-        $this->fill(request()->only('keyword', 'zone_economique', 'type', 'qte', 'prix'));
+        try {
+            $this->fill(request()->only('keyword', 'zone_economique', 'type', 'qte', 'prix'));
+        } catch (Exception $e) {
+            Log::error('Erreur lors du montage du composant', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->error = "Une erreur est survenue lors de l'initialisation des filtres.";
+        }
     }
 
-    public function updatedKeyword()
+    private function resetPage()
     {
-        $this->resetPage();
-    }
-
-    public function updatedZoneEconomique()
-    {
-        $this->resetPage();
-    }
-
-    public function updatedType()
-    {
-        $this->resetPage();
-    }
-
-    public function updatedQte()
-    {
-        $this->resetPage();
-    }
-
-    public function updatedPrix()
-    {
-        $this->resetPage();
+        try {
+            parent::resetPage();
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la réinitialisation de la page', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
     }
 
     public function resetFilters()
     {
-        $this->reset(['keyword', 'zone_economique', 'type', 'qte', 'prix']);
-        $this->resetPage();
-    }
-
-    public function applyFilters()
-    {
-        $this->resetPage();
+        try {
+            $this->reset(['keyword', 'zone_economique', 'type', 'qte', 'prix']);
+            $this->resetPage();
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la réinitialisation des filtres', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->error = "Une erreur est survenue lors de la réinitialisation des filtres.";
+        }
     }
 
     private function getStats()
     {
-        return [
-            'total_products' => ProduitService::where('statuts', 'Accepté')->count(),
-            'total_credits' => ProduitService::where('statuts', 'Accepté')->sum('prix'),
-        ];
+        try {
+            return [
+                'total_products' => ProduitService::where('statuts', 'Accepté')->count(),
+                'total_credits' => ProduitService::where('statuts', 'Accepté')->sum('prix'),
+            ];
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la récupération des statistiques', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [
+                'total_products' => 0,
+                'total_credits' => 0,
+            ];
+        }
+    }
+
+    private function applyKeywordFilter($query, $keyword)
+    {
+        try {
+            return $query->where(function($q) use ($keyword) {
+                $q->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
+                  ->orWhereRaw('LOWER(description) LIKE ?', ['%' . $keyword . '%']);
+            });
+        } catch (Exception $e) {
+            Log::error('Erreur lors du filtrage par mot-clé', [
+                'keyword' => $keyword,
+                'message' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    private function applyZoneFilter($query, $user, $userLocation, $zoneMap)
+    {
+        try {
+            if (isset($zoneMap[$this->zone_economique])) {
+                $zone = $zoneMap[$this->zone_economique];
+                return $query->whereHas('user', function($q) use ($zone) {
+                    $q->whereRaw("LOWER({$zone['field']}) = ?", [$zone['value']]);
+                });
+            }
+            return $query;
+        } catch (Exception $e) {
+            Log::error('Erreur lors du filtrage par zone', [
+                'zone' => $this->zone_economique,
+                'message' => $e->getMessage()
+            ]);
+            throw $e;
+        }
     }
 
     public function render()
@@ -91,82 +136,97 @@ class SearchBar extends Component
             // Filtrage par mot-clé
             if (!empty($this->keyword)) {
                 $keyword = strtolower(trim($this->keyword));
-                $query->where(function($q) use ($keyword) {
-                    $q->whereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%'])
-                      ->orWhereRaw('LOWER(description) LIKE ?', ['%' . $keyword . '%']);
-                });
+                $query = $this->applyKeywordFilter($query, $keyword);
             }
 
             // Filtrage par zone économique
             if (!empty($this->zone_economique) && auth()->check()) {
-                $user = auth()->user();
-                $userLocation = [
-                    'commune' => strtolower($user->commune),
-                    'ville' => strtolower($user->ville),
-                    'departement' => strtolower($user->departe),
-                    'pays' => strtolower($user->country),
-                    'sous_region' => strtolower($user->sous_region),
-                    'continent' => strtolower($user->continent),
-                ];
+                try {
+                    $user = auth()->user();
+                    $userLocation = [
+                        'commune' => strtolower($user->commune),
+                        'ville' => strtolower($user->ville),
+                        'departement' => strtolower($user->departe),
+                        'pays' => strtolower($user->country),
+                        'sous_region' => strtolower($user->sous_region),
+                        'continent' => strtolower($user->continent),
+                    ];
 
-                $zoneMap = [
-                    'proximite' => ['field' => 'commune', 'value' => $userLocation['commune']],
-                    'locale' => ['field' => 'ville', 'value' => $userLocation['ville']],
-                    'departementale' => ['field' => 'departement', 'value' => $userLocation['departement']],
-                    'nationale' => ['field' => 'pays', 'value' => $userLocation['pays']],
-                    'sous_regionale' => ['field' => 'sous_region', 'value' => $userLocation['sous_region']],
-                    'continentale' => ['field' => 'continent', 'value' => $userLocation['continent']],
-                ];
+                    $zoneMap = [
+                        'proximite' => ['field' => 'commune', 'value' => $userLocation['commune']],
+                        'locale' => ['field' => 'ville', 'value' => $userLocation['ville']],
+                        'departementale' => ['field' => 'departe', 'value' => $userLocation['departement']],
+                        'nationale' => ['field' => 'country', 'value' => $userLocation['pays']],
+                        'sous_regionale' => ['field' => 'sous_region', 'value' => $userLocation['sous_region']],
+                        'continentale' => ['field' => 'continent', 'value' => $userLocation['continent']],
+                    ];
 
-                if (isset($zoneMap[$this->zone_economique])) {
-                    $zone = $zoneMap[$this->zone_economique];
-                    $query->whereHas('user', function($q) use ($zone) {
-                        $q->whereRaw("LOWER({$zone['field']}) = ?", [$zone['value']]);
-                    });
+                    $query = $this->applyZoneFilter($query, $user, $userLocation, $zoneMap);
+                } catch (Exception $e) {
+                    Log::error('Erreur lors du filtrage par zone économique', [
+                        'message' => $e->getMessage()
+                    ]);
                 }
             }
 
-            // Filtrage par type
-            if (!empty($this->type)) {
-                $query->where('type', $this->type);
+            // Autres filtres avec gestion d'erreurs
+            try {
+                if (!empty($this->type)) {
+                    $query->where('type', $this->type);
+                }
+
+                if (!empty($this->prix)) {
+                    $query->where('prix', '<=', $this->prix);
+                }
+
+                if (!empty($this->qte)) {
+                    $query->where(function ($q) {
+                        $q->where('qteProd_min', '<=', $this->qte)
+                          ->where('qteProd_max', '>=', $this->qte);
+                    });
+                }
+            } catch (Exception $e) {
+                Log::error('Erreur lors de l\'application des filtres', [
+                    'message' => $e->getMessage()
+                ]);
             }
 
-            // Filtrage par prix
-            if (!empty($this->prix)) {
-                $query->where('prix', '<=', $this->prix);
+            // Pagination et comptage
+            try {
+                $produits = $query->paginate(12);
+                $this->resultCount = $produits->total();
+            } catch (Exception $e) {
+                Log::error('Erreur lors de la pagination', [
+                    'message' => $e->getMessage()
+                ]);
+                $produits = collect();
+                $this->resultCount = 0;
             }
-
-            // Filtrage par quantité
-            if (!empty($this->qte)) {
-                $query->where(function ($q) {
-                    $q->where('qteProd_min', '<=', $this->qte)
-                      ->where('qteProd_max', '>=', $this->qte);
-                });
-            }
-
-            // Pagination
-            $produits = $query->paginate(12);
-            $this->resultCount = $produits->total();
 
             // Recherches populaires
-            $popularSearches = SearchQuery::select('query', DB::raw('COUNT(*) as count'))
-                ->groupBy('query')
-                ->orderBy('count', 'desc')
-                ->limit(5)
-                ->get();
-
-            // Statistiques
-            $stats = $this->getStats();
+            try {
+                $popularSearches = SearchQuery::select('query', DB::raw('COUNT(*) as count'))
+                    ->groupBy('query')
+                    ->orderBy('count', 'desc')
+                    ->limit(5)
+                    ->get();
+            } catch (Exception $e) {
+                Log::error('Erreur lors de la récupération des recherches populaires', [
+                    'message' => $e->getMessage()
+                ]);
+                $popularSearches = collect();
+            }
 
             return view('livewire.search-bar', [
                 'produits' => $produits,
                 'resultCount' => $this->resultCount,
                 'popularSearches' => $popularSearches,
-                'stats' => $stats,
+                'stats' => $this->getStats(),
+                'error' => $this->error,
             ]);
 
         } catch (Exception $e) {
-            Log::error('Erreur lors de la recherche', [
+            Log::error('Erreur critique lors du rendu', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -176,6 +236,7 @@ class SearchBar extends Component
                 'resultCount' => 0,
                 'popularSearches' => collect(),
                 'stats' => $this->getStats(),
+                'error' => "Une erreur est survenue lors du chargement des résultats.",
             ]);
         }
     }

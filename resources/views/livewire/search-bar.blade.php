@@ -8,7 +8,7 @@
                 <div class="mx-8 w-full">
                     <div class="relative">
                         <input type="search" wire:model.live="keyword"
-                            class="w-full h-12 pl-12 pr-4 rounded-full border-2 border-purple-100 focus:border-purple-500 
+                            class="w-full h-12 pl-12 pr-4 rounded-full border-2 border-purple-100 focus:border-purple-500
                             focus:ring-2 focus:ring-purple-200 transition-all duration-200"
                             placeholder="Rechercher un produit ou service...">
                         <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
@@ -21,7 +21,7 @@
                     </div>
                 </div>
 
-                
+
             </div>
         </div>
 
@@ -32,7 +32,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {{-- Zone économique --}}
                     <select wire:model.live="zone_economique"
-                        class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500 
+                        class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                 focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200">
                         <option value="">Zone économique</option>
                         <option value="proximite">Proximité</option>
@@ -45,7 +45,7 @@
 
                     {{-- Type --}}
                     <select wire:model.live="type"
-                        class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500 
+                        class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                 focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200">
                         <option value="">Type</option>
                         <option value="Produit">Produit</option>
@@ -55,7 +55,7 @@
                     {{-- Quantité --}}
                     <div class="relative">
                         <input type="number" wire:model.live="qte"
-                            class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500 
+                            class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                     focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200"
                             placeholder="Quantité minimale">
                         <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
@@ -69,7 +69,7 @@
                     {{-- Prix --}}
                     <div class="relative">
                         <input type="number" wire:model.live="prix"
-                            class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500 
+                            class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                     focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200"
                             placeholder="Prix maximum">
                         <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
@@ -84,7 +84,7 @@
                     {{-- Boutons de filtrage optionnels --}}
                     <div class="md:col-span-4 flex flex-wrap gap-2 mt-2">
                         <button wire:click="resetFilters"
-                            class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 
+                            class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200
                     text-gray-800 text-sm font-medium rounded-lg transition-colors duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003
@@ -93,8 +93,8 @@
                             Réinitialiser les filtres
                         </button>
 
-                        <button wire:click="applyFilters"
-                            class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 
+                        <button 
+                            class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700
                     text-white text-sm font-medium rounded-lg transition-colors duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1
@@ -114,11 +114,11 @@
         @if ($resultCount == 0)
             {{-- État vide amélioré --}}
             <div class="flex flex-col items-center justify-center py-12">
-           
+
                 <h2 class="text-2xl font-bold text-gray-900 mb-2">Aucun résultat trouvé</h2>
                 <p class="text-gray-500 text-center max-w-md">
                     Essayez de modifier vos critères de recherche ou explorez d'autres catégories.
-                </p> 
+                </p>
             </div>
         @elseif ($keyword == '')
             {{-- Message de bienvenue --}}
@@ -156,17 +156,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @foreach ($produits as $produit)
                     <div
-                        class="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl 
+                        class="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl
                         transform transition-all duration-300 hover:-translate-y-1">
                         {{-- Image --}}
                         <div class="relative aspect-w-16 aspect-h-9">
                             <img src="{{ asset($produit->photoProd1 ? 'post/all/' . $produit->photoProd1 : 'img/noimg.jpeg') }}"
-                                class="w-full h-48 object-cover transform transition-transform duration-300 
+                                class="w-full h-48 object-cover transform transition-transform duration-300
                                 group-hover:scale-105"
                                 alt="{{ $produit->name }}">
                             <div class="absolute top-4 right-4">
                                 <div
-                                    class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full 
+                                    class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full
                                     shadow-lg flex items-center space-x-1">
                                     <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0
@@ -207,7 +207,7 @@
                                     {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}
                                 </span>
                                 <a href="{{ route('biicf.postdet', $produit->id) }}"
-                                    class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 
+                                    class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700
                                     text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                     Voir le produit
                                     <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24"
@@ -224,8 +224,16 @@
 
             {{-- Pagination --}}
             <div class="mt-12 flex justify-center">
-                {{ $produits->links() }}
+                @if ($produits instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                    {{ $produits->links() }}
+                @endif
             </div>
         @endif
     </main>
 </div>
+
+@if($error)
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <span class="block sm:inline">{{ $error }}</span>
+    </div>
+@endif
