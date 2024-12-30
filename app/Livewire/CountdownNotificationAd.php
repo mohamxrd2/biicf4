@@ -168,7 +168,7 @@ class CountdownNotificationAd extends Component
         }
         DB::beginTransaction();
         try {
-            if ($this->notification->type_achat == 'Delivery') {
+            if ($this->notification->data['type_achat'] == 'Delivery') {
                 $this->pour_livraison();
             }
 

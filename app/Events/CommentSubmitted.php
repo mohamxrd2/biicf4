@@ -47,7 +47,6 @@ class CommentSubmitted implements ShouldBroadcast
         return [
             'prix' => $this->prix,
             'commentId' => $this->commentId,
-            'timestamp' => $this->timestamp = now()->toIso8601String(), // Ajoute l'heure actuelle
 
         ];
     }

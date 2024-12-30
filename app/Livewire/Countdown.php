@@ -117,11 +117,11 @@ class Countdown extends Component
                     }
                     break;
 
-                case 'App\Notifications\AppelOffreGrouperNotification':
+                case 'App\Notifications\appeloffregroupernegociation':
                     if (isset($this->notification->data['id_appelGrouper'])) {
                         $this->appeloffregrp = AppelOffreGrouper::findOrFail($this->notification->data['id_appelGrouper']);
                         $this->valueCodeUnique = $this->appeloffregrp->codeunique;
-                        $this->etat = $this->appeloffregrp->count;
+                        $this->etat = $this->appeloffregrp->count2;
 
                         return true;
                     }
@@ -179,8 +179,8 @@ class Countdown extends Component
                     break;
 
                 case 'App\Notifications\AppelOffreGrouperNotification':
-                    $this->appeloffregrp->update(['count' => true]);
-                    $this->dispatch('negotiationEnded')->to('appel-offre-grouper');
+                    $this->appeloffregrp->update(['count2' => true]);
+                    $this->dispatch('negotiationEnded')->to('appeloffregroupernegociation');
                     break;
             }
             return true;

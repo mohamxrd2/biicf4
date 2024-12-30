@@ -271,19 +271,19 @@ class Achatdirect extends Component
                 'start_time' => $this->timestamp,
                 'difference' => 'ad',
                 'id_achat' => $this->achatdirect->id,
-                'time_remaining' => 300,
-                'end_time' => $this->timestamp->addMinutes(5),
+                'time_remaining' => 120,
+                'end_time' => $this->timestamp->addMinutes(2),
             ]
         );
         if ($countdown->wasRecentlyCreated) {
             $this->countdownId = $countdown->id;
             $this->isRunning = true;
-            $this->timeRemaining = 300;
+            $this->timeRemaining = 120;
             // Dispatch le job immédiatement
             dispatch(new ProcessCountdown($countdown->id, $code_livr))
                 ->onQueue('default')
                 ->afterCommit();
-            event(new CountdownStarted(300, $code_livr));
+            event(new CountdownStarted(120, $code_livr));
             Log::info('Countdown started', [
                 'countdown_id' => $countdown->id,
                 'code_livr' => $code_livr

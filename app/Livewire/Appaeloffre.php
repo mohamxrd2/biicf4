@@ -223,22 +223,22 @@ class Appaeloffre extends Component
                     'start_time' => $this->timestamp,
                     'difference' => $difference,
                     $AppelOffreGrouper_id => $id,
-                    'time_remaining' => 300,
-                    'end_time' => $this->timestamp->addMinutes(5),
+                    'time_remaining' => 120,
+                    'end_time' => $this->timestamp->addMinutes(2),
                 ]
             );
 
             if ($countdown->wasRecentlyCreated) {
                 $this->countdownId = $countdown->id;
                 $this->isRunning = true;
-                $this->timeRemaining = 300;
+                $this->timeRemaining = 120;
 
                 // Dispatch le job immédiatement
                 dispatch(new ProcessCountdown($countdown->id, $code_unique))
                     ->onQueue('default')
                     ->afterCommit();
 
-                event(new CountdownStarted(300, $code_unique));
+                event(new CountdownStarted(120, $code_unique));
 
                 Log::info('Countdown started', [
                     'countdown_id' => $countdown->id,
@@ -322,20 +322,10 @@ class Appaeloffre extends Component
                 $data = [
                     'id_appelOffre' => $appelOffre->id,
                     'code_unique' => $appelOffre->code_unique,
-                    'difference' => 'single',
+                    'type_achat' => $this->selectedOption,
                 ];
 
                 Notification::send($owner, new AppelOffre($data));
-
-                // Mettre à jour la notification
-                $notification = $owner->notifications()
-                    ->where('type', AppelOffre::class)
-                    ->latest()
-                    ->first();
-
-                if ($notification) {
-                    $notification->update(['type_achat' => $this->selectedOption]);
-                }
 
                 // Déclencher un événement
                 event(new NotificationSent($owner));

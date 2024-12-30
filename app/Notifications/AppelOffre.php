@@ -34,7 +34,7 @@ class AppelOffre extends Notification implements ShouldQueue
         return [
             'id_appelOffre' => $this->achat['id_appelOffre'] ?? null,
             'code_unique' => $this->achat['code_unique'],
-            'difference' => $this->achat['difference'] ?? null,
+            'type_achat' => $this->achat['type_achat'] ?? null,
             'title' => 'Appel Offre',
             'description' => 'Cliquez pour participer a la negociation.',
             'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">

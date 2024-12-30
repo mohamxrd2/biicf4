@@ -199,16 +199,10 @@ class CheckCountdowns extends Command
         try {
             // Envoyer la notification au sender
             if ($countdown->sender) {
+                $details['type_achat'] = 'Delivery';
+
                 Notification::send($countdown->sender, new CountdownNotificationAd($details));
-
-                $notification = $countdown->sender->notifications()
-                    ->where('type', CountdownNotificationAd::class)
-                    ->latest()
-                    ->first();
-
-                if ($notification) {
-                    $notification->update(['type_achat' => 'Delivery']);
-                }
+                event(new NotificationSent($countdown->sender));
             }
 
             // Récupérer le meilleur prix avec orderBy sur created_at
@@ -227,7 +221,6 @@ class CheckCountdowns extends Command
                 Notification::send($lowestPriceComment->user, new Confirmation($details));
                 event(new NotificationSent($lowestPriceComment->user));
             }
-
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi des notifications', [
                 'countdown_id' => $countdown->id,

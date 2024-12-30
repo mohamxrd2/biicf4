@@ -90,11 +90,11 @@ class Appeloffregroupernegociation extends Component
             ->get();
 
 
-        $this->prixLePlusBas = Comment::where('code_unique', $this->code_unique)
+        $this->prixLePlusBas = Comment::where('code_unique', $this->appeloffregrp->codeunique)
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
-        $this->offreIniatiale = Comment::where('code_unique', $this->code_unique)
+        $this->offreIniatiale = Comment::where('code_unique', $this->appeloffregrp->codeunique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->first(); // Récupère le premier commentaire trié
@@ -115,7 +115,7 @@ class Appeloffregroupernegociation extends Component
     {
 
         // Vérifier si la négociation est terminée
-        if ($this->appeloffregrp->count) {
+        if ($this->appeloffregrp->count2) {
             $this->dispatch(
                 'formSubmitted',
                 'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
@@ -124,7 +124,7 @@ class Appeloffregroupernegociation extends Component
         }
 
         // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+        $offreInitiale = Comment::where('code_unique', $this->appeloffregrp->codeunique)
             ->whereNotNull('prixTrade')
             ->orderBy('created_at', 'asc')
             ->first();

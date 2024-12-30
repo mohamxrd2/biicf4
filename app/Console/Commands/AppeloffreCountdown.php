@@ -51,10 +51,11 @@ class AppeloffreCountdown extends Command
             $serverTime = $result['timestamp']->subMinutes(3);
 
             $countdowns = Countdown::where('notified', false)
-                ->where('start_time', '<=', $serverTime)
+                ->where('end_time', '<=', $serverTime)
                 ->where('difference', 'quantiteGrouper')
                 ->with(['sender', 'achat', 'appelOffre', 'appelOffreGrouper'])
                 ->get();
+            Log::error('countdowns.', ['error' => $countdowns]);
 
             // Récupérer tous les codes uniques des Countdown non notifiés
             $codeUniques = $countdowns->pluck('code_unique')->unique();
@@ -106,7 +107,6 @@ class AppeloffreCountdown extends Command
             // Marquer comme notifié
             $this->markCountdownsAsNotified($countdowns, $codeUnique);
             $this->markAppelOffreAsNotified($appelOffreGroup);
-
         } catch (\Exception $e) {
             Log::error('Erreur dans processAppelOffreGroup', [
                 'appelOffreGroup_id' => $appelOffreGroup->id ?? 'non défini',
@@ -118,17 +118,21 @@ class AppeloffreCountdown extends Command
     }
     public function startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $countdowns)
     {
-        // Utiliser firstOrCreate pour éviter les doublons
+        $appelOffreGrouper = AppelOffreGrouper::find($AppelOffreGrouper_id);
+        if (!$appelOffreGrouper || !$appelOffreGrouper->user_id) {
+            Log::error('Invalid AppelOffreGrouper or missing user_id', ['id' => $AppelOffreGrouper_id]);
+            return;
+        }
+
         $countdown = Countdown::firstOrCreate(
-            ['is_active' => true],
+            ['code_unique' => $code_unique],
             [
-                'user_id' => $countdowns->where('code_unique', $code_unique)->pluck('user_id')->unique()->first(),
+                'user_id' => $appelOffreGrouper->user_id,
                 'userSender' => null,
                 'start_time' => $this->timestamp,
-                'code_unique' => $code_unique,
                 'difference' => $difference,
                 'AppelOffreGrouper_id' => $AppelOffreGrouper_id,
-                'time_remaining' => 300,
+                'time_remaining' => 120,
                 'end_time' => $this->timestamp->addMinutes(5),
                 'is_active' => true,
             ]
@@ -137,12 +141,18 @@ class AppeloffreCountdown extends Command
         if ($countdown->wasRecentlyCreated) {
             $this->countdownId = $countdown->id;
             $this->isRunning = true;
-            $this->timeRemaining = 300;
+            $this->timeRemaining = 120;
 
-            ProcessCountdown::dispatch($countdown->id)
-                ->onConnection('database')
-                ->onQueue('default');
-            event(new CountdownStarted(300));
+            dispatch(new ProcessCountdown($countdown->id, $code_unique))
+                ->onQueue('default')
+                ->afterCommit();
+
+            event(new CountdownStarted(120, $code_unique));
+
+            Log::info('Countdown started', [
+                'countdown_id' => $countdown->id,
+                'code_unique' => $code_unique
+            ]);
         }
     }
     private function markCountdownsAsNotified($countdowns, $codeUnique)
