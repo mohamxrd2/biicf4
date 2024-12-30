@@ -211,33 +211,45 @@ class Appaeloffre extends Component
     }
     public function startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id)
     {
-        // Utiliser firstOrCreate avec des conditions plus spécifiques
-        $countdown = Countdown::firstOrCreate(
-            [
-                'code_unique' => $code_unique,
-                'is_active' => true
-            ],
-            [
-                'user_id' => Auth::id(),
-                'userSender' => null,
-                'start_time' => $this->timestamp,
-                'difference' => $difference,
-                $AppelOffreGrouper_id => $id,
-                'time_remaining' => 300,
-                'end_time' => $this->timestamp->addMinutes(5),
-            ]
-        );
+        try {
+            $countdown = Countdown::firstOrCreate(
+                [
+                    'code_unique' => $code_unique,
+                    'is_active' => true
+                ],
+                [
+                    'user_id' => Auth::id(),
+                    'userSender' => null,
+                    'start_time' => $this->timestamp,
+                    'difference' => $difference,
+                    $AppelOffreGrouper_id => $id,
+                    'time_remaining' => 300,
+                    'end_time' => $this->timestamp->addMinutes(5),
+                ]
+            );
 
-        if ($countdown->wasRecentlyCreated) {
-            $this->countdownId = $countdown->id;
-            $this->isRunning = true;
-            $this->timeRemaining = 300;
+            if ($countdown->wasRecentlyCreated) {
+                $this->countdownId = $countdown->id;
+                $this->isRunning = true;
+                $this->timeRemaining = 300;
 
-            ProcessCountdown::dispatch($countdown->id, $code_unique)
-                ->onConnection('database')
-                ->onQueue('default');
+                // Dispatch le job immédiatement
+                dispatch(new ProcessCountdown($countdown->id, $code_unique))
+                    ->onQueue('default')
+                    ->afterCommit();
 
-            event(new CountdownStarted(300, $code_unique));
+                event(new CountdownStarted(300, $code_unique));
+
+                Log::info('Countdown started', [
+                    'countdown_id' => $countdown->id,
+                    'code_unique' => $code_unique
+                ]);
+            }
+        } catch (Exception $e) {
+            Log::error('Error starting countdown', [
+                'error' => $e->getMessage(),
+                'code_unique' => $code_unique
+            ]);
         }
     }
     private function calculateTotalCost($quantity)

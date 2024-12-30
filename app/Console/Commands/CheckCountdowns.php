@@ -9,8 +9,6 @@ use App\Models\User;
 use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotificationAd;
-use App\Notifications\CountdownNotificationAg;
-use App\Notifications\CountdownNotificationAp;
 use App\Notifications\NegosTerminer;
 use App\Notifications\Confirmation;
 use App\Services\TimeSync\TimeSyncService;
@@ -44,10 +42,11 @@ class CheckCountdowns extends Command
             // Utiliser TimeSyncService pour l'heure du serveur
             $timeSync = new TimeSyncService($this->recuperationTimer);
             $result = $timeSync->getSynchronizedTime();
-            $serverTime = $result['timestamp']->subMinutes(3);
+            $serverTime = $result['timestamp'];
+            Log::error($serverTime);
 
             $countdowns = Countdown::where('notified', false)
-                ->where('start_time', '<=', $serverTime)
+                ->where('end_time', '<=', $serverTime)
                 ->with(['sender', 'achat', 'appelOffre'])
                 ->get();
 
@@ -197,30 +196,43 @@ class CheckCountdowns extends Command
 
     private function sendAdNotification($countdown, $details)
     {
+        try {
+            // Envoyer la notification au sender
+            if ($countdown->sender) {
+                Notification::send($countdown->sender, new CountdownNotificationAd($details));
 
-        Notification::send($countdown->sender, new CountdownNotificationAd($details));
-        // event(new NotificationSent($countdown->sender));
+                $notification = $countdown->sender->notifications()
+                    ->where('type', CountdownNotificationAd::class)
+                    ->latest()
+                    ->first();
 
-        $notification = $countdown->sender->notifications()
-            ->where('type', CountdownNotificationAd::class)
-            ->latest()
-            ->first();
-        if ($notification) {
-            $notification->update(['type_achat' => 'Delivery']);
-        }
+                if ($notification) {
+                    $notification->update(['type_achat' => 'Delivery']);
+                }
+            }
 
-        // Étape 2 : Récupérer le commentaire avec le prix le plus bas
-        $lowestPriceComment = $this->getLowestPriceComment($countdown->code_unique); // On passe le code_unique depuis $commentToUse
+            // Récupérer le meilleur prix avec orderBy sur created_at
+            $lowestPriceComment = Comment::where('code_unique', $countdown->code_unique)
+                ->orderBy('prixTrade', 'asc')
+                ->orderBy('created_at', 'asc')  // En cas d'égalité de prix, prendre le premier
+                ->with('user')  // Charger la relation user
+                ->first();
 
-        // Vérifier si un commentaire avec le prix le plus bas a été trouvé
-        if ($lowestPriceComment) {
-            // Ajouter les informations supplémentaires (title et description) dans $details
-            $details['title'] = 'Négociation terminée';
-            $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+            if ($lowestPriceComment && $lowestPriceComment->user) {
+                $details['title'] = 'Négociation terminée';
+                $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+                $details['prixTrade'] = $lowestPriceComment->prixTrade;
+                $details['id_trader'] = $lowestPriceComment->id_trader;
 
-            // Envoyer la notification avec les détails mis à jour
-            Notification::send($lowestPriceComment->user, new Confirmation($details));
-            // event(new NotificationSent($lowestPriceComment->sender));
+                Notification::send($lowestPriceComment->user, new Confirmation($details));
+                event(new NotificationSent($lowestPriceComment->user));
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi des notifications', [
+                'countdown_id' => $countdown->id,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 

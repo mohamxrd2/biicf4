@@ -34,6 +34,7 @@ class Countdown extends Component
     public $offgroupe;
     public $etat;
     public $OffreGroupe;
+    public $countdowns = [];
 
     protected $recuperationTimer;
 
@@ -44,10 +45,7 @@ class Countdown extends Component
     }
     public function mount($id)
     {
-
-        // Actualiser le timer avant de commencer
         $this->timeServer();
-
         $this->loadNotificationData($id);
 
         // Récupérer le décompte actif
@@ -59,18 +57,14 @@ class Countdown extends Component
             ->first();
 
         if ($activeCountdown) {
-            // Vérifiez si 'end_time' est défini et non null
             if ($activeCountdown->end_time) {
-                $this->timeRemaining = max(0, $activeCountdown->end_time->diffInSeconds($this->timestamp));
-            } else {
-                // Définir un temps restant par défaut si 'end_time' est null
-                $this->timeRemaining = 0;
-                Log::warning("Le champ 'end_time' est null pour le countdown ID: {$activeCountdown->id}");
+                $timeRemaining = max(0, $activeCountdown->end_time->diffInSeconds($this->timestamp));
+                $this->countdowns[$this->valueCodeUnique] = [
+                    'timeRemaining' => $timeRemaining,
+                    'isRunning' => $timeRemaining > 0,
+                    'id' => $activeCountdown->id
+                ];
             }
-            $this->isRunning = $this->timeRemaining > 0;
-        } else {
-            // Temps par défaut si aucun décompte actif
-            $this->timeRemaining = 300;
         }
     }
 
@@ -257,23 +251,29 @@ class Countdown extends Component
         $this->isRunning = true;
     }
 
-
     public function handleCountdownTick($event)
     {
-        if (!$this->isRunning || $event['code_unique'] !== $this->valueCodeUnique) {
+        if (!isset($this->countdowns[$event['code_unique']])) {
             return;
         }
 
-        $this->timeRemaining = $event['time'];
+        $countdown = &$this->countdowns[$event['code_unique']];
 
-        if ($this->timeRemaining <= 1) {
-            $this->isRunning = false;
-            $countdown = ModelsCountdown::where('code_unique', $this->valueCodeUnique)
+        if (!$countdown['isRunning']) {
+            return;
+        }
+
+        $countdown['timeRemaining'] = $event['time'];
+
+        if ($countdown['timeRemaining'] <= 1) {
+            $countdown['isRunning'] = false;
+
+            $dbCountdown = ModelsCountdown::where('code_unique', $event['code_unique'])
                 ->where('is_active', true)
                 ->first();
 
-            if ($countdown) {
-                $countdown->update([
+            if ($dbCountdown) {
+                $dbCountdown->update([
                     'is_active' => false,
                     'time_remaining' => 0
                 ]);
@@ -290,10 +290,8 @@ class Countdown extends Component
         }
     }
 
-
     public function render()
     {
-
         return view('livewire.countdown', [
             'timeRemaining' => $this->timeRemaining,
         ]);
