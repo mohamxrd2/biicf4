@@ -23,19 +23,20 @@ class ProcessCountdown implements ShouldQueue
     public $time;
     public $error;
     public $timestamp;
+    public $code_unique;
 
     protected $recuperationTimer;
 
-    public function __construct($countdownId)
+    public function __construct($countdownId, $code_unique)
     {
         $this->countdownId = $countdownId;
-        $this->onQueue('default');  // Spécifie explicitement la queue
+        $this->code_unique = $code_unique;
+        $this->onQueue('default');
         $this->recuperationTimer = new RecuperationTimer();
     }
 
     public function handle()
     {
-        // Actualiser le timer avant de commencer
         $this->timeServer();
         $countdown = Countdown::find($this->countdownId);
 
@@ -43,7 +44,7 @@ class ProcessCountdown implements ShouldQueue
             return;
         }
 
-        $lockKey = "countdown_lock_{$this->countdownId}";
+        $lockKey = "countdown_lock_{$this->code_unique}";
 
         if (Cache::add($lockKey, true, 1)) {
             try {
@@ -54,16 +55,15 @@ class ProcessCountdown implements ShouldQueue
                         'is_active' => false,
                         'time_remaining' => 0
                     ]);
-                    broadcast(new CountdownTick(0));
-
+                    broadcast(new CountdownTick($timeRemaining, $this->code_unique));
                     return;
                 }
 
                 $countdown->update(['time_remaining' => $timeRemaining]);
-                broadcast(new CountdownTick($timeRemaining));
+                broadcast(new CountdownTick($timeRemaining, $this->code_unique));
 
                 if ($timeRemaining > 1) {
-                    dispatch(new self($this->countdownId))
+                    dispatch(new self($this->countdownId, $this->code_unique))
                         ->onConnection('database')
                         ->delay(now()->addSeconds(2));
                 }
@@ -109,7 +109,7 @@ class ProcessCountdown implements ShouldQueue
 
     public function failed(\Throwable $exception)
     {
-        Cache::forget("countdown_lock_{$this->countdownId}");
+        Cache::forget("countdown_lock_{$this->code_unique}");
 
         $countdown = Countdown::find($this->countdownId);
         if ($countdown) {
@@ -117,7 +117,7 @@ class ProcessCountdown implements ShouldQueue
                 'is_active' => false,
                 'time_remaining' => 0
             ]);
-            broadcast(new CountdownTick(0));
+            broadcast(new CountdownTick(0, $this->code_unique));
         }
     }
 }

@@ -241,9 +241,13 @@ class Countdown extends Component
     }
     public function getListeners()
     {
+        if (!$this->valueCodeUnique) {
+            return [];
+        }
+
         return [
-            "echo:countdown,CountdownStarted" => 'handleCountdownStart',
-            "echo:countdown,CountdownTick" => 'handleCountdownTick',
+            "echo:countdown.{$this->valueCodeUnique},CountdownStarted" => 'handleCountdownStart',
+            "echo:countdown.{$this->valueCodeUnique},CountdownTick" => 'handleCountdownTick',
         ];
     }
 
@@ -256,7 +260,7 @@ class Countdown extends Component
 
     public function handleCountdownTick($event)
     {
-        if (!$this->isRunning) {
+        if (!$this->isRunning || $event['code_unique'] !== $this->valueCodeUnique) {
             return;
         }
 
@@ -264,7 +268,10 @@ class Countdown extends Component
 
         if ($this->timeRemaining <= 1) {
             $this->isRunning = false;
-            $countdown = ModelsCountdown::find($this->countdownId);
+            $countdown = ModelsCountdown::where('code_unique', $this->valueCodeUnique)
+                ->where('is_active', true)
+                ->first();
+
             if ($countdown) {
                 $countdown->update([
                     'is_active' => false,

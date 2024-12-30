@@ -211,21 +211,21 @@ class Appaeloffre extends Component
     }
     public function startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id)
     {
-        // Utiliser firstOrCreate pour éviter les doublons
+        // Utiliser firstOrCreate avec des conditions plus spécifiques
         $countdown = Countdown::firstOrCreate(
-            ['is_active' => true],
+            [
+                'code_unique' => $code_unique,
+                'is_active' => true
+            ],
             [
                 'user_id' => Auth::id(),
                 'userSender' => null,
                 'start_time' => $this->timestamp,
-                'code_unique' => $code_unique,
                 'difference' => $difference,
                 $AppelOffreGrouper_id => $id,
                 'time_remaining' => 300,
                 'end_time' => $this->timestamp->addMinutes(5),
-                'is_active' => true,
             ]
-
         );
 
         if ($countdown->wasRecentlyCreated) {
@@ -233,10 +233,11 @@ class Appaeloffre extends Component
             $this->isRunning = true;
             $this->timeRemaining = 300;
 
-            ProcessCountdown::dispatch($countdown->id)
+            ProcessCountdown::dispatch($countdown->id, $code_unique)
                 ->onConnection('database')
                 ->onQueue('default');
-            event(new CountdownStarted(300));
+
+            event(new CountdownStarted(300, $code_unique));
         }
     }
     private function calculateTotalCost($quantity)
