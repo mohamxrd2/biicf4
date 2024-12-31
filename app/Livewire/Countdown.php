@@ -34,6 +34,7 @@ class Countdown extends Component
     public $offgroupe;
     public $etat;
     public $OffreGroupe;
+    public $countdowns = [];
 
     protected $recuperationTimer;
 
@@ -44,12 +45,8 @@ class Countdown extends Component
     }
     public function mount($id)
     {
-
-        // Actualiser le timer avant de commencer
         $this->timeServer();
-
         $this->loadNotificationData($id);
-
         // Récupérer le décompte actif
         $activeCountdown = ModelsCountdown::where('code_unique', $this->valueCodeUnique)
             ->where('notified', false)
@@ -59,18 +56,14 @@ class Countdown extends Component
             ->first();
 
         if ($activeCountdown) {
-            // Vérifiez si 'end_time' est défini et non null
             if ($activeCountdown->end_time) {
-                $this->timeRemaining = max(0, $activeCountdown->end_time->diffInSeconds($this->timestamp));
-            } else {
-                // Définir un temps restant par défaut si 'end_time' est null
-                $this->timeRemaining = 0;
-                Log::warning("Le champ 'end_time' est null pour le countdown ID: {$activeCountdown->id}");
+                $timeRemaining = max(0, $activeCountdown->end_time->diffInSeconds($this->timestamp));
+                $this->countdowns[$this->valueCodeUnique] = [
+                    'timeRemaining' => $timeRemaining,
+                    'isRunning' => $timeRemaining > 0,
+                    'id' => $activeCountdown->id
+                ];
             }
-            $this->isRunning = $this->timeRemaining > 0;
-        } else {
-            // Temps par défaut si aucun décompte actif
-            $this->timeRemaining = 300;
         }
     }
 
@@ -84,7 +77,7 @@ class Countdown extends Component
                 case 'App\Notifications\livraisonAchatdirect':
                     if (isset($this->notification->data['achat_id'])) {
                         $this->achatdirect = AchatDirect::findOrFail($this->notification->data['achat_id']);
-                        $this->valueCodeUnique = $this->notification->type_achat === 'appelOffreGrouper'
+                        $this->valueCodeUnique = ($this->notification->type_achat === 'appelOffreGrouper' || $this->notification->type_achat === 'OffreGrouper')
                             ? ($this->notification->data['code_unique'] ?? null)
                             : $this->achatdirect->code_unique;
                         $this->etat = $this->achatdirect->count;
@@ -123,11 +116,11 @@ class Countdown extends Component
                     }
                     break;
 
-                case 'App\Notifications\AppelOffreGrouperNotification':
+                case 'App\Notifications\appeloffregroupernegociation':
                     if (isset($this->notification->data['id_appelGrouper'])) {
                         $this->appeloffregrp = AppelOffreGrouper::findOrFail($this->notification->data['id_appelGrouper']);
                         $this->valueCodeUnique = $this->appeloffregrp->codeunique;
-                        $this->etat = $this->appeloffregrp->count;
+                        $this->etat = $this->appeloffregrp->count2;
 
                         return true;
                     }
@@ -185,8 +178,8 @@ class Countdown extends Component
                     break;
 
                 case 'App\Notifications\AppelOffreGrouperNotification':
-                    $this->appeloffregrp->update(['count' => true]);
-                    $this->dispatch('negotiationEnded')->to('appel-offre-grouper');
+                    $this->appeloffregrp->update(['count2' => true]);
+                    $this->dispatch('negotiationEnded')->to('appeloffregroupernegociation');
                     break;
             }
             return true;
@@ -241,9 +234,13 @@ class Countdown extends Component
     }
     public function getListeners()
     {
+        if (!$this->valueCodeUnique) {
+            return [];
+        }
+
         return [
-            "echo:countdown,CountdownStarted" => 'handleCountdownStart',
-            "echo:countdown,CountdownTick" => 'handleCountdownTick',
+            "echo:countdown.{$this->valueCodeUnique},CountdownStarted" => 'handleCountdownStart',
+            "echo:countdown.{$this->valueCodeUnique},CountdownTick" => 'handleCountdownTick',
         ];
     }
 
@@ -253,20 +250,29 @@ class Countdown extends Component
         $this->isRunning = true;
     }
 
-
     public function handleCountdownTick($event)
     {
-        if (!$this->isRunning) {
+        if (!isset($this->countdowns[$event['code_unique']])) {
             return;
         }
 
-        $this->timeRemaining = $event['time'];
+        $countdown = &$this->countdowns[$event['code_unique']];
 
-        if ($this->timeRemaining <= 1) {
-            $this->isRunning = false;
-            $countdown = ModelsCountdown::find($this->countdownId);
-            if ($countdown) {
-                $countdown->update([
+        if (!$countdown['isRunning']) {
+            return;
+        }
+
+        $countdown['timeRemaining'] = $event['time'];
+
+        if ($countdown['timeRemaining'] <= 1) {
+            $countdown['isRunning'] = false;
+
+            $dbCountdown = ModelsCountdown::where('code_unique', $event['code_unique'])
+                ->where('is_active', true)
+                ->first();
+
+            if ($dbCountdown) {
+                $dbCountdown->update([
                     'is_active' => false,
                     'time_remaining' => 0
                 ]);
@@ -283,10 +289,8 @@ class Countdown extends Component
         }
     }
 
-
     public function render()
     {
-
         return view('livewire.countdown', [
             'timeRemaining' => $this->timeRemaining,
         ]);
