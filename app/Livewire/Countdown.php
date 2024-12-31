@@ -256,7 +256,7 @@ class Countdown extends Component
             return;
         }
 
-        $countdown = &$this->countdowns[$event['code_unique']];
+        $countdown = $this->countdowns[$event['code_unique']];
 
         if (!$countdown['isRunning']) {
             return;
@@ -285,6 +285,7 @@ class Countdown extends Component
             $this->dispatch(
                 'formSubmitted',
                 'Temps écoulé, Négociation terminée.'
+
             );
         }
     }
