@@ -284,14 +284,17 @@ class FonctOffre extends Component
     {
         // Utiliser firstOrCreate pour éviter les doublons
         $countdown = Countdown::firstOrCreate(
-            ['is_active' => true],
+
+            [
+                'code_unique' => $code_unique,
+                'is_active' => true
+            ],
             [
                 'user_id' => Auth::id(),
                 'start_time' => $this->timestamp,
-                'code_unique' => $code_unique,
                 'difference' => $difference,
-                'time_remaining' => 300,
-                'end_time' => $this->timestamp->addMinutes(5),
+                'time_remaining' => 120,
+                'end_time' => $this->timestamp->addMinutes(2),
                 'is_active' => true,
             ]
         );
@@ -299,12 +302,19 @@ class FonctOffre extends Component
         if ($countdown->wasRecentlyCreated) {
             $this->countdownId = $countdown->id;
             $this->isRunning = true;
-            $this->timeRemaining = 300;
+            $this->timeRemaining = 120;
 
-            ProcessCountdown::dispatch($countdown->id)
-                ->onConnection('database')
-                ->onQueue('default');
-            event(new CountdownStarted(300));
+            // Dispatch le job immédiatement
+            dispatch(new ProcessCountdown($countdown->id, $code_unique))
+                ->onQueue('default')
+                ->afterCommit();
+
+            event(new CountdownStarted(120, $code_unique));
+
+            Log::info('Countdown started', [
+                'countdown_id' => $countdown->id,
+                'code_unique' => $code_unique
+            ]);
         }
     }
     private function getConsommateurs(string $referenceProduit, int $user_id): array

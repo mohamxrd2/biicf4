@@ -47,7 +47,6 @@ class Countdown extends Component
     {
         $this->timeServer();
         $this->loadNotificationData($id);
-
         // Récupérer le décompte actif
         $activeCountdown = ModelsCountdown::where('code_unique', $this->valueCodeUnique)
             ->where('notified', false)
@@ -78,7 +77,7 @@ class Countdown extends Component
                 case 'App\Notifications\livraisonAchatdirect':
                     if (isset($this->notification->data['achat_id'])) {
                         $this->achatdirect = AchatDirect::findOrFail($this->notification->data['achat_id']);
-                        $this->valueCodeUnique = $this->notification->type_achat === 'appelOffreGrouper'
+                        $this->valueCodeUnique = ($this->notification->type_achat === 'appelOffreGrouper' || $this->notification->type_achat === 'OffreGrouper')
                             ? ($this->notification->data['code_unique'] ?? null)
                             : $this->achatdirect->code_unique;
                         $this->etat = $this->achatdirect->count;

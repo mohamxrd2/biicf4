@@ -24,6 +24,7 @@
                 "
                 class="bg-gradient-to-r from-red-500 to-red-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg"
             >
+
                 <div class="flex flex-col items-center">
                     <span class="text-xs uppercase tracking-wide mb-1">
                         <span x-show="timeRemaining > 0">Temps restant</span>

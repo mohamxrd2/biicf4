@@ -44,8 +44,7 @@ class AppeloffreCountdown extends Command
         DB::beginTransaction(); // Démarre une transaction
 
         try {
-            // Récupérer l'heure du serveur
-            // Utiliser TimeSyncService pour l'heure du serveur
+
             $timeSync = new TimeSyncService($this->recuperationTimer);
             $result = $timeSync->getSynchronizedTime();
             $serverTime = $result['timestamp']->subMinutes(3);
@@ -55,7 +54,6 @@ class AppeloffreCountdown extends Command
                 ->where('difference', 'quantiteGrouper')
                 ->with(['sender', 'achat', 'appelOffre', 'appelOffreGrouper'])
                 ->get();
-            Log::error('countdowns.', ['error' => $countdowns]);
 
             // Récupérer tous les codes uniques des Countdown non notifiés
             $codeUniques = $countdowns->pluck('code_unique')->unique();
