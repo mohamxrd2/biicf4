@@ -156,6 +156,9 @@ class CheckCountdowns extends Command
                 case 'ad':
                     $this->sendAdNotification($countdown, $details);
                     break;
+                case 'AchatDirectPoffreGroupe':
+                    $this->sendADPoffreGroupeNotification($countdown, $details);
+                    break;
 
                 case 'appelOffreD':
                 case 'appelOffreR':
@@ -200,6 +203,41 @@ class CheckCountdowns extends Command
             // Envoyer la notification au sender
             if ($countdown->sender) {
                 $details['type_achat'] = 'Delivery';
+
+                Notification::send($countdown->sender, new CountdownNotificationAd($details));
+                event(new NotificationSent($countdown->sender));
+            }
+
+            // Récupérer le meilleur prix avec orderBy sur created_at
+            $lowestPriceComment = Comment::where('code_unique', $countdown->code_unique)
+                ->orderBy('prixTrade', 'asc')
+                ->orderBy('created_at', 'asc')  // En cas d'égalité de prix, prendre le premier
+                ->with('user')  // Charger la relation user
+                ->first();
+
+            if ($lowestPriceComment && $lowestPriceComment->user) {
+                $details['title'] = 'Négociation terminée';
+                $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+                $details['prixTrade'] = $lowestPriceComment->prixTrade;
+                $details['id_trader'] = $lowestPriceComment->id_trader;
+
+                Notification::send($lowestPriceComment->user, new Confirmation($details));
+                event(new NotificationSent($lowestPriceComment->user));
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi des notifications', [
+                'countdown_id' => $countdown->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+    private function sendADPoffreGroupeNotification($countdown, $details)
+    {
+        try {
+            // Envoyer la notification au sender
+            if ($countdown->sender) {
+                $details['type_achat'] = 'Delivery';
+                $details['type'] = 'AchatDirectPoffreGroupe';
 
                 Notification::send($countdown->sender, new CountdownNotificationAd($details));
                 event(new NotificationSent($countdown->sender));

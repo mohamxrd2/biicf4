@@ -325,7 +325,7 @@ class OffreNegosDone extends Component
                 'user_id' => Auth::id(),
                 'userSender' => $userId,
                 'start_time' => $this->timestamp,
-                'difference' => 'ad',
+                'difference' => 'AchatDirectPoffreGroupe',
                 'id_achat' => $achatdirect_id,
                 'time_remaining' => 120,
                 'end_time' => $this->timestamp->addMinutes(2),
