@@ -310,11 +310,6 @@ class FonctOffre extends Component
                 ->afterCommit();
 
             event(new CountdownStarted(120, $code_unique));
-
-            Log::info('Countdown started', [
-                'countdown_id' => $countdown->id,
-                'code_unique' => $code_unique
-            ]);
         }
     }
     private function getConsommateurs(string $referenceProduit, int $user_id): array
@@ -413,7 +408,7 @@ class FonctOffre extends Component
                 'quantite' => $this->quantite,
                 'produit_id' => $produit->id,
                 'zone_economique' => $this->zoneEconomique,
-            ], $produit, $user_id, $uniqueCode);
+            ], $produit, $user_id, $user->id, $uniqueCode);
 
 
             $difference = 'offreGrouper';
@@ -482,7 +477,7 @@ class FonctOffre extends Component
         }
     }
 
-    private function saveOffreGroupe($data, $produit, $userId, $uniqueCode)
+    private function saveOffreGroupe($data, $produit, $userId, $user, $uniqueCode)
     {
         OffreGroupe::create([
             'name' => $produit->name,
@@ -490,7 +485,7 @@ class FonctOffre extends Component
             'code_unique' => $uniqueCode,
             'produit_id' => $data['produit_id'],
             'zone' => $data['zone_economique'],
-            'user_id' => $userId,
+            'user_id' => $user,
             'differance' => 'offregrouper',
         ]);
 

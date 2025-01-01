@@ -37,6 +37,7 @@ class OffreGroupeQuantite extends Component
 
     public $time;
     public $error;
+    protected $listeners = ['negotiationEnded' => '$refresh'];
 
     protected $recuperationTimer;
 
@@ -110,7 +111,7 @@ class OffreGroupeQuantite extends Component
             ->first();
     }
 
-    
+
 
     #[On('echo:quantite-channel,AjoutQuantiteOffre')]
     public function actualiserDonnees($event)

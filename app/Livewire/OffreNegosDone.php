@@ -327,8 +327,8 @@ class OffreNegosDone extends Component
                 'start_time' => $this->timestamp,
                 'difference' => 'ad',
                 'id_achat' => $achatdirect_id,
-                'time_remaining' => 300,
-                'end_time' => $this->timestamp->addMinutes(5),
+                'time_remaining' => 120,
+                'end_time' => $this->timestamp->addMinutes(2),
                 'is_active' => true,
             ]
         );
