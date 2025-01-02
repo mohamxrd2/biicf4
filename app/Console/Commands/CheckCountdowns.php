@@ -48,8 +48,9 @@ class CheckCountdowns extends Command
                 ->where('end_time', '<=', $serverTime)
                 ->with(['sender', 'achat', 'appelOffre'])
                 ->get();
-           
+
             foreach ($countdowns as $countdown) {
+
                 $this->processCountdown($countdown);
             }
 
@@ -81,9 +82,9 @@ class CheckCountdowns extends Command
                 // Envoyer la notification en fonction du type
                 $this->sendNotificationBasedOnType($countdown, $commentToUse, $details);
 
-                // Nettoyage des données
-                $this->cleanUp($codeUnique);
                 $countdown->update(['notified' => true]);
+                // Nettoyage des données
+                // $this->cleanUp($codeUnique);
             }
         };
     }
@@ -276,27 +277,23 @@ class CheckCountdowns extends Command
     private function sendSingleOfferNotification($countdown, $commentToUse, $details)
     {
         $details['id_trader'] = $commentToUse->id_trader ?? null;
+        
+        switch ($countdown->difference) {
+            case 'appelOffreD':
+                $details['type_achat'] = 'Delivery';
+                break;
+
+            case 'appelOffreR':
+                $details['type_achat'] = 'Take Away';
+                break;
+        }
 
         Notification::send($commentToUse->user, new AppelOffreTerminer($details));
-        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-        $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
-
-        if ($notification) {
-            switch ($countdown->difference) {
-                case 'appelOffreD':
-                    $notification->update(['type_achat' => 'Delivery']);
-                    break;
-
-                case 'appelOffreR':
-                    $notification->update(['type_achat' => 'Take Away']);
-                    break;
-            }
-        }
     }
 
 
     private function cleanUp($codeUnique)
     {
-        // Comment::where('code_unique', $codeUnique)->delete();
+        Comment::where('code_unique', $codeUnique)->delete();
     }
 }

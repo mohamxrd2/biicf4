@@ -16,8 +16,8 @@ class Kernel extends ConsoleKernel
         if (App::environment('local')) {
             //En local, exécuter la commande toutes les minutes
             $schedule->command('check:countdowns')->everyMinute();
-            // $schedule->command('app:appeloffreGrouper')->everyMinute();
-            // $schedule->command('app:ajout-qoffre')->everyMinute();
+            $schedule->command('app:appeloffreGrouper')->everyMinute();
+            $schedule->command('app:ajout-qoffre')->everyMinute();
             // $schedule->command('app:credit-countdown')->everyMinute();
             // $schedule->command('app:projet-countdown')->everyMinute();
             // $schedule->command('app:rappel-journalieres-credits')->everyMinute();

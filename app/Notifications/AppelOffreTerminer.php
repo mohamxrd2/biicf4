@@ -32,6 +32,7 @@ class AppelOffreTerminer extends Notification implements ShouldQueue
             'prixTrade' => $this->details['prixTrade'] ?? null,
             'id_trader' => $this->details['id_trader'] ?? null,
             'id_appeloffre' => $this->details['id'] ?? null,
+            'type_achat' => $this->details['type_achat'] ?? null,
             'title' => 'Negocitaion Terminé',
             'description' => 'Cliquez pour voir les details',
             'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">

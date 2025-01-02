@@ -2,24 +2,20 @@
 
 namespace App\Livewire;
 
+use App\Events\CountdownStarted;
 use App\Events\NotificationSent;
+use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect;
 use App\Models\AppelOffreUser;
 use App\Models\Countdown;
-use App\Models\userquantites;
-use App\Notifications\AllerChercher;
-use App\Notifications\CountdownNotificationAp;
-use App\Notifications\livraisonAppelOffre;
-use App\Notifications\livraisonVerif;
+use App\Services\TimeSync\TimeSyncService;
 use Livewire\Component;
 use App\Models\Livraisons;
 use Illuminate\Notifications\DatabaseNotification;
-use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Notifications\CountdownNotification;
 use App\Notifications\CountdownNotificationAd;
 use App\Notifications\livraisonAchatdirect;
 use App\Notifications\RefusAchat;
@@ -27,7 +23,7 @@ use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Exception;
 use Intervention\Image\Facades\Image;
-
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -64,6 +60,10 @@ class Appeloffreterminer extends Component
     public $timestamp;
     public $time;
     public $error;
+    public $countdownId;
+    public $isRunning;
+    public $timeRemaining;
+
     protected $recuperationTimer;
 
     // Injection de la classe RecuperationTimer via le constructeur
@@ -197,7 +197,7 @@ class Appeloffreterminer extends Component
             // Enregistrer l'achat dans la table AchatDirectModel
             $achatdirect = AchatDirect::create([
                 'photoProd' => $photoName,  // Quantité récupérée de userquantites
-                'prix' => $this->notification->data['prixTrade'],  
+                'prix' => $this->notification->data['prixTrade'],
                 'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
                 'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
                 'montantTotal' => $this->prixTotal,
@@ -213,7 +213,7 @@ class Appeloffreterminer extends Component
             // Préparer les données pour la notification
             $data = [
                 'idProd' => $this->produit->id,
-                'code_livr' => $this->notification->data['code_unique'],
+                'code_livr' => $this->generateUniqueReference(),
                 'textareaContent' => $validated['textareaValue'],
                 'photoProd' => $photoName,
                 'achat_id' => $achatdirect->id ?? null,
@@ -221,15 +221,11 @@ class Appeloffreterminer extends Component
                 'description' => 'Cliquez pour particicper a la negociation',
 
             ];
+            $userSender = $achatdirect->userSender;
+            $id = $achatdirect->id;
+            $this->startCountdown($data['code_livr'], $userSender, $id);
 
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $userId,
-                'start_time' => $this->timestamp,
-                'difference' => 'ad',
-                'code_unique' => $data['code_livr'],
-                'id_achat' => $achatdirect->id,
-            ]);
+
             // Vérifier l'existence de l'identifiant du produit
             if (!$data['idProd']) {
                 throw new Exception('Identifiant du produit introuvable.');
@@ -241,8 +237,16 @@ class Appeloffreterminer extends Component
                     $livreur = User::find($livreurId);
                     if ($livreur) {
                         Notification::send($livreur, new livraisonAchatdirect($data));
+                        $notification = $livreur->notifications()
+                        ->where('type', livraisonAchatdirect::class)
+                        ->latest()
+                        ->first();
+
+                    if ($notification) {
+                        $notification->update(['type_achat' => 'appelOffre']);
+                    }
+
                         event(new NotificationSent($livreur)); // Lancer l'événement
-                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
                     }
                 }
             }
@@ -261,45 +265,49 @@ class Appeloffreterminer extends Component
             session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
         }
     }
+
+    public function startCountdown($code_livr, $userSender, $id)
+    {
+        // Utiliser firstOrCreate avec des conditions plus spécifiques
+        $countdown = Countdown::firstOrCreate(
+            [
+                'code_unique' => $code_livr,
+                'is_active' => true
+            ],
+            [
+                'user_id' => Auth::id(),
+                'userSender' => $userSender,
+                'start_time' => $this->timestamp,
+                'difference' => 'ad',
+                'id_achat' => $id,
+                'time_remaining' => 120,
+                'end_time' => $this->timestamp->addMinutes(2),
+            ]
+        );
+
+        if ($countdown->wasRecentlyCreated) {
+            $this->countdownId = $countdown->id;
+            $this->isRunning = true;
+            $this->timeRemaining = 120;
+            // Dispatch le job immédiatement
+            dispatch(new ProcessCountdown($countdown->id, $code_livr))
+                ->onQueue('default')
+                ->afterCommit();
+            event(new CountdownStarted(120, $code_livr));
+            Log::info('Countdown started', [
+                'countdown_id' => $countdown->id,
+                'code_livr' => $code_livr
+            ]);
+        }
+    }
+
     public function timeServer()
     {
-        // Faire plusieurs tentatives de récupération pour plus de précision
-        $attempts = 3;
-        $times = [];
-
-        for ($i = 0; $i < $attempts; $i++) {
-            // Récupération de l'heure via le service
-            $currentTime = $this->recuperationTimer->getTime();
-            if ($currentTime) {
-                $times[] = $currentTime;
-            }
-            // Petit délai entre chaque tentative
-            usleep(50000); // 50ms
-        }
-
-        if (empty($times)) {
-            // Si aucune tentative n'a réussi, utiliser l'heure système
-            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
-            $this->time = now()->timestamp * 1000;
-        } else {
-            // Utiliser la médiane des temps récupérés pour plus de précision
-            sort($times);
-            $medianIndex = floor(count($times) / 2);
-            $this->time = $times[$medianIndex];
-            $this->error = null;
-        }
-
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
-
-        // Log pour debug
-        Log::info('Timer actualisé', [
-            'timestamp' => $this->timestamp,
-            'time_ms' => $this->time,
-            'attempts' => count($times)
-        ]);
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
     }
     public function refuser()
     {
@@ -445,7 +453,10 @@ class Appeloffreterminer extends Component
         // Retourne l'horodatage comme entier
         return (int) $timestamp;
     }
-
+    protected function generateUniqueReference()
+    {
+        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
+    }
     protected function handlePhotoUpload($photoField)
     {
         if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {

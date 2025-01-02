@@ -29,6 +29,7 @@ class OffreGroupe extends Model
         'produit_id',
         'count',
         'user_id',
+        'client_id',
         'notified',
     ];
 

@@ -47,7 +47,7 @@ class AppeloffreCountdown extends Command
 
             $timeSync = new TimeSyncService($this->recuperationTimer);
             $result = $timeSync->getSynchronizedTime();
-            $serverTime = $result['timestamp']->subMinutes(3);
+            $serverTime = $result['timestamp'];
 
             $countdowns = Countdown::where('notified', false)
                 ->where('end_time', '<=', $serverTime)

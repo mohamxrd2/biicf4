@@ -375,7 +375,6 @@ class Appaeloffre extends Component
 
         $this->loading = true;
         $userId = Auth::guard('web')->id(); // ID de l'utilisateur connecté
-        Log::info('Utilisateur connecté.', ['user_id' => $userId]);
 
         DB::beginTransaction();
 
@@ -392,7 +391,6 @@ class Appaeloffre extends Component
                 'appliedZoneValue' => 'required|string|max:255',
                 'prodUsers' => 'required|array|min:1',
             ]);
-            Log::info('Données validées.', ['validated_data' => $validatedData]);
 
             // Générer un code unique une seule fois
             $codeUnique = $this->generateUniqueReference();

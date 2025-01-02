@@ -485,14 +485,11 @@ class FonctOffre extends Component
             'code_unique' => $uniqueCode,
             'produit_id' => $data['produit_id'],
             'zone' => $data['zone_economique'],
-            'user_id' => $user,
+            'user_id' => $userId,
+            'client_id' => $user,
             'differance' => 'offregrouper',
         ]);
 
-        Log::info('OffreGroupe enregistrée', [
-            'name' => $produit->name,
-            'code_unique' => $uniqueCode,
-        ]);
 
         userquantites::create([
             'code_unique' => $uniqueCode,

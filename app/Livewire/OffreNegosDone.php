@@ -255,7 +255,7 @@ class OffreNegosDone extends Component
                 'date_tot' => now(),
                 'date_tard' => now(),
                 'userTrader' => Auth::id(),
-                'userSender' => $this->offregroupe->user_id,
+                'userSender' => $this->offregroupe->client_id,
                 'idProd' => $this->produit->id,
                 'code_unique' => $codeUnique,
             ]);
@@ -272,7 +272,7 @@ class OffreNegosDone extends Component
             ];
 
             // Démarrer le compte à rebours pour chaque utilisateur
-            $this->startCountdown($data['code_livr'], $this->offregroupe->user_id, $achatdirect->id);
+            $this->startCountdown($data['code_livr'], $this->offregroupe->clent_id, $achatdirect->id);
 
 
             // Envoyer les notifications aux livreurs
