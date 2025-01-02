@@ -132,7 +132,7 @@ class AppeloffreCountdown extends Command
                 'difference' => $difference,
                 'AppelOffreGrouper_id' => $AppelOffreGrouper_id,
                 'time_remaining' => 120,
-                'end_time' => $this->timestamp->addMinutes(5),
+                'end_time' => $this->timestamp->addMinutes(2),
                 'is_active' => true,
             ]
         );

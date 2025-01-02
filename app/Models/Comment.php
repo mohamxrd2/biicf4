@@ -9,7 +9,6 @@ class Comment extends Model
 {
     use HasFactory;
 
-    // Définir le nom de la table explicitement si ce n'est pas la forme plurielle du nom du modèle
     protected $table = 'comments';
 
     // Définir les attributs qui sont assignables

@@ -43,13 +43,12 @@ class CheckCountdowns extends Command
             $timeSync = new TimeSyncService($this->recuperationTimer);
             $result = $timeSync->getSynchronizedTime();
             $serverTime = $result['timestamp'];
-            Log::error($serverTime);
 
             $countdowns = Countdown::where('notified', false)
                 ->where('end_time', '<=', $serverTime)
                 ->with(['sender', 'achat', 'appelOffre'])
                 ->get();
-
+           
             foreach ($countdowns as $countdown) {
                 $this->processCountdown($countdown);
             }
@@ -173,8 +172,6 @@ class CheckCountdowns extends Command
             }
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi de la notification', [
-                'countdown_id' => $countdown->id,
-                'difference' => $difference,
                 'error' => $e->getMessage()
             ]);
             throw $e;
@@ -183,7 +180,16 @@ class CheckCountdowns extends Command
 
     private function sendGroupedOfferNotification($commentToUse, $details)
     {
-        Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
+        try {
+            if (!$commentToUse->user) {
+                Log::error('User not found for comment');
+                return;
+            }
+
+            Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
+        } catch (\Exception $e) {
+            Log::error('Failed to send notification: ' . $e->getMessage());
+        }
     }
 
     private function sendEnchereNotification($commentToUse, $details)
@@ -291,6 +297,6 @@ class CheckCountdowns extends Command
 
     private function cleanUp($codeUnique)
     {
-        Comment::where('code_unique', $codeUnique)->delete();
+        // Comment::where('code_unique', $codeUnique)->delete();
     }
 }

@@ -84,17 +84,17 @@ class Appeloffregroupernegociation extends Component
         // Déboguer pour vérifier la structure de l'événement
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->comments = Comment::with('user')
-            ->where('code_unique', $this->appeloffregrp->codeunique)
+            ->where('code_unique', $this->notification->data['code_unique'])
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->get();
 
 
-        $this->prixLePlusBas = Comment::where('code_unique', $this->appeloffregrp->codeunique)
+        $this->prixLePlusBas = Comment::where('code_unique', $this->notification->data['code_unique'])
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
-        $this->offreIniatiale = Comment::where('code_unique', $this->appeloffregrp->codeunique)
+        $this->offreIniatiale = Comment::where('code_unique', $this->notification->data['code_unique'])
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'asc')
             ->first(); // Récupère le premier commentaire trié
@@ -124,7 +124,7 @@ class Appeloffregroupernegociation extends Component
         }
 
         // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->appeloffregrp->codeunique)
+        $offreInitiale = Comment::where('code_unique', $this->notification->data['code_unique'])
             ->whereNotNull('prixTrade')
             ->orderBy('created_at', 'asc')
             ->first();
@@ -149,7 +149,7 @@ class Appeloffregroupernegociation extends Component
 
             $comment = Comment::create([
                 'prixTrade' => $this->prixTrade,
-                'code_unique' => $this->appeloffregrp->codeunique,
+                'code_unique' => $this->notification->data['code_unique'],
                 'id_trader' => Auth::id(),
                 'quantiteC' => $this->appeloffregrp->quantity,
                 'id_sender' => json_encode($this->appeloffregrp->prodUsers),
