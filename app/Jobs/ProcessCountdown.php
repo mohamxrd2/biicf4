@@ -100,7 +100,6 @@ class ProcessCountdown implements ShouldQueue
             ]);
 
             broadcast(new CountdownTick(0, $this->code_unique));
-            Cache::forget("countdown_lock_{$this->code_unique}_{$this->countdownId}");
 
             // Exécuter la commande CheckCountdowns
             Artisan::call('check:countdowns');

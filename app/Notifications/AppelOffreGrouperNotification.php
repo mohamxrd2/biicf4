@@ -29,6 +29,7 @@ class AppelOffreGrouperNotification extends Notification implements ShouldQueue
             'id_appelGrouper' => $this->achat['id_appelGrouper'] ?? null,
             'totalPersonnes' => ($this->achat['totalPersonnes'] ?? 0) + 1 ?? null,
             'code_unique' => $this->achat['code_unique'],
+            'code_livr' => $this->achat['code_livr'],
             'title' => $this->achat['title'] ?? null,
             'description' => $this->achat['description'] ?? null,
             'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">

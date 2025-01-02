@@ -154,21 +154,15 @@ class CountdownNotificationAd extends Component
         // Calcul du montant requis
         $this->requiredAmount = floatval($this->notification->data['prixTrade']);
 
-        // Vérification des fonds disponibles dans le portefeuille
-        if ($this->userWallet->balance < $this->requiredAmount) {
-            Log::warning('Fonds insuffisants dans le portefeuille de l\'utilisateur.', [
-                'user_id' => $this->userWallet->user_id,
-                'requiredAmount' => $this->requiredAmount,
-                'currentBalance' => $this->userWallet->balance,
-            ]);
 
-            // Vous pouvez également ajouter un message pour l'utilisateur
-            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
-            return; // Arrête l'exécution de la fonction
-        }
         DB::beginTransaction();
         try {
-            if ($this->notification->data['type_achat'] == 'Delivery') {
+
+            if ($this->notification->data['type'] === 'AchatDirectPoffreGroupe') {
+                // Handle AchatDirectPoffreGroupe type
+                $this->handleAchatDirectPoffreGroupe();
+            } elseif ($this->notification->data['type_achat'] === 'Delivery') {
+                // Handle Delivery type
                 $this->pour_livraison();
             }
 
@@ -207,9 +201,80 @@ class CountdownNotificationAd extends Component
             session()->flash('error', 'Une erreur est survenue lors du processus de validation. Veuillez réessayer.');
         }
     }
+    private function handleAchatDirectPoffreGroupe()
+    {
+        // Calculer le montant total
+        $prixTotal = floatval($this->achatdirect->montantTotal);
+        $fraisLivraison = floatval($this->requiredAmount);
+        $montantTotal = $prixTotal + $fraisLivraison;
+
+        // Vérification des fonds disponibles dans le portefeuille
+        if ($this->userWallet->balance < $montantTotal) {
+
+            // Vous pouvez également ajouter un message pour l'utilisateur
+            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
+            return; // Arrête l'exécution de la fonction
+        }
+        try {
+            // Validate required data
+            if (!$this->achatdirect || !$this->userWallet) {
+                throw new Exception('Données manquantes pour le traitement');
+            }
+
+
+
+            DB::beginTransaction();
+
+            // Créer le gel des fonds
+            gelement::create([
+                'id_wallet' => $this->userWallet->id,
+                'reference_id' => $this->achatdirect->code_unique,
+                'amount' => $montantTotal,
+            ]);
+
+            // Transaction pour l'achat
+            $this->createTransaction(
+                Auth::id(),
+                Auth::id(),
+                'Gele',
+                $prixTotal,
+                $this->generateIntegerReference(),
+                'Debité pour achat',
+                'effectué',
+                'COC'
+            );
+
+            // Transaction pour la livraison
+            $this->createTransaction(
+                Auth::id(),
+                Auth::id(),
+                'Gele',
+                $fraisLivraison,
+                $this->generateIntegerReference(),
+                'Debité pour la livraison',
+                'effectué',
+                'COC'
+            );
+
+            DB::commit();
+
+        } catch (Exception $e) {
+            DB::rollback();
+            Log::error('Erreur lors du traitement de la transaction.', [
+                'message' => $e->getMessage(),
+                'code_unique' => $this->achatdirect->code_unique ?? null
+            ]);
+        }
+    }
     private function pour_livraison()
     {
+        // Vérification des fonds disponibles dans le portefeuille
+        if ($this->userWallet->balance < $this->requiredAmount) {
 
+            // Vous pouvez également ajouter un message pour l'utilisateur
+            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
+            return; // Arrête l'exécution de la fonction
+        }
         // Vérification de l'existence de l'achat dans les transactions gelées
         $existingGelement = gelement::where('reference_id', $this->achatdirect->code_unique)
             ->where('id_wallet', $this->userWallet->id)
@@ -228,12 +293,6 @@ class CountdownNotificationAd extends Component
             $this->userWallet->balance -= $this->requiredAmount;
             $this->userWallet->save();
 
-            Log::info('Portefeuille débité avec succès.', [
-                'user_id' => $this->userWallet->user_id,
-                'new_balance' => $this->userWallet->balance,
-                'debited_amount' => $this->requiredAmount
-            ]);
-
             // Calcul du montant total requis pour la transaction
             $totalMontantRequis = $this->achatdirect->montantTotal + $this->notification->data['prixTrade'];
             $montantExcédent = $existingGelement->amount + $this->requiredAmount - $totalMontantRequis;
@@ -243,10 +302,7 @@ class CountdownNotificationAd extends Component
             $existingGelement->amount += $this->requiredAmount;
             $existingGelement->save();
 
-            Log::info('Montant ajouté à une transaction existante', [
-                'transaction_id' => $existingGelement->id,
-                'new_amount' => $existingGelement->amount
-            ]);
+
 
             // Vérification et traitement de l'excédent
             if ($montantExcédent > 0) {

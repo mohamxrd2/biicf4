@@ -90,16 +90,17 @@ class AppeloffreCountdown extends Command
                 ]);
                 return;
             }
+            // Générer un code unique et démarrer le countdown
+            $newCodeUnique = $this->generateUniqueReference();
 
             // Notifications aux utilisateurs
             $this->notifyUsersQuantites($appelOffreGroup, $codeUnique);
-            $this->notifyProdUsers($appelOffreGroup, $codeUnique);
+            $this->notifyProdUsers($appelOffreGroup, $codeUnique, $newCodeUnique);
 
             $difference = 'appelOffreGrouper';
             $AppelOffreGrouper_id = $appelOffreGroup->id;
 
-            // Générer un code unique et démarrer le countdown
-            $newCodeUnique = $this->generateUniqueReference();
+
             $this->startCountdown($newCodeUnique, $difference, $AppelOffreGrouper_id, $countdowns);
 
             // Marquer comme notifié
@@ -146,11 +147,6 @@ class AppeloffreCountdown extends Command
                 ->afterCommit();
 
             event(new CountdownStarted(120, $code_unique));
-
-            Log::info('Countdown started', [
-                'countdown_id' => $countdown->id,
-                'code_unique' => $code_unique
-            ]);
         }
     }
     private function markCountdownsAsNotified($countdowns, $codeUnique)
@@ -195,7 +191,7 @@ class AppeloffreCountdown extends Command
         }
     }
 
-    private function notifyProdUsers($appelOffreGroup, $codeUnique)
+    private function notifyProdUsers($appelOffreGroup, $codeUnique, $code_livr)
     {
         $prodUsers = $appelOffreGroup->prodUsers;
 
@@ -214,6 +210,7 @@ class AppeloffreCountdown extends Command
                     'id_appelGrouper' => $appelOffreGroup->id,
                     'totalPersonnes' => $totalPersonnes,
                     'code_unique' => $codeUnique,
+                    'code_livr' => $code_livr,
                     'title' => 'Négociation d\'une commande groupée',
                     'description' => 'Cliquez pour participer à la négociation.',
                 ];
