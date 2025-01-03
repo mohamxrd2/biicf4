@@ -2,6 +2,7 @@
 
 use App\Jobs\TestQueueJob;
 use App\Livewire\Cfa;
+use App\Livewire\NotificationShow;
 use App\Livewire\ProjetDetails;
 use App\Livewire\RechargeAgent;
 use App\Livewire\DetailLivraison;
@@ -32,6 +33,8 @@ use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
 use App\Livewire\Accueil;
 use App\Livewire\Notif;
+use App\Livewire\Notification;
+use App\Livewire\NotificationDetail;
 
 Route::get('/', function () {
     return view('index');
@@ -135,9 +138,8 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 
 Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('acceuil', Accueil::class)->name('biicf.acceuil');
-    Route::get('notif', Notif::class)->name('biicf.notif');
-
-    Route::get('notification/{id}', [NotificationController::class, 'show'])->name('notification.show');
+    Route::get('notification', Notification::class)->name('biicf.notif');
+    Route::get('notification/detail/{id}', NotificationDetail::class)->name('notification.show');
 
     Route::get('test-queue', function () {
         TestQueueJob::dispatch();

@@ -6,13 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>@yield('title')</title>
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Vite Assets -->
+    @php
+        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+    @endphp
+    <link rel="stylesheet" href="/build/{{ $manifest['resources/css/app.css']['file'] }}">
+    <script type="module" src="/build/{{ $manifest['resources/js/app.js']['file'] }}"></script>
+
     @livewireStyles
 
 </head>
