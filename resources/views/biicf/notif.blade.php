@@ -2,9 +2,6 @@
 
 @section('title', 'Notification')
 
-@php
-    use App\Models\ProduitService;
-@endphp
 
 @section('content')
     <!-- Afficher les messages de succès -->
@@ -20,7 +17,7 @@
             {{ session('error') }}
         </div>
     @endif
-    
+
 
     <div class="max-w-5xl mx-auto ">
 

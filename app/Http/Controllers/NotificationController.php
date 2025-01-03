@@ -24,10 +24,10 @@ use Illuminate\Notifications\DatabaseNotification;
 class NotificationController extends Controller
 {
 
-    public function index()
-    {
-        return view('biicf.notif');
-    }
+   
+   
+   
+   
     public function show($id)
     {
         try {

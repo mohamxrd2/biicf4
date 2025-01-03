@@ -173,7 +173,6 @@
                     'title' => 'Postuler',
                 ])
 
-
                 <li>
                     <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100   dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 "
                         href="#" data-hs-overlay="#hs-sign-out-alert">
@@ -187,9 +186,6 @@
 
                     </a>
                 </li>
-
-
-
 
             </ul>
 
@@ -497,7 +493,6 @@
     <!-- End Content -->
 
     @livewireScripts
-
 
 
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>

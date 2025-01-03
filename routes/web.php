@@ -30,6 +30,8 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
+use App\Livewire\Accueil;
+use App\Livewire\Notif;
 
 Route::get('/', function () {
     return view('index');
@@ -132,10 +134,9 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 //////   ////// PLATEFORME //////   ///////////
 
 Route::middleware('user.auth')->prefix('biicf')->group(function () {
-    Route::get('acceuil', [ProduitServiceController::class, 'homeBiicf'])->name('biicf.acceuil');
-    Route::get('recheche', [ProduitServiceController::class, 'search'])->name('biicf.search');
+    Route::get('acceuil', Accueil::class)->name('biicf.acceuil');
+    Route::get('notif', Notif::class)->name('biicf.notif');
 
-    Route::get('notif', [NotificationController::class, 'index'])->name('biicf.notif');
     Route::get('notification/{id}', [NotificationController::class, 'show'])->name('notification.show');
 
     Route::get('test-queue', function () {

@@ -93,12 +93,6 @@ class ProduitServiceController extends Controller
         }
     }
 
-    public function homeBiicf()
-    {
-        return view('biicf.acceuil');
-    }
-
-
 
 
     public function pubDet($id)
@@ -186,7 +180,7 @@ class ProduitServiceController extends Controller
                 $produit->photoProd2,
                 $produit->photoProd3,
                 $produit->photoProd4,
-              
+
             ]);
 
 
