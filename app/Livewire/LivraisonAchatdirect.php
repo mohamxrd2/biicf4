@@ -68,6 +68,7 @@ class LivraisonAchatdirect extends Component
             case 'appelOffreGrouper':
             case 'appelOffre':
             case 'OffreGrouper':
+            case 'achatDirect':
                 $this->Valuecode_unique = $this->notification->data['code_unique'] ?? null;
                 break;
             default:

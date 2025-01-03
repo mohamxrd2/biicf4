@@ -91,17 +91,17 @@ class AppeloffreCountdown extends Command
                 return;
             }
             // Générer un code unique et démarrer le countdown
-            $newCodeUnique = $this->generateUniqueReference();
+            $code_livr = $this->generateUniqueReference();
 
             // Notifications aux utilisateurs
             $this->notifyUsersQuantites($appelOffreGroup, $codeUnique);
-            $this->notifyProdUsers($appelOffreGroup, $codeUnique, $newCodeUnique);
+            $this->notifyProdUsers($appelOffreGroup, $codeUnique, $code_livr);
 
             $difference = 'appelOffreGrouper';
             $AppelOffreGrouper_id = $appelOffreGroup->id;
 
 
-            $this->startCountdown($newCodeUnique, $difference, $AppelOffreGrouper_id, $countdowns);
+            $this->startCountdown($code_livr, $difference, $AppelOffreGrouper_id, $countdowns);
 
             // Marquer comme notifié
             $this->markCountdownsAsNotified($countdowns, $codeUnique);
