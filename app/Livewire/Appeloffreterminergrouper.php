@@ -261,6 +261,7 @@ class Appeloffreterminergrouper extends Component
                     'quantité' => $quantite,
                     'montantTotal' => $quantite * $this->notification->data['prixTrade'],
                     'localite' => $localite,
+                    'type_achat' => 'achatDirect',
                     'date_tot' => $this->AppelOffreGrouper->dateTot,
                     'date_tard' => $this->AppelOffreGrouper->dateTard,
                     'userTrader' => Auth::id(),
@@ -286,17 +287,7 @@ class Appeloffreterminergrouper extends Component
                         $livreur = User::find($livreurId);
                         if ($livreur) {
                             Notification::send($livreur, new livraisonAchatdirect($data));
-                            $notification = $livreur->notifications()
-                                ->where('type', livraisonAchatdirect::class)
-                                ->latest()
-                                ->first();
-
-                            if ($notification) {
-                                $notification->update(['type_achat' => 'appelOffreGrouper']);
-                            }
-
                             event(new NotificationSent($livreur));
-                            Log::info('Notification envoyée', ['livreur_id' => $livreur->id]);
                         }
                     }
                 }

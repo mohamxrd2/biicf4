@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Wallet;
 use App\Models\User;
 use App\Models\ComissionAdmin;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -37,6 +38,10 @@ class CommissionService
             $parrainUser = User::find($currentParrain);
 
             if (!$parrainUser) {
+                Log::warning('Parrain introuvable', [
+                    'parrain_id' => $currentParrain,
+                    'level' => $level,
+                ]);
                 break;
             }
 
@@ -57,8 +62,9 @@ class CommissionService
                     $parrainUser->id,
                     'Commission',
                     $commissionForParrain,
-                    $this->generateTransactionReference(),
-                    "Commission niveau $level"
+                    $this->generateIntegerReference(),
+                    "Commission niveau $level",
+                    'COC'
                 );
             }
 
@@ -68,7 +74,6 @@ class CommissionService
 
         return $commissions;
     }
-
     /**
      * Distribute remaining commissions to the admin wallet.
      *
@@ -89,46 +94,73 @@ class CommissionService
 
             $this->createTransaction(
                 auth()->id(),
-                1,
+                1, // ID de l'admin
                 'Commission',
                 $commissions,
-                $this->generateTransactionReference(),
-                'Commission de BICF'
+                $this->generateIntegerReference(),
+                'Commission de BICF',
+                'COC'
             );
+        } else {
+            Log::error('Erreur : Portefeuille admin introuvable', [
+                'admin_id' => 1,
+                'commissions' => $commissions,
+            ]);
         }
     }
 
     /**
      * Create a transaction record.
      *
-     * @param int $userId
+     * @param int $senderId
      * @param int $receiverId
      * @param string $type
      * @param float $amount
-     * @param string $reference
+     * @param int $reference_id
      * @param string $description
+     * @param string $type_compte
      * @return void
      */
-    private function createTransaction(int $userId, int $receiverId, string $type, float $amount, string $reference, string $description): void
+    public function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $type_compte): void
     {
-        // Logic for creating a transaction in the database
-        \App\Models\Transaction::create([
-            'user_id' => $userId,
+        // Vérifiez si l'utilisateur receiver existe
+        $receiverUser = User::find($receiverId);
+
+        if (!$receiverUser) {
+            Log::error('Erreur de transaction : Utilisateur receiver introuvable', [
+                'receiver_id' => $receiverId,
+                'sender_id' => $senderId,
+                'type' => $type,
+                'amount' => $amount,
+            ]);
+            return; // Arrêtez l'exécution si l'utilisateur n'existe pas
+        }
+
+        // Créez la transaction
+        $transaction = new Transaction();
+        $transaction->sender_user_id = $senderId;
+        $transaction->receiver_user_id = $receiverId;
+        $transaction->type = $type;
+        $transaction->amount = $amount;
+        $transaction->reference_id = $reference_id;
+        $transaction->description = $description;
+        $transaction->type_compte = $type_compte;
+        $transaction->status = 'effectué';
+        $transaction->save();
+
+        Log::info('Transaction créée avec succès', [
+            'transaction_id' => $transaction->id,
             'receiver_id' => $receiverId,
-            'type' => $type,
-            'amount' => $amount,
-            'reference' => $reference,
-            'description' => $description,
+            'sender_id' => $senderId,
         ]);
     }
 
-    /**
-     * Generate a unique transaction reference.
-     *
-     * @return string
-     */
-    private function generateTransactionReference(): string
+    protected function generateIntegerReference(): int
     {
-        return strtoupper(uniqid('TRX'));
+        // Récupère l'horodatage en millisecondes
+        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
+
+        // Retourne l'horodatage comme entier
+        return (int) $timestamp;
     }
 }

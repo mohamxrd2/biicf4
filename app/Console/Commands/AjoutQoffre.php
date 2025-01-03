@@ -54,6 +54,7 @@ class AjoutQoffre extends Command
 
             $codeUniques = $countdowns->pluck('code_unique')->unique();
             $offreGroupes = OffreGroupe::whereIn('code_unique', $codeUniques)
+                ->where('notified', false)
                 ->with(['user', 'produit'])
                 ->get();
 

@@ -201,6 +201,7 @@ class Appeloffreterminer extends Component
                 'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
                 'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
                 'montantTotal' => $this->prixTotal,
+                'type_achat' => 'achatDirect',
                 'localite' => $this->appeloffre->localite,
                 'date_tot' => $this->appeloffre->date_tot,
                 'date_tard' => $this->appeloffre->date_tard,
@@ -237,14 +238,6 @@ class Appeloffreterminer extends Component
                     $livreur = User::find($livreurId);
                     if ($livreur) {
                         Notification::send($livreur, new livraisonAchatdirect($data));
-                        $notification = $livreur->notifications()
-                        ->where('type', livraisonAchatdirect::class)
-                        ->latest()
-                        ->first();
-
-                    if ($notification) {
-                        $notification->update(['type_achat' => 'appelOffre']);
-                    }
 
                         event(new NotificationSent($livreur)); // Lancer l'événement
                     }

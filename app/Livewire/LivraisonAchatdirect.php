@@ -130,28 +130,28 @@ class LivraisonAchatdirect extends Component
             );
             return;
         }
-
-        // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Valider les données avec une règle personnalisée
-        $validatedData = $this->validate([
-            'prixTrade' => [
-                'required',
-                'numeric',
-                function ($attribute, $value, $fail) use ($offreInitiale) {
-                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
-                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
-                    }
-                }
-            ]
-        ]);
-
         DB::beginTransaction();
         try {
+            // Récupérer d'abord l'offre initiale pour la validation
+            $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+                ->whereNotNull('prixTrade')
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            // Valider les données avec une règle personnalisée
+            $validatedData = $this->validate([
+                'prixTrade' => [
+                    'required',
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($offreInitiale) {
+                        if ($offreInitiale && $value > $offreInitiale->prixTrade) {
+                            $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
+                        }
+                    }
+                ]
+            ]);
+
+
 
             // Créer un commentaire
             $comment = Comment::create([

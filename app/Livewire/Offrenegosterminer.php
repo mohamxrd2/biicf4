@@ -150,6 +150,7 @@ class Offrenegosterminer extends Component
                 'date_tard' => $validated['dateTard'],
                 'timeStart' => $validated['timeStart'],
                 'timeEnd' => $validated['timeEnd'],
+                'type_achat' => 'achatDirect',
                 'dayPeriod' => $validated['dayPeriod'],
                 'dayPeriodFin' => $validated['dayPeriodFin'],
                 'userTrader' => $validated['userTrader'],
@@ -182,20 +183,12 @@ class Offrenegosterminer extends Component
             $this->createTransaction($userId, $validated['userTrader'], 'Gele', $montantTotal, $reference_id, 'Gele Pour ' . 'Achat de ' . $validated['nameProd'], 'effectué', 'COC');
 
             $owner = User::find($validated['userTrader']);
-            $selectedOption = $this->selectedOption;
             Notification::send($owner, new AchatBiicf($achatUser));
 
             // Après l'envoi de la notification
             event(new NotificationSent($owner));
 
-            // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-            $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
-
-            if ($notification) {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => $selectedOption]);
-            }
-
+            
             $this->reset(['quantité', 'localite']);
 
             $userConnecte = Auth::user(); // Récupérer l'utilisateur connecté

@@ -6,7 +6,7 @@ use App\Models\Transaction;
 
 class TransactionService
 {
-    public function  createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
+    public function  createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description,  string $type_compte): void
     {
         $transaction = new Transaction();
         $transaction->sender_user_id = $senderId;

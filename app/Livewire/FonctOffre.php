@@ -229,6 +229,7 @@ class FonctOffre extends Component
                 'zone' => $zoneEconomique,
                 'user_id' => $user_id,
                 'differance' => 'grouper',
+                'notified' => true,
             ]);
 
             $difference = 'enchere';

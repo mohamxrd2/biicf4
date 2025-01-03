@@ -161,7 +161,7 @@ class CountdownNotificationAd extends Component
             if ($this->achatdirect->type_achat === 'OffreGrouper') {
                 // Handle AchatDirectPoffreGroupe type
                 $this->handleAchatDirectPoffreGroupe();
-            } elseif ($this->notification->data['type_achat'] === 'Delivery') {
+            } elseif ($this->achatdirect->type_achat === 'achatDirect') {
                 // Handle Delivery type
                 $this->pour_livraison();
             }
@@ -214,7 +214,7 @@ class CountdownNotificationAd extends Component
             session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
             return; // Arrête l'exécution de la fonction
         }
-        
+
         try {
             // Validate required data
             if (!$this->achatdirect || !$this->userWallet) {
