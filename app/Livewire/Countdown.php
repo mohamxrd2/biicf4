@@ -77,7 +77,7 @@ class Countdown extends Component
                 case 'App\Notifications\livraisonAchatdirect':
                     if (isset($this->notification->data['achat_id'])) {
                         $this->achatdirect = AchatDirect::findOrFail($this->notification->data['achat_id']);
-                        switch ($this->notification->type_achat) {
+                        switch ($this->achatdirect->type_achat) {
                             case 'appelOffreGrouper':
                             case 'appelOffre':
                             case 'OffreGrouper':

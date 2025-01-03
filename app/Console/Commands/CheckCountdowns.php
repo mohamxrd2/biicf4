@@ -243,8 +243,6 @@ class CheckCountdowns extends Command
         try {
             // Envoyer la notification au sender
             if ($countdown->sender) {
-                $details['type_achat'] = 'Delivery';
-                $details['type'] = 'AchatDirectPoffreGroupe';
 
                 Notification::send($countdown->sender, new CountdownNotificationAd($details));
                 event(new NotificationSent($countdown->sender));
@@ -277,7 +275,7 @@ class CheckCountdowns extends Command
     private function sendSingleOfferNotification($countdown, $commentToUse, $details)
     {
         $details['id_trader'] = $commentToUse->id_trader ?? null;
-        
+
         switch ($countdown->difference) {
             case 'appelOffreD':
                 $details['type_achat'] = 'Delivery';

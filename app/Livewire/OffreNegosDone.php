@@ -251,9 +251,10 @@ class OffreNegosDone extends Component
                 'nameProd' => $this->produit->name,
                 'quantité' => $quantiteTotal,
                 'montantTotal' => $this->prixFin,
-                'localite' => 'cocody',
+                'localite' => $this->offregroupe->client->commune,
                 'date_tot' => now(),
                 'date_tard' => now(),
+                'type_achat' => 'OffreGrouper',
                 'userTrader' => Auth::id(),
                 'userSender' => $this->offregroupe->client_id,
                 'idProd' => $this->produit->id,
@@ -271,8 +272,9 @@ class OffreNegosDone extends Component
                 'description' => 'Cliquez pour participer a la negociation',
             ];
 
+            $userSender = $this->offregroupe->client_id;
             // Démarrer le compte à rebours pour chaque utilisateur
-            $this->startCountdown($data['code_livr'], $this->offregroupe->clent_id, $achatdirect->id);
+            $this->startCountdown($data['code_livr'], $userSender, $achatdirect->id);
 
 
             // Envoyer les notifications aux livreurs
@@ -281,17 +283,6 @@ class OffreNegosDone extends Component
                     $livreur = User::find($livreurId);
                     if ($livreur) {
                         Notification::send($livreur, new livraisonAchatdirect($data));
-
-                        $notification = $livreur->notifications()
-                            ->where('type', livraisonAchatdirect::class)
-                            ->latest()
-                            ->first();
-
-                        if ($notification) {
-                            $notification->update(['type_achat' => 'OffreGrouper']);
-                            Log::info('Notification mise à jour avec succès', ['notification_id' => $notification->id]);
-                        }
-
                         event(new NotificationSent($livreur));
                     }
                 }
@@ -313,7 +304,7 @@ class OffreNegosDone extends Component
             session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
         }
     }
-    public function startCountdown($code_livr, $userId, $achatdirect_id)
+    public function startCountdown($code_livr, $userSender, $achatdirect_id)
     {
         // Utiliser firstOrCreate pour éviter les doublons
         $countdown = Countdown::firstOrCreate(
@@ -323,7 +314,7 @@ class OffreNegosDone extends Component
             ],
             [
                 'user_id' => Auth::id(),
-                'userSender' => $userId,
+                'userSender' => $userSender,
                 'start_time' => $this->timestamp,
                 'difference' => 'AchatDirectPoffreGroupe',
                 'id_achat' => $achatdirect_id,

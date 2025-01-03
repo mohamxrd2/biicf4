@@ -64,9 +64,9 @@ class LivraisonAchatdirect extends Component
         }
 
         // Déterminer la valeur de $Valuecode_unique
-        switch ($this->notification->type_achat) {
-            case 'appelOffre':
+        switch ($this->achatdirect->type_achat) {
             case 'appelOffreGrouper':
+            case 'appelOffre':
             case 'OffreGrouper':
                 $this->Valuecode_unique = $this->notification->data['code_unique'] ?? null;
                 break;

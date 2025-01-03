@@ -158,7 +158,7 @@ class CountdownNotificationAd extends Component
         DB::beginTransaction();
         try {
 
-            if ($this->notification->data['type'] === 'AchatDirectPoffreGroupe') {
+            if ($this->achatdirect->type_achat === 'OffreGrouper') {
                 // Handle AchatDirectPoffreGroupe type
                 $this->handleAchatDirectPoffreGroupe();
             } elseif ($this->notification->data['type_achat'] === 'Delivery') {
@@ -210,18 +210,16 @@ class CountdownNotificationAd extends Component
 
         // Vérification des fonds disponibles dans le portefeuille
         if ($this->userWallet->balance < $montantTotal) {
-
             // Vous pouvez également ajouter un message pour l'utilisateur
             session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
             return; // Arrête l'exécution de la fonction
         }
+        
         try {
             // Validate required data
             if (!$this->achatdirect || !$this->userWallet) {
                 throw new Exception('Données manquantes pour le traitement');
             }
-
-
 
             DB::beginTransaction();
 
@@ -257,7 +255,6 @@ class CountdownNotificationAd extends Component
             );
 
             DB::commit();
-
         } catch (Exception $e) {
             DB::rollback();
             Log::error('Erreur lors du traitement de la transaction.', [
