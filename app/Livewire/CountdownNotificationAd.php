@@ -188,6 +188,7 @@ class CountdownNotificationAd extends Component
                 Notification::send($this->fournisseur, new VerifUser($dataFournisseur));
                 event(new NotificationSent($this->fournisseur));
             }
+
             // Mettre à jour la notification et valider
             $this->notification->update(['reponse' => 'accepter']);
             Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
@@ -207,10 +208,19 @@ class CountdownNotificationAd extends Component
     }
     private function handleAchatDirectPoffreGroupe()
     {
+
         // Calculer le montant total
         $prixTotal = floatval($this->achatdirect->montantTotal);
         $fraisLivraison = floatval($this->requiredAmount);
         $montantTotal = $prixTotal + $fraisLivraison;
+
+        // Vérification des fonds disponibles dans le portefeuille
+        if ($this->userWallet->balance <  $montantTotal ) {
+
+            // Vous pouvez également ajouter un message pour l'utilisateur
+            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
+            return; // Arrête l'exécution de la fonction
+        }
 
         // Vérification des fonds disponibles dans le portefeuille
         if ($this->userWallet->balance < $montantTotal) {
@@ -276,6 +286,7 @@ class CountdownNotificationAd extends Component
             session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
             return; // Arrête l'exécution de la fonction
         }
+
         // Vérification de l'existence de l'achat dans les transactions gelées
         $existingGelement = gelement::where('reference_id', $this->achatdirect->code_unique)
             ->where('id_wallet', $this->userWallet->id)
