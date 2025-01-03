@@ -489,6 +489,7 @@ class FonctOffre extends Component
             'user_id' => $userId,
             'client_id' => $user,
             'differance' => 'offregrouper',
+            'notified' => false,
         ]);
 
 
