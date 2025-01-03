@@ -201,7 +201,7 @@ class Appeloffreterminer extends Component
                 'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
                 'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
                 'montantTotal' => $this->prixTotal,
-                'type_achat' => 'achatDirect',
+                'type_achat' => 'appelOffre',
                 'localite' => $this->appeloffre->localite,
                 'date_tot' => $this->appeloffre->date_tot,
                 'date_tard' => $this->appeloffre->date_tard,

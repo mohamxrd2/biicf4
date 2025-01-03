@@ -261,7 +261,7 @@ class Appeloffreterminergrouper extends Component
                     'quantité' => $quantite,
                     'montantTotal' => $quantite * $this->notification->data['prixTrade'],
                     'localite' => $localite,
-                    'type_achat' => 'achatDirect',
+                    'type_achat' => 'appelOffreGrouper',
                     'date_tot' => $this->AppelOffreGrouper->dateTot,
                     'date_tard' => $this->AppelOffreGrouper->dateTard,
                     'userTrader' => Auth::id(),

@@ -117,6 +117,8 @@ class Mainleveclient extends Component
 
                     break;
                 case 'achatDirect':
+                case 'appelOffreGrouper':
+                case 'appelOffre':
                     $this->processAchatdirectPayments($transactionService, $walletService, $commissionService, $notificationService);
                     break;
                 default:

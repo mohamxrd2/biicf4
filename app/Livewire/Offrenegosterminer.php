@@ -150,7 +150,7 @@ class Offrenegosterminer extends Component
                 'date_tard' => $validated['dateTard'],
                 'timeStart' => $validated['timeStart'],
                 'timeEnd' => $validated['timeEnd'],
-                'type_achat' => 'achatDirect',
+                'type_achat' => 'OffreGrouper',
                 'dayPeriod' => $validated['dayPeriod'],
                 'dayPeriodFin' => $validated['dayPeriodFin'],
                 'userTrader' => $validated['userTrader'],
@@ -188,7 +188,7 @@ class Offrenegosterminer extends Component
             // Après l'envoi de la notification
             event(new NotificationSent($owner));
 
-            
+
             $this->reset(['quantité', 'localite']);
 
             $userConnecte = Auth::user(); // Récupérer l'utilisateur connecté
