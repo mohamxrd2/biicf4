@@ -16,6 +16,7 @@ use App\Notifications\OffreNegosNotif;
 use App\Notifications\OffreNotif;
 use App\Notifications\OffreNotifGroup;
 use App\Services\RecuperationTimer;
+use App\Services\TimeSync\TimeSyncService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -31,11 +32,12 @@ class FonctOffre extends Component
     public $produit;
     public   $id;
     public   $idsProprietaires;
-    public   $nombreProprietaires;
+    public $nombreProprietaires = 0;
     public   $nomFournisseurCount;
-    public   $zoneEconomique;
+    public $zoneEconomique = 'proximite'; // Valeur par défaut
     public   $quantite;
     public   $username;
+    public   $idsToNotify;
 
     public $time;
     public $error;
@@ -45,6 +47,12 @@ class FonctOffre extends Component
     public $timeRemaining;
     protected $recuperationTimer;
 
+    protected $rules = [
+        'quantite' => 'required|numeric|min:1',
+        'username' => 'required|exists:users,username',
+        'zoneEconomique' => 'required|in:proximite,locale,departementale,nationale,sous_regionale,continentale',
+    ];
+
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
     {
@@ -53,13 +61,27 @@ class FonctOffre extends Component
     public function mount($id)
     {
         $this->timeServer();
-
-        // Récupérer le produit ou échouer
         $this->produit = ProduitService::findOrFail($id);
-        // Récupérer l'identifiant de l'utilisateur connecté
-        $userId = Auth::guard('web')->id();
 
-        // Récupérer les IDs des propriétaires des consommations similaires
+        // Initialiser idsProprietaires avant loadData()
+        $this->idsProprietaires = [];
+
+        $this->time = $this->recuperationTimer->getTime();
+        $this->loadData();
+    }
+
+    public function updatedZoneEconomique($value)
+    {
+        $this->loadData();
+    }
+
+    public function loadData()
+    {
+        $userId = Auth::guard('web')->id();
+        $user = Auth::user();
+        $zoneEconomique = strtolower($this->zoneEconomique);
+
+        // Récupérer tous les consommateurs du produit
         $this->idsProprietaires = Consommation::where('name', $this->produit->name)
             ->where('id_user', '!=', $userId)
             ->where('statuts', 'Accepté')
@@ -67,8 +89,37 @@ class FonctOffre extends Component
             ->pluck('id_user')
             ->toArray();
 
-        // Compter le nombre d'IDs distincts
-        $this->nombreProprietaires = count($this->idsProprietaires);
+        // Filtrer par zone économique
+        $userAttributes = [
+            'proximite' => strtolower($user->commune),
+            'locale' => strtolower($user->ville),
+            'departementale' => strtolower($user->departe),
+            'nationale' => strtolower($user->country),
+            'sous_regionale' => strtolower($user->sous_region),
+            'continentale' => strtolower($user->continent),
+        ];
+
+        $appliedZoneValue = $userAttributes[$zoneEconomique] ?? null;
+
+        // Filtrer les utilisateurs selon la zone sélectionnée
+        $this->idsToNotify = User::whereIn('id', $this->idsProprietaires)
+            ->where(function ($query) use ($appliedZoneValue, $zoneEconomique) {
+                $column = match ($zoneEconomique) {
+                    'proximite' => 'commune',
+                    'locale' => 'ville',
+                    'departementale' => 'departe',
+                    'nationale' => 'country',
+                    'sous_regionale' => 'sous_region',
+                    'continentale' => 'continent',
+                    default => 'commune'
+                };
+                $query->where($column, $appliedZoneValue);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        // Mettre à jour le nombre de propriétaires
+        $this->nombreProprietaires = count($this->idsToNotify);
 
         // Récupérer les fournisseurs pour ce produit
         $nomFournisseur = ProduitService::where('name', $this->produit->name)
@@ -78,54 +129,32 @@ class FonctOffre extends Component
             ->pluck('user_id')
             ->toArray();
 
-        $this->nomFournisseurCount = count($nomFournisseur);
+        // Filtrer les fournisseurs par zone
+        $fournisseursFiltered = User::whereIn('id', $nomFournisseur)
+            ->where(function ($query) use ($appliedZoneValue) {
+                $query->where('commune', $appliedZoneValue)
+                    ->orWhere('ville', $appliedZoneValue)
+                    ->orWhere('departe', $appliedZoneValue)
+                    ->orWhere('country', $appliedZoneValue)
+                    ->orWhere('sous_region', $appliedZoneValue)
+                    ->orWhere('continent', $appliedZoneValue);
+            })
+            ->pluck('id')
+            ->toArray();
 
-        // Récupération de l'heure via le service
-        $this->time = $this->recuperationTimer->getTime();
+        $this->nomFournisseurCount = count($fournisseursFiltered);
     }
+
     public function timeServer()
     {
-        // Faire plusieurs tentatives de récupération pour plus de précision
-        $attempts = 3;
-        $times = [];
-
-        for ($i = 0; $i < $attempts; $i++) {
-            // Récupération de l'heure via le service
-            $currentTime = $this->recuperationTimer->getTime();
-            if ($currentTime) {
-                $times[] = $currentTime;
-            }
-            // Petit délai entre chaque tentative
-            usleep(50000); // 50ms
-        }
-
-        if (empty($times)) {
-            // Si aucune tentative n'a réussi, utiliser l'heure système
-            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
-            $this->time = now()->timestamp * 1000;
-        } else {
-            // Utiliser la médiane des temps récupérés pour plus de précision
-            sort($times);
-            $medianIndex = floor(count($times) / 2);
-            $this->time = $times[$medianIndex];
-            $this->error = null;
-        }
-
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
-
-        // Log pour debug
-        Log::info('Timer actualisé', [
-            'timestamp' => $this->timestamp,
-            'time_ms' => $this->time,
-            'attempts' => count($times)
-        ]);
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
     }
     public function sendOffre()
     {
-
         try {
             $user_id = Auth::guard('web')->id();
 
@@ -172,7 +201,7 @@ class FonctOffre extends Component
                         ->orWhere('sous_region', $appliedZoneValue)
                         ->orWhere('continent', $appliedZoneValue);
                 })
-                ->pluck('id')
+                ->pluck(column: 'id')
                 ->toArray();
 
             if (empty($idsLocalite)) {
@@ -194,11 +223,9 @@ class FonctOffre extends Component
                 'formSubmitted',
                 "Notifications envoyées à {$this->nombreProprietaires} utilisateur(s).",
             );
-        } catch (Exception $e) {
-            Log::error('Erreur lors de l\'envoi des notifications', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            session()->flash('success', 'Offre envoyée avec succès !');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 
@@ -272,11 +299,10 @@ class FonctOffre extends Component
                 'formSubmitted',
                 "Notifications envoyées à {$this->nombreProprietaires} utilisateur(s).",
             );
+            session()->flash('success', 'Offre négociée envoyée avec succès !');
             return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de l\'envoi des notifications', [
-                'message' => $e->getMessage(),
-            ]);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
             return redirect()->back()->with('error', 'Une erreur s\'est produite. Veuillez réessayer.');
         }
     }
@@ -371,7 +397,7 @@ class FonctOffre extends Component
     public function sendoffreGrp()
     {
         try {
-
+            $this->validate();
             $this->timeServer();
 
             $user_id = Auth::id();
@@ -420,9 +446,11 @@ class FonctOffre extends Component
                 "Notifications envoyées à {$this->nomFournisseurCount} utilisateur(s).",
             );
 
+            session()->flash('success', 'Offre groupée envoyée avec succès !');
+
             return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
         } catch (Exception $e) {
-            Log::error('Erreur lors du stockage des données', ['error' => $e->getMessage()]);
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
             return redirect()->back()->with('error', 'Une erreur est survenue. Veuillez réessayer.');
         }
     }
