@@ -157,13 +157,17 @@ class CountdownNotificationAd extends Component
 
         DB::beginTransaction();
         try {
-
-            if ($this->achatdirect->type_achat === 'OffreGrouper') {
-                // Handle AchatDirectPoffreGroupe type
-                $this->handleAchatDirectPoffreGroupe();
-            } elseif ($this->achatdirect->type_achat === 'achatDirect') {
-                // Handle Delivery type
-                $this->pour_livraison();
+            // Déterminer la valeur de $Valuecode_unique
+            switch ($this->achatdirect->type_achat) {
+                case 'appelOffreGrouper':
+                case 'appelOffre':
+                case 'achatDirect':
+                    // Handle Delivery type
+                    $this->pour_livraison();
+                case 'OffreGrouper':
+                    // Handle AchatDirectPoffreGroupe type
+                    $this->handleAchatDirectPoffreGroupe();
+                    break;
             }
 
             // Générer et stocker le code de vérification
