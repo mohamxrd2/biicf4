@@ -290,79 +290,6 @@
     </div>
 
     <!-- JavaScript function to change main image -->
-    <script>
-        function toggleDropdown() {
-            const dropdownMenu = document.getElementById('dropdown-menu');
-            dropdownMenu.classList.toggle('hidden');
-        }
-
-        // Close dropdown if clicking outside
-        window.onclick = function(event) {
-            if (!event.target.matches('#options-menu')) {
-                const dropdowns = document.getElementsByClassName("absolute");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    const openDropdown = dropdowns[i];
-                    if (!openDropdown.classList.contains('hidden')) {
-                        openDropdown.classList.add('hidden');
-                    }
-                }
-            }
-        }
-
-        document.getElementById('toggleForm').addEventListener('click', function() {
-            var section = document.getElementById('hiddenSection');
-            // Vérifie si la section est visible
-            if (section.style.display === 'none' || section.style.display === '') {
-                // Affiche la section
-                section.style.display = 'block';
-            } else {
-                // Cache la section
-                section.style.display = 'none';
-            }
-        });
-
-        function changeImage(src) {
-            document.getElementById('mainImage').src = src;
-        }
-
-        function toggleVisibility() {
-            const contentDiv = document.getElementById('toggleContent');
-
-            if (contentDiv.classList.contains('hidden')) {
-                contentDiv.classList.remove('hidden');
-                // Forcing reflow to enable transition
-                contentDiv.offsetHeight;
-                contentDiv.classList.add('show');
-            } else {
-                contentDiv.classList.remove('show');
-                contentDiv.addEventListener('transitionend', () => {
-                    contentDiv.classList.add('hidden');
-                }, {
-                    once: true
-                });
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const section = document.querySelector('#checkoutSection');
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        section.classList.add(
-                            'bg-active'); // Appliquer la classe qui change le background
-                    } else {
-                        section.classList.remove(
-                            'bg-active'); // Retirer la classe si l'utilisateur défile
-                    }
-                });
-            }, {
-                threshold: 0.5
-            }); // Le seuil définit combien de l'élément doit être visible avant d'appliquer la classe
-
-            observer.observe(section);
-        });
-    </script>
     <style>
         #toggleContent {
             overflow: hidden;
@@ -372,7 +299,6 @@
 
         #toggleContent.show {
             max-height: 500px;
-            /* Vous pouvez ajuster cette valeur selon la hauteur de votre contenu */
         }
 
         .hs-carousel-body {
@@ -391,11 +317,115 @@
             max-height: 100%;
             max-width: 100%;
         }
+
+        #hiddenSection {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-10px);
+        }
+
+        #hiddenSection.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .rotate-icon {
+            transform: rotate(90deg);
+            transition: transform 0.3s ease;
+        }
     </style>
 
+    <script>
+        function initializeEventListeners() {
+            const toggleForm = document.getElementById('toggleForm');
+            const hiddenSection = document.getElementById('hiddenSection');
+            
+            if (toggleForm && hiddenSection) {
+                toggleForm.addEventListener('click', function() {
+                    const arrow = this.querySelector('svg');
+                    
+                    if (hiddenSection.style.display === 'none' || hiddenSection.style.display === '') {
+                        hiddenSection.style.display = 'block';
+                        setTimeout(() => {
+                            hiddenSection.classList.add('show');
+                            arrow.classList.add('rotate-icon');
+                        }, 10);
+                    } else {
+                        hiddenSection.classList.remove('show');
+                        arrow.classList.remove('rotate-icon');
+                        setTimeout(() => {
+                            hiddenSection.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            }
+        }
 
+        function toggleDropdown() {
+            const dropdownMenu = document.getElementById('dropdown-menu');
+            dropdownMenu.classList.toggle('hidden');
+        }
 
+        // Close dropdown if clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('#options-menu')) {
+                const dropdowns = document.getElementsByClassName("absolute");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (!openDropdown.classList.contains('hidden')) {
+                        openDropdown.classList.add('hidden');
+                    }
+                }
+            }
+        }
 
+        function changeImage(src) {
+            const mainImage = document.getElementById('mainImage');
+            if (mainImage) {
+                mainImage.src = src;
+            }
+        }
 
+        function toggleVisibility() {
+            const contentDiv = document.getElementById('toggleContent');
+            if (contentDiv) {
+                if (contentDiv.classList.contains('hidden')) {
+                    contentDiv.classList.remove('hidden');
+                    contentDiv.offsetHeight;
+                    contentDiv.classList.add('show');
+                } else {
+                    contentDiv.classList.remove('show');
+                    contentDiv.addEventListener('transitionend', () => {
+                        contentDiv.classList.add('hidden');
+                    }, { once: true });
+                }
+            }
+        }
 
+        // Initialize on DOM content loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEventListeners();
+            const section = document.querySelector('#checkoutSection');
+            if (section) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            section.classList.add('bg-active');
+                        } else {
+                            section.classList.remove('bg-active');
+                        }
+                    });
+                }, { threshold: 0.5 });
+                observer.observe(section);
+            }
+        });
+
+        // Re-initialize when Livewire updates the DOM
+        document.addEventListener('livewire:load', function() {
+            initializeEventListeners();
+            Livewire.hook('message.processed', (message, component) => {
+                initializeEventListeners();
+            });
+        });
+    </script>
 </div>

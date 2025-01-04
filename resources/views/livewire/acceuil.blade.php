@@ -152,7 +152,7 @@
             </div>
         @else
             {{-- Liste des produits --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                 @forelse($produits as $produit)
                     <div
                         class="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl
