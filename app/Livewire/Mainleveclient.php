@@ -209,6 +209,11 @@ class Mainleveclient extends Component
             'title' => 'Transaction réussie',
             'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
         ], [$fournisseurId, $livreurId]);
+
+        $this->gelement->status = 'completed';
+        $this->gelement->save();
+
+        return true;
     }
 
     /**
