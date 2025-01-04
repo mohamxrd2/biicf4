@@ -42,6 +42,7 @@ class PostulerComponent extends Component
     ];
 
     public $localite;
+    protected $layout = 'components.layouts.app';
 
     public $psap;
 
@@ -141,14 +142,14 @@ class PostulerComponent extends Component
         // Validation avec messages d'erreur personnalisés
         $this->validate([
             'experience' => 'required|string',
-           
+
             'identity' => 'required|file|mimes:jpeg,png,pdf',
             'permis' => 'required|file|mimes:jpeg,png,pdf',
             'assurance' => 'required|file|mimes:jpeg,png,pdf',
         ], [
             'experience.required' => 'Le champ expérience est obligatoire.',
             'experience.string' => 'Le champ expérience doit être une chaîne de caractères.',
-            
+
             'identity.required' => 'Le fichier d\'identité est obligatoire.',
             'identity.file' => 'Le champ identité doit être un fichier.',
             'identity.mimes' => 'Le fichier d\'identité doit être au format jpeg, png ou pdf.',
@@ -164,7 +165,7 @@ class PostulerComponent extends Component
         $psap = new Psap();
         $psap->user_id = Auth::id();
         $psap->experience = $this->experience;
-      
+
         $psap->etat = "En cours";
 
 
@@ -178,27 +179,27 @@ class PostulerComponent extends Component
         session()->flash('message', 'PSAP ajouté avec succès!');
 
         // Réinitialiser les champs du formulaire
-      $this->resetForm();
+        $this->resetForm();
     }
     public function removeIdentity()
-{
-    $this->identity = null;
-}
+    {
+        $this->identity = null;
+    }
 
-public function removePermis()
-{
-    $this->permis = null;
-}
+    public function removePermis()
+    {
+        $this->permis = null;
+    }
 
-public function removeAssurance()
-{
-    $this->assurance = null;
-}
+    public function removeAssurance()
+    {
+        $this->assurance = null;
+    }
 
-public function resetForm()
-{
-    $this->reset(['experience', 'identity', 'permis', 'assurance','experience', 'vehicle', 'vehicle2', 'vehicle3', 'zone',]);
-}
+    public function resetForm()
+    {
+        $this->reset(['experience', 'identity', 'permis', 'assurance', 'experience', 'vehicle', 'vehicle2', 'vehicle3', 'zone',]);
+    }
 
 
     protected function handlePhotoUpload($livreur, $photoField)

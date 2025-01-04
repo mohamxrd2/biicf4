@@ -34,6 +34,7 @@ class Walletclient extends Component
     public $transactionsLimit = 10;
     public $hasMoreTransactions = true;
 
+    protected $layout = 'components.layouts.app';
 
     protected $listeners = ['navigate' => 'setPage'];
 
@@ -87,7 +88,7 @@ class Walletclient extends Component
         $this->cefd = Cefp::where('id_wallet', $this->userWallet->id)->first();
         $this->crp = Crp::where('id_wallet', $this->userWallet->id)->first();
     }
-    
+
     public function loadTransactions()
     {
         $userId = Auth::guard('web')->id();
@@ -188,3 +189,4 @@ class Walletclient extends Component
         return view('livewire.walletclient', compact('users', 'userCount', 'transactions', 'userId', 'receptionTransactionSum', 'envoieTransactionSum'));
     }
 }
+

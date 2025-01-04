@@ -1,27 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Livewire;
 
 use App\Models\Consommation;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
-class ConsoController extends Controller
+class Consommations extends Component
 {
-    public function adminConsProd()
-    {
-        return view('admin.conso-produit');
-    }
-
-    public function adminConsServ()
-    {
-
-        return view('admin.conso-service');
-    }
-
-    public function consoBiicf()
+    public function render()
     {
         // Récupérer l'utilisateur connecté via le gardien web
         $user = Auth::guard('web')->user();
@@ -35,20 +22,9 @@ class ConsoController extends Controller
         $consoCount = $consommations->count();
 
         // Passer les consommations à la vue
-        return view('biicf.conso', [
+        return view('livewire.consommations', [
             'consommations' => $consommations,
             'consoCount' => $consoCount
         ]);
     }
-
-
-
-
-    public function consoDet($id)
-    {
-        $consommation = Consommation::find($id);
-
-        return view('biicf.consodetail', compact('consommation'));
-    }
-  
 }

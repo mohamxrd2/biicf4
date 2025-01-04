@@ -205,7 +205,7 @@
                                 <span class="text-sm text-gray-500">
                                     {{ \Carbon\Carbon::parse($produit->created_at)->diffForHumans() }}
                                 </span>
-                                <a href="{{ route('biicf.postdet', $produit->id) }}"
+                                <a wire:navigate href="{{ route('biicf.postdet', ['id' => $produit->id]) }}"
                                     class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700
                                     text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                     Voir le produit

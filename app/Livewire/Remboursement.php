@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class Cfa extends Component
+class Remboursement extends Component
 {
 
     public $credits;
@@ -33,7 +33,7 @@ class Cfa extends Component
 
     public function mount()
     {
-        
+
         $this->refreshData();
     }
 
@@ -128,6 +128,6 @@ class Cfa extends Component
 
     public function render()
     {
-        return view('livewire.cfa');
+        return view('livewire.remboursement');
     }
 }

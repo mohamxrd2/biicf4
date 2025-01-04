@@ -1,13 +1,18 @@
 <?php
 
 use App\Jobs\TestQueueJob;
+use App\Livewire\AjoutConsommations;
+use App\Livewire\AjoutProduitServices;
 use App\Livewire\Cfa;
 use App\Livewire\NotificationShow;
+use App\Livewire\PostulerComponent;
+use App\Livewire\ProduitServiceDetails;
 use App\Livewire\ProjetDetails;
 use App\Livewire\RechargeAgent;
 use App\Livewire\DetailLivraison;
 use App\Http\Controllers\OffreNegos;
 
+use App\Livewire\Remboursement;
 use Illuminate\Support\Facades\Auth;
 use App\Livewire\DetailsCreditProjet;
 use App\Livewire\WithdrawalComponent;
@@ -32,9 +37,12 @@ use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
 use App\Livewire\Accueil;
+use App\Livewire\Consommations;
 use App\Livewire\Notif;
 use App\Livewire\Notification;
 use App\Livewire\NotificationDetail;
+use App\Livewire\ProduitService;
+use App\Livewire\Walletclient;
 
 Route::get('/', function () {
     return view('index');
@@ -145,27 +153,18 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
         TestQueueJob::dispatch();
         return 'Job dispatché !';
     });
+    Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
+    Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
+
+    Route::get('publication', ProduitService::class)->name('biicf.post');
+    Route::get('publication/creer-produit', AjoutProduitServices::class)->name('biicf.postProduit');
+
+    Route::get('publication/{id}', ProduitServiceDetails::class)->name('biicf.postdet');
 
 
-    // routes/web.php
-    Route::get('publication', [ProduitServiceController::class, 'postBiicf'])->name('biicf.post');
-    Route::post('publication/ajouter', [UserController::class, 'storePub'])->name('biicf.pubstore');
-    Route::delete('publication/supprimer/{produit}', [ProduitServiceController::class, 'destroyProductBiicf'])->name('biicf.pubdeleteBiicf');
-    //la vue du formulaire
-    Route::get('publication/creer-produit', [ProduitServiceController::class, 'postProduit'])->name('biicf.postProduit');
-    Route::get('publication/{id}', [ProduitServiceController::class, 'pubDet'])->name('biicf.postdet');
-
-
-    Route::get('consommation/creer-consommation', [ConsoController::class, 'postCons'])->name('biicf.postCons');
-    Route::get('consommation', [ConsoController::class, 'consoBiicf'])->name('biicf.conso');
-    Route::post('consommation/ajouter', [UserController::class, 'storeCons'])->name('biicf.storeCons');
-    Route::delete('consommation/supprimer/{conso}', [ConsoController::class, 'destroConsom'])->name('biicf.consodelete');
+    Route::get('consommation', Consommations::class)->name('biicf.conso');
+    Route::get('consommation/creer-consommation', AjoutConsommations::class)->name('biicf.postCons');
     Route::get('consommation/{id}', [ConsoController::class, 'consoDet'])->name('biicf.consoDet');
-
-
-
-    Route::match(['get', 'post'], 'porte-feuille', [AdminWalletController::class, 'indexBiicf'])->name('biicf.wallet');
-    Route::get('porte-feuille/cfa', [AdminWalletController::class, 'cfa'])->name('biicf.cfa');
 
 
 
@@ -185,9 +184,8 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::post('formumelaire-appel-offre/comment', [AppelOffreController::class, 'comment'])->name('biicf.comment');
     Route::post('formumelaire-appel-offregroupe/store', [AppelOffreController::class, 'formstoreGroupe'])->name('biicf.formstoreGroupe');
 
-    Route::get('postuler', function () {
-        return view('biicf.postuler');
-    })->name('biicf.postuler');
+
+    Route::get('postuler', PostulerComponent::class)->name('biicf.postuler');
 
 
     //Route pour bourse du financement
