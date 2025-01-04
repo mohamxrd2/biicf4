@@ -17,6 +17,7 @@ use App\Notifications\mainleve;
 use App\Notifications\mainleveAd;
 use App\Notifications\RefusAchat;
 use App\Notifications\VerifUser;
+use App\Services\AchatDirectService;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -48,10 +49,15 @@ class CountdownNotificationAd extends Component
     public $statusText;
     public $statusClass;
     public $showMainlever = false;
+    public $isLoading = false;
 
+    protected $listeners = ['refreshComponent' => '$refresh'];
+    protected $achatDirectService;
 
-
-
+    public function boot(AchatDirectService $achatDirectService)
+    {
+        $this->achatDirectService = $achatDirectService;
+    }
 
     public function mount($id)
     {
@@ -108,6 +114,7 @@ class CountdownNotificationAd extends Component
     }
     public function FactureRefuser()
     {
+        $this->isLoading = true;
         try {
             // Vérification des données récupérées
             if (!$this->achatdirect) {
@@ -143,7 +150,9 @@ class CountdownNotificationAd extends Component
             $this->reset('showMainlever');
 
             session()->flash('success', 'La facture a été refusée et les notifications ont été envoyées.');
+            $this->isLoading = false;
         } catch (Exception $e) {
+            $this->isLoading = false;
             Log::error("Erreur dans FactureRefuser : " . $e->getMessage());
             session()->flash('error', 'Une erreur s\'est produite lors de l\'envoi des notifications.');
         }
@@ -151,229 +160,55 @@ class CountdownNotificationAd extends Component
 
     public function valider()
     {
-        // Calcul du montant requis
+        $this->isLoading = true;
         $this->requiredAmount = floatval($this->notification->data['prixTrade']);
-
 
         DB::beginTransaction();
         try {
-            // Déterminer la valeur de $Valuecode_unique
             switch ($this->achatdirect->type_achat) {
                 case 'appelOffreGrouper':
                 case 'appelOffre':
                 case 'achatDirect':
-                    // Handle Delivery type
-                    $this->pour_livraison();
+                    $result = $this->achatDirectService->handlePourLivraison([
+                        'achatdirect' => $this->achatdirect,
+                        'userWallet' => $this->userWallet,
+                        'notification' => $this->notification,
+                        'fournisseur' => $this->fournisseur,
+                        'userId' => $this->user,
+                        'requiredAmount' => $this->requiredAmount
+                    ]);
+                    break;
+
                 case 'OffreGrouper':
-                    // Handle AchatDirectPoffreGroupe type
-                    $this->handleAchatDirectPoffreGroupe();
+                    $result = $this->achatDirectService->handleAchatDirectPoffreGroupe([
+                        'achatdirect' => $this->achatdirect,
+                        'userWallet' => $this->userWallet,
+                        'notification' => $this->notification,
+                        'fournisseur' => $this->fournisseur,
+                        'userId' => $this->user,
+                        'requiredAmount' => $this->requiredAmount
+                    ]);
                     break;
             }
 
-            // Générer et stocker le code de vérification
-            $this->codeVerification = random_int(1000, 9999);
-            $this->achatdirect->update([
-                'code_verification' => $this->codeVerification,
-            ]);
-
-            // Préparer les données pour le fournisseur
-            $dataFournisseur = [
-                'code_unique' => $this->achatdirect->code_unique,
-                'CodeVerification' => $this->codeVerification, // Utilisez cette propriété
-                'client' => $this->achatdirect->userSender,
-                'id_achat' => $this->achatdirect->id,
-            ];
-
-            if ($this->fournisseur) {
-                Notification::send($this->fournisseur, new VerifUser($dataFournisseur));
-                event(new NotificationSent($this->fournisseur));
+            if (isset($result['success'])) {
+                session()->flash('success', $result['message']);
             }
 
-            // Mettre à jour la notification et valider
-            $this->notification->update(['reponse' => 'accepter']);
-            Log::info('Notification mise à jour', ['notificationId' => $this->notification->id]);
             DB::commit();
-
-            session()->flash('success', 'Validation effectuée avec succès.');
         } catch (Exception $e) {
             DB::rollback();
-            // Gérer les exceptions générales
             Log::error('Erreur lors de la validation', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            session()->flash('error', 'Une erreur est survenue lors du processus de validation. Veuillez réessayer.');
+            session()->flash('error', $e->getMessage() ?: 'Une erreur est survenue lors du processus de validation. Veuillez réessayer.');
+        } finally {
+            $this->isLoading = false;
         }
     }
-    private function handleAchatDirectPoffreGroupe()
-    {
 
-        // Calculer le montant total
-        $prixTotal = floatval($this->achatdirect->montantTotal);
-        $fraisLivraison = floatval($this->requiredAmount);
-        $montantTotal = $prixTotal + $fraisLivraison;
-
-        // Vérification des fonds disponibles dans le portefeuille
-        if ($this->userWallet->balance <  $montantTotal ) {
-
-            // Vous pouvez également ajouter un message pour l'utilisateur
-            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
-            return; // Arrête l'exécution de la fonction
-        }
-
-        // Vérification des fonds disponibles dans le portefeuille
-        if ($this->userWallet->balance < $montantTotal) {
-            // Vous pouvez également ajouter un message pour l'utilisateur
-            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
-            return; // Arrête l'exécution de la fonction
-        }
-
-        try {
-            // Validate required data
-            if (!$this->achatdirect || !$this->userWallet) {
-                throw new Exception('Données manquantes pour le traitement');
-            }
-
-            DB::beginTransaction();
-
-            // Créer le gel des fonds
-            gelement::create([
-                'id_wallet' => $this->userWallet->id,
-                'reference_id' => $this->achatdirect->code_unique,
-                'amount' => $montantTotal,
-            ]);
-
-            // Transaction pour l'achat
-            $this->createTransaction(
-                Auth::id(),
-                Auth::id(),
-                'Gele',
-                $prixTotal,
-                $this->generateIntegerReference(),
-                'Debité pour achat',
-                'effectué',
-                'COC'
-            );
-
-            // Transaction pour la livraison
-            $this->createTransaction(
-                Auth::id(),
-                Auth::id(),
-                'Gele',
-                $fraisLivraison,
-                $this->generateIntegerReference(),
-                'Debité pour la livraison',
-                'effectué',
-                'COC'
-            );
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            Log::error('Erreur lors du traitement de la transaction.', [
-                'message' => $e->getMessage(),
-                'code_unique' => $this->achatdirect->code_unique ?? null
-            ]);
-        }
-    }
-    private function pour_livraison()
-    {
-        // Vérification des fonds disponibles dans le portefeuille
-        if ($this->userWallet->balance < $this->requiredAmount) {
-
-            // Vous pouvez également ajouter un message pour l'utilisateur
-            session()->flash('error', 'Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
-            return; // Arrête l'exécution de la fonction
-        }
-
-        // Vérification de l'existence de l'achat dans les transactions gelées
-        $existingGelement = gelement::where('reference_id', $this->achatdirect->code_unique)
-            ->where('id_wallet', $this->userWallet->id)
-            ->first();
-
-        if (!$existingGelement) {
-            Log::warning('Aucune transaction gelée existante trouvée.', [
-                'reference_id' => $this->achatdirect->code_unique
-            ]);
-            return; // Arrête la fonction si aucune transaction n'est trouvée
-        }
-
-        DB::beginTransaction(); // Démarre une transaction pour garantir la cohérence
-        try {
-            // Débit du portefeuille utilisateur
-            $this->userWallet->balance -= $this->requiredAmount;
-            $this->userWallet->save();
-
-            // Calcul du montant total requis pour la transaction
-            $totalMontantRequis = $this->achatdirect->montantTotal + $this->notification->data['prixTrade'];
-            $montantExcédent = $existingGelement->amount + $this->requiredAmount - $totalMontantRequis;
-
-
-            // Mise à jour du montant gelé
-            $existingGelement->amount += $this->requiredAmount;
-            $existingGelement->save();
-
-
-
-            // Vérification et traitement de l'excédent
-            if ($montantExcédent > 0) {
-                // Réattribuer l'excédent au portefeuille utilisateur
-                $this->userWallet->balance += $montantExcédent;
-                $this->userWallet->save();
-
-                Log::info('Excédent retourné au portefeuille utilisateur.', [
-                    'user_id' => $this->userWallet->user_id,
-                    'returned_amount' => $montantExcédent,
-                    'final_balance' => $this->userWallet->balance
-                ]);
-
-                // Réduire le montant gelé du montant excédent
-                $existingGelement->amount -= $montantExcédent;
-                $existingGelement->save();
-
-                Log::info('Montant excédent déduit de la transaction gelée.', [
-                    'transaction_id' => $existingGelement->id,
-                    'updated_amount' => $existingGelement->amount
-                ]);
-
-                // Création de la transaction
-                $this->createTransaction(
-                    $this->user,
-                    $this->user,
-                    'Réception',
-                    $montantExcédent,
-                    $this->generateIntegerReference(),
-                    'Retour des fonds en plus',
-                    'effectué',
-                    'COC'
-                );
-            }
-
-            // Création de la transaction
-            $this->createTransaction(
-                $this->user,
-                $this->user,
-                'Gele',
-                $this->requiredAmount,
-                $this->generateIntegerReference(),
-                'Montant gelé pour la livraison',
-                'effectué',
-                'COC'
-            );
-
-
-            DB::commit(); // Valide la transaction
-        } catch (Exception $e) {
-            DB::rollBack(); // Annule les modifications en cas d'erreur
-            Log::error('Erreur lors du traitement de la livraison.', [
-                'message' => $e->getMessage(),
-                'user_id' => $this->userWallet->user_id,
-                'required_amount' => $this->requiredAmount
-            ]);
-            session()->flash('error', 'Une erreur s\'est produite lors du traitement de la livraison.');
-        }
-    }
 
     private function retait_magasin()
     {
@@ -446,8 +281,8 @@ class CountdownNotificationAd extends Component
             if ($this->fournisseur) {
                 Notification::send($this->fournisseur, new Confirmation($dataFournisseur));
                 event(new NotificationSent($this->fournisseur));
-            } else {
-                Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
+
+                Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $this->codeVerification]);
             }
 
             if ($this->userId) {

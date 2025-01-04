@@ -102,7 +102,7 @@ class ProcessCountdown implements ShouldQueue
             broadcast(new CountdownTick(0, $this->code_unique));
 
             // Exécuter la commande CheckCountdowns
-            Artisan::call('check:countdowns');
+            // Artisan::call('check:countdowns');
         }
     }
 
