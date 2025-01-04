@@ -104,7 +104,7 @@
                                         <th scope="row"
                                             class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
 
-                                            <a wire:navigate href="{{ route('biicf.postdet', ['id' => $produit->id]) }}"
+                                            <a href="{{ route('biicf.postdet', ['id' => $produit->id]) }}"
                                                 class="flex items-center">
                                                 <img class="w-10 h-10 rounded-md"
                                                     src="{{ $produit->photoProd1 ? asset('post/all/' . $produit->photoProd1) : asset('img/noimg.jpeg') }}"
@@ -114,8 +114,7 @@
                                                 <div class="ps-3">
                                                     <div class="text-base font-semibold">{{ $produit->name }}</div>
                                                 </div>
-                                                </wire:navigate>
-
+                                            </a>
 
 
 

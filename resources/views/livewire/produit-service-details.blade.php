@@ -297,135 +297,75 @@
             transition: max-height 0.5s ease-out;
         }
 
-        #toggleContent.show {
-            max-height: 500px;
-        }
-
-        .hs-carousel-body {
-            display: flex;
-            overflow: hidden;
-            max-height: 100%;
-        }
-
-        .hs-carousel-slide {
-            flex-shrink: 0;
-            width: 100%;
-        }
-
-        .hs-carousel-body img {
-            display: block;
-            max-height: 100%;
-            max-width: 100%;
-        }
-
         #hiddenSection {
             opacity: 0;
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-            transform: translateY(-10px);
+            transition: opacity 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
         }
 
         #hiddenSection.show {
             opacity: 1;
-            transform: translateY(0);
+            max-height: 2000px; /* Ajustez selon vos besoins */
         }
 
-        .rotate-icon {
-            transform: rotate(90deg);
-            transition: transform 0.3s ease;
+        .rotate-180 {
+            transform: rotate(180deg);
+            transition: transform 0.3s ease-in-out;
         }
     </style>
 
     <script>
-        function initializeEventListeners() {
+        // Fonction pour réinitialiser les composants UI
+        function reinitializeUI() {
+            // Forcer le rafraîchissement du composant Livewire
+            Livewire.dispatch('refreshComponent');
+
+            // Initialiser le comportement du bouton toggle
             const toggleForm = document.getElementById('toggleForm');
             const hiddenSection = document.getElementById('hiddenSection');
-            
-            if (toggleForm && hiddenSection) {
+            let isInitialized = false;
+
+            if (toggleForm && hiddenSection && !isInitialized) {
+                isInitialized = true;
+                
                 toggleForm.addEventListener('click', function() {
                     const arrow = this.querySelector('svg');
                     
-                    if (hiddenSection.style.display === 'none' || hiddenSection.style.display === '') {
+                    if (!hiddenSection.classList.contains('show')) {
                         hiddenSection.style.display = 'block';
-                        setTimeout(() => {
-                            hiddenSection.classList.add('show');
-                            arrow.classList.add('rotate-icon');
-                        }, 10);
+                        // Force a reflow
+                        hiddenSection.offsetHeight;
+                        hiddenSection.classList.add('show');
+                        arrow.classList.add('rotate-180');
                     } else {
                         hiddenSection.classList.remove('show');
-                        arrow.classList.remove('rotate-icon');
+                        arrow.classList.remove('rotate-180');
                         setTimeout(() => {
-                            hiddenSection.style.display = 'none';
+                            if (!hiddenSection.classList.contains('show')) {
+                                hiddenSection.style.display = 'none';
+                            }
                         }, 300);
                     }
                 });
             }
-        }
 
-        function toggleDropdown() {
-            const dropdownMenu = document.getElementById('dropdown-menu');
-            dropdownMenu.classList.toggle('hidden');
-        }
-
-        // Close dropdown if clicking outside
-        window.onclick = function(event) {
-            if (!event.target.matches('#options-menu')) {
-                const dropdowns = document.getElementsByClassName("absolute");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    const openDropdown = dropdowns[i];
-                    if (!openDropdown.classList.contains('hidden')) {
-                        openDropdown.classList.add('hidden');
+            // Réinitialiser les modals avec un petit délai
+            setTimeout(() => {
+                const modals = document.querySelectorAll('[data-hs-overlay]');
+                modals.forEach(modal => {
+                    if (typeof HSOverlay !== 'undefined') {
+                        new HSOverlay(modal);
                     }
-                }
-            }
+                });
+            }, 100);
         }
 
-        function changeImage(src) {
-            const mainImage = document.getElementById('mainImage');
-            if (mainImage) {
-                mainImage.src = src;
-            }
-        }
-
-        function toggleVisibility() {
-            const contentDiv = document.getElementById('toggleContent');
-            if (contentDiv) {
-                if (contentDiv.classList.contains('hidden')) {
-                    contentDiv.classList.remove('hidden');
-                    contentDiv.offsetHeight;
-                    contentDiv.classList.add('show');
-                } else {
-                    contentDiv.classList.remove('show');
-                    contentDiv.addEventListener('transitionend', () => {
-                        contentDiv.classList.add('hidden');
-                    }, { once: true });
-                }
-            }
-        }
-
-        // Initialize on DOM content loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeEventListeners();
-            const section = document.querySelector('#checkoutSection');
-            if (section) {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            section.classList.add('bg-active');
-                        } else {
-                            section.classList.remove('bg-active');
-                        }
-                    });
-                }, { threshold: 0.5 });
-                observer.observe(section);
-            }
-        });
-
-        // Re-initialize when Livewire updates the DOM
-        document.addEventListener('livewire:load', function() {
-            initializeEventListeners();
-            Livewire.hook('message.processed', (message, component) => {
-                initializeEventListeners();
-            });
-        });
+        // Initialiser après le chargement de la page
+        document.addEventListener('DOMContentLoaded', reinitializeUI);
+        
+        // Initialiser après les mises à jour Livewire
+        document.addEventListener('livewire:initialized', reinitializeUI);
+        document.addEventListener('livewire:navigated', reinitializeUI);
     </script>
 </div>

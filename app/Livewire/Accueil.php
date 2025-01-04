@@ -30,8 +30,14 @@ class Accueil extends Component
     {
         try {
             $query = ProduitService::with('user')
-                ->where('statuts', 'Accepté')
-                ->orderBy('created_at', 'desc');
+                ->where('statuts', 'Accepté');
+
+            // Exclure les produits de l'utilisateur connecté
+            if (auth()->check()) {
+                $query->where('user_id', '!=', auth()->id());
+            }
+
+            $query->orderBy('created_at', 'desc');
 
             // Filtre par mot-clé
             if (!empty($this->keyword)) {
