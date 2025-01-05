@@ -150,7 +150,7 @@ class Offrenegosterminer extends Component
                 'date_tard' => $validated['dateTard'],
                 'timeStart' => $validated['timeStart'],
                 'timeEnd' => $validated['timeEnd'],
-                'type_achat' => 'OffreGrouper',
+                'type_achat' => 'achatDirect',
                 'dayPeriod' => $validated['dayPeriod'],
                 'dayPeriodFin' => $validated['dayPeriodFin'],
                 'userTrader' => $validated['userTrader'],

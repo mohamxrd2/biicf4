@@ -46,7 +46,7 @@ class FonctOffre extends Component
     public $isRunning;
     public $timeRemaining;
     protected $recuperationTimer;
-
+    public $fournisseursFiltered = [];
     protected $rules = [
         'quantite' => 'required|numeric|min:1',
         'username' => 'required|exists:users,username',
@@ -132,7 +132,7 @@ class FonctOffre extends Component
             ->toArray();
 
         // Filtrer les fournisseurs par zone
-        $fournisseursFiltered = User::whereIn('id', $nomFournisseur)
+        $this->fournisseursFiltered = User::whereIn('id', $nomFournisseur)
             ->where(function ($query) use ($appliedZoneValue) {
                 $query->where('commune', $appliedZoneValue)
                     ->orWhere('ville', $appliedZoneValue)
@@ -144,7 +144,7 @@ class FonctOffre extends Component
             ->pluck('id')
             ->toArray();
 
-        $this->nomFournisseurCount = count($fournisseursFiltered);
+        $this->nomFournisseurCount = count($this->fournisseursFiltered);
     }
 
     public function timeServer()
@@ -158,75 +158,24 @@ class FonctOffre extends Component
     public function sendOffre()
     {
         try {
-            $user_id = Auth::guard('web')->id();
-            $user = Auth::user();
 
-            if (!$user) {
-                throw new Exception('Utilisateur non trouvé.');
-            }
-
-            // Récupérer le produit
-            $produit = ProduitService::findOrFail($this->produit->id);
-            $zoneEconomique = strtolower($this->zoneEconomique);
-
-            // Récupérer la valeur de la zone pour l'utilisateur courant
-            $userAttributes = [
-                'proximite' => strtolower($user->commune),
-                'locale' => strtolower($user->ville),
-                'departementale' => strtolower($user->departe),
-                'nationale' => strtolower($user->country),
-                'sous_regionale' => strtolower($user->sous_region),
-                'continentale' => strtolower($user->continent),
-            ];
-
-            $appliedZoneValue = $userAttributes[$zoneEconomique] ?? null;
-
-            if (!$appliedZoneValue) {
-                throw new Exception('Zone économique invalide.');
-            }
-
-            // Récupérer les consommateurs du produit dans la zone spécifique
-            $idsToNotify = User::whereIn('id', function($query) use ($produit, $user_id) {
-                $query->select('id_user')
-                    ->from('consommations')
-                    ->where('reference', $produit->reference)
-                    ->where('id_user', '!=', $user_id)
-                    ->where('statuts', 'Accepté')
-                    ->distinct();
-            })
-            ->where(function ($query) use ($zoneEconomique, $appliedZoneValue) {
-                $column = match($zoneEconomique) {
-                    'proximite' => 'commune',
-                    'locale' => 'ville',
-                    'departementale' => 'departe',
-                    'nationale' => 'country',
-                    'sous_regionale' => 'sous_region',
-                    'continentale' => 'continent',
-                    default => 'commune'
-                };
-                $query->where($column, $appliedZoneValue);
-            })
-            ->pluck('id')
-            ->toArray();
-
-            if (empty($idsToNotify)) {
-                throw new Exception('Aucun utilisateur ne consomme ce produit dans la zone ' . $zoneEconomique . '.');
+            if (empty($this->idsToNotify)) {
+                throw new Exception('Aucun utilisateur ne consomme ce produit dans la zone ' . $this->zoneEconomique . '.');
             }
 
             // Envoyer les notifications uniquement aux utilisateurs filtrés
-            foreach ($idsToNotify as $userId) {
+            foreach ($this->idsToNotify as $userId) {
                 $targetUser = User::find($userId);
                 if ($targetUser) {
-                    Notification::send($targetUser, new OffreNotif($produit));
-                    Log::info('Notification envoyée', ['user_id' => $userId, 'zone' => $zoneEconomique]);
+                    Notification::send($targetUser, new OffreNotif($this->produit));
+                    Log::info('Notification envoyée', ['user_id' => $userId, 'zone' => $this->zoneEconomique]);
                 }
             }
 
-            $this->nombreProprietaires = count($idsToNotify);
 
             $this->dispatch(
                 'formSubmitted',
-                "Notifications envoyées à {$this->nombreProprietaires} utilisateur(s) dans la zone {$zoneEconomique}."
+                "Notifications envoyées à {$this->nombreProprietaires} utilisateur(s) dans la zone {$this->zoneEconomique}."
             );
 
             session()->flash('success', 'Offre envoyée avec succès !');
@@ -243,75 +192,58 @@ class FonctOffre extends Component
     {
         $this->timeServer();
 
-        $user_id = Auth::guard('web')->id();
-
         try {
-            // Récupérer le produit et la zone économique sélectionnée
-            $produit = ProduitService::findOrFail($this->produit->id);
-            $referenceProduit = $produit->reference;
-            $zoneEconomique = strtolower($this->zoneEconomique);
-
             $user = Auth::user();
             if (!$user) {
                 throw new Exception('Utilisateur non trouvé.');
             }
 
+            // Charger les données avant de continuer
+            $this->loadData();
+
+            if (empty($this->idsToNotify)) {
+                throw new Exception('Aucun utilisateur ne consomme ce produit dans la zone ' . $this->zoneEconomique . '.');
+            }
+
             // Générer un code unique
             $code_unique = $this->generateUniqueReference();
 
+            // Créer l'offre de groupe
             $offgroupe = OffreGroupe::create([
-                'name' => $produit->name,
+                'name' => $this->produit->name,
                 'code_unique' => $code_unique,
-                'produit_id' => $produit->id,
-                'zone' => $zoneEconomique,
-                'user_id' => $user_id,
+                'produit_id' => $this->produit->id,
+                'zone' => $this->zoneEconomique,
+                'user_id' => $user->id,
                 'differance' => 'grouper',
                 'notified' => true,
             ]);
 
             $difference = 'enchere';
-
             $this->startCountdown($code_unique, $difference);
 
-            // Récupérer les utilisateurs consommant ce produit
-            $idsProprietaires = $this->getConsommateurs($referenceProduit, $user_id);
-            if (empty($idsProprietaires)) {
-                Log::warning('Aucun utilisateur consommateur trouvé', ['produit' => $referenceProduit]);
-                return redirect()->back()->with('error', 'Aucun utilisateur ne consomme ce produit.');
+            // Envoyer les notifications
+            foreach ($this->idsToNotify as $userId) {
+                $targetUser = User::find($userId);
+                if ($targetUser) {
+                    Notification::send($targetUser, new OffreNotifGroup($this->produit, $code_unique));
+                    Log::info('Notification envoyée', ['user_id' => $userId]);
+                } else {
+                    Log::warning('Utilisateur non trouvé pour notification', ['user_id' => $userId]);
+                }
             }
 
-            // Appliquer le filtre de zone économique
-            $appliedZoneValue = $this->getZoneValue($zoneEconomique, $user);
-            if (!$appliedZoneValue) {
-                Log::error('Zone économique invalide', ['zone' => $zoneEconomique]);
-                return redirect()->back()->with('error', 'Zone économique invalide.');
-            }
-
-            // Filtrer les utilisateurs par zone
-            $idsLocalite = $this->getUsersInZone($idsProprietaires, $appliedZoneValue);
-            if (empty($idsLocalite)) {
-                Log::warning('Aucun utilisateur trouvé dans la zone économique', [
-                    'zone' => $zoneEconomique,
-                    'value' => $appliedZoneValue,
-                ]);
-                return redirect()->back()->with('error', 'Aucun utilisateur trouvé dans votre zone économique.');
-            }
-
-            // Fusionner les IDs pour éviter les doublons
-            $idsToNotify = array_unique(array_merge($idsProprietaires, $idsLocalite));
-            Log::info('IDs à notifier', ['ids' => $idsToNotify]);
-
-            // Envoyer des notifications
-            $this->notifyUsers($idsToNotify, $produit, $code_unique);
-            $this->nombreProprietaires = count($idsToNotify);
+            $this->nombreProprietaires = count($this->idsToNotify);
 
             $this->dispatch(
                 'formSubmitted',
-                "Notifications envoyées à {$this->nombreProprietaires} utilisateur(s).",
+                "Notifications envoyées à {$this->nombreProprietaires} utilisateur(s)."
             );
+
             session()->flash('success', 'Offre négociée envoyée avec succès !');
             return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            Log::error('Erreur lors de l\'envoi de l\'offre négociée', ['error' => $e->getMessage()]);
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
             return redirect()->back()->with('error', 'Une erreur s\'est produite. Veuillez réessayer.');
         }
@@ -349,55 +281,9 @@ class FonctOffre extends Component
             event(new CountdownStarted(120, $code_unique));
         }
     }
-    private function getConsommateurs(string $referenceProduit, int $user_id): array
-    {
-        return Consommation::where('reference', $referenceProduit)
-            ->where('id_user', '!=', $user_id)
-            ->where('statuts', 'Accepté')
-            ->distinct()
-            ->pluck('id_user')
-            ->toArray();
-    }
 
-    private function getZoneValue(string $zoneEconomique, $user)
-    {
-        $mapping = [
-            'proximite' => strtolower($user->commune),
-            'locale' => strtolower($user->ville),
-            'departementale' => strtolower($user->departe),
-            'nationale' => strtolower($user->country),
-            'sous_regionale' => strtolower($user->sous_region),
-            'continentale' => strtolower($user->continent),
-        ];
-        return $mapping[$zoneEconomique] ?? null;
-    }
-    private function getUsersInZone(array $idsProprietaires, string $appliedZoneValue): array
-    {
-        return User::whereIn('id', $idsProprietaires)
-            ->where(function ($query) use ($appliedZoneValue) {
-                $query->where('commune', $appliedZoneValue)
-                    ->orWhere('ville', $appliedZoneValue)
-                    ->orWhere('departe', $appliedZoneValue)
-                    ->orWhere('country', $appliedZoneValue)
-                    ->orWhere('sous_region', $appliedZoneValue)
-                    ->orWhere('continent', $appliedZoneValue);
-            })
-            ->pluck('id')
-            ->toArray();
-    }
 
-    private function notifyUsers(array $idsToNotify,  $produit, string $code_unique): void
-    {
-        foreach ($idsToNotify as $userId) {
-            $user = User::find($userId);
-            if ($user) {
-                Notification::send($user, new OffreNotifGroup($produit, $code_unique));
-                Log::info('Notification envoyée', ['user_id' => $userId]);
-            } else {
-                Log::warning('Utilisateur non trouvé pour notification', ['user_id' => $userId]);
-            }
-        }
-    }
+
 
     protected function generateUniqueReference()
     {
@@ -409,6 +295,7 @@ class FonctOffre extends Component
         try {
             $this->validate();
             $this->timeServer();
+            $this->loadData();
 
             $user_id = Auth::id();
             Log::info('Tentative de stockage de données', ['user_id' => $user_id]);
@@ -416,21 +303,26 @@ class FonctOffre extends Component
             // Recherche du produit et de l'utilisateur
             $produit = ProduitService::findOrFail($this->produit->id);
             $user = User::where('username', $this->username)->firstOrFail();
-            $zoneKey = $this->mapEconomicZone($this->zoneEconomique, $produit->user);
 
             // Générer un code unique
             $uniqueCode = $this->generateUniqueReference();
 
-            // Trouver les fournisseurs pertinents
-            $suppliers = $this->findSuppliers($produit, $user_id, $zoneKey);
-
-            if (empty($suppliers)) {
-                return $this->handleNoSuppliers($produit, $zoneKey);
-            }
 
             // Notifier les fournisseurs
-            $this->notifySuppliers($suppliers, $produit, $this->quantite, $uniqueCode);
+            foreach ($this->fournisseursFiltered as $supplierId) {
+                $supplier = User::find($supplierId);
+                if ($supplier) {
+                    Notification::send($supplier, new OffreNegosNotif([
+                        'idProd' => $produit->id,
+                        'produit_name' => $produit->name,
+                        'quantite' => $this->quantite,
+                        'code_unique' => $uniqueCode,
+                    ]));
 
+                    Log::info('Notification envoyée', ['supplier_id' => $supplierId]);
+                }
+                event(new NotificationSent($supplier));
+            }
             // Notification de confirmation à l'utilisateur
             Notification::send($user, new Confirmation([
                 'idProd' => $produit->id,
@@ -465,56 +357,6 @@ class FonctOffre extends Component
         }
     }
 
-    private function mapEconomicZone($zoneEconomique, $user)
-    {
-        $zoneMapping = [
-            'proximite' => 'commune',
-            'locale' => 'ville',
-            'departementale' => 'departe',
-            'nationale' => 'pays',
-            'sous_regionale' => 'sous_region',
-            'continentale' => 'continent',
-        ];
-
-        $zoneKey = $zoneMapping[strtolower($zoneEconomique)] ?? null;
-        if (!$zoneKey || !isset($user->$zoneKey)) {
-            throw new InvalidArgumentException('Zone économique invalide.');
-        }
-
-        Log::info('Zone économique mappée', ['zone_key' => $zoneKey, 'value' => $user->$zoneKey]);
-        return $zoneKey;
-    }
-
-    private function findSuppliers($produit, $userId, $zoneKey)
-    {
-        $suppliers = ProduitService::where('reference', $produit->reference)
-            ->where('user_id', '!=', $userId)
-            ->where('statuts', 'Accepté')
-            ->whereHas('user', fn($query) => $query->where($zoneKey, $produit->user->$zoneKey))
-            ->pluck('user_id')
-            ->toArray();
-
-        Log::info('Fournisseurs trouvés', ['suppliers' => $suppliers]);
-        return $suppliers;
-    }
-
-    private function notifySuppliers(array $suppliers, $produit, $quantite, $uniqueCode)
-    {
-        foreach ($suppliers as $supplierId) {
-            $supplier = User::find($supplierId);
-            if ($supplier) {
-                Notification::send($supplier, new OffreNegosNotif([
-                    'idProd' => $produit->id,
-                    'produit_name' => $produit->name,
-                    'quantite' => $quantite,
-                    'code_unique' => $uniqueCode,
-                ]));
-
-                Log::info('Notification envoyée', ['supplier_id' => $supplierId]);
-            }
-            event(new NotificationSent($supplier));
-        }
-    }
 
     private function saveOffreGroupe($data, $produit, $userId, $user, $uniqueCode)
     {

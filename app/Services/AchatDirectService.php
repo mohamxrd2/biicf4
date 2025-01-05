@@ -50,7 +50,11 @@ class AchatDirectService
         // Calculer le montant total
         $prixTotal = floatval($achatdirect->montantTotal);
         $fraisLivraison = floatval($data['requiredAmount']);
+        // At the start of the method
         $montantTotal = $prixTotal + $fraisLivraison;
+        if ($montantTotal <= 0) {
+            throw new Exception('Le montant total doit être supérieur à 0.');
+        }
 
         // Vérification des fonds disponibles
         if ($userWallet->balance < $montantTotal) {
@@ -65,6 +69,9 @@ class AchatDirectService
                 'reference_id' => $achatdirect->code_unique,
                 'amount' => $montantTotal,
             ]);
+
+            $userWallet->balance -= $montantTotal;
+            $userWallet->save();
 
             // Transactions
             $this->createTransaction(
