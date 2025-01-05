@@ -93,22 +93,27 @@ class Walletclient extends Component
     {
         $userId = Auth::guard('web')->id();
 
-        // Charger les transactions avec la limite définie
-        $this->transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
+        $this->transactions = Transaction::with(['senderUser', 'receiverUser'])
             ->where(function ($query) use ($userId) {
-                $query->where('sender_user_id', $userId)
-                    ->orWhere('receiver_user_id', $userId);
+                // Transactions où l'utilisateur est émetteur (Envoie et Gele)
+                $query->where(function ($q) use ($userId) {
+                    $q->where('sender_user_id', $userId)
+                        ->whereIn('type', ['Envoie', 'Gele']);
+                })
+                    // OU transactions où l'utilisateur est récepteur (Reception et Commission)
+                    ->orWhere(function ($q) use ($userId) {
+                        $q->where('receiver_user_id', $userId)
+                            ->whereIn('type', ['Réception', 'Commission']);
+                    });
             })
             ->orderBy('created_at', 'DESC')
             ->limit($this->transactionsLimit)
             ->get();
-
-        // Vérifier si l'utilisateur a plus de transactions à charger
+        // Mise à jour du compteur pour la pagination
         $this->hasMoreTransactions = Transaction::where(function ($query) use ($userId) {
             $query->where('sender_user_id', $userId)
                 ->orWhere('receiver_user_id', $userId);
-        })
-            ->count() > $this->transactionsLimit;
+        })->count() > $this->transactionsLimit;
     }
 
     public function loadMoreTransactions()
@@ -171,22 +176,14 @@ class Walletclient extends Component
     public function render()
     {
         $userId = Auth::guard('web')->id();
-        Log::info('User ID:', ['user_id' => $userId]);
-
-        $users = User::with('admin')
-            ->where('id', '!=', $userId)
-            ->orderBy('created_at', 'DESC')
-            ->get();
 
         $userCount = User::where('id', '!=', $userId)->count();
-        Log::info('User Count (excluding authenticated user):', ['user_count' => $userCount]);
 
         $transactions = $this->transactions;
 
         $receptionTransactionSum = $this->getReceptionTransactionSumForLast30Days();
         $envoieTransactionSum = $this->getEnvoieTransactionSumForLast30Days();
 
-        return view('livewire.walletclient', compact('users', 'userCount', 'transactions', 'userId', 'receptionTransactionSum', 'envoieTransactionSum'));
+        return view('livewire.walletclient', compact('userCount', 'transactions', 'userId', 'receptionTransactionSum', 'envoieTransactionSum'));
     }
 }
-

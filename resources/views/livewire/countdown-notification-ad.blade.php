@@ -118,7 +118,10 @@
 
                     <!-- Boutons -->
                     <div class="mt-8 flex justify-end space-x-4">
-                        @if ($notification->reponse == 'accepter')
+                        @if (
+                            $notification->reponse == 'accepter' ||
+                                ($notification->data['type_achat'] == 'Take Away' && !$notification->reponse))
+
                             <div class="flex justify-center items-center mt-4">
                                 <button wire:click="toggleComponent"
                                     class="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -151,35 +154,35 @@
                         @else
                             {{-- Bouton Refuser --}}
                             <div class="flex space-x-2">
-                                <button wire:click.prevent='FactureRefuser'
-                                    wire:loading.attr="disabled"
+                                <button wire:click.prevent='FactureRefuser' wire:loading.attr="disabled"
                                     @class([
                                         'px-4 py-2 text-sm font-medium rounded-lg shadow-md transition-colors',
                                         'opacity-50 cursor-not-allowed' => $isLoading,
                                         'text-gray-700 bg-gray-100 hover:bg-gray-200' => !$isLoading,
-                                    ])
-                                    {{ $isLoading ? 'disabled' : '' }}>
+                                    ]) {{ $isLoading ? 'disabled' : '' }}>
                                     <span wire:loading.remove wire:target="FactureRefuser">
                                         Refuser la facture
                                     </span>
                                     <span wire:loading wire:target="FactureRefuser" class="inline-flex items-center">
-                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                            </path>
                                         </svg>
                                         Refus en cours...
                                     </span>
                                 </button>
 
                                 {{-- Bouton Accepter --}}
-                                <button data-modal-target="popup-modal"
-                                    data-modal-toggle="popup-modal"
+                                <button data-modal-target="popup-modal" data-modal-toggle="popup-modal"
                                     @class([
                                         'px-4 py-2 text-sm font-medium rounded-lg shadow-md transition-colors',
                                         'opacity-50 cursor-not-allowed' => $isLoading,
                                         'text-white bg-blue-600 hover:bg-blue-700' => !$isLoading,
-                                    ])
-                                    {{ $isLoading ? 'disabled' : '' }}>
+                                    ]) {{ $isLoading ? 'disabled' : '' }}>
                                     Accepter la facture
                                 </button>
                             </div>
@@ -220,20 +223,24 @@
                                             </h3>
                                             <!-- Bouton de confirmation -->
                                             <button data-modal-hide="popup-modal" type="button"
-                                                wire:click.prevent="valider"
-                                                wire:loading.attr="disabled"
+                                                wire:click.prevent="valider" wire:loading.attr="disabled"
                                                 @class([
                                                     'text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center',
                                                     'opacity-50 cursor-not-allowed' => $isLoading,
-                                                ])
-                                                {{ $isLoading ? 'disabled' : '' }}>
+                                                ]) {{ $isLoading ? 'disabled' : '' }}>
                                                 <span wire:loading.remove wire:target="valider">
                                                     Oui, je suis sûr
                                                 </span>
-                                                <span wire:loading wire:target="valider" class="inline-flex items-center">
-                                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                <span wire:loading wire:target="valider"
+                                                    class="inline-flex items-center">
+                                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12"
+                                                            r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                        </path>
                                                     </svg>
                                                     Validation en cours...
                                                 </span>
