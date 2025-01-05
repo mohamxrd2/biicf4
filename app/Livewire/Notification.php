@@ -54,7 +54,7 @@ class Notification extends Component
 
     public function render()
     {
-        return view('livewire.notification', [
+        return view('livewire.Notification', [
             'notifications' => $this->notifications,
             'unreadCount' => $this->unreadCount
         ]);
