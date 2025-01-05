@@ -148,11 +148,7 @@ class CommissionService
         $transaction->status = 'effectué';
         $transaction->save();
 
-        Log::info('Transaction créée avec succès', [
-            'transaction_id' => $transaction->id,
-            'receiver_id' => $receiverId,
-            'sender_id' => $senderId,
-        ]);
+
     }
 
     protected function generateIntegerReference(): int

@@ -8,6 +8,7 @@ use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect;
 use App\Models\AppelOffreUser;
 use App\Models\Countdown;
+use App\Services\AppelOffreService;
 use App\Services\TimeSync\TimeSyncService;
 use Livewire\Component;
 use App\Models\Livraisons;
@@ -63,8 +64,10 @@ class Appeloffreterminer extends Component
     public $countdownId;
     public $isRunning;
     public $timeRemaining;
+    public $isProcessing = false;
 
     protected $recuperationTimer;
+    protected $appelOffreService;
 
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
@@ -72,7 +75,10 @@ class Appeloffreterminer extends Component
         $this->recuperationTimer = new RecuperationTimer();
     }
 
-
+    public function boot(AppelOffreService $appelOffreService)
+    {
+        $this->appelOffreService = $appelOffreService;
+    }
 
     public function mount($id)
     {
@@ -318,9 +324,6 @@ class Appeloffreterminer extends Component
             // Ajouter le montant au portefeuille du client
             $userWallet->increment('balance', $montantTotal);
 
-            // Générer une référence unique
-            $reference_id = $this->generateIntegerReference();
-
 
             // Enregistrer l'achat dans la table AchatDirectModel
             $achatdirect = AchatDirect::create([
@@ -357,71 +360,27 @@ class Appeloffreterminer extends Component
 
     public function takeaway()
     {
-        DB::beginTransaction();
+        if ($this->isProcessing) {
+            return;
+        }
+        $this->isProcessing = true;
 
         try {
-            // Vérifiez que notification et appeloffre sont définis
-            if (!$this->notification || !$this->appeloffre) {
-                Log::error('Notification ou appeloffre non défini.', [
-                    'notification' => $this->notification,
-                    'appeloffre' => $this->appeloffre,
-                ]);
-                session()->flash('error', 'Données manquantes pour traiter la demande.');
-                return;
-            }
-            // Enregistrer l'achat dans la table AchatDirectModel
-            $achatdirect = AchatDirect::create([
-                'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
-                'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
-                'montantTotal' => $this->prixTotal,
-                'localite' => $this->appeloffre->localite,
-                'date_tot' => $this->appeloffre->date_tot,
-                'date_tard' => $this->appeloffre->date_tard,
-                'userTrader' => Auth::id(),
-                'userSender' => $this->appeloffre->id_sender,  // Utilisateur qui a saisi l'achat
-                'idProd' => $this->produit->id,
-                'code_unique' => $this->appeloffre->code_unique,
+            $result = $this->appelOffreService->handleTakeaway([
+                'notification' => $this->notification,
+                'appeloffre' => $this->appeloffre,
+                'produit' => $this->produit,
+                'prixTotal' => $this->prixTotal,
+                'prixFin' => $this->prixFin
             ]);
 
-            // Préparer les détails pour la notification
-            $details = [
-                'prixFin' =>  $this->prixFin ?? null,
-                'code_unique' => $this->notification->data['code_unique'] ?? null,
-                'id' => $achatdirect->id ?? null,
-            ];
+            session()->flash('success', $result['message']);
+            $this->dispatch('refreshComponent');
 
-            // Trouvez l'utilisateur expéditeur
-            $userSender = User::find($this->appeloffre->id_sender);
-
-
-            // Envoi de la notification
-            Notification::send($userSender, new CountdownNotificationAd($details));
-            // Récupérer la dernière notification de type AppelOffreTerminer
-            $notification = $userSender->notifications()
-                ->where('type', CountdownNotificationAd::class)
-                ->latest() // Prend la dernière notification
-                ->first();
-
-            if ($notification) {
-                // Mise à jour de la notification existante
-                $notification->update(['type_achat' => 'Take Away']);
-                Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-            } else {
-                Log::warning('Aucune notification de type AppelOffreTerminer trouvée.', ['userSenderId' => $userSender->id]);
-            }
-
-            // Mettre à jour la notification originale
-            Log::info('Notification originale mise à jour avec succès.', [
-                'notificationId' => $this->notification->id,
-            ]);
-            // Après l'envoi de la notification
-            event(new NotificationSent($userSender));
-            // Valider la transaction
-            DB::commit();
         } catch (Exception $e) {
-            // Annuler la transaction si un élément est introuvable
-            DB::rollBack();
-            session()->flash('error', 'Un élément requis est introuvable : ' . $e->getMessage());
+            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
+        } finally {
+            $this->isProcessing = false;
         }
     }
 

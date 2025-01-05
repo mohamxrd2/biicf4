@@ -18,6 +18,7 @@ use App\Notifications\mainleveAd;
 use App\Notifications\RefusAchat;
 use App\Notifications\VerifUser;
 use App\Services\AchatDirectService;
+use App\Services\CommissionService;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -212,6 +213,7 @@ class CountdownNotificationAd extends Component
 
     private function retait_magasin()
     {
+        $commissionService = new CommissionService();
 
         // Calcul du montant requis avec une réduction de 1% cest pour le retrait en magasin
         $requiredAmount = floatval($this->notification->data['prixFin']);
@@ -263,11 +265,10 @@ class CountdownNotificationAd extends Component
             );
 
             // Calcul des commissions
-            // $roi = $this->achatdirect->montantTotal * 0.01 / 100;
             $commissions = $this->achatdirect->montantTotal - $requiredAmount;
 
             // Paiement des commissions aux parrains
-            $this->distributeCommissions($commissions);
+            $commissionService->handleCommissions($commissions);
 
             // Préparer les données pour le fournisseur
             $dataFournisseur = [
@@ -290,6 +291,9 @@ class CountdownNotificationAd extends Component
             } else {
                 Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
             }
+
+
+
             DB::commit(); // Valide la transaction
         } catch (Exception $e) {
             DB::rollBack(); // Annule les modifications en cas d'erreur
@@ -299,104 +303,6 @@ class CountdownNotificationAd extends Component
                 'required_amount' => $requiredAmount
             ]);
             session()->flash('error', 'Une erreur s\'est produite lors du traitement de la livraison.');
-        }
-    }
-    private function distributeCommissions($commissions)
-    {
-        if ($this->fournisseur->parrain) {
-            $currentParrain = $this->fournisseur;
-
-            for ($level = 1; $level <= 2; $level++) {
-                if (!$currentParrain->parrain) break;
-
-                $nextParrain = User::find($currentParrain->parrain);
-                $wallet = Wallet::where('user_id', $nextParrain->id)->first();
-
-                if ($wallet) {
-                    $commissionAmount = $commissions * 0.01;
-                    $wallet->balance += $commissionAmount;
-                    $wallet->save();
-
-                    Log::info("Commission envoyée au parrain niveau $level", [
-                        'parrain_id' => $nextParrain->id,
-                        'commissions' => $commissionAmount,
-                    ]);
-
-                    $this->createTransaction(
-                        $this->user,
-                        $nextParrain->id,
-                        'Commission',
-                        $commissionAmount,
-                        $this->generateIntegerReference(),
-                        'Commission de BICF',
-                        'effectué',
-                        'COC'
-                    );
-
-                    $commissions -= $commissionAmount;
-                }
-
-                $currentParrain = $nextParrain;
-            }
-        }
-        if ($this->userId->parrain) {
-            $currentParrain = $this->userId;
-
-            for ($level = 1; $level <= 2; $level++) {
-                if (!$currentParrain->parrain) break;
-
-                $nextParrain = User::find($currentParrain->parrain);
-                $wallet = Wallet::where('user_id', $nextParrain->id)->first();
-
-                if ($wallet) {
-                    $commissionAmount = $commissions * 0.01;
-                    $wallet->balance += $commissionAmount;
-                    $wallet->save();
-
-                    Log::info("Commission envoyée au parrain niveau $level", [
-                        'parrain_id' => $nextParrain->id,
-                        'commissions' => $commissionAmount,
-                    ]);
-
-                    $this->createTransaction(
-                        $this->user,
-                        $nextParrain->id,
-                        'Commission',
-                        $commissionAmount,
-                        $this->generateIntegerReference(),
-                        'Commission de BICF',
-                        'effectué',
-                        'COC'
-                    );
-
-                    $commissions -= $commissionAmount;
-                }
-
-                $currentParrain = $nextParrain;
-            }
-        }
-
-        // Commission pour l'admin
-        $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
-        if ($adminWallet) {
-            $adminWallet->balance += $commissions;
-            $adminWallet->save();
-
-            Log::info('Commission envoyée à l\'admin', [
-                'admin_id' => 1,
-                'commissions' => $commissions,
-            ]);
-
-            $this->createTransactionAdmin(
-                $this->user,
-                1,
-                'Commission',
-                $commissions,
-                $this->generateIntegerReference(),
-                'Commission de BICF',
-                'effectué',
-                'commission'
-            );
         }
     }
 
@@ -424,7 +330,7 @@ class CountdownNotificationAd extends Component
             $fournisseurCode = random_int(1000, 9999);
             $livreurCode = random_int(1000, 9999);
 
-            if (!$this->livreur && $this->notification->type_achat == 'Take Away') {
+            if (!$this->livreur && $this->notification->data['type_achat'] == 'Take Away') {
                 $this->retait_magasin();
             } else {
                 // Préparer les données pour le fournisseur

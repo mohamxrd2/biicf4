@@ -42,7 +42,7 @@
                                 </p>
                             </div>
                         </div>
-                        @if ($notification->reponse == 'accepter')
+                        @if ($notification->reponse == 'accepter' || $notification->data['type_achat'] == 'Take Away')
                             @if ($notification->data['livreur'])
                                 <!-- Informations sur le livreur -->
                                 <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
@@ -172,7 +172,7 @@
                                 </button>
 
                                 {{-- Bouton Accepter --}}
-                                <button data-modal-target="popup-modal" 
+                                <button data-modal-target="popup-modal"
                                     data-modal-toggle="popup-modal"
                                     @class([
                                         'px-4 py-2 text-sm font-medium rounded-lg shadow-md transition-colors',
