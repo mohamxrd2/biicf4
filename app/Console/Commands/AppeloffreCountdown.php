@@ -8,7 +8,7 @@ use App\Jobs\ProcessCountdown;
 use App\Models\AppelOffreGrouper;
 use App\Models\Countdown;
 use App\Models\User;
-use App\Models\UserQuantites;
+use App\Models\userquantites;
 use App\Notifications\AppelOffreGrouperNotification;
 use App\Notifications\Confirmation;
 use App\Services\RecuperationTimer;
