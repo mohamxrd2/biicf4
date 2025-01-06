@@ -26,6 +26,7 @@ class AjoutConsommations extends Component
     public $qteProd  = '';
     public $periodicite = '';
     public $specification  = '';
+    protected $layout = 'components.layouts.app';
 
     //
     public $prix  = '';

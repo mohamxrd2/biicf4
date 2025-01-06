@@ -37,6 +37,7 @@ class OffreGroupeQuantite extends Component
 
     public $time;
     public $error;
+    protected $listeners = ['negotiationEnded' => '$refresh'];
 
     protected $recuperationTimer;
 
@@ -58,7 +59,6 @@ class OffreGroupeQuantite extends Component
         } catch (Exception $e) {
             Log::error('Erreur dans mount', ['error' => $e->getMessage()]);
             session()->flash('error', 'Erreur lors du chargement des données.');
-            return redirect()->route('home'); // Redirection si une erreur critique survient
         }
     }
 
@@ -110,7 +110,7 @@ class OffreGroupeQuantite extends Component
             ->first();
     }
 
-    
+
 
     #[On('echo:quantite-channel,AjoutQuantiteOffre')]
     public function actualiserDonnees($event)

@@ -42,18 +42,7 @@ class ConsoController extends Controller
     }
 
 
-    public function destroConsom($id)
-    {
-        $consommation = Consommation::find($id);
 
-        if (!$consommation) {
-            return redirect()->back()->with('error', 'consommation non trouvé.');
-        }
-
-        $consommation->delete();
-
-        return redirect()->back()->with('success', 'consommation supprimé avec succès.');
-    }
 
     public function consoDet($id)
     {
@@ -61,9 +50,5 @@ class ConsoController extends Controller
 
         return view('biicf.consodetail', compact('consommation'));
     }
-    public function postCons()
-    {
-
-        return view('biicf.AjoutConsommation');
-    }
+  
 }

@@ -1,4 +1,4 @@
-<a href="{{ route('biicf.notif') }}"
+<a wire:navigate href="{{ route('biicf.notif') }}"
     class="flex items-center gap-x-3.5 py-3 px-2.5  @if (request()->route()->getName() == 'biicf.notif') text-purple-600 font-semibold  @endif text-md rounded-lg hover:bg-gray-100 dark:bg-gray-900 dark:text-white">
     <span class="relative inline-block">
         @if (request()->route()->getName() == 'biicf.notif')
@@ -29,5 +29,5 @@
     </span>
 
     <span class="nav-title"> Notifications</span>
-   
+
 </a>

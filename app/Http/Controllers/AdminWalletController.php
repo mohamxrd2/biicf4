@@ -115,44 +115,8 @@ class AdminWalletController extends Controller
         $transaction->save();
     }
 
-    public function indexBiicf()
-    {
-        $userId = Auth::guard('web')->id();
-       
-        $userWallet = Wallet::where('user_id', $userId)->first();
-
-        // Récupérer les utilisateurs à exclure l'utilisateur authentifié
-        $users = User::with('admin')
-            ->where('id', '!=', $userId) // Exclure l'utilisateur authentifié
-            ->orderBy('created_at', 'DESC')
-            ->get();
-
-        $userCount = User::where('id', '!=', $userId)->count();
-
-        // Récupérer les transactions impliquant l'utilisateur authentifié
-        $transactions = Transaction::with(['senderAdmin', 'receiverAdmin', 'senderUser', 'receiverUser'])
-            ->where(function ($query) use ($userId) {
-                $query->where('sender_user_id', $userId)
-                    ->orWhere('receiver_user_id', $userId);
-            })
-            ->orderBy('created_at', 'DESC')
-            ->get();
-
-        $transacCount = Transaction::where(function ($query) use ($userId) {
-            $query->where('sender_user_id', $userId)
-                ->orWhere('receiver_user_id', $userId);
-        })->count();
-        Log::info('Transaction Count involving authenticated user:', ['transaction_count' => $transacCount]);
-
-        return view('biicf.wallet', compact('userWallet', 'users', 'userCount', 'transactions', 'transacCount', 'userId'));
-    }
-
     public function retrait()
     {
         return view('biicf.retrait');
-    }
-    public function cfa()
-    {
-        return view('biicf.cfa');
     }
 }

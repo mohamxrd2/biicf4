@@ -1,4 +1,3 @@
-
 <div class="p-6 bg-blue-50 hover:bg-gray-50 transition-colors">
     <div class="flex items-start">
 
@@ -10,7 +9,7 @@
         </div>
 
         <div class="ml-4 flex-1">
-            <a href="{{ route('notification.show', $notification->id) }}">
+            <a wire:navigate href="{{ route('notification.show', ['id' => $notification->id]) }}">
                 <!-- Contenu Notification -->
                 <div class="flex items-center justify-between">
                     <p class="text-sm font-medium text-gray-900">{{ $title ?? 'Titre non spécifié' }}</p>

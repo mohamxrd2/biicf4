@@ -19,6 +19,7 @@ class AchatDirect extends Model
         'montantTotal',
         'message',
         'localite',
+        'type_achat',
         'code_unique',
         'timeStart',
         'timeEnd',

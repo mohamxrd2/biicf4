@@ -90,7 +90,6 @@ class AppelOffreController extends Controller
                             });
                         });
                         $appliedZoneValue = $userZone;
-                        // Log::info('Filtre Proximité appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userZone' => $userZone]);
                     }
                     break;
 
@@ -102,7 +101,6 @@ class AppelOffreController extends Controller
                             });
                         });
                         $appliedZoneValue = $userVille;
-                        // Log::info('Filtre Locale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userVille' => $userVille]);
                     }
                     break;
 
@@ -114,7 +112,6 @@ class AppelOffreController extends Controller
                             });
                         });
                         $appliedZoneValue = $userDepartement;
-                        // Log::info('Filtre Département appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userDepartement' => $userDepartement]);
                     }
                     break;
 
@@ -126,7 +123,6 @@ class AppelOffreController extends Controller
                             });
                         });
                         $appliedZoneValue = $userPays;
-                        // Log::info('Filtre Nationale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userPays' => $userPays]);
                     }
                     break;
 
@@ -138,7 +134,6 @@ class AppelOffreController extends Controller
                             });
                         });
                         $appliedZoneValue = $userSousRegion;
-                        // Log::info('Filtre Sous-régionale appliqué', ['zoneEconomique' => $normalizedZoneEconomique, 'userSousRegion' => $userSousRegion]);
                     }
                     break;
 

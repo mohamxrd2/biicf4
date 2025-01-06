@@ -9,8 +9,6 @@ use App\Models\User;
 use App\Notifications\AppelOffreTerminer;
 use App\Notifications\AppelOffreTerminerGrouper;
 use App\Notifications\CountdownNotificationAd;
-use App\Notifications\CountdownNotificationAg;
-use App\Notifications\CountdownNotificationAp;
 use App\Notifications\NegosTerminer;
 use App\Notifications\Confirmation;
 use App\Services\TimeSync\TimeSyncService;
@@ -44,14 +42,15 @@ class CheckCountdowns extends Command
             // Utiliser TimeSyncService pour l'heure du serveur
             $timeSync = new TimeSyncService($this->recuperationTimer);
             $result = $timeSync->getSynchronizedTime();
-            $serverTime = $result['timestamp']->subMinutes(3);
+            $serverTime = $result['timestamp'];
 
             $countdowns = Countdown::where('notified', false)
-                ->where('start_time', '<=', $serverTime)
+                ->where('end_time', '<=', $serverTime)
                 ->with(['sender', 'achat', 'appelOffre'])
                 ->get();
 
             foreach ($countdowns as $countdown) {
+
                 $this->processCountdown($countdown);
             }
 
@@ -83,9 +82,9 @@ class CheckCountdowns extends Command
                 // Envoyer la notification en fonction du type
                 $this->sendNotificationBasedOnType($countdown, $commentToUse, $details);
 
-                // Nettoyage des données
-                $this->cleanUp($codeUnique);
                 $countdown->update(['notified' => true]);
+                // Nettoyage des données
+                // $this->cleanUp($codeUnique);
             }
         };
     }
@@ -157,6 +156,9 @@ class CheckCountdowns extends Command
                 case 'ad':
                     $this->sendAdNotification($countdown, $details);
                     break;
+                case 'AchatDirectPoffreGroupe':
+                    $this->sendADPoffreGroupeNotification($countdown, $details);
+                    break;
 
                 case 'appelOffreD':
                 case 'appelOffreR':
@@ -171,8 +173,6 @@ class CheckCountdowns extends Command
             }
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi de la notification', [
-                'countdown_id' => $countdown->id,
-                'difference' => $difference,
                 'error' => $e->getMessage()
             ]);
             throw $e;
@@ -181,7 +181,16 @@ class CheckCountdowns extends Command
 
     private function sendGroupedOfferNotification($commentToUse, $details)
     {
-        Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
+        try {
+            if (!$commentToUse->user) {
+                Log::error('User not found for comment');
+                return;
+            }
+
+            Notification::send($commentToUse->user, new AppelOffreTerminerGrouper($details));
+        } catch (\Exception $e) {
+            Log::error('Failed to send notification: ' . $e->getMessage());
+        }
     }
 
     private function sendEnchereNotification($commentToUse, $details)
@@ -197,30 +206,69 @@ class CheckCountdowns extends Command
 
     private function sendAdNotification($countdown, $details)
     {
+        try {
+            // Envoyer la notification au sender
+            if ($countdown->sender) {
+                $details['type_achat'] = 'Delivery';
 
-        Notification::send($countdown->sender, new CountdownNotificationAd($details));
-        // event(new NotificationSent($countdown->sender));
+                Notification::send($countdown->sender, new CountdownNotificationAd($details));
+                event(new NotificationSent($countdown->sender));
+            }
 
-        $notification = $countdown->sender->notifications()
-            ->where('type', CountdownNotificationAd::class)
-            ->latest()
-            ->first();
-        if ($notification) {
-            $notification->update(['type_achat' => 'Delivery']);
+            // Récupérer le meilleur prix avec orderBy sur created_at
+            $lowestPriceComment = Comment::where('code_unique', $countdown->code_unique)
+                ->orderBy('prixTrade', 'asc')
+                ->orderBy('created_at', 'asc')  // En cas d'égalité de prix, prendre le premier
+                ->with('user')  // Charger la relation user
+                ->first();
+
+            if ($lowestPriceComment && $lowestPriceComment->user) {
+                $details['title'] = 'Négociation terminée';
+                $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+                $details['prixTrade'] = $lowestPriceComment->prixTrade;
+                $details['id_trader'] = $lowestPriceComment->id_trader;
+
+                Notification::send($lowestPriceComment->user, new Confirmation($details));
+                event(new NotificationSent($lowestPriceComment->user));
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi des notifications', [
+                'countdown_id' => $countdown->id,
+                'error' => $e->getMessage()
+            ]);
         }
+    }
+    private function sendADPoffreGroupeNotification($countdown, $details)
+    {
+        try {
+            // Envoyer la notification au sender
+            if ($countdown->sender) {
 
-        // Étape 2 : Récupérer le commentaire avec le prix le plus bas
-        $lowestPriceComment = $this->getLowestPriceComment($countdown->code_unique); // On passe le code_unique depuis $commentToUse
+                Notification::send($countdown->sender, new CountdownNotificationAd($details));
+                event(new NotificationSent($countdown->sender));
+            }
 
-        // Vérifier si un commentaire avec le prix le plus bas a été trouvé
-        if ($lowestPriceComment) {
-            // Ajouter les informations supplémentaires (title et description) dans $details
-            $details['title'] = 'Négociation terminée';
-            $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+            // Récupérer le meilleur prix avec orderBy sur created_at
+            $lowestPriceComment = Comment::where('code_unique', $countdown->code_unique)
+                ->orderBy('prixTrade', 'asc')
+                ->orderBy('created_at', 'asc')  // En cas d'égalité de prix, prendre le premier
+                ->with('user')  // Charger la relation user
+                ->first();
 
-            // Envoyer la notification avec les détails mis à jour
-            Notification::send($lowestPriceComment->user, new Confirmation($details));
-            // event(new NotificationSent($lowestPriceComment->sender));
+            if ($lowestPriceComment && $lowestPriceComment->user) {
+                $details['title'] = 'Négociation terminée';
+                $details['description'] = 'Vous venez de gagner la négociation. Voir les détails';
+                $details['prixTrade'] = $lowestPriceComment->prixTrade;
+                $details['id_trader'] = $lowestPriceComment->id_trader;
+
+                Notification::send($lowestPriceComment->user, new Confirmation($details));
+                event(new NotificationSent($lowestPriceComment->user));
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi des notifications', [
+                'countdown_id' => $countdown->id,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
@@ -228,21 +276,17 @@ class CheckCountdowns extends Command
     {
         $details['id_trader'] = $commentToUse->id_trader ?? null;
 
-        Notification::send($commentToUse->user, new AppelOffreTerminer($details));
-        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-        $notification = $commentToUse->user->notifications()->where('type', AppelOffreTerminer::class)->latest()->first();
+        switch ($countdown->difference) {
+            case 'appelOffreD':
+                $details['type_achat'] = 'Delivery';
+                break;
 
-        if ($notification) {
-            switch ($countdown->difference) {
-                case 'appelOffreD':
-                    $notification->update(['type_achat' => 'Delivery']);
-                    break;
-
-                case 'appelOffreR':
-                    $notification->update(['type_achat' => 'Take Away']);
-                    break;
-            }
+            case 'appelOffreR':
+                $details['type_achat'] = 'Take Away';
+                break;
         }
+
+        Notification::send($commentToUse->user, new AppelOffreTerminer($details));
     }
 
 

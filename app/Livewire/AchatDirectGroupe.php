@@ -221,6 +221,7 @@ class AchatDirectGroupe extends Component
             'nameProd' => $validated['nameProd'],
             'quantité' => $validated['quantité'],
             'montantTotal' => $montantTotal,
+            'type_achat'=> 'achatDirect',
             'localite' => $validated['localite'],
             'date_tot' => $validated['dateTot'],
             'date_tard' => $validated['dateTard'],

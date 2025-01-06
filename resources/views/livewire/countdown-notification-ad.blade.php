@@ -42,7 +42,7 @@
                                 </p>
                             </div>
                         </div>
-                        @if ($notification->reponse == 'accepter')
+                        @if ($notification->reponse == 'accepter' || $notification->data['type_achat'] == 'Take Away')
                             @if ($notification->data['livreur'])
                                 <!-- Informations sur le livreur -->
                                 <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
@@ -118,7 +118,10 @@
 
                     <!-- Boutons -->
                     <div class="mt-8 flex justify-end space-x-4">
-                        @if ($notification->reponse == 'accepter')
+                        @if (
+                            $notification->reponse == 'accepter' ||
+                                ($notification->data['type_achat'] == 'Take Away' && !$notification->reponse))
+
                             <div class="flex justify-center items-center mt-4">
                                 <button wire:click="toggleComponent"
                                     class="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -130,7 +133,6 @@
                                     <span>Procéder à la main levée</span>
                                 </button>
                             </div>
-                            
                         @elseif ($notification->reponse == 'refuser')
                             <div class="flex space-x-2 mt-4">
                                 <div class="bg-gray-400 text-white px-4 py-2 rounded-lg relative">
@@ -150,84 +152,104 @@
 
                             </div>
                         @else
-                            <div x-data="{ loading: false }">
-                                {{-- Bouton Refuser --}}
-                                <button wire:click.prevent='FactureRefuser' x-show="!loading" x-transition.opacity
-                                    @click="loading = true"
-                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg shadow-md hover:bg-gray-200 transition-colors">
-                                    Refuser la facture
+                            {{-- Bouton Refuser --}}
+                            <div class="flex space-x-2">
+                                <button wire:click.prevent='FactureRefuser' wire:loading.attr="disabled"
+                                    @class([
+                                        'px-4 py-2 text-sm font-medium rounded-lg shadow-md transition-colors',
+                                        'opacity-50 cursor-not-allowed' => $isLoading,
+                                        'text-gray-700 bg-gray-100 hover:bg-gray-200' => !$isLoading,
+                                    ]) {{ $isLoading ? 'disabled' : '' }}>
+                                    <span wire:loading.remove wire:target="FactureRefuser">
+                                        Refuser la facture
+                                    </span>
+                                    <span wire:loading wire:target="FactureRefuser" class="inline-flex items-center">
+                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                            </path>
+                                        </svg>
+                                        Refus en cours...
+                                    </span>
                                 </button>
 
                                 {{-- Bouton Accepter --}}
                                 <button data-modal-target="popup-modal" data-modal-toggle="popup-modal"
-                                    x-show="!loading" x-transition.opacity @click="loading = true"
-                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                                    @class([
+                                        'px-4 py-2 text-sm font-medium rounded-lg shadow-md transition-colors',
+                                        'opacity-50 cursor-not-allowed' => $isLoading,
+                                        'text-white bg-blue-600 hover:bg-blue-700' => !$isLoading,
+                                    ]) {{ $isLoading ? 'disabled' : '' }}>
                                     Accepter la facture
                                 </button>
+                            </div>
 
-                                {{-- Indicateur de chargement --}}
-                                <div x-show="loading" x-transition.opacity
-                                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg shadow-md">
-                                    <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z">
-                                        </path>
-                                    </svg>
-                                    Traitement en cours...
-                                </div>
-                                <!-- Popup de confirmation -->
-                                <div id="popup-modal" tabindex="-1"
-                                    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-                                    <div class="relative p-4 w-full max-w-md max-h-full">
-                                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                                            <!-- Bouton pour fermer la modal -->
-                                            <button type="button"
-                                                class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                data-modal-hide="popup-modal">
-                                                <svg class="w-3 h-3" aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 14 14">
-                                                    <path stroke="currentColor" stroke-linecap="round"
-                                                        stroke-linejoin="round" stroke-width="2"
-                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                                                </svg>
-                                                <span class="sr-only">Fermer la modal</span>
-                                            </button>
+                            <!-- Popup de confirmation -->
+                            <div id="popup-modal" tabindex="-1"
+                                class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                                <div class="relative p-4 w-full max-w-md max-h-full">
+                                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                        <!-- Bouton pour fermer la modal -->
+                                        <button type="button"
+                                            class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                            data-modal-hide="popup-modal">
+                                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                fill="none" viewBox="0 0 14 14">
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                    stroke-linejoin="round" stroke-width="2"
+                                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                            </svg>
+                                            <span class="sr-only">Fermer la modal</span>
+                                        </button>
 
-                                            <!-- Contenu de la modal -->
-                                            <div class="p-4 md:p-5 text-center">
-                                                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
-                                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none" viewBox="0 0 20 20">
-                                                    <path stroke="currentColor" stroke-linecap="round"
-                                                        stroke-linejoin="round" stroke-width="2"
-                                                        d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                </svg>
-                                                <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                                                    En acceptant cette commande, je comprends que les informations du
-                                                    fournisseur me
-                                                    seront transmises.
-                                                    Je m'engage à entrer en contact avec le fournisseur dans les
-                                                    meilleurs
-                                                    délais
-                                                    pour confirmer la
-                                                    commande et coordonner les étapes nécessaires à sa réalisation.
-                                                </h3>
-                                                <!-- Bouton de confirmation -->
-                                                <button data-modal-hide="popup-modal" type="button"
-                                                    wire:click.prevent="valider"
-                                                    class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                                        <!-- Contenu de la modal -->
+                                        <div class="p-4 md:p-5 text-center">
+                                            <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
+                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 20 20">
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                    stroke-linejoin="round" stroke-width="2"
+                                                    d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+                                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                                                En acceptant cette commande, je comprends que les informations du
+                                                fournisseur me seront transmises.
+                                                Je m'engage à entrer en contact avec le fournisseur dans les
+                                                meilleurs délais pour confirmer la
+                                                commande et coordonner les étapes nécessaires à sa réalisation.
+                                            </h3>
+                                            <!-- Bouton de confirmation -->
+                                            <button data-modal-hide="popup-modal" type="button"
+                                                wire:click.prevent="valider" wire:loading.attr="disabled"
+                                                @class([
+                                                    'text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center',
+                                                    'opacity-50 cursor-not-allowed' => $isLoading,
+                                                ]) {{ $isLoading ? 'disabled' : '' }}>
+                                                <span wire:loading.remove wire:target="valider">
                                                     Oui, je suis sûr
-                                                </button>
-                                                <!-- Bouton d'annulation -->
-                                                <button data-modal-hide="popup-modal" type="button"
-                                                    @click="loading = false"
-                                                    class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                                                    Non, annuler
-                                                </button>
-                                            </div>
+                                                </span>
+                                                <span wire:loading wire:target="valider"
+                                                    class="inline-flex items-center">
+                                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12"
+                                                            r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                        </path>
+                                                    </svg>
+                                                    Validation en cours...
+                                                </span>
+                                            </button>
+                                            <!-- Bouton d'annulation -->
+                                            <button data-modal-hide="popup-modal" type="button"
+                                                class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                                Non, annuler
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

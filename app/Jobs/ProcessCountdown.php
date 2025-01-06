@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Countdown;
 use App\Services\RecuperationTimer;
+use App\Services\TimeSync\TimeSyncService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -12,112 +13,124 @@ use Illuminate\Queue\SerializesModels;
 use App\Events\CountdownTick;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 
 class ProcessCountdown implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $countdownId;
-    public $tries = 1;
-    public $timeout = 30;
+    public $code_unique;
+    public $tries = 3;
+    public $timeout = 120;
     public $time;
     public $error;
     public $timestamp;
 
     protected $recuperationTimer;
 
-    public function __construct($countdownId)
+    public function __construct($countdownId, $code_unique)
     {
         $this->countdownId = $countdownId;
-        $this->onQueue('default');  // Spécifie explicitement la queue
+        $this->code_unique = $code_unique;
         $this->recuperationTimer = new RecuperationTimer();
     }
 
     public function handle()
     {
-        // Actualiser le timer avant de commencer
         $this->timeServer();
-        $countdown = Countdown::find($this->countdownId);
 
-        if (!$countdown || !$countdown->is_active || !$countdown->end_time) {
+        $countdown = Countdown::where('id', $this->countdownId)
+            ->where('code_unique', $this->code_unique)
+            ->where('is_active', true)
+            ->where('notified', false)
+            ->first();
+
+        if (!$countdown || !$countdown->end_time) {
             return;
         }
 
-        $lockKey = "countdown_lock_{$this->countdownId}";
+        $lockKey = "countdown_lock_{$this->code_unique}_{$this->countdownId}";
 
         if (Cache::add($lockKey, true, 1)) {
             try {
-                $timeRemaining = $countdown->end_time->diffInSeconds($this->timestamp);
-
-                if ($timeRemaining <= 1) {
-                    $countdown->update([
-                        'is_active' => false,
-                        'time_remaining' => 0
-                    ]);
-                    broadcast(new CountdownTick(0));
-
+                if ($countdown->end_time->isPast()) {
+                    $this->finalizeCountdown($countdown);
                     return;
                 }
 
-                $countdown->update(['time_remaining' => $timeRemaining]);
-                broadcast(new CountdownTick($timeRemaining));
+                // Calcul plus précis du temps restant
+                $timeRemaining = $countdown->end_time->diffInSeconds($this->timestamp);
 
-                if ($timeRemaining > 1) {
-                    dispatch(new self($this->countdownId))
-                        ->onConnection('database')
-                        ->delay(now()->addSeconds(2));
+                // Arrondir à la seconde la plus proche
+                $timeRemaining = round($timeRemaining);
+
+                if ($timeRemaining <= 0) {
+                    $this->finalizeCountdown($countdown);
+                    return;
                 }
+
+                // Mettre à jour et broadcaster
+                $countdown->update(['time_remaining' => $timeRemaining]);
+                broadcast(new CountdownTick($timeRemaining, $this->code_unique));
+
+                // Calculer le délai exact pour la prochaine seconde
+                $nextTick = $this->timestamp->copy()->addSeconds(1);
+                $delay = $nextTick->diffInMilliseconds($this->timestamp) / 1000;
+
+                // Programmer la prochaine vérification avec un délai précis
+                dispatch(new static($this->countdownId, $this->code_unique))
+                    ->onQueue('default')
+                    ->delay(now()->addSeconds($delay));
+
             } finally {
                 Cache::forget($lockKey);
             }
         }
     }
 
+    private function finalizeCountdown(Countdown $countdown)
+    {
+        if ($countdown->is_active) {
+            $countdown->update([
+                'is_active' => false,
+                'time_remaining' => 0,
+                'notified' => false
+            ]);
+
+            broadcast(new CountdownTick(0, $this->code_unique));
+
+            // Exécuter la commande CheckCountdowns
+            // Artisan::call('check:countdowns');
+        }
+    }
+
     public function timeServer()
     {
-        // Faire plusieurs tentatives de récupération pour plus de précision
-        $attempts = 3;
-        $times = [];
-
-        for ($i = 0; $i < $attempts; $i++) {
-            // Récupération de l'heure via le service
-            $currentTime = $this->recuperationTimer->getTime();
-            if ($currentTime) {
-                $times[] = $currentTime;
-            }
-            // Petit délai entre chaque tentative
-            usleep(50000); // 50ms
-        }
-
-        if (empty($times)) {
-            // Si aucune tentative n'a réussi, utiliser l'heure système
-            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
-            $this->time = now()->timestamp * 1000;
-        } else {
-            // Utiliser la médiane des temps récupérés pour plus de précision
-            sort($times);
-            $medianIndex = floor(count($times) / 2);
-            $this->time = $times[$medianIndex];
-            $this->error = null;
-        }
-
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
     }
 
     public function failed(\Throwable $exception)
     {
-        Cache::forget("countdown_lock_{$this->countdownId}");
+        $lockKey = "countdown_lock_{$this->code_unique}_{$this->countdownId}";
+        Cache::forget($lockKey);
 
-        $countdown = Countdown::find($this->countdownId);
+        $countdown = Countdown::where('id', $this->countdownId)
+            ->where('code_unique', $this->code_unique)
+            ->first();
+
         if ($countdown) {
             $countdown->update([
                 'is_active' => false,
-                'time_remaining' => 0
+                'time_remaining' => 0,
+                'notified' => true
             ]);
-            broadcast(new CountdownTick(0));
+            broadcast(new CountdownTick(0, $this->code_unique));
         }
     }
 }

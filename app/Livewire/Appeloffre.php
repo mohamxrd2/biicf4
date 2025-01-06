@@ -133,7 +133,7 @@ class Appeloffre extends Component
     {
 
         // Vérifier si la négociation est terminée
-        if ($this->achatdirect->count) {
+        if ($this->appeloffre->count) {
             $this->dispatch(
                 'formSubmitted',
                 'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
@@ -172,7 +172,7 @@ class Appeloffre extends Component
                 'id_sender' => json_encode($this->appeloffre->prodUsers),
             ]);
 
-            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id))->toOthers();
+            event(new CommentSubmitted($this->prixTrade,  $comment->id));
             $this->listenForMessage();
 
             DB::commit();

@@ -64,9 +64,11 @@ class LivraisonAchatdirect extends Component
         }
 
         // Déterminer la valeur de $Valuecode_unique
-        switch ($this->notification->type_achat) {
+        switch ($this->achatdirect->type_achat) {
             case 'appelOffreGrouper':
+            case 'appelOffre':
             case 'OffreGrouper':
+            case 'achatDirect':
                 $this->Valuecode_unique = $this->notification->data['code_unique'] ?? null;
                 break;
             default:
@@ -129,28 +131,28 @@ class LivraisonAchatdirect extends Component
             );
             return;
         }
-
-        // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Valider les données avec une règle personnalisée
-        $validatedData = $this->validate([
-            'prixTrade' => [
-                'required',
-                'numeric',
-                function ($attribute, $value, $fail) use ($offreInitiale) {
-                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
-                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
-                    }
-                }
-            ]
-        ]);
-
         DB::beginTransaction();
         try {
+            // Récupérer d'abord l'offre initiale pour la validation
+            $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+                ->whereNotNull('prixTrade')
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            // Valider les données avec une règle personnalisée
+            $validatedData = $this->validate([
+                'prixTrade' => [
+                    'required',
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($offreInitiale) {
+                        if ($offreInitiale && $value > $offreInitiale->prixTrade) {
+                            $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
+                        }
+                    }
+                ]
+            ]);
+
+
 
             // Créer un commentaire
             $comment = Comment::create([

@@ -128,7 +128,7 @@
                     <h2 class="text-2xl font-bold text-gray-900">Devenir Livreur</h2>
                     <p class="mt-2 text-gray-600">Rejoignez notre équipe de livreurs professionnels</p>
                 </div>
-        
+
                 {{-- Messages d'erreur globaux --}}
                 @if ($errors->any())
                     <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
@@ -151,7 +151,7 @@
                         </div>
                     </div>
                 @endif
-        
+
                 <form wire:submit.prevent="submit" class="space-y-6">
                     {{-- Section Expérience --}}
                     <div class="bg-gray-50 p-6 rounded-lg">
@@ -174,7 +174,7 @@
                             </div>
                         </div>
                     </div>
-        
+
                     {{-- Section Véhicules --}}
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Véhicules disponibles</h3>
@@ -198,7 +198,7 @@
                             @endforeach
                         </div>
                     </div>
-        
+
                     {{-- Section Zone d'activité --}}
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Zone d'activité</h3>
@@ -217,7 +217,7 @@
                             @enderror
                         </div>
                     </div>
-        
+
                     {{-- Section Documents --}}
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Documents requis</h3>
@@ -249,12 +249,12 @@
                                                 </div>
                                             </div>
                                         </div>
-        
+
                                         {{-- Prévisualisation de l'image --}}
                                         @if(${$field})
                                             <div class="relative rounded-lg overflow-hidden">
                                                 <img src="{{ ${$field}->temporaryUrl() }}" class="w-full h-48 object-cover" alt="Prévisualisation">
-                                                <button type="button" wire:click="remove{{ ucfirst($field) }}" 
+                                                <button type="button" wire:click="remove{{ ucfirst($field) }}"
                                                     class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -262,7 +262,7 @@
                                                 </button>
                                             </div>
                                         @endif
-        
+
                                         @error($field)
                                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
@@ -271,7 +271,7 @@
                             @endforeach
                         </div>
                     </div>
-        
+
                     {{-- Boutons d'action --}}
                     <div class="flex justify-end space-x-4">
                         <button type="button" wire:click="resetForm"
@@ -411,7 +411,6 @@
                     </div>
                 </div>
             </div>
-        @else
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
                 <div class="p-8">
                     {{-- En-tête du formulaire --}}
@@ -443,7 +442,7 @@
                                 </div>
                             </div>
                         @endif
-                    
+
                         {{-- Section Expérience --}}
                         <div class="bg-gray-50 p-6 rounded-lg">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Expérience professionnelle</h3>
@@ -460,7 +459,7 @@
                                 @enderror
                             </div>
                         </div>
-                    
+
                         {{-- Section Documents --}}
                         <div class="bg-gray-50 p-6 rounded-lg">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Documents requis</h3>
@@ -492,12 +491,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                    
+
                                             {{-- Prévisualisation de l'image --}}
                                             @if(${$field})
                                                 <div class="relative rounded-lg overflow-hidden">
                                                     <img src="{{ ${$field}->temporaryUrl() }}" class="w-full h-48 object-cover" alt="Prévisualisation">
-                                                    <button type="button" wire:click="remove{{ ucfirst($field) }}" 
+                                                    <button type="button" wire:click="remove{{ ucfirst($field) }}"
                                                         class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -505,7 +504,7 @@
                                                     </button>
                                                 </div>
                                             @endif
-                    
+
                                             @error($field)
                                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                             @enderror
@@ -514,7 +513,7 @@
                                 @endforeach
                             </div>
                         </div>
-                    
+
                         {{-- Boutons d'action --}}
                         <div class="flex justify-end space-x-4">
                             <button type="reset" wire:click="resetForm"

@@ -47,6 +47,7 @@ class Enchere extends Component
     public $prixLePlusBas;
     public $offreIniatiale;
     public $isNegociationActive;
+    protected $listeners = ['negotiationEnded' => '$refresh'];
 
 
 
@@ -118,7 +119,10 @@ class Enchere extends Component
     public function commentoffgroup()
     {
         if ($this->offgroupe->count) {
-            $this->dispatch('formSubmitted', 'La négociation est terminée.');
+            $this->dispatch(
+                'formSubmitted',
+                'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
+            );
             return;
         }
 
@@ -126,19 +130,18 @@ class Enchere extends Component
 
         try {
             DB::beginTransaction();
-
+            $offreInitiale = Comment::where('code_unique', $code_unique)
+                ->whereNotNull('prixTrade')
+                ->orderBy('created_at', 'asc')
+                ->first();
             $validatedData = $this->validate([
                 'prixTrade' => [
                     'required',
                     'numeric',
-                    function ($attribute, $value, $fail) use ($code_unique) {
-                        $offreInitiale = Comment::where('code_unique', $code_unique)
-                            ->whereNotNull('prixTrade')
-                            ->orderBy('created_at', 'asc')
-                            ->first();
+                    function ($attribute, $value, $fail) use ($offreInitiale) {
 
-                        if ($offreInitiale && $value >= $offreInitiale->prixTrade) {
-                            $fail("Le prix doit être inférieur à {$offreInitiale->prixTrade}");
+                        if ($offreInitiale && $value <= $offreInitiale->prixTrade) {
+                            $fail("Le prix doit être supérieur à {$offreInitiale->prixTrade}");
                         }
                     }
                 ]
@@ -155,8 +158,10 @@ class Enchere extends Component
 
             DB::commit();
             $this->reset('prixTrade');
+            // Optionnel: Ajouter une notification ou un message de succès
+            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
             $this->listenForMessage();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Erreur lors de l\'enchère', [
                 'error' => $e->getMessage(),

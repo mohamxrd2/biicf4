@@ -34,12 +34,13 @@ class AjoutQoffre extends Command
     public function handle()
     {
         try {
+
             $timeSync = new TimeSyncService($this->recuperationTimer);
             $result = $timeSync->getSynchronizedTime();
-            $serverTime = $result['timestamp']->subMinutes(2);
+            $serverTime = $result['timestamp'];
 
             $countdowns = Countdown::where('notified', false)
-                ->where('start_time', '<=', $serverTime)
+                ->where('end_time', '<=', $serverTime)
                 ->where('difference', 'offreGrouper')
                 ->with(['sender', 'achat', 'appelOffre', 'appelOffreGrouper'])
                 ->get();
@@ -53,27 +54,18 @@ class AjoutQoffre extends Command
 
             $codeUniques = $countdowns->pluck('code_unique')->unique();
             $offreGroupes = OffreGroupe::whereIn('code_unique', $codeUniques)
+                ->where('notified', false)
                 ->with(['user', 'produit'])
                 ->get();
 
             foreach ($offreGroupes as $offre) {
-                try {
-                    $this->processOffre($offre, $countdowns);
-                } catch (\Exception $e) {
-                    DB::rollBack();
-                    Log::error('Erreur lors du traitement de l\'offre ' . $offre->code_unique, [
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
-                    ]);
-                    throw $e;
-                }
+                $this->processOffre($offre, $countdowns);
             }
 
             DB::commit();
         } catch (\Exception $e) {
-            if (DB::transactionLevel() > 0) {
-                DB::rollBack();
-            }
+            DB::rollBack();
+
             Log::error('Erreur générale dans AjoutQoffre', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -82,8 +74,10 @@ class AjoutQoffre extends Command
         }
     }
 
-    protected function processOffre(OffreGroupe $offre, $countdowns)
+    private function processOffre($offre, $countdowns)
     {
+        // Actualiser le timer avant de commencer
+        $this->timeServer();
         // Vérifier si l'offre a un utilisateur associé
         if (!$offre->user) {
             Log::error('Utilisateur non trouvé pour l\'offre: ' . $offre->code_unique);
@@ -104,7 +98,7 @@ class AjoutQoffre extends Command
         $this->markCountdownsAsNotified($countdowns, $offre->code_unique);
     }
 
-    protected function getUserQuantities(string $codeUnique): array
+    protected function getUserQuantities($codeUnique)
     {
         return userquantites::where('code_unique', $codeUnique)
             ->get()

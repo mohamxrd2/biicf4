@@ -36,6 +36,7 @@ class Appeloffregrouper extends Component
     public $isOpen = false;
     public $time;
     public $error;
+    protected $listeners = ['negotiationEnded' => '$refresh'];
 
     protected $recuperationTimer;
 

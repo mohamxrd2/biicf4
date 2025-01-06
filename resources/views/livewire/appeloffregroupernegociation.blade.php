@@ -33,7 +33,7 @@
                             <span class="text-sm">{{ $nombreParticipants ?? '0' }} participants</span>
                         </span>
                         <div class="relative">
-                            @if ($isNegociationActive)
+                            @if (!$appeloffregrp->count2)
                                 <button
                                     class="flex items-center space-x-1 bg-white bg-opacity-20 rounded-full px-3 py-1 hover:bg-opacity-30 transition-colors">
                                     <span class="animate-pulse h-2 w-2 bg-green-400 rounded-full"></span>
@@ -233,7 +233,7 @@
                         <!-- Messages -->
                         <div
                             class="h-[400px] overflow-y-auto sm:p-4 p-4 border-t border-gray-200 font-normal space-y-3 relative dark:border-slate-700/40">
-                            @if ($appeloffregrp->count)
+                            @if ($appeloffregrp->count2)
                                 <div class="flex flex-col items-center justify-center h-full">
                                     <div class="bg-red-50 p-4 rounded-lg text-center">
                                         <svg xmlns="http://www.w3.org/2000/svg"

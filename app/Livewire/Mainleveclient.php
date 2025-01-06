@@ -9,6 +9,7 @@ use App\Models\gelement;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\userquantites;
 use App\Models\Wallet;
 use App\Notifications\Confirmation;
 use App\Notifications\RefusAchat;
@@ -21,6 +22,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
+use App\Services\TransactionService;
+use App\Services\NotificationService;
+use App\Services\WalletService;
+use App\Services\CommissionService;
 
 class Mainleveclient extends Component
 {
@@ -85,90 +90,44 @@ class Mainleveclient extends Component
     }
     public function acceptColis()
     {
-        // Validation initiale des réponses
-        $responses = [
-            'Quantité' => $this->quantite,
-            'Qualité' => $this->qualite,
-            'Diversité' => $this->diversite,
-        ];
-
-        $countYes = count(array_filter($responses, fn($value) => strtolower($value) === 'oui'));
-
-        if ($countYes < 2) {
-            session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
-            return;
-        }
+        $transactionService = new TransactionService();
+        $notificationService = new NotificationService();
+        $walletService = new WalletService();
+        $commissionService = new CommissionService();
 
         DB::beginTransaction();
         try {
-            $dataType = $this->achatdirect ? 'achatdirect' : ($this->appeloffre ? 'appeloffre' : null);
-
-            if (!$dataType) {
-                throw new Exception('Aucune donnée d\'achat direct ou d\'appel d\'offre n\'est disponible.');
-            }
-
-            if (!$this->gelement) {
-                throw new Exception('Référence introuvable dans la table gelement.');
-            }
-
-            $valeurGelement = $this->gelement->amount;
-            Log::info('Valeur récupérée depuis la table gelement', ['valeur' => $valeurGelement]);
-
-            // Récupération des portefeuilles
-            $fournisseurId = $this->notification->data['fournisseur'];
-            $livreurId = $this->notification->data['livreur'];
-
-            $this->fournisseurWallet = Wallet::where('user_id', $fournisseurId)->firstOrFail();
-            $livreurWallet = Wallet::where('user_id', $livreurId)->firstOrFail();
-
-            // Calculs pour les montants et intérêts
-            $prixTrade = $this->notification->data['prixTrade'];
-            $interetFournisseur = ($valeurGelement - $prixTrade) * 0.01;
-            $montantPourFournisseur = ($valeurGelement - $prixTrade) - $interetFournisseur;
-
-            // $montantClient = $prixTrade +
-            $interetLivreur = $prixTrade * 0.01;
-            $montantPourLivreur = $prixTrade - $interetLivreur;
-
-            $totalInterets = $interetFournisseur + $interetLivreur;
-
-            Log::info('Montants et intérêts calculés', [
-                'montantPourFournisseur' => $montantPourFournisseur,
-                'montantPourLivreur' => $montantPourLivreur,
-                'totalInterets' => $totalInterets,
-            ]);
-
-            // Mise à jour des portefeuilles
-            $this->fournisseurWallet->increment('balance', $montantPourFournisseur);
-            $livreurWallet->increment('balance', $montantPourLivreur);
-
-            Log::info('Portefeuilles mis à jour', [
-                'fournisseur_id' => $fournisseurId,
-                'livreur_id' => $livreurId,
-            ]);
-
-            // Préparation des notifications
-            $data = [
-                'code_unique' => $this->notification->data['code_unique'],
-                'achat_id' => $this->notification->data['achat_id'],
-                'title' => 'Transaction réussie',
-                'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
+            // Validation des réponses
+            $responses = [
+                'Quantité' => $this->quantite,
+                'Qualité' => $this->qualite,
+                'Diversité' => $this->diversite,
             ];
+            $countYes = count(array_filter($responses, fn($value) => strtolower($value) === 'oui'));
 
-            $this->notifyUsers($data, $dataType);
+            if ($countYes < 2) {
+                session()->flash('error', 'Vous devez sélectionner au moins deux réponses "OUI" pour continuer.');
+                return;
+            }
 
-            // Création des transactions
-            $this->createTransactionNew(Auth::user()->id, $fournisseurId, 'Réception', 'COC', $montantPourFournisseur, $this->generateIntegerReference(), 'Réception pour achat.');
-            $this->createTransactionNew(Auth::user()->id, $livreurId, 'Réception', 'COC', $montantPourLivreur, $this->generateIntegerReference(), 'Réception pour livraison.');
-            $this->createTransactionNew(Auth::user()->id, $fournisseurId, 'Envoie', 'COC', $valeurGelement, $this->generateIntegerReference(), 'Paiement pour achat.');
+            // Traitement selon le type d'achat
+            switch ($this->achatdirect->type_achat) {
+                case 'OffreGrouper':
+                    $this->processGroupedPayments($transactionService, $walletService, $commissionService, $notificationService);
 
-            // Gestion des commissions
-            $this->handleCommissions($totalInterets);
+                    break;
+                case 'achatDirect':
+                case 'appelOffreGrouper':
+                case 'appelOffre':
+                    $this->processAchatdirectPayments($transactionService, $walletService, $commissionService, $notificationService);
+                    break;
+                default:
+                    throw new Exception('Type d\'achat inconnu.');
+            }
 
             // Mise à jour de la notification
             $this->notification->update(['reponse' => 'Confirmation']);
-            Log::info('Notification mise à jour', ['notification_id' => $this->notification->id]);
-            session()->flash('succes', 'Le payement a été éffecuté avec succes.');
+            session()->flash('succes', 'Le paiement a été effectué avec succès.');
             $this->reset('showMainlever');
 
             DB::commit();
@@ -186,77 +145,161 @@ class Mainleveclient extends Component
         }
     }
 
-    private function notifyUsers(array $data, string $dataType)
+    /**
+     * Traitement des paiements pour achat direct
+     */
+    private function processAchatdirectPayments($transactionService, $walletService, $commissionService, $notificationService)
     {
-        $fournisseurId = $dataType === 'achatdirect' ? $this->achatdirect->userTrader : $this->appeloffre->user_id;
-
-        Notification::send(User::find(Auth::id()), new Confirmation($data));
-        Notification::send(User::find($fournisseurId), new Confirmation($data));
-        Notification::send(User::find($this->notification->data['livreur']), new Confirmation($data));
-
-        Log::info('Notifications envoyées.', [
-            'user_id' => Auth::id(),
-            'fournisseur_id' => $fournisseurId,
-            'livreur_id' => $this->notification->data['livreur'],
-        ]);
-    }
-
-
-    private function handleCommissions(float $totalInterets)
-    {
-        $commissions = $totalInterets - ($totalInterets * 0.01);
-
-        if ($this->fournisseurWallet->user->parrain) {
-            $commissions = $this->distributeToParrains($commissions);
+        if (!$this->gelement) {
+            throw new Exception('Référence introuvable dans la table gelement.');
         }
 
-        $this->distributeToAdmin($commissions);
+        $fournisseurId = $this->notification->data['fournisseur'];
+        $livreurId = $this->notification->data['livreur'];
+        $prixTrade = $this->notification->data['prixTrade'];
+        $valeurGelement = $this->gelement->amount;
+
+        $interetFournisseur = ($valeurGelement - $prixTrade) * 0.01;
+        $montantPourFournisseur = ($valeurGelement - $prixTrade) - $interetFournisseur;
+
+        $interetLivreur = $prixTrade * 0.01;
+        $montantPourLivreur = $prixTrade - $interetLivreur;
+
+        $totalInterets = $interetFournisseur + $interetLivreur;
+
+        $walletService->updateBalance($fournisseurId, $montantPourFournisseur);
+        $walletService->updateBalance($livreurId, $montantPourLivreur);
+        $referenceId = $this->generateIntegerReference();
+
+        $transactionService->createTransaction(
+            Auth::id(),
+            $fournisseurId,
+            'Réception',
+            $montantPourFournisseur,
+            $referenceId,
+            'Paiement pour achat.',
+            'COC'
+        );
+
+        $transactionService->createTransaction(
+            Auth::id(),
+            $livreurId,
+            'Réception',
+            $montantPourLivreur,
+            $referenceId,
+            'Paiement pour livraison.',
+            'COC'
+        );
+        $transactionService->createTransaction(
+            Auth::id(),
+            Auth::id(),
+            'Envoie',
+            $valeurGelement,
+            $referenceId,
+            'Paiement de l\'achat',
+            'COC'
+        );
+
+        $commissionService->handleCommissions($totalInterets);
+
+        // Notification des utilisateurs
+        $notificationService->notifyUsers([
+            'code_unique' => $this->notification->data['code_unique'],
+            'achat_id' => $this->notification->data['achat_id'],
+            'title' => 'Transaction réussie',
+            'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
+        ], [$fournisseurId, $livreurId]);
+
+        $this->gelement->status = 'completed';
+        $this->gelement->save();
+
+        return true;
     }
-    private function distributeToParrains(float $commissions)
+
+    /**
+     * Traitement des paiements pour offre groupée
+     */
+    private function processGroupedPayments($transactionService, $walletService, $commissionService, $notificationService)
     {
-        $parrain = $this->fournisseurWallet->user->parrain;
-        $level = 1;
+        $prixUnitaire = $this->achatdirect->prix;
+        $codeUnique = $this->achatdirect->code_unique;
+        $livreurId = $this->notification->data['livreur'] ?? null;
+        $prixTrade = $this->notification->data['prixTrade'] ?? 0;
+        $valeurGelement = $this->gelement->amount ?? 0;
 
-        while ($parrain && $level <= 3) {
-            $parrainUser = User::find($parrain);
-            $parrainWallet = Wallet::where('user_id', $parrainUser->id)->first();
-
-            if ($parrainWallet) {
-                $commissionForParrain = $commissions * 0.01;
-                $parrainWallet->increment('balance', $commissionForParrain);
-                $commissions -= $commissionForParrain;
-
-                Log::info("Commission envoyée au parrain niveau $level", ['parrain_id' => $parrainUser->id, 'commission' => $commissionForParrain]);
-
-                $this->createTransaction(Auth::user()->id, $parrainUser->id, 'Commission', $commissionForParrain, $this->generateIntegerReference(), "Commission niveau $level", 'effectué', 'COC');
-            }
-
-            $parrain = $parrainUser->parrain;
-            $level++;
+        if (!$livreurId || !$prixTrade || !$valeurGelement) {
+            throw new Exception('Données de paiement invalides pour l\'offre groupée.');
         }
 
-        return $commissions;
-    }
+        $interetLivreur = $prixTrade * 0.01;
+        $montantPourLivreur = $prixTrade - $interetLivreur;
+        $walletService->updateBalance($livreurId, $montantPourLivreur);
 
-    private function distributeToAdmin(float $commissions)
-    {
-        $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
-        if ($adminWallet) {
-            $adminWallet->increment('balance', $commissions);
+        $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
+        if ($userQuantites->isEmpty()) {
+            throw new Exception('Aucune quantité utilisateur trouvée pour l\'offre groupée.');
+        }
 
-            Log::info('Commission envoyée à l\'admin.', ['admin_id' => 1, 'commissions' => $commissions]);
+        $totalInterets = 0;
+        foreach ($userQuantites as $userQuantite) {
+            $userId = $userQuantite->user_id;
+            $quantite = $userQuantite->quantite;
 
-            $this->createTransactionAdmin(
-                Auth::user()->id,
-                1,
-                'Commission',
-                $commissions,
-                $this->generateIntegerReference(),
-                'Commission de BICF',
-                'effectué',
-                'commission'
+            $prixTotal = $prixUnitaire * $quantite;
+            $interetFournisseur = ($valeurGelement - $prixTotal) * 0.01;
+            $montantPourFournisseur = ($valeurGelement - $prixTotal) - $interetFournisseur;
+
+            $walletService->updateBalance($userId, $montantPourFournisseur);
+            $totalInterets += $interetFournisseur;
+            $referenceId = $this->generateIntegerReference();
+
+            $transactionService->createTransaction(
+                Auth::id(),
+                $userId,
+                'Réception',
+                $montantPourFournisseur,
+                $referenceId,
+                'Réception pour achat groupé.',
+                'COC'
             );
+            // Notification des utilisateurs
+            $notificationService->notifyUsers([
+                'code_unique' => $this->notification->data['code_unique'],
+                'achat_id' => $this->notification->data['achat_id'],
+                'title' => 'Transaction réussie',
+                'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
+            ], [$userId]);
         }
+
+        $transactionService->createTransaction(
+            Auth::id(),
+            $livreurId,
+            'Réception',
+            $montantPourLivreur,
+            $referenceId,
+            'Paiement pour livraison.',
+            'COC'
+        );
+
+        $transactionService->createTransaction(
+            Auth::id(),
+            Auth::id(),
+            'Envoie',
+            $valeurGelement,
+            $referenceId,
+            'Paiement de l\'achat',
+            'COC'
+        );
+
+        $commissionService->handleCommissions($totalInterets);
+
+        // Notification des utilisateurs
+        $notificationService->notifyUsers([
+            'code_unique' => $this->notification->data['code_unique'],
+            'achat_id' => $this->notification->data['achat_id'],
+            'title' => 'Transaction réussie',
+            'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
+        ], [$livreurId]);
     }
 
     public function refuseColis()
@@ -345,48 +388,6 @@ class Mainleveclient extends Component
         }
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
-    }
-    protected function createTransactionAdmin(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_admin_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->status = $status;
-        $transaction->type_compte = $type_compte;
-
-        $transaction->save();
-    }
-
-    protected function createTransactionNew(int $senderId, int $receiverId, string $type, string $type_compte, float $amount, int $reference_id, string $description)
-    {
-
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->type_compte = $type_compte;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->status = 'effectué';
-        $transaction->save();
-    }
     protected function generateIntegerReference(): int
     {
         // Récupère l'horodatage en millisecondes

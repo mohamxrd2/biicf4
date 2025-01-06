@@ -77,9 +77,21 @@ class Countdown extends Component
                 case 'App\Notifications\livraisonAchatdirect':
                     if (isset($this->notification->data['achat_id'])) {
                         $this->achatdirect = AchatDirect::findOrFail($this->notification->data['achat_id']);
+<<<<<<< HEAD
                         $this->valueCodeUnique = ($this->notification->type_achat === 'appelOffreGrouper' || $this->notification->type_achat === 'OffreGrouper')
                             ? ($this->notification->data['code_unique'] ?? null)
                             : $this->achatdirect->code_unique;
+=======
+                        switch ($this->achatdirect->type_achat) {
+                            case 'appelOffreGrouper':
+                            case 'appelOffre':
+                            case 'OffreGrouper':
+                                $this->valueCodeUnique = $this->notification->data['code_unique'] ?? null;
+                                break;
+                            default:
+                                $this->valueCodeUnique = $this->achatdirect->code_unique;
+                        }
+>>>>>>> 1306339743d980fcd242714bee7e88cb2231983c
                         $this->etat = $this->achatdirect->count;
 
                         return true;
@@ -119,12 +131,17 @@ class Countdown extends Component
                 case 'App\Notifications\appeloffregroupernegociation':
                     if (isset($this->notification->data['id_appelGrouper'])) {
                         $this->appeloffregrp = AppelOffreGrouper::findOrFail($this->notification->data['id_appelGrouper']);
+<<<<<<< HEAD
                         $this->valueCodeUnique = $this->appeloffregrp->codeunique;
+=======
+                        $this->valueCodeUnique = $this->notification->data['code_livr'];
+>>>>>>> 1306339743d980fcd242714bee7e88cb2231983c
                         $this->etat = $this->appeloffregrp->count2;
 
                         return true;
                     }
                     break;
+
                 case 'App\Notifications\OffreNegosNotif':
                     if (isset($this->notification->data['code_unique'])) {
                         $this->OffreGroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->first();
@@ -174,7 +191,7 @@ class Countdown extends Component
                     break;
                 case 'App\Notifications\AOGrouper':
                     $this->appelOffreGroup->update(['count' => true]);
-                    $this->dispatch('negotiationEnded')->to('appel-offre-grouper');
+                    $this->dispatch('negotiationEnded')->to('appeloffregrouper');
                     break;
 
                 case 'App\Notifications\AppelOffreGrouperNotification':
@@ -256,7 +273,11 @@ class Countdown extends Component
             return;
         }
 
+<<<<<<< HEAD
         $countdown = &$this->countdowns[$event['code_unique']];
+=======
+        $countdown = $this->countdowns[$event['code_unique']];
+>>>>>>> 1306339743d980fcd242714bee7e88cb2231983c
 
         if (!$countdown['isRunning']) {
             return;
@@ -285,6 +306,7 @@ class Countdown extends Component
             $this->dispatch(
                 'formSubmitted',
                 'Temps écoulé, Négociation terminée.'
+
             );
         }
     }

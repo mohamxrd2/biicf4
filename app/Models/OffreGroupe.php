@@ -29,6 +29,7 @@ class OffreGroupe extends Model
         'produit_id',
         'count',
         'user_id',
+        'client_id',
         'notified',
     ];
 
@@ -43,5 +44,9 @@ class OffreGroupe extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    public function client()
+    {
+        return $this->belongsTo(User::class, 'client_id');
     }
 }

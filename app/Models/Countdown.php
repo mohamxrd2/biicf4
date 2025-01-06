@@ -17,6 +17,7 @@ class Countdown extends Model
         'end_time',
         'time_remaining',
         'is_active',
+        'notified',
         'difference',
         'code_unique',
         'id_achat',

@@ -211,32 +211,45 @@ class Appaeloffre extends Component
     }
     public function startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id)
     {
-        // Utiliser firstOrCreate pour éviter les doublons
-        $countdown = Countdown::firstOrCreate(
-            ['is_active' => true],
-            [
-                'user_id' => Auth::id(),
-                'userSender' => null,
-                'start_time' => $this->timestamp,
-                'code_unique' => $code_unique,
-                'difference' => $difference,
-                $AppelOffreGrouper_id => $id,
-                'time_remaining' => 300,
-                'end_time' => $this->timestamp->addMinutes(5),
-                'is_active' => true,
-            ]
+        try {
+            $countdown = Countdown::firstOrCreate(
+                [
+                    'code_unique' => $code_unique,
+                    'is_active' => true
+                ],
+                [
+                    'user_id' => Auth::id(),
+                    'userSender' => null,
+                    'start_time' => $this->timestamp,
+                    'difference' => $difference,
+                    $AppelOffreGrouper_id => $id,
+                    'time_remaining' => 120,
+                    'end_time' => $this->timestamp->addMinutes(2),
+                ]
+            );
 
-        );
+            if ($countdown->wasRecentlyCreated) {
+                $this->countdownId = $countdown->id;
+                $this->isRunning = true;
+                $this->timeRemaining = 120;
 
-        if ($countdown->wasRecentlyCreated) {
-            $this->countdownId = $countdown->id;
-            $this->isRunning = true;
-            $this->timeRemaining = 300;
+                // Dispatch le job immédiatement
+                dispatch(new ProcessCountdown($countdown->id, $code_unique))
+                    ->onQueue('default')
+                    ->afterCommit();
 
-            ProcessCountdown::dispatch($countdown->id)
-                ->onConnection('database')
-                ->onQueue('default');
-            event(new CountdownStarted(300));
+                event(new CountdownStarted(120, $code_unique));
+
+                Log::info('Countdown started', [
+                    'countdown_id' => $countdown->id,
+                    'code_unique' => $code_unique
+                ]);
+            }
+        } catch (Exception $e) {
+            Log::error('Error starting countdown', [
+                'error' => $e->getMessage(),
+                'code_unique' => $code_unique
+            ]);
         }
     }
     private function calculateTotalCost($quantity)
@@ -309,20 +322,10 @@ class Appaeloffre extends Component
                 $data = [
                     'id_appelOffre' => $appelOffre->id,
                     'code_unique' => $appelOffre->code_unique,
-                    'difference' => 'single',
+                    'type_achat' => $this->selectedOption,
                 ];
 
                 Notification::send($owner, new AppelOffre($data));
-
-                // Mettre à jour la notification
-                $notification = $owner->notifications()
-                    ->where('type', AppelOffre::class)
-                    ->latest()
-                    ->first();
-
-                if ($notification) {
-                    $notification->update(['type_achat' => $this->selectedOption]);
-                }
 
                 // Déclencher un événement
                 event(new NotificationSent($owner));
@@ -372,7 +375,6 @@ class Appaeloffre extends Component
 
         $this->loading = true;
         $userId = Auth::guard('web')->id(); // ID de l'utilisateur connecté
-        Log::info('Utilisateur connecté.', ['user_id' => $userId]);
 
         DB::beginTransaction();
 
@@ -389,7 +391,6 @@ class Appaeloffre extends Component
                 'appliedZoneValue' => 'required|string|max:255',
                 'prodUsers' => 'required|array|min:1',
             ]);
-            Log::info('Données validées.', ['validated_data' => $validatedData]);
 
             // Générer un code unique une seule fois
             $codeUnique = $this->generateUniqueReference();

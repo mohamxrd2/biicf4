@@ -32,6 +32,7 @@ class CountdownNotificationAd extends Notification implements ShouldQueue
             'livreur' => $this->details['livreur'] ?? null,
             'achat_id' => $this->details['id'] ?? null,
             'prixFin' => $this->details['prixFin'] ?? null,
+            'type_achat' => $this->details['type_achat'] ?? null,
             'title' => 'Facture Proformat',
             'description' => 'Cliquez pour voir plus de détails.',
             'svg' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">

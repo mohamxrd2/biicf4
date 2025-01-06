@@ -251,11 +251,12 @@ class OffreNegosDone extends Component
                 'nameProd' => $this->produit->name,
                 'quantité' => $quantiteTotal,
                 'montantTotal' => $this->prixFin,
-                'localite' => 'cocody',
+                'localite' => $this->offregroupe->client->commune,
                 'date_tot' => now(),
                 'date_tard' => now(),
+                'type_achat' => 'OffreGrouper',
                 'userTrader' => Auth::id(),
-                'userSender' => $this->offregroupe->user_id,
+                'userSender' => $this->offregroupe->client_id,
                 'idProd' => $this->produit->id,
                 'code_unique' => $codeUnique,
             ]);
@@ -271,8 +272,9 @@ class OffreNegosDone extends Component
                 'description' => 'Cliquez pour participer a la negociation',
             ];
 
+            $userSender = $this->offregroupe->client_id;
             // Démarrer le compte à rebours pour chaque utilisateur
-            $this->startCountdown($data['code_livr'], $this->offregroupe->user_id, $achatdirect->id);
+            $this->startCountdown($data['code_livr'], $userSender, $achatdirect->id);
 
 
             // Envoyer les notifications aux livreurs
@@ -281,17 +283,6 @@ class OffreNegosDone extends Component
                     $livreur = User::find($livreurId);
                     if ($livreur) {
                         Notification::send($livreur, new livraisonAchatdirect($data));
-
-                        $notification = $livreur->notifications()
-                            ->where('type', livraisonAchatdirect::class)
-                            ->latest()
-                            ->first();
-
-                        if ($notification) {
-                            $notification->update(['type_achat' => 'OffreGrouper']);
-                            Log::info('Notification mise à jour avec succès', ['notification_id' => $notification->id]);
-                        }
-
                         event(new NotificationSent($livreur));
                     }
                 }
@@ -313,31 +304,36 @@ class OffreNegosDone extends Component
             session()->flash('error', 'Une erreur s\'est produite : ' . $e->getMessage());
         }
     }
-    public function startCountdown($code_livr, $userId, $achatdirect_id)
+    public function startCountdown($code_livr, $userSender, $achatdirect_id)
     {
         // Utiliser firstOrCreate pour éviter les doublons
         $countdown = Countdown::firstOrCreate(
-            ['is_active' => true],
+            [
+                'code_unique' => $code_livr,
+                'is_active' => true
+            ],
             [
                 'user_id' => Auth::id(),
-                'userSender' => $userId,
+                'userSender' => $userSender,
                 'start_time' => $this->timestamp,
-                'difference' => 'ad',
-                'code_unique' => $code_livr,
+                'difference' => 'AchatDirectPoffreGroupe',
                 'id_achat' => $achatdirect_id,
-                'time_remaining' => 300,
-                'end_time' => $this->timestamp->addMinutes(5),
+                'time_remaining' => 120,
+                'end_time' => $this->timestamp->addMinutes(2),
                 'is_active' => true,
             ]
         );
         if ($countdown->wasRecentlyCreated) {
             $this->countdownId = $countdown->id;
             $this->isRunning = true;
-            $this->timeRemaining = 300;
-            ProcessCountdown::dispatch($countdown->id)
-                ->onConnection('database')
-                ->onQueue('default');
-            event(new CountdownStarted(300));
+            $this->timeRemaining = 120;
+
+            // Dispatch le job immédiatement
+            dispatch(new ProcessCountdown($countdown->id, $code_livr))
+                ->onQueue('default')
+                ->afterCommit();
+
+            event(new CountdownStarted(120, $code_livr));
         }
     }
 

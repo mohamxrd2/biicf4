@@ -111,7 +111,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm text-gray-600">Offre initiale</div>
-            <div class="text-lg font-bold">{{ $offgroupe->lowestPricedProduct . ' FCFA' }}</div>
+            <div class="text-lg font-bold">{{ $this->produit->prix . ' FCFA' }}</div>
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="text-sm  text-gray-600">Meilleure offre</div>
@@ -122,7 +122,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0Zm-9 5.25h.008v.008H12v-.008Z" />
                     </svg>
                     <span class="text-sm text-gray-500">Aucune offre soumise</span>
                 </div>
@@ -322,38 +322,48 @@
                             <!-- Zone de saisie -->
                             <div class="border-t p-4">
                                 <form wire:submit.prevent="commentoffgroup">
-                                    @error('prixTrade')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
                                     @if (!$offgroupe->count)
-                                        <div class="flex space-x-4">
-                                            <div class="flex-1">
-                                                <div class="relative">
-                                                    <span
-                                                        class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></span>
-                                                    <input type="number" name="prixTrade" id="prixTrade"
-                                                        wire:model="prixTrade"
-                                                        class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-purple-500"
-                                                        placeholder="Faire une offre..." required>
+                                        <div class="flex flex-col space-y-2">
+                                            <div class="flex space-x-4">
+                                                <div class="flex-1">
+                                                    <div class="relative">
+                                                        <span
+                                                            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></span>
+                                                        <input type="number" name="prixTrade" id="prixTrade"
+                                                            wire:model="prixTrade"
+                                                            class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-purple-500 @error('prixTrade') border-red-500 @enderror"
+                                                            placeholder="Faire une offre..." required>
+                                                    </div>
+                                                    @error('prixTrade')
+                                                        <div class="mt-1">
+                                                            <p class="text-sm text-red-600 bg-red-50 rounded-md px-2 py-1">
+                                                                <span class="flex items-center">
+                                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                                                    </svg>
+                                                                    {{ $message }}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    @enderror
                                                 </div>
+                                                <button type="submit"
+                                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
+                                                    <span>Envoyer</span>
+                                                    <span wire:loading.remove>
+                                                        <i class="fas fa-paper-plane"></i>
+                                                    </span>
+                                                    <span wire:loading>
+                                                        <svg class="w-5 h-5 animate-spin inline-block"
+                                                            xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
+                                                        </svg>
+                                                    </span>
+                                                </button>
                                             </div>
-                                            <button type="submit"
-                                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
-                                                <span>Envoyer</span>
-                                                <span wire:loading.remove>
-
-                                                    <i class="fas fa-paper-plane"></i>
-                                                </span>
-                                                <span wire:loading>
-                                                    <svg class="w-5 h-5 animate-spin inline-block"
-                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 4.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292zm0 0V1m0 3.354a7.646 7.646 0 100 15.292 7.646 7.646 0 000-15.292z" />
-                                                    </svg>
-                                                </span>
-                                            </button>
                                         </div>
                                     @else
                                         <div class="text-center text-gray-500 py-2">
@@ -373,6 +383,7 @@
 
     </div>
 </div>
+
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('negotiation', () => ({
