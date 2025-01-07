@@ -36,8 +36,7 @@ class MonitorWorker extends Command
         $resultCode = null;
 
         if (function_exists('exec')) {
-            exec('bash monitor_worker.sh', $output, $resultCode);
-            Log::info('Exec command ran successfully.');
+            shell_exec('bash /home/u474923210/biicf/monitor_worker.sh');            Log::info('Exec command ran successfully.');
         } else {
             Log::error('Exec function is disabled.');
         }
