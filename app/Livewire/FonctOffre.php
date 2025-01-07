@@ -47,6 +47,8 @@ class FonctOffre extends Component
     public $timeRemaining;
     protected $recuperationTimer;
     public $fournisseursFiltered = [];
+
+
     protected $rules = [
         'quantite' => 'required|numeric|min:1',
         'username' => 'required|exists:users,username',
@@ -69,6 +71,7 @@ class FonctOffre extends Component
         $this->time = $this->recuperationTimer->getTime();
         $this->loadData();
     }
+    
 
     public function updatedZoneEconomique($value)
     {
@@ -283,8 +286,6 @@ class FonctOffre extends Component
     }
 
 
-
-
     protected function generateUniqueReference()
     {
         return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
@@ -298,8 +299,6 @@ class FonctOffre extends Component
             $this->loadData();
 
             $user_id = Auth::id();
-            Log::info('Tentative de stockage de données', ['user_id' => $user_id]);
-
             // Recherche du produit et de l'utilisateur
             $produit = ProduitService::findOrFail($this->produit->id);
             $user = User::where('username', $this->username)->firstOrFail();
@@ -307,6 +306,14 @@ class FonctOffre extends Component
             // Générer un code unique
             $uniqueCode = $this->generateUniqueReference();
 
+            // Notification de confirmation à l'utilisateur
+            Notification::send($user, new Confirmation([
+                'idProd' => $produit->id,
+                'code_unique' => $uniqueCode,
+                'title' => 'Confirmation de commande',
+                'description' => 'Votre commande de {} des fournisseurs a été envoyée avec succès.',
+            ]));
+            event(new NotificationSent($user));
 
             // Notifier les fournisseurs
             foreach ($this->fournisseursFiltered as $supplierId) {
@@ -323,14 +330,7 @@ class FonctOffre extends Component
                 }
                 event(new NotificationSent($supplier));
             }
-            // Notification de confirmation à l'utilisateur
-            Notification::send($user, new Confirmation([
-                'idProd' => $produit->id,
-                'code_unique' => $uniqueCode,
-                'title' => 'Confirmation de commande',
-                'description' => 'La commande groupée des fournisseurs a été envoyée avec succès.',
-            ]));
-            event(new NotificationSent($user));
+
 
             // Enregistrement dans la table `OffreGroupe`
             $this->saveOffreGroupe([

@@ -13,6 +13,16 @@ class ProduitServiceDetails extends Component
     public $produit;
     public $userWallet;
     public $userId;
+    public $currentPage = 'produit';
+    protected $listeners = ['navigate' => 'setPage'];
+    public function setPage($page)
+    {
+        $this->currentPage = $page;
+    }
+    public function negocie()
+    {
+        $this->dispatch('navigate', 'negocie');
+    }
 
     public function mount($id)
     {

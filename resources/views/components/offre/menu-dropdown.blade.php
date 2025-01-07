@@ -28,7 +28,7 @@
                     </button>
                 </div>
                 <div class="flex items-center">
-                    <button data-modal-target="medium-offreneg{{ $produit->id }}"
+                    <button wire:click="negocie({{ $produit->id }})"
                         data-modal-toggle="medium-offreneg{{ $produit->id }}"
                         class="w-full mt-3 bg-yellow-300 text-white py-2 rounded-xl hover:bg-yellow-400 transition-colors"
                         type="button">
