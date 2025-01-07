@@ -30,10 +30,11 @@ class MonitorWorker extends Command
     public function handle()
     {
         // Commande shell pour vérifier et relancer le worker si nécessaire
-
-
-
-        shell_exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
-        Log::info('Exec command ran successfully.');
+        if (function_exists('exec')) {
+            shell_exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
+            Log::info('Exec command ran successfully.');
+        } else {
+            Log::error('Exec function is disabled.');
+        }
     }
 }
