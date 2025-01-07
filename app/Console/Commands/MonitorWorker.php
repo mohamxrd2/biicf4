@@ -7,41 +7,43 @@ use Illuminate\Support\Facades\Log;
 
 class MonitorWorker extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'worker:monitor';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Monitor the queue worker and restart if needed';
+
     public function __construct()
     {
         parent::__construct();
     }
-    /**
-     * Execute the console command.
-     */
+
     public function handle()
     {
-        // Commande shell pour vérifier et relancer le worker si nécessaire
-        $scriptPath = '/home/u474923210/public_html/biicf/monitor_worker.sh';
+        // Get base path and determine OS
+        $basePath = base_path();
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 
-        // Exécuter le script shell
-        $output = null;
-        $resultCode = null;
-        exec("bash $scriptPath", $output, $resultCode);
+        // Set script path based on OS
+        $scriptPath = $isWindows
+            ? $basePath . '\monitor_worker.bat'
+            : $basePath . '/monitor_worker.sh';
 
-        // Vérifiez si l'exécution a réussi et consignez la sortie
-        if ($resultCode === 0) {
-            Log::info('MonitorWorker command executed successfully.');
-        } else {
-            Log::error('MonitorWorker command failed. Result code: ' . $resultCode);
+        try {
+            // Execute appropriate command based on OS
+            $command = $isWindows ? $scriptPath : "bash {$scriptPath}";
+            $output = [];
+            $resultCode = null;
+
+            exec($command, $output, $resultCode);
+
+            if ($resultCode === 0) {
+                Log::info('MonitorWorker command executed successfully.');
+                $this->info('Worker monitored successfully.');
+            } else {
+                Log::error('MonitorWorker failed. Code: ' . $resultCode);
+                $this->error('Worker monitoring failed.');
+            }
+        } catch (\Exception $e) {
+            Log::error('MonitorWorker exception: ' . $e->getMessage());
+            $this->error('Error executing worker monitor: ' . $e->getMessage());
         }
     }
 }
