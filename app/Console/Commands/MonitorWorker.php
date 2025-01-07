@@ -35,20 +35,18 @@ class MonitorWorker extends Command
     public function handle()
     {
         try {
-            // Vérifiez si la fonction `shell_exec` est disponible
-            if (function_exists('shell_exec')) {
-                $output = shell_exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
+            // Vérifier si le processus "php artisan queue:listen" est actif
+            $isRunning = shell_exec('pgrep -f "php artisan queue:listen"');
 
-                if ($output === null) {
-                    Log::warning('The shell script did not return any output.');
-                } else {
-                    Log::info('Shell script executed successfully:', ['output' => $output]);
-                }
+            if (!$isRunning) {
+                // Si le processus n'est pas actif, le démarrer et le détacher de la session
+                shell_exec('nohup php /home/u474923210/public_html/biicf/artisan queue:listen > /home/u474923210/public_html/biicf/storage/logs/queue.log 2>&1 & disown');
+                Log::info('Queue worker restarted and detached successfully.');
             } else {
-                Log::error('The shell_exec function is disabled on this server.');
+                Log::info('Queue worker is already running.');
             }
         } catch (\Exception $e) {
-            Log::error('An error occurred while running the MonitorWorker command.', [
+            Log::error('An error occurred while monitoring the queue worker.', [
                 'error' => $e->getMessage(),
             ]);
         }
