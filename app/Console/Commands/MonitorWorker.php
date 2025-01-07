@@ -31,15 +31,9 @@ class MonitorWorker extends Command
     {
         // Commande shell pour vérifier et relancer le worker si nécessaire
 
-        // Exécuter le script shell
-        $output = null;
-        $resultCode = null;
 
-        if (function_exists('exec')) {
-            shell_exec('bash /home/u474923210/biicf/monitor_worker.sh');            Log::info('Exec command ran successfully.');
-        } else {
-            Log::error('Exec function is disabled.');
-        }
 
+        shell_exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
+        Log::info('Exec command ran successfully.');
     }
 }
