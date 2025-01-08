@@ -131,7 +131,7 @@ class OffreGroupeQuantite extends Component
         try {
             // Validation des données d'entrée
             $validatedData = $this->validate([
-                'quantite' => 'required|integer|min:1',
+                'quantite' => 'required|integer|min:1|max:' . $this->OffreGroupe->quantite,
                 'localite' => 'nullable|string',
             ]);
 
@@ -142,6 +142,15 @@ class OffreGroupeQuantite extends Component
             $existingQuantite = userquantites::where('code_unique', $codeUnique)
                 ->where('user_id', $user->id)
                 ->first();
+            // Calculer la nouvelle quantité totale
+            $nouvelleQuantiteTotale = $this->quantiteTotale + $validatedData['quantite'];
+
+            // Vérifier si la nouvelle quantité totale dépasse la limite
+            if ($nouvelleQuantiteTotale > $this->OffreGroupe->quantite) {
+                $quantiteRestante = $this->OffreGroupe->quantite - $this->quantiteTotale;
+                session()->flash('error', "La quantité demandée dépasse la limite disponible. Il reste seulement {$quantiteRestante} unité(s).");
+                return;
+            }
 
             if ($existingQuantite) {
                 // Mise à jour de la quantité existante
@@ -158,7 +167,7 @@ class OffreGroupeQuantite extends Component
             }
 
             // Mise à jour des données locales
-            $this->quantiteTotale += $validatedData['quantite'];
+            $this->quantiteTotale = $nouvelleQuantiteTotale;
 
             $this->reloadGroupages($codeUnique);
 

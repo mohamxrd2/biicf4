@@ -8,6 +8,7 @@
             <!-- Compte à rebours -->
             <livewire:countdown :id="$id" />
         </div>
+        <x-offre.alert-messages />
 
         <!-- Détails -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -16,7 +17,11 @@
                 <p class="mt-2 text-lg font-semibold text-gray-900">{{ $participants }}</p>
             </div>
             <div class="bg-gray-50 p-6 rounded-xl shadow-sm">
-                <label class="block text-sm font-medium text-gray-700">Nombre total</label>
+                <label class="block text-sm font-medium text-gray-700">Nombre total Demandé</label>
+                <p class="mt-2 text-lg font-semibold text-gray-900">{{ $OffreGroupe->quantite }}</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-xl shadow-sm">
+                <label class="block text-sm font-medium text-gray-700">Nombre total Groupe</label>
                 <p class="mt-2 text-lg font-semibold text-gray-900">{{ $quantiteTotale }}</p>
             </div>
 
