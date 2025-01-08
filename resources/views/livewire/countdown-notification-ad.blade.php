@@ -152,7 +152,7 @@
 
                             </div>
                         @else
-                            {{-- Bouton Refuser --}}
+                            {{-- Bouton  --}}
                             <div class="flex space-x-2">
                                 <button wire:click.prevent='FactureRefuser' wire:loading.attr="disabled"
                                     @class([

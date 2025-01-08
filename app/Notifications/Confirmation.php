@@ -32,6 +32,8 @@ class Confirmation extends Notification implements ShouldQueue
     public function toDatabase($notifiable)
     {
         return [
+            'quantiteTotal' => $this->achat['quantiteTotal'] ?? null,
+            'fourniCible' => $this->achat['fourniCible'] ?? null,
             'id' => $this->achat['id'] ?? null,
             'idProd' => $this->achat['idProd'] ?? null,
             'code_unique' => $this->achat['code_unique'] ?? null,

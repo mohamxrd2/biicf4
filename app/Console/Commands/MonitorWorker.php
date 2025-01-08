@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
 
 class MonitorWorker extends Command
 {
@@ -37,27 +36,12 @@ class MonitorWorker extends Command
     {
         try {
             // Vérifier si le processus "php artisan queue:listen" est actif
-            $processCheck = new Process(['pgrep', '-f', 'php artisan queue:listen']);
-            $processCheck->run();
+            $isRunning = shell_exec('pgrep -f "php artisan queue:listen"');
 
-            if (!$processCheck->isSuccessful()) {
-                // Si aucun processus actif, démarrer le worker en arrière-plan
-                $processStart = new Process([
-                    'nohup',
-                    'php',
-                    '/home/u474923210/public_html/biicf/artisan',
-                    'queue:listen',
-                    '--tries=3',
-                    '--sleep=3',
-                    '>',
-                    '/home/u474923210/public_html/biicf/storage/logs/queue.log',
-                    '2>&1',
-                    '&',
-                    'disown'
-                ]);
-                $processStart->start();
-
-                Log::info('Queue worker restarted successfully.');
+            if (!$isRunning) {
+                // Si le processus n'est pas actif, le démarrer et le détacher de la session
+                shell_exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
+                Log::info('Queue worker restarted and detached successfully.');
             } else {
                 Log::info('Queue worker is already running.');
             }

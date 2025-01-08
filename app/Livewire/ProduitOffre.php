@@ -6,38 +6,40 @@ use App\Events\CountdownStarted;
 use App\Events\NotificationSent;
 use App\Jobs\ProcessCountdown;
 use App\Models\Consommation;
-use App\Models\Countdown;
 use App\Models\OffreGroupe;
 use App\Models\ProduitService;
 use App\Models\User;
 use App\Models\userquantites;
+use App\Models\Wallet;
 use App\Notifications\Confirmation;
 use App\Notifications\OffreNegosNotif;
 use App\Notifications\OffreNotif;
 use App\Notifications\OffreNotifGroup;
 use App\Services\RecuperationTimer;
 use App\Services\TimeSync\TimeSyncService;
-use Carbon\Carbon;
 use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use Livewire\Component;
 
-class FonctOffre extends Component
+class ProduitOffre extends Component
 {
+    public $id;
     public $produit;
-    public   $id;
+    public $userWallet;
+    public $userId;
+    public $currentPage = 'produit';
+    protected $listeners = ['navigate' => 'setPage'];
+
     public   $idsProprietaires;
     public $nombreProprietaires = 0;
     public   $nomFournisseurCount;
     public $zoneEconomique = 'proximite'; // Valeur par défaut
     public   $quantite;
-    public   $username;
     public   $idsToNotify;
+    public $quantiteTotal;
 
     public $time;
     public $error;
@@ -47,12 +49,12 @@ class FonctOffre extends Component
     public $timeRemaining;
     protected $recuperationTimer;
     public $fournisseursFiltered = [];
-    public $currentPage = 'transaction';
-    protected $listeners = ['navigate' => 'setPage'];
+    public $search = '';
+    public $users = [];
+    public $user_id;
 
     protected $rules = [
         'quantite' => 'required|numeric|min:1',
-        'username' => 'required|exists:users,username',
         'zoneEconomique' => 'required|in:proximite,locale,departementale,nationale,sous_regionale,continentale',
     ];
 
@@ -63,17 +65,48 @@ class FonctOffre extends Component
     }
     public function mount($id)
     {
-        $this->timeServer();
-        $this->produit = ProduitService::findOrFail($id);
+        $this->id = $id;
+        try {
+            $this->produit = ProduitService::findOrFail($id);
+            $this->userId = Auth::guard('web')->id();
+            $this->userWallet = Wallet::where('user_id', $this->userId)->first();
 
-        // Initialiser idsProprietaires avant loadData()
-        $this->idsProprietaires = [];
+            $this->timeServer();
+            $this->produit = ProduitService::findOrFail($id);
 
-        $this->time = $this->recuperationTimer->getTime();
-        $this->loadData();
+            // Initialiser idsProprietaires avant loadData()
+            $this->idsProprietaires = [];
+
+            $this->time = $this->recuperationTimer->getTime();
+            $this->loadData();
+        } catch (Exception $e) {
+            session()->flash('error', 'Produit non trouvé');
+        }
     }
-    
 
+    public function updatedSearch()
+    {
+        if (!empty($this->search)) {
+            // Récupérer l'ID de l'utilisateur connecté
+            $currentUserId = auth()->id();
+
+            // Recherche des utilisateurs dont le nom d'utilisateur correspond à la saisie,
+            // mais exclure l'utilisateur connecté
+            $this->users = User::where('username', 'like', '%' . $this->search . '%')
+                ->where('id', '!=', $currentUserId) // Exclure l'utilisateur connecté
+                ->get();
+        } else {
+            // Si la barre de recherche est vide, ne rien afficher
+            $this->users = [];
+        }
+    }
+
+    public function selectUser($userId, $userName)
+    {
+        $this->user_id = $userId;
+        $this->search = $userName;
+        $this->users = [];
+    }
     public function updatedZoneEconomique($value)
     {
         $this->loadData();
@@ -294,67 +327,54 @@ class FonctOffre extends Component
 
     public function sendoffreGrp()
     {
-        try {
-            $this->validate();
-            $this->timeServer();
-            $this->loadData();
+        $this->validate();
+        $this->timeServer();
+        $this->loadData();
 
-            $user_id = Auth::id();
-            // Recherche du produit et de l'utilisateur
+        // Recherche du produit et de l'utilisateur
+        try {
             $produit = ProduitService::findOrFail($this->produit->id);
-            $user = User::where('username', $this->username)->firstOrFail();
+            $user = User::where('username', $this->search)->firstOrFail();
+            $user_id = Auth::id();
 
             // Générer un code unique
             $uniqueCode = $this->generateUniqueReference();
 
+            // Vérification si les fournisseurs filtrés existent
+            $fournisseursFiltered = $this->fournisseursFiltered ?? [];
+
             // Notification de confirmation à l'utilisateur
             Notification::send($user, new Confirmation([
+                'quantiteTotal' => $this->quantiteTotal ?? null,
+                'fourniCible' => $fournisseursFiltered,
                 'idProd' => $produit->id,
                 'code_unique' => $uniqueCode,
                 'title' => 'Confirmation de commande',
-                'description' => 'Votre commande de {} des fournisseurs a été envoyée avec succès.',
+                'description' => "Votre commande {$uniqueCode} de {$this->quantiteTotal} unités a été envoyée avec succès. Veuillez confirmer pour l'envoyer aux fournisseurs.",
             ]));
+
+            // Déclencher un événement de notification
             event(new NotificationSent($user));
-
-            // Notifier les fournisseurs
-            foreach ($this->fournisseursFiltered as $supplierId) {
-                $supplier = User::find($supplierId);
-                if ($supplier) {
-                    Notification::send($supplier, new OffreNegosNotif([
-                        'idProd' => $produit->id,
-                        'produit_name' => $produit->name,
-                        'quantite' => $this->quantite,
-                        'code_unique' => $uniqueCode,
-                    ]));
-
-                    Log::info('Notification envoyée', ['supplier_id' => $supplierId]);
-                }
-                event(new NotificationSent($supplier));
-            }
-
-
             // Enregistrement dans la table `OffreGroupe`
             $this->saveOffreGroupe([
-                'quantite' => $this->quantite,
+                'quantite' => $this->quantiteTotal,
                 'produit_id' => $produit->id,
                 'zone_economique' => $this->zoneEconomique,
             ], $produit, $user_id, $user->id, $uniqueCode);
 
 
-            $difference = 'offreGrouper';
-            $this->startCountdown($uniqueCode, $difference);
-
+            // Envoyer une notification de succès
             $this->dispatch(
                 'formSubmitted',
-                "Notifications envoyées à {$this->nomFournisseurCount} utilisateur(s).",
+                "Notifications envoyées à l'utilisateur.",
             );
 
+            // Message de confirmation dans la session
             session()->flash('success', 'Offre groupée envoyée avec succès !');
-
-            return redirect()->back()->with('success', 'Notifications envoyées avec succès.');
         } catch (Exception $e) {
-            session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Une erreur est survenue. Veuillez réessayer.');
+            // Gestion des erreurs
+            session()->flash('error', 'Une erreur s\'est produite lors de l\'envoi de l\'offre groupée.');
+            Log::error('Erreur lors de l\'envoi de l\'offre groupée : ' . $e->getMessage());
         }
     }
 
@@ -378,14 +398,34 @@ class FonctOffre extends Component
             'code_unique' => $uniqueCode,
             'user_id' => $userId,
             'localite' => $data['zone_economique'],
-            'quantite' => $data['quantite'],
+            'quantite' => $this->quantite,
         ]);
     }
 
 
-
+    public function setPage($page)
+    {
+        $this->currentPage = $page;
+    }
+    public function negocie()
+    {
+        $this->dispatch('navigate', 'negocie');
+    }
+    public function simple()
+    {
+        $this->dispatch('navigate', 'simple');
+    }
+    public function groupe()
+    {
+        $this->dispatch('navigate', 'groupe');
+    }
     public function render()
     {
-        return view('livewire.fonct-offre');
+        return view('livewire.produit-offre', [
+            'produit' => $this->produit,
+            'userWallet' => $this->userWallet,
+            'userId' => $this->userId,
+            'id' => $this->id,
+        ]);
     }
 }

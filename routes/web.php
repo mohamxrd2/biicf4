@@ -41,6 +41,7 @@ use App\Livewire\Consommations;
 use App\Livewire\Notif;
 use App\Livewire\Notification;
 use App\Livewire\NotificationDetail;
+use App\Livewire\ProduitOffre;
 use App\Livewire\ProduitService;
 use App\Livewire\Walletclient;
 
@@ -160,6 +161,7 @@ Route::middleware('user.auth')->prefix('biicf')->group(function () {
     Route::get('publication/creer-produit', AjoutProduitServices::class)->name('biicf.postProduit');
 
     Route::get('publication/{id}', ProduitServiceDetails::class)->name('biicf.postdet');
+    Route::get('publication/offre/{id}', ProduitOffre::class)->name('biicf.offre');
 
 
     Route::get('consommation', Consommations::class)->name('biicf.conso');
