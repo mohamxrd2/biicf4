@@ -36,12 +36,12 @@ class MonitorWorker extends Command
     {
         try {
             // Vérifier si le processus "php artisan queue:listen" est actif
-            $isRunning = exec('pgrep -f "php artisan queue:listen"');
+            $isRunning = shell_exec('pgrep -f "php artisan queue:listen"');
 
             if (!$isRunning) {
-
+                
                 // Si le processus n'est pas actif, le démarrer et le détacher de la session
-                exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
+                shell_exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
                 Log::info('Queue worker restarted and detached successfully.');
             } else {
                 Log::info('Queue worker is already running.');
