@@ -221,7 +221,7 @@ class AchatDirectGroupe extends Component
             'nameProd' => $validated['nameProd'],
             'quantité' => $validated['quantité'],
             'montantTotal' => $montantTotal,
-            'type_achat'=> 'achatDirect',
+            'type_achat' => 'achatDirect',
             'localite' => $validated['localite'],
             'date_tot' => $validated['dateTot'],
             'date_tard' => $validated['dateTard'],
@@ -249,6 +249,7 @@ class AchatDirectGroupe extends Component
             'title' => 'Commande effectuée avec succès',
             'description' => 'Cliquez pour voir les détails de votre commande.',
         ]));
+        event(new NotificationSent($userConnecte));
 
         $achatUser = [
             'nameProd' => $validated['nameProd'],
@@ -261,6 +262,7 @@ class AchatDirectGroupe extends Component
 
         $owner = User::find($validated['userTrader']);
         Notification::send($owner, new AchatBiicf($achatUser));
+        event(new NotificationSent($owner));
 
         // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
         $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();

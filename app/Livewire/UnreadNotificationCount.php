@@ -15,10 +15,11 @@ class UnreadNotificationCount extends Component
     {
         $this->userId = Auth::guard('web')->id();
         $this->updateUnreadCount();
+        $this->incrementNotification();
     }
 
     #[On('echo:private-App.Models.User.{userId},NotificationSent')]
-    public function incrementNotification($event)
+    public function incrementNotification()
     {
         // dd($event);
 
@@ -29,7 +30,7 @@ class UnreadNotificationCount extends Component
     {
         $user = Auth::guard('web')->user();
         $this->unreadCount = $user ? $user->unreadNotifications->count() : 0;
-        
+
     }
 
     public function render()
