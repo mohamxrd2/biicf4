@@ -26,11 +26,36 @@ class WithdrawalComponent extends Component
     public $psap;
     public $amountBank;
     public $bank_account;
+    public $bank_account_confirm;
     public $user;
+    public $ribs = [];
+    public $selected_rib;
+    public $showAddNewRib = false;
 
-    public function mount(){
-        $this->user = User::find(Auth::id()) ;
+
+    public function mount()
+    {
+        $this->user = User::find(Auth::id());
+        $this->fetchUserRibs();
+        $this->resetForm();
     }
+
+    public function fetchUserRibs()
+    {
+        $this->ribs = RetraitRib::where('id_user', Auth::id())
+            ->distinct()    // S'assure que les résultats sont distincts
+            ->pluck('rib')  // Récupère uniquement la colonne rib
+            ->toArray();    // Convertit le résultat en tableau
+    }
+    public function toggleAddNewRib()
+    {
+        $this->showAddNewRib = !$this->showAddNewRib;
+        if (!$this->showAddNewRib) {
+            $this->bank_account = null;
+            $this->bank_account_confirm = null;
+        }
+    }
+
 
 
     public function initiateWithdrawal()
@@ -80,13 +105,13 @@ class WithdrawalComponent extends Component
 
             if ($this->user->user_joint) {
                 $code1 = $this->generateRandomCode();
-                
+
                 // Générer un nouveau code tant qu'il est égal au premier
                 do {
                     $code2 = $this->generateRandomCode();
                 } while ($code1 === $code2);
             }
-            
+
 
             // Logique pour initier le retrait
             $data = [
@@ -137,7 +162,7 @@ class WithdrawalComponent extends Component
                     'psap' => $psapUser->id,
                     'amount' => $this->amount,
                     'userId' => Auth::id(),
-                    'codeRetrait' => $code2 ,
+                    'codeRetrait' => $code2,
                 ];
 
                 $userowner = User::find(Auth::id());
@@ -169,9 +194,16 @@ class WithdrawalComponent extends Component
     }
     public function initiateBankWithdrawal()
     {
+        // Si un RIB est sélectionné, l'utiliser comme `bank_account`
+        if ($this->selected_rib) {
+            $this->bank_account = $this->selected_rib;
+        }
+
+        // Validation des champs
         $this->validate([
             'amountBank' => 'required|numeric|min:1|max:50000000',
-            'bank_account' => ['required', 'string', 'regex:/^\d{23}$/'],  // Regex pour vérifier 23 chiffres
+            'bank_account' => ['required', 'string', 'regex:/^\d{23}$/'], // Regex pour vérifier 23 chiffres
+            'bank_account_confirm' => $this->selected_rib ? 'nullable' : 'required|same:bank_account', // Validation conditionnelle
         ], [
             'amountBank.required' => 'Le montant est obligatoire.',
             'amountBank.numeric' => 'Le montant doit être un nombre.',
@@ -180,9 +212,11 @@ class WithdrawalComponent extends Component
             'bank_account.required' => 'Le numéro de compte bancaire est obligatoire.',
             'bank_account.string' => 'Le numéro de compte bancaire doit être une chaîne de caractères.',
             'bank_account.regex' => 'Veuillez entrer un RIB valide de 23 chiffres.',
+            'bank_account_confirm.required' => 'Veuillez confirmer le numéro de compte bancaire.',
+            'bank_account_confirm.same' => 'La confirmation du numéro de compte ne correspond pas.',
         ]);
-        
-        
+
+
 
         // Récupération du portefeuille de l'utilisateur
         $userID = Auth::id();
@@ -217,7 +251,7 @@ class WithdrawalComponent extends Component
 
         if ($this->user->user_joint) {
             $code1 = $this->generateRandomCode();
-            
+
             // Générer un nouveau code tant qu'il est égal au premier
             do {
                 $code2 = $this->generateRandomCode();
@@ -249,7 +283,7 @@ class WithdrawalComponent extends Component
                 'psap' => null,
                 'amount' => $this->amountBank,
                 'userId' => Auth::id(),
-                'codeRetrait' => $code2 ,
+                'codeRetrait' => $code2,
             ];
 
             $userowner = User::find(Auth::id());
@@ -258,13 +292,12 @@ class WithdrawalComponent extends Component
             Notification::send($userowner, new RetraitCode($data1));
             Notification::send($JointUser, new RetraitCode($data2));
         }
-        
+
 
         // Transaction pour gélement
         $this->createTransaction($userID, $adminId, 'Gele', 'COC', $this->amountBank, $referenceID, 'Retrait par RIB');
 
 
-        // Insertion dans la table de demande de retarit
 
         $retrait = RetraitRib::create([
             'id_user' => $userID,
@@ -275,6 +308,8 @@ class WithdrawalComponent extends Component
             'code1' => $code1 ?? null,
             'code2' => $code2 ?? null,
         ]);
+
+
 
         $this->resetForm();
         // Recharger la page
@@ -311,11 +346,14 @@ class WithdrawalComponent extends Component
         $this->amount = null;
         $this->amountBank = "";
         $this->bank_account = "";
+        $this->selected_rib = "";
     }
 
 
     public function render()
     {
-        return view('livewire.withdrawal-component');
+        return view('livewire.withdrawal-component', [
+            'ribs' => $this->ribs, // Passe les RIB récupérés à la vue
+        ]);
     }
 }

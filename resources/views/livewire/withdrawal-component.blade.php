@@ -86,6 +86,11 @@
                                 {{ session('error') }}
                             </div>
                         @endif
+                        @if (session()->has('info'))
+                            <div class="p-4 mb-4 text-sm text-blue-700 bg-blue-100 rounded-lg" role="alert">
+                                {{ session('info') }}
+                            </div>
+                        @endif
                         <h2 class="mb-4 text-xl font-semibold text-center">Retrait par Virement</h2>
                         <div class="mb-4">
                             <input type="number" id="amountBank" wire:model="amountBank" min="1"
@@ -95,14 +100,50 @@
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
                         </div>
-                        <div class="mb-4">
-                            <input type="number" id="bank_account" wire:model="bank_account"
-                                class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Numéro de compte bancaire">
-                            @error('bank_account')
-                                <span class="text-xs text-red-500">{{ $message }}</span>
-                            @enderror
+                        <div>
+                            @if (count($ribs) > 0 && !$showAddNewRib)
+                                <!-- Sélection des RIB existants -->
+                                <div class="mb-4">
+                                    <label for="selected_rib"
+                                        class="block text-sm font-medium text-gray-700">Sélectionnez un RIB</label>
+                                    <select id="selected_rib" wire:model="selected_rib"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        <option value="" selected disabled>-- Sélectionnez un RIB --</option>
+                                        @foreach ($ribs as $rib)
+                                            <option value="{{ $rib }}">{{ $rib }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('selected_rib')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <button type="button" wire:click="toggleAddNewRib"
+                                    class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">Ajouter un
+                                    autre RIB</button>
+                            @else
+                                <!-- Champs pour ajouter un nouveau RIB -->
+                                <div class="mb-4">
+                                    <input type="number" id="bank_account" wire:model="bank_account"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Numéro de compte bancaire">
+                                    @error('bank_account')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="mb-4">
+                                    <input type="number" id="bank_account_confirm" wire:model="bank_account_confirm"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Confirmer le numéro de compte bancaire">
+                                    @error('bank_account_confirm')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <button type="button" wire:click="toggleAddNewRib"
+                                    class="px-4 py-2 text-white bg-gray-500 rounded-md hover:bg-gray-600">Annuler</button>
+                            @endif
+
                         </div>
+
                         <div class="relative mt-6">
                             <button type="submit"
                                 class="w-full py-3 font-medium text-white transition-colors bg-purple-600 rounded-md hover:bg-purple-700"

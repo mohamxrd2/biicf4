@@ -99,12 +99,12 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 translate-y-0"
                  x-transition:leave-end="opacity-0 -translate-y-4">
-                <div class="px-2 pt-2 pb-3 space-y-1">
-                    <a href="#features" class="mobile-nav-link">Fonctionnalités</a>
-                    <a href="#about" class="mobile-nav-link">À propos</a>
-                    <a href="#contact" class="mobile-nav-link">Contact</a>
-                    <a href="{{ route('biicf.login') }}" class="mobile-nav-link">Connexion</a>
-                    <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link-special">Dashboard</a>
+                <div class="px-2 pt-2 pb-3 flex flex-col space-y-2">
+                    <a href="#features" class="mobile-nav-link hover:bg-gray-200 rounded-md p-2">Fonctionnalités</a>
+                    <a href="#about" class="mobile-nav-link hover:bg-gray-200 rounded-md p-2">À propos</a>
+                    <a href="#contact" class="mobile-nav-link hover:bg-gray-200 rounded-md p-2">Contact</a>
+                    <a href="{{ route('biicf.login') }}" class="mobile-nav-link hover:bg-gray-200 rounded-md p-2">Connexion</a>
+                   
                 </div>
             </div>
         </div>
