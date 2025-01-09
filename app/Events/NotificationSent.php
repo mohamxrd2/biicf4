@@ -16,36 +16,16 @@ class NotificationSent implements ShouldBroadcastNow
 
     public $user;
 
-    /**
-     * Create a new event instance.
-     *
-     * @param User $user
-     * @return void
-     */
     public function __construct(User $user)
     {
         $this->user = $user;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array
-     */
+
     public function broadcastOn()
     {
         return [new PrivateChannel('App.Models.User.' . $this->user->id)];
     }
 
-    /**
-     * Get the data to broadcast.
-     *
-     * @return array
-     */
-    public function broadcastWith()
-    {
-        return [
-            'user_id' => $this->user->id,
-        ];
-    }
+
 }

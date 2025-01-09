@@ -20,24 +20,21 @@
         <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
             <div class="px-4 py-2">
                 <div class="flex items-center">
-                    <button data-modal-target="medium-offre{{ $produit->id }}"
-                        data-modal-toggle="medium-offre{{ $produit->id }}"
+                    <button wire:click="simple({{ $produit->id }})"
                         class="w-full mt-3 bg-green-500 text-white py-2 rounded-xl hover:bg-green-600 transition-colors"
                         type="button">
                         Faire une Offre Simple
                     </button>
                 </div>
                 <div class="flex items-center">
-                    <button data-modal-target="medium-offreneg{{ $produit->id }}"
-                        data-modal-toggle="medium-offreneg{{ $produit->id }}"
+                    <button wire:click="negocie({{ $produit->id }})"
                         class="w-full mt-3 bg-yellow-300 text-white py-2 rounded-xl hover:bg-yellow-400 transition-colors"
                         type="button">
                         Faire une Offre Négociée
                     </button>
                 </div>
                 <div class="flex items-center">
-                    <button data-modal-target="medium-offreGrp{{ $produit->id }}"
-                        data-modal-toggle="medium-offreGrp{{ $produit->id }}"
+                    <button wire:click="groupe({{ $produit->id }})"
                         class="w-full mt-3 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition-colors"
                         type="button">
                         Faire une Offre Groupée

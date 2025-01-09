@@ -18,23 +18,30 @@ class Kernel extends ConsoleKernel
             $schedule->command('check:countdowns')->everyMinute();
             $schedule->command('app:appeloffreGrouper')->everyMinute();
             $schedule->command('app:ajout-qoffre')->everyMinute();
+
             // $schedule->command('app:credit-countdown')->everyMinute();
             // $schedule->command('app:projet-countdown')->everyMinute();
             // $schedule->command('app:rappel-journalieres-credits')->everyMinute();
             // $schedule->command('app:rappel-journalieres-projets')->everyMinute();
             // $schedule->command('app:finacementProjetAccorde')->everyMinute();
             // $schedule->command('app:finacementCredits')->everyMinute();
+            $schedule->command('worker:monitor')->everyMinute();
+
+
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');
             $schedule->command('app:appeloffreGrouper')->cron('* * * * *');
             $schedule->command('app:ajout-qoffre')->cron('* * * * *');
-            $schedule->command('app:credit-countdown')->cron('* * * * *');
-            $schedule->command('app:projet-countdown')->cron('* * * * *');
-            $schedule->command('app:rappel-journalieres-credits')->cron('* * * * *');
-            $schedule->command('app:rappel-journalieres-projets')->cron('* * * * *');
-            $schedule->command('app:finacementProjetAccorde')->cron('* * * * *');
-            $schedule->command('app:finacementCredits')->cron('* * * * *');
+            // $schedule->command('app:credit-countdown')->cron('* * * * *');
+            // $schedule->command('app:projet-countdown')->cron('* * * * *');
+            // $schedule->command('app:rappel-journalieres-credits')->cron('* * * * *');
+            // $schedule->command('app:rappel-journalieres-projets')->cron('* * * * *');
+            // $schedule->command('app:finacementProjetAccorde')->cron('* * * * *');
+            // $schedule->command('app:finacementCredits')->cron('* * * * *');
+
+            // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
+            $schedule->command('worker:monitor')->cron('* * * * *');
         }
     }
     /**

@@ -1,30 +1,40 @@
 @props(['produit', 'nombreProprietaires'])
 
-<div id="medium-offreneg{{ $produit->id }}" wire:ignore.self tabindex="-1"
-    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full bg-gray-900/50">
-    <div class="relative w-full max-w-lg max-h-full mx-auto mt-10">
-        <div class="relative bg-white rounded-xl shadow-2xl transform transition-all dark:bg-gray-800">
-            <div class="flex items-center justify-between p-6 border-b dark:border-gray-700">
-                <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                    Offre (Négociée)
-                </h3>
-                <x-modal.close-button :modal-id="'medium-offreneg' . $produit->id" />
-            </div>
 
-            <div class="p-8">
-                <div class="mb-6">
-                    <x-offre.nombre-clients :nombre="$nombreProprietaires" />
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 flex flex-col justify-center sm:py-12">
+    <div class="relative py-3 sm:max-w-3xl sm:mx-auto w-full px-4">
+        <!-- Ombre en arrière-plan -->
+        <div
+            class="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
+        </div>
 
-                    <x-offre.alert-messages />
+        <!-- Contenu principal -->
+        <div class="relative px-6 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+            <div class="max-w-3xl mx-auto">
+                <div class="divide-y divide-gray-200">
+                    <!-- Titre et section d'introduction -->
+                    <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                        <div class="text-center mb-8">
+                            <h2 class="text-4xl font-bold text-gray-800 mb-2">Enchere</h2>
+                            <x-offre.nombre-clients :nombre="$nombreProprietaires" />
 
-                    <form wire:submit.prevent="sendoffneg" class="space-y-6">
-                        @csrf
-                        <x-offre.zone-select />
+                        </div>
 
-                        <x-offre.form-buttons :modal-id="'medium-offreneg' . $produit->id"
-                            submit-text="Soumettre"
-                            loading-target="sendoffneg" />
-                    </form>
+                        <!-- Formulaire avec grille -->
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-8">
+                            <x-offre.alert-messages />
+
+                            <form wire:submit.prevent="sendoffneg" class="space-y-6">
+                                @csrf
+                                <x-offre.zone-select />
+
+                                <x-offre.form-buttons :modal-id="'medium-offreneg' . $produit->id" submit-text="Soumettre"
+                                    loading-target="sendoffneg" />
+                            </form>
+
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

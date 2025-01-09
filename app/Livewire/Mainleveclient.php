@@ -336,10 +336,7 @@ class Mainleveclient extends Component
 
             $totalInterets = $interetLivreur;
 
-            Log::info('Montants et intérêts calculés', [
-                'montantPourLivreur' => $montantPourLivreur,
-                'totalInterets' => $totalInterets,
-            ]);
+
 
             // Mise à jour des portefeuilles
             $livreurWallet->increment('balance', $montantPourLivreur);

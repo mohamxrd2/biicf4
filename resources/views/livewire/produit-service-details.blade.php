@@ -1,4 +1,5 @@
 <div>
+    {{-- @if ($currentPage === 'produit') --}}
     <!-- Carousel wrapper -->
     <section id="checkoutSection" class="bg-white md:py-16 dark:bg-gray-900 antialiased rounded-lg shadow-lg">
 
@@ -86,7 +87,8 @@
                                 </svg>
                                 <!-- Repeat for additional stars -->
                             </div>
-                            <p class="text-sm font-medium leading-none text-gray-500 dark:text-gray-400  mr-4">(5.0)</p>
+                            <p class="text-sm font-medium leading-none text-gray-500 dark:text-gray-400  mr-4">(5.0)
+                            </p>
                             <a href="#"
                                 class="text-sm font-medium leading-none text-gray-900 underline hover:no-underline dark:text-white">
                                 345 Reviews
@@ -95,49 +97,31 @@
                     </div>
 
                     <!-- Bouton pour afficher la section -->
-                    @if ($produit->user_id != $userId)
-                        <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-4">
-                            <a href="javascript:void(0)" id="toggleForm"
-                                class="flex w-full items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                role="button">
-                                Procédez à l'achat.
-                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                    viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
-                                </svg>
-                            </a>
-                        </div>
-
-                        <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
-
-                        <div class="w-full p-3 bg-gray-200 rounded-2xl flex justify-between items-center cursor-pointer"
-                            onclick="toggleVisibility()">
-                            <p class="font-medium text-sm text-gray-700">Caracteristique</p>
-                            <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    <div class="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-4">
+                        <a href="javascript:void(0)" id="toggleForm"
+                            class="flex w-full items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                            role="button">
+                            Procédez à l'achat.
+                            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
                             </svg>
-                        </div>
-                    @else
-                        @livewire('fonct-offre', ['id' => $id])
+                        </a>
+                    </div>
 
+                    <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 
-                        <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
+                    <div class="w-full p-3 bg-gray-200 rounded-2xl flex justify-between items-center cursor-pointer"
+                        onclick="toggleVisibility()">
+                        <p class="font-medium text-sm text-gray-700">Caracteristique</p>
+                        <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </div>
 
-                        <button class="w-full bg-red-500 text-white py-2 mb-3 rounded-xl"
-                            data-hs-overlay="#hs-delete-{{ $produit->id }}">Supprimé produit</button>
-
-                        <div class="w-full p-3 bg-gray-200 rounded-2xl flex justify-between items-center cursor-pointer "
-                            onclick="toggleVisibility()">
-                            <p class="font-medium text-sm text-gray-700">Caracteristique</p>
-                            <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                        </div>
-                    @endif
 
 
                     <!-- Product Description -->
@@ -306,7 +290,8 @@
 
         #hiddenSection.show {
             opacity: 1;
-            max-height: 2000px; /* Ajustez selon vos besoins */
+            max-height: 2000px;
+            /* Ajustez selon vos besoins */
         }
 
         .rotate-180 {
@@ -316,31 +301,34 @@
     </style>
 
     <script>
+        document.addEventListener('livewire:navigate', () => {
+            console.log('Livewire navigated: Réinitialisation des scripts');
+            reinitializeUI();
+        });
+
         // Fonction pour réinitialiser les composants UI
         function reinitializeUI() {
-            // Forcer le rafraîchissement du composant Livewire
-            Livewire.dispatch('refreshComponent');
-
             // Initialiser le comportement du bouton toggle
             const toggleForm = document.getElementById('toggleForm');
             const hiddenSection = document.getElementById('hiddenSection');
-            let isInitialized = false;
 
-            if (toggleForm && hiddenSection && !isInitialized) {
-                isInitialized = true;
-                
-                toggleForm.addEventListener('click', function() {
+            if (toggleForm && hiddenSection) {
+                // Supprimer les anciens gestionnaires pour éviter les doublons
+                toggleForm.replaceWith(toggleForm.cloneNode(true));
+                const newToggleForm = document.getElementById('toggleForm');
+
+                newToggleForm.addEventListener('click', function() {
                     const arrow = this.querySelector('svg');
-                    
+
                     if (!hiddenSection.classList.contains('show')) {
                         hiddenSection.style.display = 'block';
-                        // Force a reflow
+                        // Forcer un reflow
                         hiddenSection.offsetHeight;
                         hiddenSection.classList.add('show');
-                        arrow.classList.add('rotate-180');
+                        arrow?.classList.add('rotate-180');
                     } else {
                         hiddenSection.classList.remove('show');
-                        arrow.classList.remove('rotate-180');
+                        arrow?.classList.remove('rotate-180');
                         setTimeout(() => {
                             if (!hiddenSection.classList.contains('show')) {
                                 hiddenSection.style.display = 'none';
@@ -362,10 +350,18 @@
         }
 
         // Initialiser après le chargement de la page
-        document.addEventListener('DOMContentLoaded', reinitializeUI);
-        
+        document.addEventListener('DOMContentLoaded', () => {
+            reinitializeUI();
+        });
+
         // Initialiser après les mises à jour Livewire
-        document.addEventListener('livewire:initialized', reinitializeUI);
-        document.addEventListener('livewire:navigated', reinitializeUI);
+        document.addEventListener('livewire:initialized', () => {
+            reinitializeUI();
+        });
+        document.addEventListener('livewire:navigated', () => {
+            reinitializeUI();
+        });
     </script>
+
+
 </div>

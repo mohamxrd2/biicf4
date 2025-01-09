@@ -1,60 +1,79 @@
-@props(['produit', 'nombreFournisseurs'])
+@props(['produit', 'nombreFournisseurs', 'users'])
 
-<div id="medium-offreGrp{{ $produit->id }}" wire:ignore.self tabindex="-1"
-    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full bg-gray-900/50">
-    <div class="relative w-full max-w-lg max-h-full mx-auto mt-10">
-        <div class="relative bg-white rounded-xl shadow-2xl transform transition-all dark:bg-gray-800">
-            <div class="flex items-center justify-between p-6 border-b dark:border-gray-700">
-                <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                    Offre (Groupée)
-                </h3>
-                <x-modal.close-button :modal-id="'medium-offreGrp' . $produit->id" />
-            </div>
 
-            <div class="p-8">
-                <div class="mb-6">
-                    <div class="inline-flex items-center justify-center p-4 bg-blue-50 rounded-lg dark:bg-blue-900/50 mb-4 w-full">
-                        <p class="text-gray-700 dark:text-gray-300">
-                            Le nombre de fournisseurs potentiels est
-                            <span class="font-bold text-blue-600 dark:text-blue-400 text-lg ml-1">
-                                ({{ $nombreFournisseurs }})
-                            </span>
-                        </p>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 flex flex-col justify-center sm:py-12">
+    <div class="relative py-3 sm:max-w-3xl sm:mx-auto w-full px-4">
+        <!-- Ombre en arrière-plan -->
+        <div
+            class="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="relative px-6 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+            <div class="max-w-3xl mx-auto">
+                <div class="divide-y divide-gray-200">
+                    <!-- Titre et section d'introduction -->
+                    <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                        <div class="text-center mb-8">
+                            <h2 class="text-4xl font-bold text-gray-800 mb-2">Offre Groupée</h2>
+                            <div class="inline-flex items-center justify-center px-6 py-3 bg-blue-100 rounded-full">
+                                <span class="text-lg text-blue-800">
+                                    <span class="font-normal">Fournisseurs potentiels:</span>
+                                    <span class="font-bold ml-1">({{ $nombreFournisseurs }})</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <x-offre.alert-messages />
+
+                        <form wire:submit.prevent="sendoffreGrp" class="space-y-6">
+                            @csrf
+                            <!-- Formulaire avec grille -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <!-- Champ 1 -->
+                                <div class="relative">
+                                    <label class="text-gray-600 mb-2 block text-lg">Quantité que vous pouvez
+                                        fournir</label>
+                                    <input wire:model="quantite" type="number"
+                                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-400 focus:outline-none transition-colors text-lg"
+                                        placeholder="Entrez une quantité">
+                                </div>
+
+                                <!-- Champ 2 -->
+                                <div class="relative">
+                                    <label class="text-gray-600 mb-2 block text-lg">Quantité totale souhaitée</label>
+                                    <input wire:model="quantiteTotal" type="number"
+                                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-400 focus:outline-none transition-colors text-lg"
+                                        placeholder="Entrez la quantité totale">
+                                </div>
+
+                                <!-- Champ 3 -->
+                                <div class="relative">
+                                    <label class="text-gray-600 mb-2 block text-lg">Username du client ciblé</label>
+                                    <input wire:model.live="search" type="text"
+                                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-400 focus:outline-none transition-colors text-lg"
+                                        placeholder="Entrez le username">
+                                </div>
+                                @foreach ($users as $user)
+                                    <div class="cursor-pointer py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg"
+                                        wire:click="selectUser('{{ $user->id }}', '{{ $user->username }}')">
+                                        <div class="flex">
+                                            <img class="w-5 h-5 mr-2 rounded-full" src="{{ asset($user->photo) }}"
+                                                alt="">
+                                            <div class="flex justify-between items-center w-full">
+                                                <span>{{ $user->username }} ({{ $user->name }})</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                                <x-offre.zone-select />
+
+                                <x-offre.form-buttons :modal-id="'medium-offreGrp' . $produit->id" submit-text="Soumettre"
+                                    loading-target="sendoffreGrp" />
+                            </div>
+                        </form>
+
                     </div>
-
-                    <x-offre.alert-messages />
-
-                    <form wire:submit.prevent="sendoffreGrp" class="space-y-6">
-                        @csrf
-
-                        <!-- Quantité -->
-                        <div>
-                            <label for="quantite" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Quantité souhaitée
-                            </label>
-                            <input wire:model="quantite" type="number" min="1" required
-                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
-                                placeholder="Entrez une quantité">
-                            @error('quantite') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
-
-                        <!-- Username -->
-                        <div>
-                            <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Username du client
-                            </label>
-                            <input wire:model="username" type="text" required
-                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
-                                placeholder="Entrez le username">
-                            @error('username') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
-
-                        <x-offre.zone-select />
-
-                        <x-offre.form-buttons :modal-id="'medium-offreGrp' . $produit->id"
-                            submit-text="Soumettre"
-                            loading-target="sendoffreGrp" />
-                    </form>
                 </div>
             </div>
         </div>
