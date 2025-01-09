@@ -251,39 +251,38 @@
 @endif
 
 <script>
-    document.addEventListener('livewire:navigate', () => {
-        console.log('Livewire navigated: Réinitialisation des scripts');
-        filtre();
-    });
+    document.addEventListener('livewire:navigated', () => {
+        console.log('Livewire navigated: Réinitialisation des scripts accueil');
 
-    // Initialiser la fonctionnalité des filtres
-    function filtre() {
+        // Initialiser la fonctionnalité des filtres à chaque navigation
+        initialiseFilters();
+    }, {
+        once: true
+    })
+    // Fonction d'initialisation des filtres
+    function initialiseFilters() {
         const toggleButton = document.getElementById('toggleFiltersBtn');
         const filtersContainer = document.getElementById('filtersContainer');
 
         if (toggleButton && filtersContainer) {
-            // Supprimer tout gestionnaire d'événements précédent
+            // S'assurer de supprimer tout gestionnaire d'événement précédent avant d'ajouter un nouveau
             toggleButton.removeEventListener('click', toggleFilters);
 
-            // Ajouter un nouveau gestionnaire d'événements
+            // Ajouter un gestionnaire d'événements pour basculer l'affichage des filtres
             toggleButton.addEventListener('click', toggleFilters);
-
-            function toggleFilters() {
-                filtersContainer.classList.toggle('hidden');
-            }
         }
     }
 
-    // Initialiser les fonctionnalités après le chargement complet de la page
-    document.addEventListener('DOMContentLoaded', () => {
-        filtre();
-    });
+    // Fonction pour basculer l'affichage des filtres
+    function toggleFilters() {
+        const filtersContainer = document.getElementById('filtersContainer');
+        if (filtersContainer) {
+            filtersContainer.classList.toggle('hidden');
+        }
+    }
 
-    // Réinitialiser les fonctionnalités après chaque événement Livewire
-    document.addEventListener('livewire:initialized', () => {
-        filtre();
-    });
-    document.addEventListener('livewire:navigated', () => {
-        filtre();
+    // Initialiser les filtres dès le chargement de la page ou lorsque Livewire est prêt
+    window.addEventListener('DOMContentLoaded', () => {
+        initialiseFilters();
     });
 </script>
