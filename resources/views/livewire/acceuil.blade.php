@@ -10,27 +10,28 @@
                             focus:ring-2 focus:ring-purple-200 transition-all duration-200"
                             placeholder="Rechercher un produit ou service...">
                         <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
                     </div>
-    
+
                     <!-- Bouton Filtre -->
                     <button id="toggleFiltersBtn"
                         class="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-                            <path d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
-                          </svg>
+                            <path
+                                d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                        </svg>
                     </button>
                 </div>
             </div>
         </div>
-    
+
         <!-- Zone des filtres (Toggle) -->
-        <div id="filtersContainer"
-            class="hidden bg-purple-50 border-t border-purple-100">
+        <div id="filtersContainer" class="hidden bg-purple-50 border-t border-purple-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {{-- Zone économique --}}
@@ -45,7 +46,7 @@
                         <option value="sous_regionale">Sous Régionale</option>
                         <option value="continentale">Continentale</option>
                     </select>
-    
+
                     {{-- Type --}}
                     <select wire:model.live="type"
                         class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
@@ -54,7 +55,7 @@
                         <option value="Produit">Produit</option>
                         <option value="Service">Service</option>
                     </select>
-    
+
                     {{-- Quantité --}}
                     <div class="relative">
                         <input type="number" wire:model.live="qte"
@@ -68,7 +69,7 @@
                             </svg>
                         </div>
                     </div>
-    
+
                     {{-- Prix --}}
                     <div class="relative">
                         <input type="number" wire:model.live="prix"
@@ -83,7 +84,7 @@
                             </svg>
                         </div>
                     </div>
-    
+
                     {{-- Boutons de filtrage optionnels --}}
                     <div class="md:col-span-4 flex flex-wrap gap-2 mt-2">
                         <button wire:click="resetFilters"
@@ -95,7 +96,7 @@
                             </svg>
                             Réinitialiser les filtres
                         </button>
-    
+
                         <button
                             class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700
                     text-white text-sm font-medium rounded-lg transition-colors duration-200">
@@ -111,8 +112,8 @@
             </div>
         </div>
     </header>
-    
-    
+
+
 
     {{-- Contenu principal --}}
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -232,7 +233,7 @@
                 @endforelse
             </div>
 
-            @if($produits->count() > 0)
+            @if ($produits->count() > 0)
                 <div class="mt-12">
                     {{ $produits->links() }}
                 </div>
@@ -250,27 +251,39 @@
 @endif
 
 <script>
-    // Fonction pour initialiser Preline
-    function initPreline() {
-        if (typeof window.Preline !== 'undefined') {
-            window.Preline.init();
-        }
-    }
-
-    // Initialiser Preline après la navigation
-    document.addEventListener('livewire:navigated', () => {
-        setTimeout(initPreline, 100);
+    document.addEventListener('livewire:navigate', () => {
+        console.log('Livewire navigated: Réinitialisation des scripts');
+        filtre();
     });
 
-    // Initialiser Preline après le chargement de la page
-
-    document.addEventListener('DOMContentLoaded', () => {
+    // Initialiser la fonctionnalité des filtres
+    function filtre() {
         const toggleButton = document.getElementById('toggleFiltersBtn');
         const filtersContainer = document.getElementById('filtersContainer');
 
-        toggleButton.addEventListener('click', () => {
-            // Toggle la classe 'hidden' pour afficher/cacher la div des filtres
-            filtersContainer.classList.toggle('hidden');
-        });
+        if (toggleButton && filtersContainer) {
+            // Supprimer tout gestionnaire d'événements précédent
+            toggleButton.removeEventListener('click', toggleFilters);
+
+            // Ajouter un nouveau gestionnaire d'événements
+            toggleButton.addEventListener('click', toggleFilters);
+
+            function toggleFilters() {
+                filtersContainer.classList.toggle('hidden');
+            }
+        }
+    }
+
+    // Initialiser les fonctionnalités après le chargement complet de la page
+    document.addEventListener('DOMContentLoaded', () => {
+        filtre();
+    });
+
+    // Réinitialiser les fonctionnalités après chaque événement Livewire
+    document.addEventListener('livewire:initialized', () => {
+        filtre();
+    });
+    document.addEventListener('livewire:navigated', () => {
+        filtre();
     });
 </script>
