@@ -63,6 +63,12 @@ class LivraisonAchatdirect extends Component
         if (!$this->achatdirect) {
             throw new \Exception("Achat direct introuvable pour l'ID: " . $this->notification->data['achat_id']);
         }
+        
+        // First - Handle users locations for OffreGrouper
+        if ($this->achatdirect->type_achat === 'OffreGrouper') {
+            $this->loadUsersLocations();
+        }
+
 
         // Déterminer la valeur de $Valuecode_unique
         switch ($this->achatdirect->type_achat) {
@@ -76,30 +82,24 @@ class LivraisonAchatdirect extends Component
                 $this->Valuecode_unique = $this->achatdirect->code_unique;
         }
 
-        switch ($this->achatdirect->type_achat) {
-            case 'OffreGrouper':
-                $this->Valuecode_unique = $this->achatdirect->code_unique;
 
-                // Get users and their locations from userquantites
-                $usersWithLocations = userquantites::where('code_unique', $this->Valuecode_unique)
-                    ->select('user_id', 'localite')
-                    ->get();
-
-                // Store results in class property
-                $this->usersLocations = $usersWithLocations;
-                break;
-        }
 
         $countdown = Countdown::where('code_unique', $this->Valuecode_unique)
             ->where('is_active', false)
             ->first();
 
         if ($countdown && !$this->achatdirect->count) {
-            $this->achatdirect->update(['count' => true]);
+            dd($this->achatdirect->update(['count' => true]));
         }
 
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
+    }
+    private function loadUsersLocations()
+    {
+        $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
+            ->select('user_id', 'localite')
+            ->get();
     }
 
     #[On('echo:comments,CommentSubmitted')]
