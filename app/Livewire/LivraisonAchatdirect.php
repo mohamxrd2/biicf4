@@ -9,6 +9,7 @@ use App\Models\AchatDirect;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
+use App\Models\userquantites;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
@@ -44,7 +45,7 @@ class LivraisonAchatdirect extends Component
     public $timestamp;
     public $lastActivity;
     public $isNegociationActive;
-
+    public $usersLocations;
     protected $listeners = ['negotiationEnded' => '$refresh'];
 
     public function mount($id)
@@ -73,6 +74,20 @@ class LivraisonAchatdirect extends Component
                 break;
             default:
                 $this->Valuecode_unique = $this->achatdirect->code_unique;
+        }
+
+        switch ($this->achatdirect->type_achat) {
+            case 'OffreGrouper':
+                $this->Valuecode_unique = $this->achatdirect->code_unique;
+
+                // Get users and their locations from userquantites
+                $usersWithLocations = userquantites::where('code_unique', $this->Valuecode_unique)
+                    ->select('user_id', 'localite')
+                    ->get();
+
+                // Store results in class property
+                $this->usersLocations = $usersWithLocations;
+                break;
         }
 
         $countdown = Countdown::where('code_unique', $this->Valuecode_unique)

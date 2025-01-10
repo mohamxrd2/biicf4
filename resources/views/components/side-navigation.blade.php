@@ -154,7 +154,7 @@
             ])
 
 
-            <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100   dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 "
+            <a  class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100   dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 "
                 wire:navigate.prevent @click="HSOverlay.open('#hs-sign-out-alert')">
 
                 <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

@@ -397,7 +397,7 @@ class ProduitOffre extends Component
         userquantites::create([
             'code_unique' => $uniqueCode,
             'user_id' => $userId,
-            'localite' => $data['zone_economique'],
+            'localite' => auth()->user()->commune,
             'quantite' => $this->quantite,
         ]);
     }

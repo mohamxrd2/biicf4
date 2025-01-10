@@ -293,3 +293,10 @@
     </div>
 
 </div>
+<script>
+    document.addEventListener('livewire:navigated', () => {
+        HSOverlay.autoInit();
+        HSDropdown.autoInit();
+
+    });
+</script>
