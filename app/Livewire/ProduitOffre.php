@@ -421,7 +421,7 @@ class ProduitOffre extends Component
     }
     public function render()
     {
-        return view('livewire.Produit-offre', [
+        return view('livewire.produit-offre', [
             'produit' => $this->produit,
             'userWallet' => $this->userWallet,
             'userId' => $this->userId,
