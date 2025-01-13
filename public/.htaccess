@@ -1,3 +1,25 @@
+<IfModule mod_expires.c>
+    # Active la gestion du cache
+    ExpiresActive On
+
+    # Définition des délais de cache pour les types de fichiers courants
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    ExpiresByType text/html "access plus 1 day"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Définir l'en-tête Cache-Control pour les fichiers statiques
+    <FilesMatch "\.(jpg|jpeg|png|gif|css|js|ico|pdf)$">
+        Header set Cache-Control "public, max-age=31536000"  # Cache de 1 an
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
