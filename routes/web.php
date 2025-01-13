@@ -149,7 +149,7 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 Route::middleware(['user.auth', CacheControlMiddleware::class])
     ->prefix('biicf')
     ->group(function () {
-        Route::get('acceuil', Accueil::class)->name('biicf.acceuil');
+        Route::get('acceuil', Accueil::class)->name('biicf.acceuil')->middleware('cache.headers:public;max_age=31536000;immutable');
         Route::get('notification', Notification::class)->name('biicf.notif');
         Route::get('notification/detail/{id}', NotificationDetail::class)->name('notification.show');
 
@@ -157,7 +157,7 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         //     TestQueueJob::dispatch();
         //     return 'Job dispatché !';
         // });
-        
+
         Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
         Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
 
