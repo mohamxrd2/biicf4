@@ -19,10 +19,22 @@ class CacheControlMiddleware
     {
         $response = $next($request);
 
-        // Appliquer un en-tête Cache-Control approprié
-        // `max-age=3600` pour une heure de cache, `public` pour un cache partagé et `must-revalidate` pour revalidation après expiration
-        $response->headers->set('Cache-Control', 'max-age=3600, public, must-revalidate');
+        // Appliquer l'en-tête Cache-Control pour les fichiers statiques
+        if ($this->isStaticAsset($request)) {
+            $response->headers->set('Cache-Control', 'public, max-age=31536000, immutable');
+        }
 
         return $response;
+    }
+
+    /**
+     * Vérifie si la requête concerne un fichier statique.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return bool
+     */
+    protected function isStaticAsset(Request $request)
+    {
+        return preg_match('/\.(jpg|jpeg|png|gif|css|js|woff|woff2|ttf|otf)$/i', $request->getRequestUri());
     }
 }
