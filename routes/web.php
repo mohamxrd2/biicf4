@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CacheControlMiddleware;
 use App\Jobs\TestQueueJob;
 use App\Livewire\AjoutConsommations;
 use App\Livewire\AjoutProduitServices;
@@ -145,87 +146,90 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 
 //////   ////// PLATEFORME //////   ///////////
 
-Route::middleware('user.auth')->prefix('biicf')->group(function () {
-    Route::get('acceuil', Accueil::class)->name('biicf.acceuil');
-    Route::get('notification', Notification::class)->name('biicf.notif');
-    Route::get('notification/detail/{id}', NotificationDetail::class)->name('notification.show');
+Route::middleware(['user.auth', CacheControlMiddleware::class])
+    ->prefix('biicf')
+    ->group(function () {
+        Route::get('acceuil', Accueil::class)->name('biicf.acceuil');
+        Route::get('notification', Notification::class)->name('biicf.notif');
+        Route::get('notification/detail/{id}', NotificationDetail::class)->name('notification.show');
 
-    Route::get('test-queue', function () {
-        TestQueueJob::dispatch();
-        return 'Job dispatché !';
+        // Route::get('test-queue', function () {
+        //     TestQueueJob::dispatch();
+        //     return 'Job dispatché !';
+        // });
+        
+        Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
+        Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
+
+        Route::get('publication', ProduitService::class)->name('biicf.post');
+        Route::get('publication/creer-produit', AjoutProduitServices::class)->name('biicf.postProduit');
+
+        Route::get('publication/{id}', ProduitServiceDetails::class)->name('biicf.postdet');
+        Route::get('publication/offre/{id}', ProduitOffre::class)->name('biicf.offre');
+
+
+        Route::get('consommation', Consommations::class)->name('biicf.conso');
+        Route::get('consommation/creer-consommation', AjoutConsommations::class)->name('biicf.postCons');
+        Route::get('consommation/{id}', [ConsoController::class, 'consoDet'])->name('biicf.consoDet');
+
+
+
+        Route::get('retrait', [AdminWalletController::class, 'retrait'])->name('biicf.retrait');
+
+        Route::post('envoyer-client', [AdminWalletController::class, 'sendToClientAccount'])->name('biicf.send');
+
+
+        Route::get('profile', [UserController::class, 'showProfile'])->name('biicf.showProfile');
+        Route::put('/profile/profile-photo/{user}', [UserController::class, 'updateProfilePhoto'])->name('biicf.updateProfilePhoto');
+        Route::put('/profile/update/{user}', [UserController::class, 'updateProfile'])->name('biicf.updateProfile');
+        Route::put('/profile/password/{user}', [UserController::class, 'updatePassword'])->name('biicf.updatePassword');
+
+        Route::get('Appel-offre', [AppelOffreController::class, 'search'])->name('biicf.appeloffre');
+        Route::match(['get', 'post'], 'formumelaire-appel-offre', [AppelOffreController::class, 'formAppel'])->name('biicf.form');
+        Route::post('formumelaire-appel-offre/store', [AppelOffreController::class, 'storeAppel'])->name('biicf.formstore');
+        Route::post('formumelaire-appel-offre/comment', [AppelOffreController::class, 'comment'])->name('biicf.comment');
+        Route::post('formumelaire-appel-offregroupe/store', [AppelOffreController::class, 'formstoreGroupe'])->name('biicf.formstoreGroupe');
+
+
+        Route::get('postuler', PostulerComponent::class)->name('biicf.postuler');
+
+
+        //Route pour bourse du financement
+
+        Route::get('finance/acceuil', function () {
+            return view('finance.acceuil');
+        })->name('finance.acceuil');
+
+        Route::get('finance/recherche', function () {
+            return view('finance.search');
+        })->name('finance.search');
+
+        Route::get('finance/notification', function () {
+            return view('finance.notif');
+        })->name('finance.notif');
+
+        Route::match(['get', 'post'], 'finance/Porte-feuille', function () {
+            return view('finance.wallet');
+        })->name('finance.wallet');
+
+        Route::get('finance/projet', function () {
+            return view('finance.projet');
+        })->name('finance.projet');
+
+        Route::get('finance/profile', function () {
+            return view('finance.profile');
+        })->name('finance.profile');
+
+        Route::get('finance/Ajouter-projet', function () {
+            return view('finance.addproject');
+        })->name('finance.addproject');
+
+        Route::get('finance/detail-projet/{id}', [UserController::class, 'detailprojetGroupe'])->name('detailprojetGroupe');
+        Route::get('finance/detail-projet-negocie/{id}', [UserController::class, 'detailprojetNegocie'])->name('detailprojetNegocie');
+        Route::get('finance/detail-credit/{id}', [UserController::class, 'detailcredit'])->name('detailcredit');
+        Route::get('finance/detail-credit-projet/{id}', [UserController::class, 'detailcreditprojet'])->name('detailcreditprojet');
+        Route::get('finance/gagnant-negocation/{id}', [UserController::class, 'gagnantNegocation'])->name('gagnantNegocation');
     });
-    Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
-    Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
-
-    Route::get('publication', ProduitService::class)->name('biicf.post');
-    Route::get('publication/creer-produit', AjoutProduitServices::class)->name('biicf.postProduit');
-
-    Route::get('publication/{id}', ProduitServiceDetails::class)->name('biicf.postdet');
-    Route::get('publication/offre/{id}', ProduitOffre::class)->name('biicf.offre');
-
-
-    Route::get('consommation', Consommations::class)->name('biicf.conso');
-    Route::get('consommation/creer-consommation', AjoutConsommations::class)->name('biicf.postCons');
-    Route::get('consommation/{id}', [ConsoController::class, 'consoDet'])->name('biicf.consoDet');
-
-
-
-    Route::get('retrait', [AdminWalletController::class, 'retrait'])->name('biicf.retrait');
-
-    Route::post('envoyer-client', [AdminWalletController::class, 'sendToClientAccount'])->name('biicf.send');
-
-
-    Route::get('profile', [UserController::class, 'showProfile'])->name('biicf.showProfile');
-    Route::put('/profile/profile-photo/{user}', [UserController::class, 'updateProfilePhoto'])->name('biicf.updateProfilePhoto');
-    Route::put('/profile/update/{user}', [UserController::class, 'updateProfile'])->name('biicf.updateProfile');
-    Route::put('/profile/password/{user}', [UserController::class, 'updatePassword'])->name('biicf.updatePassword');
-
-    Route::get('Appel-offre', [AppelOffreController::class, 'search'])->name('biicf.appeloffre');
-    Route::match(['get', 'post'], 'formumelaire-appel-offre', [AppelOffreController::class, 'formAppel'])->name('biicf.form');
-    Route::post('formumelaire-appel-offre/store', [AppelOffreController::class, 'storeAppel'])->name('biicf.formstore');
-    Route::post('formumelaire-appel-offre/comment', [AppelOffreController::class, 'comment'])->name('biicf.comment');
-    Route::post('formumelaire-appel-offregroupe/store', [AppelOffreController::class, 'formstoreGroupe'])->name('biicf.formstoreGroupe');
-
-
-    Route::get('postuler', PostulerComponent::class)->name('biicf.postuler');
-
-
-    //Route pour bourse du financement
-
-    Route::get('finance/acceuil', function () {
-        return view('finance.acceuil');
-    })->name('finance.acceuil');
-
-    Route::get('finance/recherche', function () {
-        return view('finance.search');
-    })->name('finance.search');
-
-    Route::get('finance/notification', function () {
-        return view('finance.notif');
-    })->name('finance.notif');
-
-    Route::match(['get', 'post'], 'finance/Porte-feuille', function () {
-        return view('finance.wallet');
-    })->name('finance.wallet');
-
-    Route::get('finance/projet', function () {
-        return view('finance.projet');
-    })->name('finance.projet');
-
-    Route::get('finance/profile', function () {
-        return view('finance.profile');
-    })->name('finance.profile');
-
-    Route::get('finance/Ajouter-projet', function () {
-        return view('finance.addproject');
-    })->name('finance.addproject');
-
-    Route::get('finance/detail-projet/{id}', [UserController::class, 'detailprojetGroupe'])->name('detailprojetGroupe');
-    Route::get('finance/detail-projet-negocie/{id}', [UserController::class, 'detailprojetNegocie'])->name('detailprojetNegocie');
-    Route::get('finance/detail-credit/{id}', [UserController::class, 'detailcredit'])->name('detailcredit');
-    Route::get('finance/detail-credit-projet/{id}', [UserController::class, 'detailcreditprojet'])->name('detailcreditprojet');
-    Route::get('finance/gagnant-negocation/{id}', [UserController::class, 'gagnantNegocation'])->name('gagnantNegocation');
-});
 
 
 Route::get('biicf/login', [BiicfAuthController::class, 'showLoginForm'])->name('biicf.login');
