@@ -245,8 +245,8 @@ class AchatDirectGroupe extends Component
             'title' => 'Commande effectuée avec succès',
             'description' => 'Cliquez pour voir les détails de votre commande.',
         ]));
-        
-        $this->dispatch('refreshNotifications');
+
+        // $this->dispatch('refreshNotifications');
 
         $achatUser = [
             'nameProd' => $validated['nameProd'],
