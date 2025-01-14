@@ -60,7 +60,7 @@
                         <!-- Accueil -->
                         <li>
                             <a href="{{ route('finance.acceuil') }}"
-                                class="flex items-center gap-3 p-3 rounded-md transition-colors duration-200 
+                                class="flex items-center gap-3 p-3 rounded-md transition-colors duration-200
                                 {{ request()->route()->getName() == 'finance.acceuil'
                                     ? 'text-purple-600 bg-gray-100'
                                     : 'text-gray-600 hover:bg-gray-100' }}">
@@ -298,11 +298,6 @@
 
                        Mes projets
                     </a>
-
-
-
-
-                    
 
 
                     <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"

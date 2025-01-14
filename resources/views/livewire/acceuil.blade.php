@@ -252,7 +252,6 @@
 
 <script>
     document.addEventListener('livewire:navigated', () => {
-        console.log('Livewire navigated: Réinitialisation des scripts accueil');
 
         // Initialiser la fonctionnalité des filtres à chaque navigation
         initialiseFilters();

@@ -90,6 +90,7 @@
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ',
                 'title' => 'Mes publications',
             ])
+            
             @include('admin.components.nav', [
                 'routeSelf' => 'biicf.conso',
                 'route' => route('biicf.conso'),

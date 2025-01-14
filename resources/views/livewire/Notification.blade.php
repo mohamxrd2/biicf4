@@ -1,4 +1,4 @@
-<div wire:poll.150ms>
+<div wire:poll.150ms="refreshCount">
     <div class="min-h-screen">
         <div class="max-w-5xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">

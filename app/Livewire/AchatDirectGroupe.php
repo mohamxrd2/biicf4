@@ -70,8 +70,6 @@ class AchatDirectGroupe extends Component
         $this->prix = $this->produit->prix;
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
 
-
-
     }
     protected function generateUniqueReference()
     {
@@ -189,8 +187,6 @@ class AchatDirectGroupe extends Component
         }
     }
 
-
-
     private function getUserWallet($userId)
     {
         return Wallet::where('user_id', $userId)->first();
@@ -249,7 +245,8 @@ class AchatDirectGroupe extends Component
             'title' => 'Commande effectuée avec succès',
             'description' => 'Cliquez pour voir les détails de votre commande.',
         ]));
-        event(new NotificationSent($userConnecte));
+        
+        $this->dispatch('refreshNotifications');
 
         $achatUser = [
             'nameProd' => $validated['nameProd'],
