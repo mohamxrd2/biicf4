@@ -6,6 +6,8 @@ use App\Events\NotificationSent;
 use App\Models\AchatDirect;
 use App\Models\ProduitService;
 use App\Models\User;
+use App\Models\userquantites;
+use App\Notifications\mainleveAd as NotificationsMainleveAd;
 use App\Notifications\mainleveclient;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +36,8 @@ class MainleveAd extends Component
     public $livreur; // Ajoutez cette propriété publique
     public $user; // Ajoutez cette propriété publique
     public $showMainlever = false;
+    public $usersLocations;
+    public $nombreFournisseurs;
 
 
     public function mount($id)
@@ -47,6 +51,36 @@ class MainleveAd extends Component
         $this->client = User::find($this->achatdirect->userSender);
         $this->livreur = User::find($this->notification->data['livreur']);
         $this->user = auth()->id();
+
+        if ($this->achatdirect->type_achat === 'OffreGrouper') {
+            $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
+                ->with('user')  // Eager load user relationship
+                ->get();
+
+            $this->nombreFournisseurs = $this->usersLocations->count();
+        }
+    }
+
+    public function sendNotification($userId)
+    {
+        $fournisseurCode = $this->notification->data['livreurCode'];
+
+        $dataFournisseur = [
+            'code_unique' => $this->achatdirect->code_unique,
+            'fournisseurCode' => $fournisseurCode,
+            'livreurCode' => $fournisseurCode,
+            'livreur' => Auth::id(),
+            'fournisseur' => $userId,
+            'client' => $this->achatdirect->userSender,
+            'achat_id' => $this->achatdirect->id,
+            'title' => 'Recuperation de la commande',
+            'description' => 'Remettez le colis au livreur.',
+        ];
+
+        $user = User::find($userId);
+        Notification::send($user, new NotificationsMainleveAd($dataFournisseur));
+        event(new NotificationSent($user));
+        session()->flash('success', 'Notification envoyée au fournisseur');
     }
 
     public function toggleComponent()

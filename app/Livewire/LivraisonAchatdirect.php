@@ -9,6 +9,7 @@ use App\Models\AchatDirect;
 use App\Models\Comment;
 use App\Models\Countdown;
 use App\Models\ProduitService;
+use App\Models\userquantites;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
@@ -44,7 +45,7 @@ class LivraisonAchatdirect extends Component
     public $timestamp;
     public $lastActivity;
     public $isNegociationActive;
-
+    public $usersLocations;
     protected $listeners = ['negotiationEnded' => '$refresh'];
 
     public function mount($id)
@@ -62,6 +63,12 @@ class LivraisonAchatdirect extends Component
         if (!$this->achatdirect) {
             throw new \Exception("Achat direct introuvable pour l'ID: " . $this->notification->data['achat_id']);
         }
+        
+        // First - Handle users locations for OffreGrouper
+        if ($this->achatdirect->type_achat === 'OffreGrouper') {
+            $this->loadUsersLocations();
+        }
+
 
         // Déterminer la valeur de $Valuecode_unique
         switch ($this->achatdirect->type_achat) {
@@ -75,16 +82,24 @@ class LivraisonAchatdirect extends Component
                 $this->Valuecode_unique = $this->achatdirect->code_unique;
         }
 
+
+
         $countdown = Countdown::where('code_unique', $this->Valuecode_unique)
             ->where('is_active', false)
             ->first();
 
         if ($countdown && !$this->achatdirect->count) {
-            $this->achatdirect->update(['count' => true]);
+            dd($this->achatdirect->update(['count' => true]));
         }
 
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
+    }
+    private function loadUsersLocations()
+    {
+        $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
+            ->select('user_id', 'localite')
+            ->get();
     }
 
     #[On('echo:comments,CommentSubmitted')]

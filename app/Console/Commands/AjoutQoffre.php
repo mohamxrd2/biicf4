@@ -46,7 +46,6 @@ class AjoutQoffre extends Command
                 ->get();
 
             if ($countdowns->isEmpty()) {
-                Log::info('Aucun countdown à traiter.');
                 return;
             }
 
@@ -80,14 +79,12 @@ class AjoutQoffre extends Command
         $this->timeServer();
         // Vérifier si l'offre a un utilisateur associé
         if (!$offre->user) {
-            Log::error('Utilisateur non trouvé pour l\'offre: ' . $offre->code_unique);
             return;
         }
 
         // Récupérer les quantités par utilisateur
         $quantitesParUser = $this->getUserQuantities($offre->code_unique);
         if (empty($quantitesParUser)) {
-            Log::warning('Aucune quantité trouvée pour le code unique: ' . $offre->code_unique);
             return;
         }
 

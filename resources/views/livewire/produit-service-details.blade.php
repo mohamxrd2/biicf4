@@ -302,9 +302,11 @@
 
     <script>
         document.addEventListener('livewire:navigate', () => {
-            console.log('Livewire navigated: Réinitialisation des scripts');
+            console.log('Livewire navigated: Réinitialisation des scripts deatils produit');
             reinitializeUI();
-        });
+        }, {
+            once: true
+        })
 
         // Fonction pour réinitialiser les composants UI
         function reinitializeUI() {

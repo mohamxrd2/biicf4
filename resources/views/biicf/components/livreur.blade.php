@@ -12,23 +12,75 @@
                     Statut : en cours
                 </span>
             </div>
+            <x-offre.alert-messages />
 
             <!-- Informations principales -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                <!-- Informations sur le fournisseur -->
-                <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
-                    <h2 class="text-lg font-semibold text-gray-800">Fournisseur</h2>
-                    <div class="mt-2 text-sm text-gray-600 space-y-1">
-                        <p><span class="font-medium">Nom : </span>{{ $achatdirect->userTraderI->name }}</p>
-                        <p><span class="font-medium">Email : </span>{{ $achatdirect->userTraderI->email }}</p>
-                        <p><span class="font-medium">Téléphone : </span>{{ $achatdirect->userTraderI->phone }}
-                        </p>
-                        <p class="bg-green-100 text-green-700 text-sm rounded-md p-3">
-                            <span class="font-medium">lieu de recuperation :
-                            </span>{{ $achatdirect->userTraderI->commune }}
-                        </p>
+                @if ($achatdirect->type_achat === 'OffreGrouper')
+                    @foreach ($usersLocations as $userLocation)
+                        <div class="p-4 bg-gray-50 rounded-lg shadow-inner mb-4">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-lg font-semibold text-gray-800">Fournisseur {{ $loop->iteration }}</h2>
+                                <span
+                                    class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{{ $userLocation->quantite }}
+                                    unités</span>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-600 space-y-1">
+                                <p><span class="font-medium">Nom : </span>{{ $userLocation->user->name }}</p>
+                                <p><span class="font-medium">Email : </span>{{ $userLocation->user->email }}</p>
+                                <p><span class="font-medium">Téléphone : </span>{{ $userLocation->user->phone }}</p>
+                                <div class="flex items-center justify-between mt-4">
+                                    <p class="bg-green-100 text-green-700 text-sm rounded-md p-3">
+                                        <span class="font-medium">lieu de recuperation :
+                                        </span>{{ $userLocation->localite }}
+                                    </p>
+                                    <button wire:click="sendNotification({{ $userLocation->user_id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="sendNotification({{ $userLocation->user_id }})"
+                                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                                        <span wire:loading.remove
+                                            wire:target="sendNotification({{ $userLocation->user_id }})">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            Aller vers
+                                        </span>
+                                        <span wire:loading
+                                            wire:target="sendNotification({{ $userLocation->user_id }})">
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                                            Envoi...
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
+                        <h2 class="text-lg font-semibold text-gray-800">Fournisseur</h2>
+                        <div class="mt-2 text-sm text-gray-600 space-y-1">
+                            <p><span class="font-medium">Nom : </span>{{ $achatdirect->userTraderI->name }}</p>
+                            <p><span class="font-medium">Email : </span>{{ $achatdirect->userTraderI->email }}</p>
+                            <p><span class="font-medium">Téléphone : </span>{{ $achatdirect->userTraderI->phone }}</p>
+                            <div class="flex items-center justify-between mt-4">
+                                <p class="bg-green-100 text-green-700 text-sm rounded-md p-3">
+                                    <span class="font-medium">lieu de recuperation :
+                                    </span>{{ $achatdirect->userTraderI->commune }}
+                                </p>
+                                <button wire:click="sendNotification({{ $userLocation->user_id }})"
+                                    wire:loading.attr="disabled"
+                                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                                    <span wire:loading.remove>
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        Aller vers
+                                    </span>
+                                    <span wire:loading>
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                                        Envoi...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                @endif
 
                 <!-- Informations sur le client -->
                 <div class="p-4 bg-gray-50 rounded-lg shadow-inner">

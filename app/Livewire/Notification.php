@@ -12,19 +12,32 @@ class Notification extends Component
     public $notifications;
     protected $layout = 'components.layouts.app';
 
+    protected $listeners = ['refreshNotifications' => 'refreshCount'];
+
     public function mount()
+    {
+        $this->refreshCount();
+    }
+
+    public function refreshCount()
     {
         try {
             $user = Auth::user();
-            $this->notifications = $user->notifications;
             $this->unreadCount = $user->unreadNotifications->count();
+            $this->notifications = $user->notifications;
         } catch (\Exception $e) {
-            Log::error('Erreur lors du chargement des notifications', [
+            Log::error('Error refreshing notifications count', [
                 'error' => $e->getMessage()
             ]);
         }
     }
-
+    public function getListeners()
+    {
+        return [
+            // 'echo:notifications,NotificationReceived' => 'refreshCount',
+            'refreshNotifications' => 'refreshCount'
+        ];
+    }
     public function markAsRead($notificationId)
     {
         try {

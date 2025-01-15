@@ -2,19 +2,6 @@
     @if ($showMainlever)
         @include('biicf.components.mainleveClick2')
     @else
-        {{-- Afficher les messages de succès --}}
-        @if (session('success'))
-            <div class="bg-green-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <!-- Afficher les messages d'erreur -->
-        @if (session('error'))
-            <div class="bg-red-500 text-white font-bold rounded-lg border shadow-lg p-3 mb-3">
-                {{ session('error') }}
-            </div>
-        @endif
         <section>
             <div class="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
                 <div class="max-w-4xl w-full bg-white shadow-lg rounded-xl p-8">
@@ -72,6 +59,8 @@
                             </div>
                         @endif
                     </div>
+                    
+                    <x-offre.alert-messages />
 
                     <!-- Informations sur le produit/service -->
                     <div class="mt-8">
@@ -121,7 +110,6 @@
                         @if (
                             $notification->reponse == 'accepter' ||
                                 ($notification->data['type_achat'] == 'Take Away' && !$notification->reponse))
-
                             <div class="flex justify-center items-center mt-4">
                                 <button wire:click="toggleComponent"
                                     class="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">

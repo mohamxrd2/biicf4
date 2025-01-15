@@ -247,7 +247,7 @@ class Mainleveclient extends Component
 
             $prixTotal = $prixUnitaire * $quantite;
             $interetFournisseur = ($valeurGelement - $prixTotal) * 0.01;
-            $montantPourFournisseur = ($valeurGelement - $prixTotal) - $interetFournisseur;
+            $montantPourFournisseur = $prixTotal - $interetFournisseur;
 
             $walletService->updateBalance($userId, $montantPourFournisseur);
             $totalInterets += $interetFournisseur;
@@ -262,6 +262,7 @@ class Mainleveclient extends Component
                 'Réception pour achat groupé.',
                 'COC'
             );
+
             // Notification des utilisateurs
             $notificationService->notifyUsers([
                 'code_unique' => $this->notification->data['code_unique'],
@@ -300,6 +301,9 @@ class Mainleveclient extends Component
             'title' => 'Transaction réussie',
             'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
         ], [$livreurId]);
+
+        // $this->gelement->status = 'completed';
+        // $this->gelement->save();
     }
 
     public function refuseColis()

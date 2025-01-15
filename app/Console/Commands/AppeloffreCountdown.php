@@ -85,9 +85,7 @@ class AppeloffreCountdown extends Command
 
             // Vérifier si l'appelOffreGroup est valide
             if (!$appelOffreGroup || !$codeUnique) {
-                Log::error('AppelOffreGroup invalide', [
-                    'id' => $appelOffreGroup->id ?? 'non défini'
-                ]);
+
                 return;
             }
             // Générer un code unique et démarrer le countdown
@@ -119,7 +117,6 @@ class AppeloffreCountdown extends Command
     {
         $appelOffreGrouper = AppelOffreGrouper::find($AppelOffreGrouper_id);
         if (!$appelOffreGrouper || !$appelOffreGrouper->user_id) {
-            Log::error('Invalid AppelOffreGrouper or missing user_id', ['id' => $AppelOffreGrouper_id]);
             return;
         }
 

@@ -183,7 +183,6 @@ class CheckCountdowns extends Command
     {
         try {
             if (!$commentToUse->user) {
-                Log::error('User not found for comment');
                 return;
             }
 

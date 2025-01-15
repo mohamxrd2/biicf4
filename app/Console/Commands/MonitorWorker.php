@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 class MonitorWorker extends Command
 {
@@ -34,21 +35,29 @@ class MonitorWorker extends Command
      */
     public function handle()
     {
-        try {
-            // Vérifier si le processus "php artisan queue:listen" est actif
-            $isRunning = shell_exec('pgrep -f "php artisan queue:listen"');
+        $isRunning = false;
 
-            if (!$isRunning) {
-                // Si le processus n'est pas actif, le démarrer et le détacher de la session
-                shell_exec('bash /home/u474923210/public_html/biicf/monitor_worker.sh');
-                Log::info('Queue worker restarted and detached successfully.');
-            } else {
-                Log::info('Queue worker is already running.');
-            }
+        try {
+            $process = new Process(['pgrep', '-f', 'php artisan queue:listen']);
+            $process->run();
+
+            $isRunning = $process->isSuccessful();
         } catch (\Exception $e) {
-            Log::error('An error occurred while monitoring the queue worker.', [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error('Error checking queue worker: ' . $e->getMessage());
+        }
+
+        if (!$isRunning) {
+            // Démarrer le processus queue:listen
+            $startProcess = new Process(['bash', '/home/u474923210/public_html/biicf/monitor_worker.sh']);
+            $startProcess->run();
+
+            if ($startProcess->isSuccessful()) {
+                Log::info('Queue worker restarted successfully.');
+            } else {
+                Log::error('Failed to restart queue worker: ' . $startProcess->getErrorOutput());
+            }
+        } else {
+            Log::info('Queue worker is already running.');
         }
     }
 }

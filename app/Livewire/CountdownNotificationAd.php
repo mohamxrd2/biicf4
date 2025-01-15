@@ -170,6 +170,8 @@ class CountdownNotificationAd extends Component
                 case 'appelOffreGrouper':
                 case 'appelOffre':
                 case 'achatDirect':
+                case 'OffreGrouper':
+
                     $result = $this->achatDirectService->handlePourLivraison([
                         'achatdirect' => $this->achatdirect,
                         'userWallet' => $this->userWallet,
@@ -180,16 +182,7 @@ class CountdownNotificationAd extends Component
                     ]);
                     break;
 
-                case 'OffreGrouper':
-                    $result = $this->achatDirectService->handleAchatDirectPoffreGroupe([
-                        'achatdirect' => $this->achatdirect,
-                        'userWallet' => $this->userWallet,
-                        'notification' => $this->notification,
-                        'fournisseur' => $this->fournisseur,
-                        'userId' => $this->user,
-                        'requiredAmount' => $this->requiredAmount
-                    ]);
-                    break;
+
             }
 
             if (isset($result['success'])) {
@@ -335,24 +328,24 @@ class CountdownNotificationAd extends Component
             } else {
                 // Préparer les données pour le fournisseur
 
-                $dataFournisseur = [
-                    'code_unique' => $this->achatdirect->code_unique,
-                    'fournisseurCode' => $fournisseurCode,
-                    'livreurCode' => $livreurCode,
-                    'livreur' => $this->notification->data['livreur'],
-                    'fournisseur' => $this->fournisseur->id ?? null,
-                    'client' => $this->achatdirect->userSender ?? null,
-                    'achat_id' => $this->achatdirect->id ?? null,
-                    'title' => 'Recuperation de la commande',
-                    'description' => 'Remettez le colis au livreur.',
-                ];
+                // $dataFournisseur = [
+                //     'code_unique' => $this->achatdirect->code_unique,
+                //     'fournisseurCode' => $fournisseurCode,
+                //     'livreurCode' => $livreurCode,
+                //     'livreur' => $this->notification->data['livreur'],
+                //     'fournisseur' => $this->fournisseur->id ?? null,
+                //     'client' => $this->achatdirect->userSender ?? null,
+                //     'achat_id' => $this->achatdirect->id ?? null,
+                //     'title' => 'Recuperation de la commande',
+                //     'description' => 'Remettez le colis au livreur.',
+                // ];
 
-                if ($this->fournisseur) {
-                    Notification::send($this->fournisseur, new mainleveAd($dataFournisseur));
-                    event(new NotificationSent($this->fournisseur));
+                // if ($this->fournisseur) {
+                //     Notification::send($this->fournisseur, new mainleveAd($dataFournisseur));
+                //     event(new NotificationSent($this->fournisseur));
 
-                    Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
-                }
+                //     Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
+                // }
 
                 // Préparer les données pour le livreur
                 $dataLivreur = [

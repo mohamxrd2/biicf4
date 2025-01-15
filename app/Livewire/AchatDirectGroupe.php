@@ -70,8 +70,6 @@ class AchatDirectGroupe extends Component
         $this->prix = $this->produit->prix;
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
 
-
-
     }
     protected function generateUniqueReference()
     {
@@ -189,8 +187,6 @@ class AchatDirectGroupe extends Component
         }
     }
 
-
-
     private function getUserWallet($userId)
     {
         return Wallet::where('user_id', $userId)->first();
@@ -221,7 +217,7 @@ class AchatDirectGroupe extends Component
             'nameProd' => $validated['nameProd'],
             'quantité' => $validated['quantité'],
             'montantTotal' => $montantTotal,
-            'type_achat'=> 'achatDirect',
+            'type_achat' => 'achatDirect',
             'localite' => $validated['localite'],
             'date_tot' => $validated['dateTot'],
             'date_tard' => $validated['dateTard'],
@@ -250,6 +246,8 @@ class AchatDirectGroupe extends Component
             'description' => 'Cliquez pour voir les détails de votre commande.',
         ]));
 
+        // $this->dispatch('refreshNotifications');
+
         $achatUser = [
             'nameProd' => $validated['nameProd'],
             'idProd' => $validated['idProd'],
@@ -261,6 +259,7 @@ class AchatDirectGroupe extends Component
 
         $owner = User::find($validated['userTrader']);
         Notification::send($owner, new AchatBiicf($achatUser));
+        event(new NotificationSent($owner));
 
         // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
         $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();

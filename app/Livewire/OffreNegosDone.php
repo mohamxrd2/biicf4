@@ -250,7 +250,7 @@ class OffreNegosDone extends Component
                 'prix' => $this->offregroupe->produit->prix,
                 'nameProd' => $this->produit->name,
                 'quantité' => $quantiteTotal,
-                'montantTotal' => $this->prixFin,
+                'montantTotal' => $this->prixTotal,
                 'localite' => $this->offregroupe->client->commune,
                 'date_tot' => now(),
                 'date_tard' => now(),
