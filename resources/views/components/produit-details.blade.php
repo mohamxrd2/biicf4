@@ -126,10 +126,10 @@
                     <div id="toggleContent" class="w-full p-3 gap-y-2 hidden mb-4 transition duration-300">
                         <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
                             <p class="text-sm font-semibold">Localisation</p>
-                            <p class="text-sm font-medium text-gray-600"> {{ $produit->continent }},
-                                {{ $produit->sous_region }},
-                                {{ $produit->pays }}, {{ $produit->zoneecoServ }}, {{ $produit->villeServ }},
-                                {{ $produit->comnServ }}</p>
+                            <p class="text-sm font-medium text-gray-600"> {{ auth()->user()->continent }},
+                                {{ auth()->user()->sous_region }}
+                                {{ auth()->user()->pays }}, {{ auth()->user()->zoneecoServ }}, {{ auth()->user()->villeServ }},
+                                {{ auth()->user()->comnServ }}</p>
                         </div>
                         <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
                             <p class="text-sm font-semibold">Reference</p>
