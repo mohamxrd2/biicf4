@@ -1,245 +1,212 @@
-@if (session('success'))
-    <div class="bg-green-200 text-green-800 px-4 py-2 rounded-md mb-4">
-        {{ session('success') }}
-    </div>
-@endif
-@if (session('error'))
-    <div class="bg-green-200 text-red-800 px-4 py-2 rounded-md mb-4">
-        {{ session('error') }}
-    </div>
-@endif
-<div>
-    <div class="mb-3 w-full">
-        <h1 class=" text-center font-bold text-2xl">DETAILS DE LA PUBLICATION</h1>
-    </div>
-    <div class="lg:flex 2xl:gap-16 gap-12 max-w-[1065px] mx-auto">
-        <div class="grid grid-cols-3 gap-4">
-
-            <div class="lg:col-span-2 col-span-3">
-
-                <div class="flex-1 items-center justify-center">
-
-                    <!-- Slider -->
-                    <div data-hs-carousel='{
-                                "loadingClasses": "opacity-0",
-                                "isAutoPlay": true
-                            }'
-                        class="relative">
-                        @php
-                            $photoCount = 0;
-                            if ($produits->photoProd1) {
-                                $photoCount++;
-                            }
-                            if ($produits->photoProd2) {
-                                $photoCount++;
-                            }
-                            if ($produits->photoProd3) {
-                                $photoCount++;
-                            }
-                            if ($produits->photoProd4) {
-                                $photoCount++;
-                            }
-                        @endphp
-
-                        @if ($photoCount > 0)
-
-                            <div class="hs-carousel relative overflow-hidden w-full min-h-screen bg-white rounded-lg">
-                                <div
-                                    class="hs-carousel-body absolute top-0 bottom-0 start-0 flex flex-nowrap transition-transform duration-700 opacity-0">
-                                    @foreach ([$produits->photoProd1, $produits->photoProd2, $produits->photoProd3, $produits->photoProd4] as $photo)
-                                        @if ($photo)
-                                            <div class="hs-carousel-slide">
-                                                <div class="flex justify-center bg-gray-100  dark:bg-neutral-900">
-                                                    <img class="w-full h-auto rounded-md  object-cover"
-                                                        src="{{ asset($photo) }}" alt="Image">
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                </div>
-                            </div>
-                        @else
-                            <div class="flex justify-center h-full bg-gray-100  dark:bg-neutral-900">
-                                <img class="w-full h-full  rounded-md" src="{{ asset('img/noimg.jpeg') }}"
-                                    alt="Image">
-                            </div>
-                        @endif
-                        @if ($photoCount > 1)
-
-                            <button type="button"
-                                class="hs-carousel-prev hs-carousel:disabled:opacity-50 disabled:pointer-events-none absolute inset-y-0 start-0 inline-flex justify-center items-center w-[46px] h-full text-gray-800 hover:bg-gray-800/10 rounded-s-lg dark:text-white dark:hover:bg-white/10">
-                                <span class="text-2xl" aria-hidden="true">
-                                    <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24"
-                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="m15 18-6-6 6-6"></path>
-                                    </svg>
-                                </span>
-                                <span class="sr-only">retour</span>
-                            </button>
-                            <button type="button"
-                                class="hs-carousel-next hs-carousel:disabled:opacity-50 disabled:pointer-events-none absolute inset-y-0 end-0 inline-flex justify-center items-center w-[46px] h-full text-gray-800 hover:bg-gray-800/10 rounded-e-lg dark:text-white dark:hover:bg-white/10">
-                                <span class="sr-only">suivant</span>
-                                <span class="text-2xl" aria-hidden="true">
-                                    <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24"
-                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="m9 18 6-6-6-6"></path>
-                                    </svg>
-                                </span>
-                            </button>
-                            <div
-                                class="hs-carousel-pagination flex justify-center absolute bottom-3 start-0 end-0 space-x-2">
-                                @foreach ([$produits->photoProd1, $produits->photoProd2, $produits->photoProd3, $produits->photoProd4] as $photo)
-                                    @if ($photo)
-                                        <span
-                                            class="hs-carousel-active:bg-blue-700 hs-carousel-active:border-blue-700 size-3 border border-gray-400 rounded-full cursor-pointer dark:border-neutral-600 dark:hs-carousel-active:bg-blue-500 dark:hs-carousel-active:border-blue-500"></span>
-                                    @endif
-                                @endforeach
-                            </div>
-                        @endif
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="lg:col-span-1 col-span-3">
-
-                <div class="mb-4 flex flex-col p-4 bg-gray-50 border border-gray-200 rounded-md">
-
-                    @if ($produit->statuts == 'Accepté')
-                        <div class="text-gray-800 bg-gray-200 rounded-md text-center p-1 mb-3">accepté !</div>
-                    @else
-                        <button wire:click="accepter" class="w-full mb-3">
-                            <div class="text-teal-800 bg-teal-100 rounded-md text-center p-1 mb-3">accepter</div>
-                        </button>
-                    @endif
-
-                    @if ($produit->statuts == 'Refusé')
-                        <div class="text-gray-800 bg-gray-200 rounded-md text-center p-1">refusé !</div>
-                    @else
-                        <button wire:click="refuser" class="w-full ">
-                            <div class="text-teal-800 bg-red-100 rounded-md text-center p-1">refuser</div>
-                        </button>
-                    @endif
-
-                </div>
-
-                <div class="mb-4 mx-auto">
-
-
-                    <div class=" card border shadow-sm rounded-xl flex space-x-5 p-5 mb-4">
-                        <div class="card-body flex-1 p-0">
-                            <h4 class="card-title font-bold"> Date de création</h4>
-
-                            <p>{{ \Carbon\Carbon::parse($produits->created_at)->diffForHumans() }}</p>
-
-                        </div>
-                    </div>
-                    <div class="mb-4 grid sm:grid-cols-2 gap-3">
-
-                        <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                            <div class="card-body flex-1 p-0">
-                                <h4 class="card-title font-bold"> Type </h4>
-                                <p>{{ $produits->type }}</p>
-                            </div>
-                        </div>
-                        @if ($produits->condProd)
-                            <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                                <div class="card-body flex-1 p-0">
-                                    <h4 class="card-title font-bold"> conditionnement </h4>
-                                    <p>{{ $produits->condProd }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($produits->formatProd)
-                            <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                                <div class="card-body flex-1 p-0">
-                                    <h4 class="card-title font-bold"> format </h4>
-                                    <p>{{ $produits->formatProd }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($produits->qteProd_min || $produits->qteProd_max)
-                            <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                                <div class="card-body flex-1 p-0">
-                                    <h4 class="card-title font-bold"> Quantité traité</h4>
-                                    <p>[ {{ $produits->qteProd_min }} - {{ $produits->qteProd_max }} ]</p>
-                                </div>
-                            </div>
-                        @endif
-
-
-                        <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                            <div class="card-body flex-1 p-0">
-                                <h4 class="card-title font-bold"> Prix par unité </h4>
-                                <p>{{ $produits->prix }}</p>
-                            </div>
-                        </div>
-
-                        @if ($produits->LivreCapProd)
-                            <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                                <div class="card-body flex-1 p-0">
-                                    <h4 class="card-title font-bold">Capacité de livré</h4>
-                                    <p>{{ $produits->LivreCapProd }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($produits->qalifServ)
-                            <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                                <div class="card-body flex-1 p-0">
-                                    <h4 class="card-title font-bold"> Experiance </h4>
-                                    <p>{{ $produits->qalifServ }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($produits->sepServ)
-                            <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                                <div class="card-body flex-1 p-0">
-                                    <h4 class="card-title font-bold"> Specialité </h4>
-                                    <p>{{ $produits->sepServ }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($produits->qteServ)
-                            <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                                <div class="card-body flex-1 p-0">
-                                    <h4 class="card-title font-bold"> Nombre du personnel </h4>
-                                    <p>{{ $produits->qteServ }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                            <div class="card-body flex-1 p-0">
-                                <h4 class="card-title font-bold"> Zone economique </h4>
-                                <p>{{ $produits->zonecoServ }}</p>
-                            </div>
-                        </div>
-                        <div class="card border shadow-sm rounded-xl flex space-x-5 p-5">
-                            <div class="card-body flex-1 p-0">
-                                <h4 class="card-title font-bold"> Ville, Commune</h4>
-                                <p> {{ $produits->villeServ }}, {{ $produits->comnServ }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class=" card border shadow-sm rounded-xl flex space-x-5 p-5">
-                        <div class="card-body flex-1 p-0">
-                            <h4 class="card-title font-bold"> Description</h4>
-
-                            <p>{{ $produits->desrip }}</p>
-
-                        </div>
-                    </div>
-                </div>
+<div class="min-h-screen bg-gray-50 py-8">
+    {{-- Notifications --}}
+    @if (session('success'))
+        <div class="max-w-7xl mx-auto px-4 mb-6">
+            <div class="flex items-center p-4 bg-green-50 border border-green-200 rounded-xl">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <p class="text-green-700">{{ session('success') }}</p>
             </div>
         </div>
-    </div>
-</div>
+    @endif
+
+    @if (session('error'))
+        <div class="max-w-7xl mx-auto px-4 mb-6">
+            <div class="flex items-center p-4 bg-red-50 border border-red-200 rounded-xl">
+                <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <p class="text-red-700">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
+    <div class="max-w-7xl mx-auto px-4">
+        {{-- En-tête --}}
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-center text-gray-900">Détails de la publication</h1>
+            <div class="mt-2 flex justify-center">
+                <span class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-600">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Publié {{ \Carbon\Carbon::parse($produits->created_at)->diffForHumans() }}
+                </span>
+            </div>
+        </div>
+
+        {{-- Contenu principal --}}
+        <div class="flex flex-col lg:flex-row gap-8">
+            {{-- Section gauche - Galerie d'images --}}
+            <div class="lg:w-2/3">
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="hs-carousel relative overflow-hidden aspect-video bg-gray-100 rounded-t-2xl">
+                            <div class="hs-carousel-body absolute top-0 bottom-0 start-0 flex flex-nowrap transition-transform duration-700 opacity-0">
+                                @php
+                                    $photos = array_filter([$produits->photoProd1, $produits->photoProd2, $produits->photoProd3, $produits->photoProd4]);
+                                @endphp
+
+                                @if(count($photos) > 0)
+                                    @foreach($photos as $photo)
+                                        <div class="hs-carousel-slide w-full flex-shrink-0">
+                                            <img src="{{ asset($photo) }}" class="w-full h-full object-cover" alt="Image produit">
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <img src="{{ asset('img/noimg.jpeg') }}" class="w-full h-full object-cover" alt="Image par défaut">
+                                    </div>
+                                @endif
+                            </div>
+
+                            @if(count($photos) > 1)
+                                {{-- Navigation --}}
+                                <button type="button" class="hs-carousel-prev absolute inset-y-0 left-0 flex items-center justify-center w-12 h-full hover:bg-black/20 transition-colors">
+                                    <span class="sr-only">Précédent</span>
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+
+                                <button type="button" class="hs-carousel-next absolute inset-y-0 right-0 flex items-center justify-center w-12 h-full hover:bg-black/20 transition-colors">
+                                    <span class="sr-only">Suivant</span>
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+
+                                {{-- Pagination --}}
+                                <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                                    @foreach($photos as $index => $photo)
+                                        <span class="w-2.5 h-2.5 rounded-full bg-white/50 hs-carousel-active:bg-white transition-colors cursor-pointer"></span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+                        {{-- Section droite - Informations et actions --}}
+                        <div class="lg:w-1/3 space-y-6">
+                            {{-- Actions --}}
+                            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <div class="p-6 space-y-4">
+                                    @if ($produits->statuts === 'Accepté')
+                                        <div class="flex items-center justify-center px-4 py-3 bg-green-50 text-green-700 rounded-xl">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            Publication acceptée
+                                        </div>
+                                    @else
+                                        <button wire:click="accepter" 
+                                                class="w-full px-4 py-3 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl transition-colors flex items-center justify-center">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            Accepter la publication
+                                        </button>
+                                    @endif
+            
+                                    @if ($produits->statuts === 'Refusé')
+                                        <div class="flex items-center justify-center px-4 py-3 bg-red-50 text-red-700 rounded-xl">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Publication refusée
+                                        </div>
+                                    @else
+                                        <button wire:click="refuser" 
+                                                class="w-full px-4 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl transition-colors flex items-center justify-center">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Refuser la publication
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+            
+                            {{-- Informations principales --}}
+                            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <div class="p-6">
+                                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Informations du produit</h2>
+                                    <div class="space-y-4">
+                                        {{-- Type et Prix --}}
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="bg-gray-50 p-4 rounded-xl">
+                                                <h3 class="text-sm font-medium text-gray-600 mb-1">Type</h3>
+                                                <p class="text-gray-900 font-medium">{{ $produits->type }}</p>
+                                            </div>
+                                            <div class="bg-gray-50 p-4 rounded-xl">
+                                                <h3 class="text-sm font-medium text-gray-600 mb-1">Prix unitaire</h3>
+                                                <p class="text-green-600 font-semibold">{{ number_format($produits->prix, 0, ',', ' ') }} FCFA</p>
+                                            </div>
+                                        </div>
+            
+                                        {{-- Conditionnement et Format --}}
+                                        @if($produits->condProd || $produits->formatProd)
+                                        <div class="grid grid-cols-2 gap-4">
+                                            @if($produits->condProd)
+                                            <div class="bg-gray-50 p-4 rounded-xl">
+                                                <h3 class="text-sm font-medium text-gray-600 mb-1">Conditionnement</h3>
+                                                <p class="text-gray-900">{{ $produits->condProd }}</p>
+                                            </div>
+                                            @endif
+                                            @if($produits->formatProd)
+                                            <div class="bg-gray-50 p-4 rounded-xl">
+                                                <h3 class="text-sm font-medium text-gray-600 mb-1">Format</h3>
+                                                <p class="text-gray-900">{{ $produits->formatProd }}</p>
+                                            </div>
+                                            @endif
+                                        </div>
+                                        @endif
+            
+                                        {{-- Quantités --}}
+                                        @if($produits->qteProd_min || $produits->qteProd_max)
+                                        <div class="bg-gray-50 p-4 rounded-xl">
+                                            <h3 class="text-sm font-medium text-gray-600 mb-1">Quantité traitée</h3>
+                                            <p class="text-gray-900">[ {{ $produits->qteProd_min }} - {{ $produits->qteProd_max }} ]</p>
+                                        </div>
+                                        @endif
+            
+                                        {{-- Capacité de livraison --}}
+                                        @if($produits->LivreCapProd)
+                                        <div class="bg-gray-50 p-4 rounded-xl">
+                                            <h3 class="text-sm font-medium text-gray-600 mb-1">Capacité de livraison</h3>
+                                            <p class="text-gray-900">{{ $produits->LivreCapProd }}</p>
+                                        </div>
+                                        @endif
+            
+                                        {{-- Localisation --}}
+                                        <div class="bg-gray-50 p-4 rounded-xl">
+                                            <h3 class="text-sm font-medium text-gray-600 mb-2">Localisation</h3>
+                                            <div class="space-y-2">
+                                                <div class="flex items-center">
+                                                    <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    </svg>
+                                                    <span class="text-gray-900">{{ $produits->villeServ }}{{ $produits->comnServ ? ', '.$produits->comnServ : '' }}</span>
+                                                </div>
+                                                @if($produits->zonecoServ)
+                                                <div class="flex items-center">
+                                                    <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                    </svg>
+                                                    <span class="text-gray-900">{{ $produits->zonecoServ }}</span>
+                                                </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>

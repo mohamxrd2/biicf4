@@ -104,41 +104,102 @@
                             @if (count($ribs) > 0 && !$showAddNewRib)
                                 <!-- Sélection des RIB existants -->
                                 <div class="mb-4">
-                                    <label for="selected_rib"
-                                        class="block text-sm font-medium text-gray-700">Sélectionnez un RIB</label>
+                                    <label for="selected_rib" class="block text-sm font-medium text-gray-700">
+                                        Sélectionnez un RIB
+                                    </label>
                                     <select id="selected_rib" wire:model="selected_rib"
                                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                         <option value="" selected disabled>-- Sélectionnez un RIB --</option>
                                         @foreach ($ribs as $rib)
-                                            <option value="{{ $rib }}">{{ $rib }}</option>
+                                            <option value="{{ $rib->rib }}">
+                                                {{ $rib->bank_name }} - {{ $rib->rib }}
+                                            </option>
                                         @endforeach
                                     </select>
                                     @error('selected_rib')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                
                                 <button type="button" wire:click="toggleAddNewRib"
                                     class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">Ajouter un
                                     autre RIB</button>
                             @else
                                 <!-- Champs pour ajouter un nouveau RIB -->
-                                <div class="mb-4">
-                                    <input type="number" id="bank_account" wire:model="bank_account"
+                                <p class="py-2 text-sm text-gray-400 italic">Nom</p>
+                                <div class="">
+                                    <input type="text"  wire:model="bank_name"
                                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Numéro de compte bancaire">
+                                        placeholder="Nom de la banque">
+                                    @error('bank_name')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <p class="py-2 text-sm text-gray-400 italic">Clé</p>
+                                <div class="mb-4">
+                                    <input type="text" id="bank_account" wire:model="bank_account"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Clé Rib">
                                     @error('bank_account')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-4">
-                                    <input type="number" id="bank_account_confirm" wire:model="bank_account_confirm"
+                                <div class="">
+                                    <input type="text"  wire:model="cle_iban"
                                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Confirmer le numéro de compte bancaire">
-                                    @error('bank_account_confirm')
+                                        placeholder="Clé Iban">
+                                    @error('cle_iban')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <button type="button" wire:click="toggleAddNewRib"
+                                <p class="py-2 text-sm text-gray-400 italic">Code</p>
+                                <div class="mb-4">
+                                    <input type="text"  wire:model="code_bic"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Code Bic">
+                                    @error('code_bic')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="mb-4">
+                                    <input type="text"  wire:model="code_bank"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Code Banque">
+                                    @error('code_bank')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="mb-4">
+                                    <input type="text"  wire:model="code_guiche"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Code Guiché">
+                                    @error('code_guiche')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="">
+                                    <input type="text"  wire:model="numero_compte"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Numéro de compte">
+                                    @error('numero_compte')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <p class="py-2 text-sm text-gray-400 italic">Iban</p>
+                                <div class="mb-4">
+                                    <input type="text"  wire:model="iban"
+                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Code Guiché">
+                                    @error('iban')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+
+
+                               
+                                
+                                <button type="reset" wire:click="toggleAddNewRib"
                                     class="px-4 py-2 text-white bg-gray-500 rounded-md hover:bg-gray-600">Annuler</button>
                             @endif
 
