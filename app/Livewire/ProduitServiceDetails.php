@@ -19,9 +19,15 @@ class ProduitServiceDetails extends Component
     {
         $this->currentPage = $page;
     }
-    public function negocie()
+
+    public function achat()
     {
-        $this->dispatch('navigate', 'negocie');
+        sleep(2); // Add a delay of 2 seconds
+        $this->dispatch('navigate', 'achat');
+    }
+    public function credit()
+    {
+        $this->dispatch('navigate', 'credit');
     }
 
     public function mount($id)
