@@ -1,10 +1,5 @@
 <div class="container px-4 py-6 mx-auto">
 
-
-
-
-
-
     <div class="overflow-hidden bg-white rounded-lg shadow-md">
         <div class="p-6 border-b border-gray-200">
             <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande
