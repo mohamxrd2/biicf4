@@ -131,46 +131,7 @@
                 </div>
             </div>
     
-            <!-- Panneau latéral des actions -->
-            {{-- <div class="lg:w-1/3">
-                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-6">Actions</h2>
-                    
-                    <div class="space-y-4">
-                        @if($consommations->statuts == 'Accepté')
-                            <div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                Demande acceptée
-                            </div>
-                        @else
-                            <button wire:click="accepter" class="w-full bg-teal-50 hover:bg-teal-100 text-teal-700 px-4 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                Accepter la demande
-                            </button>
-                        @endif
-    
-                        @if($consommations->statuts == 'Refusé')
-                            <div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                Demande refusée
-                            </div>
-                        @else
-                            <button wire:click="refuser" class="w-full bg-red-50 hover:bg-red-100 text-red-700 px-4 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                Refuser la demande
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            </div> --}}
+            
         </div>
 
         <!-- Pied de page -->
