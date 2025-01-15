@@ -105,11 +105,11 @@
                                 <!-- Sélection des RIB existants -->
                                 <div class="mb-4">
                                     <label for="selected_rib" class="block text-sm font-medium text-gray-700">
-                                        Sélectionnez un RIB
+                                        Sélectionnez un compte
                                     </label>
                                     <select id="selected_rib" wire:model="selected_rib"
                                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                        <option value="" selected disabled>-- Sélectionnez un RIB --</option>
+                                        <option value="" selected disabled>-- Sélectionnez un compte --</option>
                                         @foreach ($ribs as $rib)
                                             <option value="{{ $rib->rib }}">
                                                 {{ $rib->bank_name }} - {{ $rib->rib }}
@@ -123,7 +123,7 @@
                                 
                                 <button type="button" wire:click="toggleAddNewRib"
                                     class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">Ajouter un
-                                    autre RIB</button>
+                                    autre compte bancaire</button>
                             @else
                                 <!-- Champs pour ajouter un nouveau RIB -->
                                 <p class="py-2 text-sm text-gray-400 italic">Nom</p>
