@@ -31,6 +31,13 @@ class WithdrawalComponent extends Component
     public $ribs = [];
     public $selected_rib;
     public $showAddNewRib = false;
+    public $cle_iban;
+    public $code_bic;
+    public $code_bank;
+    public $code_guiche;
+    public $numero_compte;
+    public $iban;
+    public $bank_name;
 
 
     public function mount()
@@ -43,10 +50,12 @@ class WithdrawalComponent extends Component
     public function fetchUserRibs()
     {
         $this->ribs = RetraitRib::where('id_user', Auth::id())
-            ->distinct()    // S'assure que les résultats sont distincts
-            ->pluck('rib')  // Récupère uniquement la colonne rib
-            ->toArray();    // Convertit le résultat en tableau
+            ->select('rib', 'bank_name', 'cle_iban', 'code_bic', 'code_bank', 'code_guiche', 'numero_compte', 'iban')
+            ->distinct()
+            ->get();
     }
+    
+
     public function toggleAddNewRib()
     {
         $this->showAddNewRib = !$this->showAddNewRib;
@@ -192,6 +201,33 @@ class WithdrawalComponent extends Component
         // Génère un code aléatoire entre 1000 et 9999
         return rand(1000, 9999);
     }
+    public function updatedSelectedRib($ribValue)
+    {
+        $selectedRib = null;
+
+        foreach ($this->ribs as $rib) {
+            if ($rib['rib'] === $ribValue) {
+                $selectedRib = $rib;
+                break;
+            }
+        }
+
+        if ($selectedRib) {
+            $this->bank_account = $selectedRib['rib'];
+            $this->bank_name = $selectedRib['bank_name'];
+            $this->cle_iban = $selectedRib['cle_iban'];
+            $this->code_bic = $selectedRib['code_bic'];
+            $this->code_bank = $selectedRib['code_bank'];
+            $this->code_guiche = $selectedRib['code_guiche'];
+            $this->numero_compte = $selectedRib['numero_compte'];
+            $this->iban = $selectedRib['iban'];
+        } else {
+            $this->reset(['bank_account', 'bank_name', 'cle_iban', 'code_bic', 'code_bank', 'code_guiche', 'numero_compte', 'iban']);
+        }
+    }
+
+
+
     public function initiateBankWithdrawal()
     {
         // Si un RIB est sélectionné, l'utiliser comme `bank_account`
@@ -202,19 +238,51 @@ class WithdrawalComponent extends Component
         // Validation des champs
         $this->validate([
             'amountBank' => 'required|numeric|min:1|max:50000000',
-            'bank_account' => ['required', 'string', 'regex:/^\d{23}$/'], // Regex pour vérifier 23 chiffres
-            'bank_account_confirm' => $this->selected_rib ? 'nullable' : 'required|same:bank_account', // Validation conditionnelle
+            'bank_account' => ['required', 'string'],
+            'bank_name' => 'required',
+            'cle_iban' => 'required|numeric',
+            'code_bic' => 'required|numeric',
+            'code_bank' => 'required',
+            'code_guiche' => 'required',
+            'numero_compte' => 'required|numeric',
+            'iban' => 'required'
         ], [
+            // Messages pour 'amountBank'
             'amountBank.required' => 'Le montant est obligatoire.',
             'amountBank.numeric' => 'Le montant doit être un nombre.',
             'amountBank.min' => 'Le montant doit être au moins :min FCFA.',
             'amountBank.max' => 'Le montant ne peut pas dépasser :max FCFA.',
+
+            // Messages pour 'bank_account'
             'bank_account.required' => 'Le numéro de compte bancaire est obligatoire.',
             'bank_account.string' => 'Le numéro de compte bancaire doit être une chaîne de caractères.',
             'bank_account.regex' => 'Veuillez entrer un RIB valide de 23 chiffres.',
-            'bank_account_confirm.required' => 'Veuillez confirmer le numéro de compte bancaire.',
-            'bank_account_confirm.same' => 'La confirmation du numéro de compte ne correspond pas.',
+
+            // Messages pour 'bank_name'
+            'bank_name.required' => 'Le nom de la banque est obligatoire.',
+
+            // Messages pour 'cle_iban'
+            'cle_iban.required' => 'La clé IBAN est obligatoire.',
+            'cle_iban.numeric' => 'La clé IBAN doit être un nombre.',
+
+            // Messages pour 'code_bic'
+            'code_bic.required' => 'Le code BIC est obligatoire.',
+            'code_bic.numeric' => 'Le code BIC doit être un nombre.',
+
+            // Messages pour 'code_bank'
+            'code_bank.required' => 'Le code de la banque est obligatoire.',
+
+            // Messages pour 'code-guiche'
+            'code_guiche.required' => 'Le code guichet est obligatoire.',
+
+            // Messages pour 'numero_compte'
+            'numero_compte.required' => 'Le numéro de compte est obligatoire.',
+            'numero_compte.numeric' => 'Le numéro de compte doit être un nombre.',
+
+            // Messages pour 'iban'
+            'iban.required' => 'L\'IBAN est obligatoire.',
         ]);
+
 
 
 
@@ -305,9 +373,17 @@ class WithdrawalComponent extends Component
             'rib' => $this->bank_account,
             'reference' => $referenceID,
             'status' => 'En cours',
+            'cle_iban' => $this->cle_iban ?? null,
+            'code_bic' => $this->code_bic ?? null,
+            'code_bank' => $this->code_bank ?? null,
+            'code_guiche' => $this->code_guiche ?? null,
+            'numero_compte' => $this->numero_compte ?? null,
+            'iban' => $this->iban ?? null,
+            'bank_name' => $this->bank_name ?? null,
             'code1' => $code1 ?? null,
             'code2' => $code2 ?? null,
         ]);
+
 
 
 

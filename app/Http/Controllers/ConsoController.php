@@ -46,9 +46,9 @@ class ConsoController extends Controller
 
     public function consoDet($id)
     {
-        $consommation = Consommation::find($id);
+        $consommations = Consommation::find($id);
 
-        return view('biicf.consodetail', compact('consommation'));
+        return view('biicf.consodetail', compact('consommations'));
     }
   
 }

@@ -22,6 +22,13 @@ class RetraitRib extends Model
         'reference',
         'code1',  // Ajout de code1
         'code2',
+        'cle_iban',
+        'code_bic',
+        'code_bank',
+        'code_guiche',
+        'numero_compte',
+        'iban',
+        'bank_name'
     ];
 
     // Définir la relation avec le modèle User
