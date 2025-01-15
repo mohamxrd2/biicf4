@@ -1,5 +1,5 @@
 <div>
-    <script src="{{ asset('js/produit-details.js') }}" defer></script>
+    <script src="{{ asset('js/achat-direct.js') }}" defer></script>
 
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect">
         @if (session('error'))

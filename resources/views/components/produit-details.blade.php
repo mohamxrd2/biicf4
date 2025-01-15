@@ -49,18 +49,18 @@
                         </div>
 
                         <!-- Thumbnail Images -->
-                        <div class="flex justify-center space-x-4">
+                        <div class="flex justify-center space-x-4 xs:space-x-1">
                             <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd1) }}')"
-                                class="w-20 sm:w-16 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
+                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
                                 src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Thumbnail 1">
                             <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd2) }}')"
-                                class="w-20 sm:w-16 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
+                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
                                 src="{{ asset('post/all/' . $produit->photoProd2) }}" alt="Thumbnail 2">
                             <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd3) }}')"
-                                class="w-20 sm:w-16 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
+                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
                                 src="{{ asset('post/all/' . $produit->photoProd3) }}" alt="Thumbnail 3">
                             <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd4) }}')"
-                                class="w-20 sm:w-16 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
+                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
                                 src="{{ asset('post/all/' . $produit->photoProd4) }}" alt="Thumbnail 4">
                         </div>
                     </div>
