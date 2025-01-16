@@ -1,4 +1,5 @@
 
+
 function togglePeriodSelect() {
     const timeInput = document.getElementById("timePickerStart");
     const periodSelect = document.getElementById("dayPeriod");

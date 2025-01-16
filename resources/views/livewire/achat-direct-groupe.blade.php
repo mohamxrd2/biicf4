@@ -83,7 +83,7 @@
 
                     <!-- Option: Livraison à domicile -->
                     <input type="radio" name="selectedOption" value="Delivery" @click="selectedOption = 'Delivery'"
-                        id="deliveryOption" class="hidden">
+                        id="deliveryOption" class="hidden" wire:model.live="selectedOption">
                     <label for="deliveryOption"
                         class="flex items-center p-4 rounded-lg border-2 transition-all w-full mb-4"
                         :class="{
@@ -117,7 +117,7 @@
 
                     <!-- Option: Retrait en magasin -->
                     <input type="radio" name="selectedOption" value="Take Away" @click="selectedOption = 'Take Away'"
-                        id="takeAwayOption" class="hidden">
+                        id="takeAwayOption" class="hidden" wire:model.live="selectedOption">
                     <label for="takeAwayOption" class="flex items-center p-4 rounded-lg border-2 transition-all w-full"
                         :class="{
                             'border-blue-500 bg-blue-50': selectedOption === 'Take Away',
@@ -259,7 +259,7 @@
                                             <input type="time" id="timePickerStart" name="timeStart"
                                                 wire:model="timeStart"
                                                 class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                                oninput="updateMontantTotalDirect(); togglePeriodSelect();">
+                                                oninput="togglePeriodSelect();">
                                         </div>
                                     </div>
 

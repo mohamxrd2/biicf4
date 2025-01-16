@@ -88,7 +88,6 @@ class AchatDirectGroupe extends Component
     {
         $this->totalCost = (int)$this->quantité * $this->prix;
 
-        // Vérifier si la quantité est entre la quantité minimale et maximale
         if ($this->quantité < $this->produit->qteProd_min || $this->quantité > $this->produit->qteProd_max) {
             $this->addError('quantité', 'La quantité doit être comprise entre ' . $this->produit->qteProd_min . ' et ' . $this->produit->qteProd_max . '.');
             $this->isButtonDisabled = true;
@@ -101,14 +100,6 @@ class AchatDirectGroupe extends Component
                 $this->resetErrorBag('quantité');
                 $this->isButtonDisabled = false;
             }
-        }
-
-        // Vérifier si l'option sélectionnée est vide
-        if (empty($this->selectedOption)) {
-            $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');
-            $this->isButtonDisabled = true;
-        } else {
-            $this->resetErrorBag('selectedOption');
         }
     }
     protected function generateUniqueReference()
@@ -130,10 +121,12 @@ class AchatDirectGroupe extends Component
 
         $montantTotal = $validated['quantité'] * $validated['prix'];
         $userWallet = $this->getUserWallet($userId);
-        if (!$userWallet || !$this->hasSufficientFunds($userWallet, $montantTotal)) {
-            return;
-        }
 
+        $this->updatedQuantité();
+        // Vérifier si l'option sélectionnée est vide
+        if (empty($this->selectedOption)) {
+            $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');
+        }
         // Commencer la transaction
         DB::beginTransaction();
         try {
