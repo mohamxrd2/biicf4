@@ -13,7 +13,7 @@ class ProduitServiceDetails extends Component
     public $produit;
     public $userWallet;
     public $userId;
-    public $currentPage = 'produit';
+    public $currentPage = 'achat';
     protected $listeners = ['navigate' => 'setPage'];
     public function setPage($page)
     {

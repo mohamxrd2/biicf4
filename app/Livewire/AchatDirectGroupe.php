@@ -56,6 +56,11 @@ class AchatDirectGroupe extends Component
     public $dayPeriod = "";
     public $dayPeriodFin = "";
 
+    public $userBalance;
+    public $totalCost;
+    public $isButtonDisabled = false;
+
+
     public function mount($id)
     {
         $this->produitId = $id;
@@ -69,7 +74,42 @@ class AchatDirectGroupe extends Component
         $this->idProd = $this->produit->id;
         $this->prix = $this->produit->prix;
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
+        // Récupérer l'identifiant de l'utilisateur connecté
+        $userId = Auth::guard('web')->id();
 
+        // Récupérer le portefeuille de l'utilisateur
+        $userWallet = Wallet::where('user_id', $userId)->first();
+
+        // Assume user balance is fetched from the authenticated user
+        $this->userBalance = $userWallet ?? 0;
+        $this->totalCost = (int)$this->quantité * $this->prix;
+    }
+    public function updatedQuantité()
+    {
+        $this->totalCost = (int)$this->quantité * $this->prix;
+
+        // Vérifier si la quantité est entre la quantité minimale et maximale
+        if ($this->quantité < $this->produit->qteProd_min || $this->quantité > $this->produit->qteProd_max) {
+            $this->addError('quantité', 'La quantité doit être comprise entre ' . $this->produit->qteProd_min . ' et ' . $this->produit->qteProd_max . '.');
+            $this->isButtonDisabled = true;
+        } else {
+            // Vérifier si le coût total dépasse le solde
+            if ($this->totalCost > $this->userBalance->balance) {
+                $this->addError('quantité', 'Vous n\'avez pas assez de fonds pour procéder.' . 'Votre Solde est :' . $this->userBalance->balance);
+                $this->isButtonDisabled = true;
+            } else {
+                $this->resetErrorBag('quantité');
+                $this->isButtonDisabled = false;
+            }
+        }
+
+        // Vérifier si l'option sélectionnée est vide
+        if (empty($this->selectedOption)) {
+            $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');
+            $this->isButtonDisabled = true;
+        } else {
+            $this->resetErrorBag('selectedOption');
+        }
     }
     protected function generateUniqueReference()
     {
@@ -195,11 +235,7 @@ class AchatDirectGroupe extends Component
     private function hasSufficientFunds($userWallet, $montantTotal)
     {
         if ($userWallet->balance < $montantTotal) {
-            Log::warning('Fonds insuffisants.', [
-                'userId' => $userWallet->user_id,
-                'requiredAmount' => $montantTotal,
-                'walletBalance' => $userWallet->balance,
-            ]);
+
             session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
             return false;
         }

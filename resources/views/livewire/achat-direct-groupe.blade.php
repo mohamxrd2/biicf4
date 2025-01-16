@@ -1,6 +1,33 @@
 <div>
-    <script src="{{ asset('js/achat-direct.js') }}" defer></script>
+    {{-- <script src="{{ asset('js/achat-direct.js') }}" defer></script> --}}
 
+    <div class="bg-white rounded-lg p-6 shadow-md border-b">
+        <div class="flex items-center justify-between">
+            <!-- Stepper -->
+            <div class="w-full flex items-center">
+                <!-- Step 1 -->
+                <div class="relative flex flex-col items-center flex-1">
+                    <div
+                        class="w-12 h-12 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shadow-md transform transition duration-300 step-active hover:scale-110">
+                        1
+                    </div>
+                    <p class="text-sm font-medium text-gray-500 mt-2">Détails du produit</p>
+                </div>
+
+                <!-- Line -->
+                <div class="flex-1 h-1 bg-blue-300 transition duration-300 step-line"></div>
+
+                <!-- Step 2 -->
+                <div class="relative flex flex-col items-center flex-1">
+                    <div
+                        class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shadow-md transform transition duration-300 hover:scale-110">
+                        2
+                    </div>
+                    <p class="text-sm font-medium text-gray-800 mt-2">Commande</p>
+                </div>
+            </div>
+        </div>
+    </div>
     <form wire:submit.prevent="AchatDirectForm" id="formAchatDirect">
         @if (session('error'))
             <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-800 dark:bg-gray-800 dark:text-red-400">
@@ -10,62 +37,40 @@
         <div x-data="{ selectedOption: @entangle('selectedOption'), quantité: 1, localite: '' }">
 
             <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
-                <ol
-                    class="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base mb-5 p-5">
-                    <li
-                        class="after:border-1 flex items-center text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                        <span
-                            class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                            <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            Details
-                        </span>
-                    </li>
 
-                    <li
-                        class="after:border-1 flex items-center text-blue-600 text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                        <span
-                            class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                            <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            Achat
-                        </span>
-                    </li>
-                </ol>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Champ de quantité -->
                     <div class="mb-4">
                         <h2 class="text-lg font-bold mb-2">Quantité du produit</h2>
-                        <input id="quantityInput" type="number" wire:model="quantité" x-model="quantité"
-                            name="quantité"
+                        <input type="number" wire:model.live.500ms="quantité" x-model="quantité" name="quantité"
                             class="w-full p-2 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            data-min="{{ $produit->qteProd_min }}" data-max="{{ $produit->qteProd_max }}"
-                            oninput="updateMontantTotalDirect()" required />
+                            required />
+
                     </div>
 
                     <!-- Champ de localisation -->
                     <div>
                         <h2 class="text-lg font-bold mb-2">Adresse de livraison</h2>
                         <input id="location" type="text" wire:model="localite" x-model="localite"
-                            oninput="updateMontantTotalDirect()" placeholder="Entrez votre localisation"
+                            placeholder="Entrez votre localisation"
                             class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" required />
                     </div>
                 </div>
 
+                @error('quantité')
+                    <span class="text-red-500">{{ $message }}</span>
+                @enderror
 
                 <!-- Résumé -->
                 <div class="my-4 p-4 bg-blue-50 rounded-lg border">
                     <h4 class="font-semibold text-gray-800">Résumé :</h4>
                     <p class="text-gray-700">
+                        Prix unitaire <span class="font-bold"></span>
+                        {{ $prix }} FCFA.
+                    </p>
+                    <p class="text-gray-700">
                         Vous avez sélectionné <span class="font-bold" x-text="quantité"></span>
-                        {{ $produit->condProd }}(s).
+                        {{ $produit->condProd }}(s) de {{ $produit->name }}.
                     </p>
                     <p class="text-gray-700">
                         Localisation : <span class="font-bold" x-text="localite || 'Non renseignée'"></span>
@@ -73,7 +78,7 @@
                 </div>
 
                 <!-- Mode de réception -->
-                <div class="mb-4" oninput="updateMontantTotalDirect()">
+                <div class="mb-4">
                     <h2 class="text-lg font-bold mb-2">Mode de réception</h2>
 
                     <!-- Option: Livraison à domicile -->
@@ -111,10 +116,9 @@
                     </label>
 
                     <!-- Option: Retrait en magasin -->
-                    <input type="radio" name="selectedOption" value="Take Away"
-                        @click="selectedOption = 'Take Away'" id="takeAwayOption" class="hidden">
-                    <label for="takeAwayOption"
-                        class="flex items-center p-4 rounded-lg border-2 transition-all w-full"
+                    <input type="radio" name="selectedOption" value="Take Away" @click="selectedOption = 'Take Away'"
+                        id="takeAwayOption" class="hidden">
+                    <label for="takeAwayOption" class="flex items-center p-4 rounded-lg border-2 transition-all w-full"
                         :class="{
                             'border-blue-500 bg-blue-50': selectedOption === 'Take Away',
                             'border-gray-200 hover:border-blue-200': selectedOption !== 'Take Away'
@@ -255,7 +259,7 @@
                                             <input type="time" id="timePickerStart" name="timeStart"
                                                 wire:model="timeStart"
                                                 class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                                oninput="togglePeriodSelect()">
+                                                oninput="updateMontantTotalDirect(); togglePeriodSelect();">
                                         </div>
                                     </div>
 
@@ -299,7 +303,7 @@
                                             <input type="time" id="timePickerEnd" name="timeEnd"
                                                 wire:model="timeEnd"
                                                 class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                                oninput="togglePeriodSelect2()">
+                                                oninput="updateMontantTotalDirect(); togglePeriodSelect2();">
                                         </div>
                                     </div>
 
@@ -322,7 +326,9 @@
                         @endif
 
                     </div>
-
+                    @error('selectedOption')
+                        <span class="text-red-500">{{ $message }}</span>
+                    @enderror
                     <input type="hidden" name="userTrader" wire:model.defer="userTrader">
                     <input type="hidden" name="nameProd" wire:model.defer="nameProd">
                     <input type="hidden" name="userSender" wire:model.defer="userSender">
@@ -356,7 +362,8 @@
 
                             <dl class="flex items-center justify-between gap-4 py-3">
                                 <dt class="text-base font-bold text-gray-900 dark:text-white">Montant Total</dt>
-                                <dd class="text-base font-bold text-purple-600 dark:text-white" id="montantTotal">0
+                                <dd class="text-base font-bold text-purple-600 dark:text-white" id="montantTotal">
+                                    {{ $totalCost ?? 0 }}
                                 </dd>
                                 <input type="hidden" name="montantTotal" id="montant_total_input">
 
@@ -371,9 +378,9 @@
                     </p>
                     <div class="text-center mt-3">
 
-                        <button type="submit" id="submitButton"
-                            class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                            wire:loading.attr="disabled" disabled>
+                        <button type="submit"
+                            class="py-2 px-3 w-full inline-flex items-center justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-purple-600 text-white hover:bg-purple-700"
+                            wire:loading.attr="disabled" :disabled="$wire.isButtonDisabled">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -390,125 +397,3 @@
         </div>
     </form>
 </div>
-
-<script>
-    function togglePeriodSelect() {
-        const timeInput = document.getElementById('timePickerStart');
-        const periodSelect = document.getElementById('dayPeriod');
-        const periodSelect2 = document.getElementById('dayPeriodFin');
-        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-    }
-
-    function togglePeriodSelect2() {
-        const timeInput = document.getElementById('timePickerEnd');
-        const periodSelect = document.getElementById('dayPeriodFin');
-        const periodSelect2 = document.getElementById('dayPeriod');
-        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-    }
-
-    function toggleTimeInput2() {
-        const timeInput = document.getElementById('timePickerEnd');
-        const timeInput2 = document.getElementById('timePickerStart');
-        const periodSelect = document.getElementById('dayPeriodFin');
-        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-    }
-
-    function toggleTimeInput() {
-        const timeInput = document.getElementById('timePickerStart');
-        const timeInput2 = document.getElementById('timePickerEnd');
-        const periodSelect = document.getElementById('dayPeriod');
-        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-    }
-
-    function toggleVisibility() {
-        const contentDiv = document.getElementById('toggleContent');
-
-        if (contentDiv.classList.contains('hidden')) {
-            contentDiv.classList.remove('hidden');
-            // Forcing reflow to enable   transition
-            contentDiv.offsetHeight;
-            contentDiv.classList.add('show');
-        } else {
-            contentDiv.classList.remove('show');
-            contentDiv.addEventListener('transitionend', () => {
-                contentDiv.classList.add('hidden');
-            }, {
-                once: true
-            });
-        }
-    }
-
-    // Fonction pour mettre à jour le montant total pour l'achat direct
-    function updateMontantTotalDirect() {
-        const quantityInput = document.getElementById('quantityInput');
-        const price = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
-        const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
-        const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
-        const quantity = parseInt(quantityInput.value);
-        const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
-        const montantTotalElement = document.getElementById('montantTotal');
-        const errorMessageElement = document.getElementById('errorMessage');
-        const submitButton = document.getElementById('submitButton');
-        const montantTotalInput = document.getElementById('montant_total_input');
-        const requestCreditButton = document.getElementById('requestCreditButton');
-        const location = document.getElementById('location');
-
-        const userBalance = {{ $userWallet->balance }};
-        let hasError = false; // Variable pour suivre l'état des erreurs
-        const selectedOption = document.querySelector(
-        'input[name="selectedOption"]:checked'); // Récupère l'option sélectionnée
-
-        // Vérification si aucune option n'est sélectionnée
-        if (!selectedOption) {
-            errorMessageElement.innerText = `Veuillez sélectionner un mode de réception.`;
-            errorMessageElement.classList.remove('hidden');
-            submitButton.disabled = true;
-            hasError = true;
-        }
-
-        // Vérification si le champ "location" est vide
-        if (!hasError && !location.value.trim()) {
-            errorMessageElement.innerText = `Veuillez remplir le champ de localisation.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = '0 FCFA'; // Réinitialise le montant affiché
-            submitButton.disabled = true;
-            montantTotalInput.value = 0; // Met à jour l'input montant_total_input
-            requestCreditButton.classList.add('hidden'); // Masque le bouton de crédit
-            hasError = true;
-        }
-
-        // Vérification de la quantité
-        if (!hasError && (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity)) {
-            errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = '0 FCFA';
-            submitButton.disabled = true;
-            montantTotalInput.value = 0; // Réinitialise le montant total
-            requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit
-            hasError = true;
-        }
-
-        // Vérification du solde utilisateur
-        if (!hasError && montantTotal > userBalance) {
-            errorMessageElement.innerText =
-                `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            submitButton.disabled = true;
-            requestCreditButton.classList.remove('hidden'); // Affiche le bouton de demande de crédit
-        }
-
-        // Si aucune erreur n'a été détectée, afficher le montant total et activer le bouton de soumission
-        if (!hasError && montantTotal <= userBalance) {
-            errorMessageElement.classList.add('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            submitButton.disabled = false;
-            montantTotalInput.value = montantTotal;
-            requestCreditButton.classList.add('hidden');
-        }
-    }
-</script>
