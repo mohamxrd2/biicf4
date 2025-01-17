@@ -111,7 +111,7 @@
 
                             <div class="flex justify-between">
                                 <span>frais de service :</span>
-                                <span>1% </span>
+                                <span>10% </span>
                             </div>
                             <div class="flex justify-between font-medium text-gray-900">
                                 <span>Vous recevrez :</span>

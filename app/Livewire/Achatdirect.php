@@ -80,7 +80,7 @@ class Achatdirect extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->produits = ProduitService::find($this->notification->data['idProd']);
         $this->achatdirect = ModelsAchatDirect::find($this->notification->data['achat_id']);
-        $this->prixFin = $this->achatdirect->montantTotal - $this->achatdirect->montantTotal * 0.01;
+        $this->prixFin = $this->achatdirect->montantTotal - $this->achatdirect->montantTotal * 0.1;
 
 
         $this->ciblageLivreurs();

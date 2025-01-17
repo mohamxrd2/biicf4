@@ -33,8 +33,10 @@ class TakeawayService
 
             // Envoi des notifications
             $this->sendNotifications($achatdirect, $prixFin, $codeVerification);
-            $notification->update(['reponse' => 'accepte']);
+
             DB::commit();
+            $notification->update(['reponse' => 'accepte']);
+            return ['success' => 'Traitement effectué avec succès.'];
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Erreur takeaway:', ['error' => $e->getMessage()]);

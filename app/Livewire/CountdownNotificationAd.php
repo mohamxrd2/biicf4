@@ -204,7 +204,7 @@ class CountdownNotificationAd extends Component
     {
         $commissionService = new CommissionService();
 
-        // Calcul du montant requis avec une réduction de 1% cest pour le retrait en magasin
+        // Calcul du montant requis avec une réduction de 10% cest pour le retrait en magasin
         $requiredAmount = floatval($this->notification->data['prixFin']);
 
         // Vérification de l'existence de l'achat dans les transactions gelées
@@ -257,7 +257,7 @@ class CountdownNotificationAd extends Component
             $commissions = $this->achatdirect->montantTotal - $requiredAmount;
 
             // Paiement des commissions aux parrains
-            $commissionService->handleCommissions($commissions);
+            $commissionService->handleCommissions($commissions, $this->fournisseur->parrain);
 
             // Préparer les données pour le fournisseur
             $dataFournisseur = [
