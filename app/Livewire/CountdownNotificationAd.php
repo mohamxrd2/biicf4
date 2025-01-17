@@ -10,8 +10,6 @@ use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Notifications\commandVerif;
-use App\Notifications\commandVerifAd;
 use App\Notifications\Confirmation;
 use App\Notifications\mainleve;
 use App\Notifications\mainleveAd;
@@ -181,8 +179,6 @@ class CountdownNotificationAd extends Component
                         'requiredAmount' => $this->requiredAmount
                     ]);
                     break;
-
-
             }
 
             if (isset($result['success'])) {

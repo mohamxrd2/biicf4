@@ -44,9 +44,7 @@
                         <input type="number" wire:model.live.500ms="quantité" x-model="quantité" name="quantité"
                             class="w-full p-2 text-center border rounded-lg focus:ring-blue-500 focus:border-blue-500"
                             required />
-                        @if ($errorMessage)
-                            <span class="text-sm text-red-500">{{ $errorMessage }}</span>
-                        @endif
+
                     </div>
 
                     <!-- Champ de localisation -->
@@ -58,16 +56,15 @@
                     </div>
                 </div>
 
-                @error('quantité')
-                    <span class="text-red-500">{{ $message }}</span>
-                @enderror
-
+                @if ($errorMessage)
+                    <span class="text-sm text-red-500">{{ $errorMessage }}</span>
+                @endif
                 <!-- Résumé -->
                 <div class="my-4 p-4 bg-blue-50 rounded-lg border">
                     <h4 class="font-semibold text-gray-800">Résumé :</h4>
                     <p class="text-gray-700">
                         Prix unitaire <span class="font-bold"></span>
-                        {{ $prix }} FCFA / {{ $produit->duree }} {{ $produit->condProd }} .
+                        {{ $prix }} FCFA / {{ $produit->duree }} .
                     </p>
 
                     @if ($type == 'Service')
@@ -88,72 +85,18 @@
                 <!-- Mode de réception -->
                 <div class="mb-4">
                     <h2 class="text-lg font-bold mb-2">Mode de réception</h2>
-                    @if (!$type == 'Service')
-                        <!-- Option: Livraison à domicile -->
-                        <input type="radio" name="selectedOption" value="Delivery"
-                            @click="selectedOption = 'Delivery'" id="deliveryOption" class="hidden"
-                            wire:model.live="selectedOption">
-                        <label for="deliveryOption"
-                            class="flex items-center p-4 rounded-lg border-2 transition-all w-full mb-4"
-                            :class="{
-                                'border-blue-500 bg-blue-50': selectedOption === 'Delivery',
-                                'border-gray-200 hover:border-blue-200': selectedOption !== 'Delivery'
-                            }">
-                            <div class="p-3 rounded-full mr-4"
-                                :class="{
-                                    'bg-blue-500 text-white': selectedOption === 'Delivery',
-                                    'bg-gray-100 text-gray-600': selectedOption !== 'Delivery'
-                                }">
-                                <!-- Icône de livraison -->
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor">
-                                    <rect x="1" y="3" width="15" height="13" rx="2" ry="2"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
-                                    <path d="M16 8h5l3 5v3h-8V8z" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round"></path>
-                                    <circle cx="5.5" cy="18.5" r="2.5" stroke-width="2"></circle>
-                                    <circle cx="18.5" cy="18.5" r="2.5" stroke-width="2"></circle>
-                                </svg>
-                            </div>
-                            <div class="flex-1 text-left">
-                                <h3 class="font-semibold text-gray-800">Livraison à domicile</h3>
-                                <p class="text-sm text-gray-500">Livré chez vous après négociation des livreurs</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-semibold text-blue-800">Prix apres confirmation</span>
-                            </div>
-                        </label>
+                    @if ($type == 'Produit')
+                        <x-option-selector label="Livraison à domicile" value="Delivery"
+                            description="Livré chez vous après négociation des livreurs" cost="Prix apres confirmation"
+                            :selectedOption="$selectedOption" />
+                        <x-option-selector label="Retrait en magasin" value="Take Away"
+                            description="Disponible après réception de confirmation du fournisseur" cost="Gratuit"
+                            :selectedOption="$selectedOption" />
+                    @else
+                        <x-option-selector label="Retrait en magasin" value="Take Away"
+                            description="Disponible après réception de confirmation du fournisseur" cost="Gratuit"
+                            :selectedOption="$selectedOption" />
                     @endif
-                    <!-- Option: Retrait en magasin -->
-                    <input type="radio" name="selectedOption" value="Take Away" @click="selectedOption = 'Take Away'"
-                        id="takeAwayOption" class="hidden" wire:model.live="selectedOption">
-                    <label for="takeAwayOption" class="flex items-center p-4 rounded-lg border-2 transition-all w-full"
-                        :class="{
-                            'border-blue-500 bg-blue-50': selectedOption === 'Take Away',
-                            'border-gray-200 hover:border-blue-200': selectedOption !== 'Take Away'
-                        }">
-                        <div class="p-3 rounded-full mr-4"
-                            :class="{
-                                'bg-blue-500 text-white': selectedOption === 'Take Away',
-                                'bg-gray-100 text-gray-600': selectedOption !== 'Take Away'
-                            }">
-                            <!-- Icône de retrait -->
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
-                            </svg>
-                        </div>
-                        <div class="flex-1 text-left">
-                            <h3 class="font-semibold text-gray-800">Retrait en magasin</h3>
-                            <p class="text-sm text-gray-500">Disponible après réception de confirmation du
-                                fournisseur
-                            </p>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-semibold text-blue-800">Gratuit</span>
-                        </div>
-                    </label>
                 </div>
 
                 <div class="flex flex-col space-y-4">
@@ -161,23 +104,23 @@
                     @if ($type == 'Service')
                         <div x-show="selectedOption === 'Take Away'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
                             <x-time-picker-form title="Choisir l'horaire de debut" dateId="datePickerStart"
-                                timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot"
-                                timeModel="timeStart" periodModel="dayPeriod" dateLabel="Date" />
+                                timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot" timeModel="timeStart"
+                                periodModel="dayPeriod" dateLabel="Date" />
 
                             <x-time-picker-form title="Choisir l'horaire de fin" dateId="datePickerEnd"
-                                timeId="timePickerEnd" periodId="dayPeriodFin" dateModel="dateTard"
-                                timeModel="timeEnd" periodModel="dayPeriodFin" dateLabel="Date de retrait" />
+                                timeId="timePickerEnd" periodId="dayPeriodFin" dateModel="dateTard" timeModel="timeEnd"
+                                periodModel="dayPeriodFin" dateLabel="Date de retrait" />
                         </div>
                     @else
                         <div x-show="selectedOption === 'Take Away'">
                             <x-time-picker-form title="Choisir la période de retrait" dateId="datePickerStart"
-                                timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot"
-                                timeModel="timeStart" periodModel="dayPeriod" dateLabel="Date" />
+                                timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot" timeModel="timeStart"
+                                periodModel="dayPeriod" dateLabel="Date" />
                         </div>
-                        @error('time')
-                            <span class="text-red-500">{{ $message }}</span>
-                        @enderror
                     @endif
+                    @error('time')
+                        <span class="text-red-500">{{ $message }}</span>
+                    @enderror
 
                     @error('selectedOption')
                         <span class="text-red-500">{{ $message }}</span>

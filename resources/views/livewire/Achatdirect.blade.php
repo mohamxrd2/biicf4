@@ -3,7 +3,7 @@
     <div class="overflow-hidden bg-white rounded-lg shadow-md">
         <div class="p-6 border-b border-gray-200">
             <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande
-                @if ($notification->type_achat == 'Take Away')
+                @if ($notification->data['type_achat'] == 'Take Away')
                     Retrait au magasin
                 @else
                     Avec livraison
@@ -129,7 +129,7 @@
                     <div class="w-full p-2 bg-gray-300 border rounded-md">
                         <p class="font-medium text-center text-md">Notification envoyée au client</p>
                     </div>
-                @elseif ($notification->type_achat == 'Take Away')
+                @elseif ($notification->data['type_achat'] == 'Take Away')
                     <button wire:click="refuser" id="btn-refuser" type="submit"
                         class="px-4 py-2 text-white bg-gray-500 rounded hover:bg-red-700">Refuser</button>
                     <button wire:click="takeaway" class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700"

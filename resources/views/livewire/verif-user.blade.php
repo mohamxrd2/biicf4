@@ -3,7 +3,7 @@
         <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
             <!-- Titre -->
             <div class="text-center mb-6">
-                <h1 class="text-2xl font-semibold text-gray-800">Vérification Code Livreur</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">Vérification du Code </h1>
                 <p class="text-gray-600">Entrez le code du livreur pour vérifier sa validité</p>
             </div>
 
@@ -61,40 +61,45 @@
     </div>
 
     @if (session()->has('succes'))
-        <div class="max-w-4xl p-6 mx-auto mb-4 bg-white rounded-lg shadow-lg">
-            <h2 class="mb-4 text-xl font-semibold">
-                Information sur le client 
+        <div class="max-w-2xl mx-auto mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Information sur le client
+                </h2>
 
-            </h2>
+                <div class="flex items-start space-x-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-100 ring-4 ring-blue-50">
+                            <img src="{{ asset(($achatdirect ? $achatdirect->userSenderI->photo : $appeloffre->user->photo) ?? 'img/noimg.jpeg') }}"
+                                alt="Photo du livreur" class="w-full h-full object-cover">
+                        </div>
+                    </div>
 
-            <div class="flex-col w-full">
-                <div class="w-20 h-20 mb-6 mr-4 overflow-hidden bg-gray-100 rounded-full">
-                    <img src="{{ asset(($achatdirect ? $achatdirect->userSenderI->photo : $appeloffre->user->photo) ?? 'img/noimg.jpeg') }}"
-                        alt="photo">
-                </div>
+                    <div class="flex-1 space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <p class="text-sm text-gray-500">Nom du client</p>
+                                <p class="font-semibold text-gray-900">
+                                    {{ $achatdirect ? $achatdirect->userSenderI->name : $appeloffre->user->name }}</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-gray-500">Adresse du client :</p>
+                                <p class="font-semibold text-gray-900">
+                                    {{ $achatdirect ? $achatdirect->userSenderI->commune : $appeloffre->user->commune }}
+                                </p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-gray-500">Produit à récupérer :</p>
+                                <p class="font-semibold text-gray-900">
+                                    {{ $achatdirect ? $achatdirect->nameProd : $appeloffre->produit->name }}</p>
+                            </div>
 
-                <div class="flex flex-col">
-                    <p class="mb-3 text-md">Nom du client :
-                        <span
-                            class="font-semibold">{{ $achatdirect ? $achatdirect->userSenderI->name : $appeloffre->user->name }}</span>
-                    </p>
-                    <p class="mb-3 text-md">Adresse du client :
-                        <span
-                            class="font-semibold">{{ $achatdirect ? $achatdirect->userSenderI->commune : $appeloffre->user->commune }}</span>
-                    </p>
-                    <p class="mb-3 text-md">Contact du client :
-                        <span
-                            class="font-semibold">{{ $achatdirect ? $achatdirect->userSenderI->phone : $appeloffre->user->phone }}</span>
-                    </p>
-                    @if ($achatdirect)
-                        <p class="mb-3 text-md">Produit à récupérer :
-                            <span class="font-semibold">{{ $achatdirect->nameProd }}</span>
-                        </p>
-                    @elseif ($appeloffre)
-                        <p class="mb-3 text-md">Produit à récupérer :
-                            <span class="font-semibold">{{ $appeloffre->produit->name ?? 'Non spécifié' }}</span>
-                        </p>
-                    @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -17,6 +17,7 @@ use App\Models\gelement;
 use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
 use App\Notifications\Confirmation;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -171,26 +172,31 @@ class AchatDirectGroupe extends Component
             // Mettre à jour le portefeuille
             $this->updateWalletBalance($userWallet, $montantTotal);
 
+
+
             // Créer les transactions
             $reference_id = $this->generateIntegerReference();
+            $description = $this->type === 'Produit'
+                ? 'Gele Pour Achat de ' . $validated['nameProd']
+                : 'Gele Pour Service de ' . $validated['nameProd'];
+
             $this->createTransaction(
                 $userId,
                 $validated['userTrader'],
                 'Gele',
                 $montantTotal,
                 $reference_id,
-                'Gele Pour Achat de ' . $validated['nameProd'],
+                $description,
                 'effectué',
                 'COC'
             );
-
             // Gérer les notifications
             $this->sendNotifications($validated, $achat, $codeUnique);
 
             DB::commit();
 
             // Réinitialiser les champs du formulaire
-            $this->resetForm();
+            $this->reset(['quantité', 'localite', 'dateTot', 'dateTard', 'timeStart', 'timeEnd', 'dayPeriod', 'dayPeriodFin']);
 
             // Émettre un événement de succès
             $this->dispatch('formSubmitted', 'Achat Affectué Avec Succès');
@@ -205,30 +211,53 @@ class AchatDirectGroupe extends Component
         }
     }
 
+
     private function validateData()
     {
-        $validated = $this->validate([
+        $baseRules = [
             'quantité' => 'required|integer',
             'localite' => 'required|string|max:255',
             'selectedOption' => 'required|string',
-            'dateTot' => $this->selectedOption === 'Take Away' ? 'required|date' : 'nullable|date',
-            'dateTard' => 'nullable|date',
-            'timeStart' => 'nullable|date_format:H:i',
-            'timeEnd' => 'nullable|date_format:H:i',
-            'dayPeriod' => 'nullable|string',
-            'dayPeriodFin' => 'nullable|string',
             'userTrader' => 'required|exists:users,id',
             'nameProd' => 'required|string',
             'userSender' => 'required|exists:users,id',
             'photoProd' => 'required|string',
             'idProd' => 'required|exists:produit_services,id',
             'prix' => 'required|numeric',
-        ]);
+        ];
 
-        if ($this->selectedOption === 'Take Away' && $this->type == 'Produit') {
-            if (!$this->validateTimeStartAndDayPeriod()) {
-                // Si la validation échoue, on retourne false pour bloquer la suite
-                return false;
+        $timeRules = [];
+        if ($this->selectedOption === 'Take Away') {
+            if ($this->type == 'Service') {
+                $timeRules = [
+                    'dateTot' => 'required|date',
+                    'dateTard' => 'required|date',
+                    'timeStart' => 'nullable|date_format:H:i',
+                    'timeEnd' => 'nullable|date_format:H:i',
+                    'dayPeriod' => 'nullable|string',
+                    'dayPeriodFin' => 'nullable|string',
+                ];
+            } else {
+                $timeRules = [
+                    'dateTot' => 'required|date',
+                    'dateTard' => 'nullable|date',
+                    'timeStart' => 'nullable|date_format:H:i',
+                    'dayPeriod' => 'nullable|string',
+                ];
+            }
+        }
+
+        $validated = $this->validate(array_merge($baseRules, $timeRules));
+
+        if ($this->selectedOption === 'Take Away') {
+            if ($this->type == 'Service') {
+                if (!$this->validateServiceTimes()) {
+                    return false;
+                }
+            } else {
+                if (!$this->validateTimeStartAndDayPeriod()) {
+                    return false;
+                }
             }
         }
 
@@ -254,6 +283,69 @@ class AchatDirectGroupe extends Component
         $this->resetErrorBag(['timeStart', 'dayPeriod']);
         return true;
     }
+    private function validateServiceTimes()
+    {
+        if (empty($this->dateTot) || empty($this->dateTard)) {
+            $this->addError('time', 'Les dates de début et de fin sont requises pour un service.');
+            return false;
+        }
+
+        // Check if time fields and period fields are filled
+        $hasTimeFields = !empty($this->timeStart) && !empty($this->timeEnd);
+        $hasPeriodFields = !empty($this->dayPeriod) && !empty($this->dayPeriodFin);
+
+        // Validate mutual exclusivity: either time fields or period fields, but not both
+        if ($hasTimeFields && $hasPeriodFields) {
+            $this->addError('time', 'Vous ne pouvez pas utiliser à la fois les heures précises et les périodes.');
+            return false;
+        }
+
+        // Ensure at least one group is filled
+        if (!$hasTimeFields && !$hasPeriodFields) {
+            $this->addError('time', 'Vous devez remplir soit les heures précises soit les périodes de la journée.');
+            return false;
+        }
+
+        // Validate the selected group
+        if ($hasTimeFields) {
+            // Ensure both timeStart and timeEnd are filled
+            if (empty($this->timeStart) || empty($this->timeEnd)) {
+                $this->addError('time', 'Les heures de début et de fin doivent être remplies.');
+                return false;
+            }
+
+            // Validate time range
+            $startDateTime = Carbon::parse($this->dateTot . ' ' . $this->timeStart);
+            $endDateTime = Carbon::parse($this->dateTard . ' ' . $this->timeEnd);
+
+            if ($endDateTime <= $startDateTime) {
+                $this->addError('time', 'La date et heure de fin doivent être après la date et heure de début.');
+                return false;
+            }
+        }
+
+        if ($hasPeriodFields) {
+            // Ensure both dayPeriod and dayPeriodFin are filled
+            if (empty($this->dayPeriod) || empty($this->dayPeriodFin)) {
+                $this->addError('time', 'Les périodes de début et de fin doivent être remplies.');
+                return false;
+            }
+
+            // Validate date range for periods
+            $startDate = Carbon::parse($this->dateTot);
+            $endDate = Carbon::parse($this->dateTard);
+
+            if ($endDate < $startDate) {
+                $this->addError('time', 'La date de fin doit être après ou égale à la date de début.');
+                return false;
+            }
+        }
+
+        // Reset error bag for these fields if validation passes
+        $this->resetErrorBag(['dateTot', 'dateTard', 'timeStart', 'timeEnd', 'dayPeriod', 'dayPeriodFin']);
+        return true;
+    }
+
 
     private function getUserWallet($userId)
     {
@@ -276,9 +368,9 @@ class AchatDirectGroupe extends Component
             'date_tot' => $validated['dateTot'],
             'date_tard' => $validated['dateTard'],
             'timeStart' => $validated['timeStart'],
-            'timeEnd' => $validated['timeEnd'],
+            'timeEnd' => $validated['timeEnd'] ?? null,
             'dayPeriod' => $validated['dayPeriod'],
-            'dayPeriodFin' => $validated['dayPeriodFin'],
+            'dayPeriodFin' => $validated['dayPeriodFin'] ?? null,
             'userTrader' => $validated['userTrader'],
             'userSender' => $validated['userSender'],
             'specificite' => $this->produit->specification,
@@ -305,6 +397,7 @@ class AchatDirectGroupe extends Component
         $achatUser = [
             'nameProd' => $validated['nameProd'],
             'idProd' => $validated['idProd'],
+            'type_achat' => $this->selectedOption,
             'code_unique' => $codeUnique,
             'idAchat' => $achat->id,
             'title' => 'Nouvelle commande',
@@ -314,25 +407,8 @@ class AchatDirectGroupe extends Component
         $owner = User::find($validated['userTrader']);
         Notification::send($owner, new AchatBiicf($achatUser));
         event(new NotificationSent($owner));
-
-        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-        $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
-
-        if ($notification) {
-            if ($this->selectedOption === 'Take Away') {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => 'Take Away']);
-            } else {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => 'Delivery']);
-            }
-        }
     }
 
-    private function resetForm()
-    {
-        $this->reset(['quantité', 'localite']);
-    }
 
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void

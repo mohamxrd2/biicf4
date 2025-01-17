@@ -22,7 +22,7 @@ class ProduitServiceDetails extends Component
 
     public function achat()
     {
-        sleep(2); // Add a delay of 2 seconds
+        // sleep(seconds: 2); // Add a delay of 2 seconds
         $this->dispatch('navigate', 'achat');
     }
     public function credit()

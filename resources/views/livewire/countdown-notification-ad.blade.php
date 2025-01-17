@@ -59,7 +59,7 @@
                             </div>
                         @endif
                     </div>
-                    
+
                     <x-offre.alert-messages />
 
                     <!-- Informations sur le produit/service -->
@@ -251,5 +251,35 @@
 
         </section>
     @endif
+    <script>
+        // Initialisation des composants Flowbite
+        function initFlowbite() {
+            const popupModal = document.getElementById('popup-modal');
+            if (popupModal) {
+                const modalOptions = {
+                    backdrop: 'dynamic',
+                    backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+                    closable: true
+                };
+                const modal = new Modal(popupModal, modalOptions);
 
+                // Réattacher les événements aux boutons
+                const modalButtons = document.querySelectorAll('[data-modal-toggle="popup-modal"]');
+                modalButtons.forEach(button => {
+                    button.addEventListener('click', () => modal.show());
+                });
+
+                const closeButtons = document.querySelectorAll('[data-modal-hide="popup-modal"]');
+                closeButtons.forEach(button => {
+                    button.addEventListener('click', () => modal.hide());
+                });
+            }
+        }
+
+        // Initialiser au chargement initial
+        document.addEventListener('DOMContentLoaded', initFlowbite);
+
+        // Réinitialiser après chaque navigation Livewire
+        document.addEventListener('livewire:navigated', initFlowbite);
+    </script> 
 </div>

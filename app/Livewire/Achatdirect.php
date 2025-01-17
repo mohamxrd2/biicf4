@@ -7,6 +7,7 @@ use App\Events\NotificationSent;
 use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect as ModelsAchatDirect;
 use App\Models\Countdown;
+use App\Notifications\VerifUser;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use App\Models\User;
@@ -24,6 +25,8 @@ use Intervention\Image\Facades\Image;
 use App\Notifications\livraisonAchatdirect;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\CountdownNotificationAd;
+use App\Services\TakeawayService;
+use App\Services\TimeSync\TimeSyncService;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
@@ -61,11 +64,13 @@ class Achatdirect extends Component
     public $isRunning;
     public $timeRemaining;
     protected $recuperationTimer;
+    protected $takeawayService;
 
     // Injection de la classe RecuperationTimer via le constructe
     public function __construct()
     {
         $this->recuperationTimer = new RecuperationTimer();
+        $this->takeawayService = new TakeawayService();
     }
 
     public function mount($id)
@@ -86,43 +91,11 @@ class Achatdirect extends Component
 
     public function timeServer()
     {
-        // Faire plusieurs tentatives de récupération pour plus de précision
-        $attempts = 3;
-        $times = [];
-
-        for ($i = 0; $i < $attempts; $i++) {
-            // Récupération de l'heure via le service
-            $currentTime = $this->recuperationTimer->getTime();
-            if ($currentTime) {
-                $times[] = $currentTime;
-            }
-            // Petit délai entre chaque tentative
-            usleep(50000); // 50ms
-        }
-
-        if (empty($times)) {
-            // Si aucune tentative n'a réussi, utiliser l'heure système
-            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
-            $this->time = now()->timestamp * 1000;
-        } else {
-            // Utiliser la médiane des temps récupérés pour plus de précision
-            sort($times);
-            $medianIndex = floor(count($times) / 2);
-            $this->time = $times[$medianIndex];
-            $this->error = null;
-        }
-
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
-
-        // Log pour debug
-        Log::info('Timer actualisé', [
-            'timestamp' => $this->timestamp,
-            'time_ms' => $this->time,
-            'attempts' => count($times)
-        ]);
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
     }
     public function ciblageLivreurs()
     {
@@ -349,59 +322,16 @@ class Achatdirect extends Component
 
     public function takeaway()
     {
-        DB::beginTransaction();
+        $result = $this->takeawayService->process(
+            $this->notification,
+            $this->achatdirect,
+            $this->prixFin
+        );
 
-        try {
-            // Vérifiez que notification et achatdirect sont définis
-            if (!$this->notification || !$this->achatdirect) {
-                Log::error('Notification ou achatdirect non défini.', [
-                    'notification' => $this->notification,
-                    'achatdirect' => $this->achatdirect,
-                ]);
-                session()->flash('error', 'Données manquantes pour traiter la demande.');
-                return;
-            }
-
-            // Préparer les détails pour la notification
-            $details = [
-                'prixFin' =>  $this->prixFin ?? null,
-                'code_unique' => $this->achatdirect->code_unique ?? null,
-                'id' => $this->achatdirect->id ?? null,
-            ];
-
-            // Trouvez l'utilisateur expéditeur
-            $userSender = User::find($this->achatdirect->userSender);
-
-            // Envoi de la notification
-            Notification::send($userSender, new CountdownNotificationAd($details));
-            event(new NotificationSent($userSender));
-
-            // Récupérer la dernière notification de type AppelOffreTerminer
-            $notification = $userSender->notifications()
-                ->where('type', CountdownNotificationAd::class)
-                ->latest() // Prend la dernière notification
-                ->first();
-            if ($notification) {
-                // Mise à jour de la notification existante
-                $notification->update(['type_achat' => 'Take Away']);
-                Log::info('Mise à jour de la notification existante.', ['notification_id' => $notification->id]);
-            } else {
-                Log::warning('Aucune notification de type AppelOffreTerminer trouvée.', ['userSenderId' => $userSender->id]);
-            }
-
-            // Mettre à jour la notification originale
-            $this->notification->update(['reponse' => 'accepte', 'type_achat' => 'Take Away']);
-            Log::info('Notification originale mise à jour avec succès.', [
-                'notificationId' => $this->notification->id,
-            ]);
-            // Après l'envoi de la notification
-            event(new NotificationSent($userSender));
-            // Valider la transaction
-            DB::commit();
-        } catch (Exception $e) {
-            // Annuler la transaction si un élément est introuvable
-            DB::rollBack();
-            session()->flash('error', 'Un élément requis est introuvable : ' . $e->getMessage());
+        if (isset($result['error'])) {
+            session()->flash('error', $result['error']);
+        } else {
+            session()->flash('success', $result['success']);
         }
     }
 
