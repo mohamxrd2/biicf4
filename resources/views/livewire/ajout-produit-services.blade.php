@@ -1,6 +1,5 @@
 <div x-data="{ type: @entangle('type') }">
-    <div x-data="{ locked: @entangle('locked') }">
-
+    <div x-data="{ locked: @entangle('locked'), conditionnement: '', Duree: '' }">
         @if (session()->has('message'))
             <div class="p-4 mb-4 text-white bg-green-500 rounded-md">
                 {{ session('message') }}
@@ -13,13 +12,13 @@
         @endif
 
         <div class="max-w-4xl p-8 mx-auto bg-white rounded-lg shadow-md">
-            <h1 class="mb-8 text-2xl font-bold">Ajouter un produit & Service</h1>
+            <h1 class="mb-8 text-2xl font-bold">Ajouter un produit / Service</h1>
 
             <form wire:submit.prevent="submit" enctype="multipart/form-data">
 
                 <!-- Sélecteur de catégorie -->
                 <div x-data="{ selectedCategories: @entangle('selectedCategories') }">
-                    <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="col-span-2  grid lg:grid-cols-2 sm:grid-cols-2   gap-6 mb-6">
 
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-700">Entrez le nom de la
@@ -105,167 +104,22 @@
                     </div>
 
 
-                    <!-- Détails du produit ou du service -->
+                    <!-- Détails du produit -->
                     <div x-show="type === 'Produit'" class="mb-6">
-                        <h1 class="mb-8 text-xl font-bold text-center">Détails Du Produit</h1>
+                        <x-produit-form />
 
-
-                        <div class="grid grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Conditionnement</label>
-                                <input type="text" wire:model='conditionnement' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex:sac,sachet...">
-                                @error('conditionnement')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Format</label>
-                                <input type="text" wire:model='format' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Indiquez le format du produit">
-                                @error('format')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Particularité</label>
-                                <input type="text" wire:model='particularite' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Precicez la particularité du produit">
-                                @error('particularite')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Origine</label>
-                                <select wire:model='origine' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md">
-                                    <option>Choisissez une origine</option>
-                                    <option>Locale</option>
-                                    <option>Importé</option>
-                                </select>
-                                @error('origine')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Quantité Minimal<span
-                                        class="text-red-500 10px">*</span></label>
-                                <input type="text" wire:model='qteProd_min'
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('qteProd_min')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Quantité Maximal<span
-                                        class="text-red-500 10px">*</span></label>
-                                <input type="text" wire:model='qteProd_max'
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('qteProd_max')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-4 gap-6 mb-6">
-
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Spécification</label>
-                                <input type="text" wire:model='specification' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('specification')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Prix<span
-                                        class="text-red-500 10px">*</span></label>
-                                <input type="text" wire:model='prix'
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('prix')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                        </div>
                     </div>
 
+                    <!-- Détails du  service -->
                     <div x-show="type === 'Service'" class="mb-6">
-                        <h1 class="mb-8 text-xl font-bold text-center">Détails Du Service</h1>
-                        <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
+                        <x-service-form />
 
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Année d'Experience <span
-                                        class="text-red-500 10px">*</span></label>
-                                <select wire:model='qualification' :disabled="locked"
-                                    class="block w-full px-4 py-3 text-sm border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none">
-                                    <option value="" disabled selected>Expérience dans le domaine</option>
-                                    <option value="Moins de 1 an">Moins de 1 an</option>
-                                    <option value="De 1 à 5 ans">De 1 à 5 ans</option>
-                                    <option value="De 5 à 10 ans">De 5 à 10 ans</option>
-                                    <option value="Plus de 10 ans">Plus de 10 ans</option>
-                                </select>
-                                @error('qualification')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Spécialité</label>
-                                <input type="text" wire:model='specialite' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('specialite')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-
-
-                        </div>
-                        <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
-                            <div>
-                                <label
-                                    class="block mb-2 text-sm font-medium text-gray-700">Prestation/Description</label>
-                                <input type="text" wire:model='descrip' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md"
-                                    placeholder="Petite Description">
-                                @error('descrip')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Quantité</label>
-                                <input type="number" wire:model='Quantite'
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="">
-                                @error('Quantite')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-700">Prix Unitaire<span
-                                        class="text-red-500 10px">*</span></label>
-                                <input type="text" wire:model='prix'
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('prix')
-                                    <span class="text-sm text-red-500">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Images -->
                     <h1 class="mb-8 text-xl font-bold text-center">Ajout D'Images</h1>
-                    <div class="grid grid-cols-4 mb-6 gap-9">
+                    <div class="grid col-span-2 lg:grid-cols-4 sm:grid-cols-4  mb-6 gap-9">
+
                         <!-- Image 1 -->
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-700">
@@ -281,9 +135,11 @@
                             @if ($photoProd1)
                                 <div class="mt-2">
                                     @if (is_string($photoProd1))
-                                        <img src="{{ asset('post/all/' . $photoProd1) }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ asset('post/all/' . $photoProd1) }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @else
-                                        <img src="{{ $photoProd1->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ $photoProd1->temporaryUrl() }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @endif
                                 </div>
                             @endif
@@ -303,9 +159,11 @@
                             @if ($photoProd2)
                                 <div class="mt-2">
                                     @if (is_string($photoProd2))
-                                        <img src="{{ asset('post/all/' . $photoProd2) }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ asset('post/all/' . $photoProd2) }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @else
-                                        <img src="{{ $photoProd2->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ $photoProd2->temporaryUrl() }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @endif
                                 </div>
                             @endif
@@ -325,9 +183,11 @@
                             @if ($photoProd3)
                                 <div class="mt-2">
                                     @if (is_string($photoProd3))
-                                        <img src="{{ asset('post/all/' . $photoProd3) }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ asset('post/all/' . $photoProd3) }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @else
-                                        <img src="{{ $photoProd3->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ $photoProd3->temporaryUrl() }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @endif
                                 </div>
                             @endif
@@ -347,9 +207,11 @@
                             @if ($photoProd4)
                                 <div class="mt-2">
                                     @if (is_string($photoProd4))
-                                        <img src="{{ asset('post/all/' . $photoProd4) }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ asset('post/all/' . $photoProd4) }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @else
-                                        <img src="{{ $photoProd4->temporaryUrl() }}" class="w-full h-32 object-cover rounded-md">
+                                        <img src="{{ $photoProd4->temporaryUrl() }}"
+                                            class="w-full h-32 object-cover rounded-md">
                                     @endif
                                 </div>
                             @endif
@@ -361,17 +223,18 @@
                         <button type="reset" class="p-2 text-white bg-red-500 rounded-md hover:bg-red-600">
                             Annuler
                         </button>
-                        <button type="submit"
-                            wire:loading.attr="disabled"
-                            wire:target="submit"
+                        <button type="submit" wire:loading.attr="disabled" wire:target="submit"
                             class="p-2 text-white bg-green-500 rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span wire:loading.remove wire:target="submit">
                                 Enregistrer
                             </span>
                             <span wire:loading wire:target="submit">
                                 <svg class="inline w-4 h-4 mr-2 animate-spin" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
                                 </svg>
                                 Traitement en cours...
                             </span>

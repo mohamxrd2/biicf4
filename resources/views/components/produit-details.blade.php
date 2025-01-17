@@ -68,7 +68,13 @@
                     <!-- Product Info Section -->
                     <div class="mt-6 sm:mt-8 lg:mt-0 sm:p-6">
                         <p class="text-xl font-extrabold text-gray-900 sm:text-3xl dark:text-white mr-4">
-                            {{ $produit->name }} " {{ $produit->specification }}
+                            {{ $produit->name }} "
+                            @if ($produit->type == 'Produit')
+                                {{ $produit->Particularite }}
+                            @else
+                                {{ $produit->specialite }}
+                            @endif
+
                         </p>
 
                         <!-- Price and Rating -->
@@ -78,20 +84,7 @@
                                 {{ number_format($produit->prix, 0, ',', ' ') }} FCFA
                             </p>
                             <div class="flex items-center gap-2 mt-2 sm:mt-0">
-                                <div class="flex items-center gap-1">
-                                    <!-- SVGs for rating stars (repeated for all stars) -->
-                                    <svg class="w-4 h-4 text-yellow-300" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24" fill="currentColor">
-                                        <path
-                                            d=" M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397
-                                                                                                                                                8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067
-                                                                                                                                                2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39
-                                                                                                                                                3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
-                                    </svg>
-                                    <!-- Repeat for additional stars -->
-                                </div>
-                                <p class="text-sm font-medium leading-none text-gray-500 dark:text-gray-400  mr-4">(5.0)
-                                </p>
+
                                 <a href="#"
                                     class="text-sm font-medium leading-none text-gray-900 underline hover:no-underline dark:text-white">
                                     345 Reviews
@@ -135,53 +128,68 @@
                                     {{ auth()->user()->ville }},
                                     {{ auth()->user()->commune }}</p>
                             </div>
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Reference</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->reference }}</p>
-                            </div>
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Conditionnement</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->condProd }}</p>
-                            </div>
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Format</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->formatProd }}</p>
-                            </div>
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Quantité traité</p>
-                                <p class="text-sm font-medium text-gray-600">[{{ $produit->qteProd_min }} -
-                                    {{ $produit->qteProd_max }}]</p>
-                            </div>
+                            @if ($produit->type == 'Produit')
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Reference</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->reference }}</p>
+                                </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Conditionnement</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->condProd }}</p>
+                                </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Format</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->formatProd }}</p>
+                                </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Quantité traité</p>
+                                    <p class="text-sm font-medium text-gray-600">[{{ $produit->qteProd_min }} -
+                                        {{ $produit->qteProd_max }}]</p>
+                                </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Quantité traité</p>
+                                    <p class="text-sm font-medium text-gray-600">
+                                        {{ $produit->poids }}</p>
+                                </div>
 
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Capacité de livré</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->specification }}</p>
-                            </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Origine</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->origine }}</p>
+                                </div>
 
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Capacité de livré</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->origine }}</p>
-                            </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Particularite</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->Particularite }}</p>
+                                </div>
+                            @endif
+                            @if ($produit->type == 'Service')
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Année d'experiance</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->experience }}</p>
+                                </div>
 
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Particularite</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->Particularite }}</p>
-                            </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Specialité</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->specialite }}</p>
+                                </div>
 
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Année d'experiance</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->qalifServ }}</p>
-                            </div>
-
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Specialité</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->sepServ }}</p>
-                            </div>
-
-                            <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
-                                <p class="text-sm font-semibold">Nombre de personnel</p>
-                                <p class="text-sm font-medium text-gray-600">{{ $produit->qteServ }}</p>
-                            </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Description</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->description }}</p>
+                                </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Duree minimal</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->duree }}</p>
+                                </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Disponibilité</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->disponible }}</p>
+                                </div>
+                                <div class="w-full flex justify-between items-center py-4 px-3 border-b-2">
+                                    <p class="text-sm font-semibold">Lieu du service</p>
+                                    <p class="text-sm font-medium text-gray-600">{{ $produit->lieu }}</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

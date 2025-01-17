@@ -14,27 +14,37 @@ class ProduitService extends Model
         'name',
         'reference',
         'type',
+
+        //produit
         'condProd',
         'formatProd',
+        'poids',
         'qteProd_min',
         'qteProd_max',
         'specification',
         'specification2',
         'specification3',
         'origine',
+        'Particularite',
+
         //
         'prix',
-        //
-        'LivreCapProd',
         'photoProd1',
         'photoProd2',
         'photoProd3',
         'photoProd4',
         'videoProd',
-        'Particularite',
-        'qalifServ',
-        'sepServ',
+        //
+
+        //service
         'description',
+        'specialite',
+        'experience',
+        'duree',
+        'disponible',
+        'lieu',
+
+        //
         'user_id',
         'statuts',
         'categorie_id',
@@ -52,5 +62,4 @@ class ProduitService extends Model
     {
         return $this->belongsTo(CategorieProduits_Servives::class, 'categorie_id');
     }
-
 }

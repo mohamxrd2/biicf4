@@ -59,7 +59,14 @@ class AchatDirectGroupe extends Component
     public $userBalance;
     public $totalCost;
     public $isButtonDisabled = false;
-
+    public $isButtonHidden = false;
+    public $currentPage = 'achat';
+    public $errorMessage = ''; // Add this property
+    protected $listeners = ['navigate' => 'setPage'];
+    public function setPage($page)
+    {
+        $this->currentPage = $page;
+    }
 
     public function mount($id)
     {
@@ -86,20 +93,33 @@ class AchatDirectGroupe extends Component
     }
     public function updatedQuantité()
     {
+
         $this->totalCost = (int)$this->quantité * $this->prix;
 
-        if ($this->quantité < $this->produit->qteProd_min || $this->quantité > $this->produit->qteProd_max) {
-            $this->addError('quantité', 'La quantité doit être comprise entre ' . $this->produit->qteProd_min . ' et ' . $this->produit->qteProd_max . '.');
+        // Vérification des conditions selon le type
+        if ($this->type === 'Produit') {
+            $qteMin = $this->produit->qteProd_min;
+            $qteMax = $this->produit->qteProd_max;
+
+            if ($this->quantité < $qteMin || $this->quantité > $qteMax) {
+                $this->errorMessage = "La quantité doit être comprise entre {$qteMin} et {$qteMax}.";
+                $this->isButtonHidden = false;
+                $this->isButtonDisabled = true;
+                return; // Arrêter l'exécution ici, car les autres vérifications ne sont pas nécessaires
+            }
+        }
+
+        // Vérification du solde utilisateur
+        if ($this->totalCost > $this->userBalance->balance) {
+            $solde = $this->userBalance->balance;
+            $this->errorMessage = "Vous n'avez pas assez de fonds pour procéder. Votre solde est : {$solde} FCFA.";
+            $this->isButtonHidden = true;
             $this->isButtonDisabled = true;
         } else {
-            // Vérifier si le coût total dépasse le solde
-            if ($this->totalCost > $this->userBalance->balance) {
-                $this->addError('quantité', 'Vous n\'avez pas assez de fonds pour procéder.' . 'Votre Solde est :' . $this->userBalance->balance);
-                $this->isButtonDisabled = true;
-            } else {
-                $this->resetErrorBag('quantité');
-                $this->isButtonDisabled = false;
-            }
+            // Si toutes les vérifications passent
+            $this->errorMessage = ''; // Clear the error message
+            $this->isButtonHidden = false;
+            $this->isButtonDisabled = false;
         }
     }
     protected function generateUniqueReference()
@@ -112,6 +132,10 @@ class AchatDirectGroupe extends Component
         // Valider les données
         $validated = $this->validateData();
 
+        if ($validated === false) {
+            return; // Arrête l'exécution si la validation échoue
+        }
+
         $userId = Auth::id();
         if (!$userId) {
             Log::error('Utilisateur non authentifié.');
@@ -119,7 +143,7 @@ class AchatDirectGroupe extends Component
             return;
         }
 
-        $montantTotal = $validated['quantité'] * $validated['prix'];
+        $montantTotal = $this->totalCost;
         $userWallet = $this->getUserWallet($userId);
 
         $this->updatedQuantité();
@@ -201,38 +225,39 @@ class AchatDirectGroupe extends Component
             'prix' => 'required|numeric',
         ]);
 
-        if ($this->selectedOption === 'Take Away') {
-            $this->validateTimeStartAndDayPeriod();
+        if ($this->selectedOption === 'Take Away' && $this->type == 'Produit') {
+            if (!$this->validateTimeStartAndDayPeriod()) {
+                // Si la validation échoue, on retourne false pour bloquer la suite
+                return false;
+            }
         }
 
         return $validated;
     }
+
     private function validateTimeStartAndDayPeriod()
     {
-        if (empty($this->timeStart) && empty($this->dayPeriod)) {
-            $this->addError('timeStart', 'Vous devez remplir soit Heure de début soit Période.');
-            $this->addError('dayPeriod', 'Vous devez remplir soit Heure de début soit Période.');
-        } elseif (!empty($this->timeStart) && !empty($this->dayPeriod)) {
-            $this->addError('timeStart', 'Vous ne pouvez pas remplir les deux champs en même temps.');
-            $this->addError('dayPeriod', 'Vous ne pouvez pas remplir les deux champs en même temps.');
-        } else {
-            $this->resetErrorBag(['timeStart', 'dayPeriod']);
+        // Check if either timeStart or dayPeriod is filled (but not both)
+        $hasTimeStart = !empty($this->timeStart);
+        $hasDayPeriod = !empty($this->dayPeriod);
+
+        if (!$hasTimeStart && !$hasDayPeriod) {
+            $this->addError('time', 'Vous devez remplir soit Heure de début soit Période.');
+            return false;
         }
+
+        if ($hasTimeStart && $hasDayPeriod) {
+            $this->addError('time', 'Vous ne pouvez pas remplir les deux champs en même temps.');
+            return false;
+        }
+
+        $this->resetErrorBag(['timeStart', 'dayPeriod']);
+        return true;
     }
 
     private function getUserWallet($userId)
     {
         return Wallet::where('user_id', $userId)->first();
-    }
-
-    private function hasSufficientFunds($userWallet, $montantTotal)
-    {
-        if ($userWallet->balance < $montantTotal) {
-
-            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-            return false;
-        }
-        return true;
     }
 
     private function updateWalletBalance($userWallet, $montantTotal)
@@ -333,8 +358,10 @@ class AchatDirectGroupe extends Component
         return (int) $timestamp;
     }
 
-    public function requestCredit()
+    public function credit()
     {
+        // $this->dispatch('navigate', 'credit');
+
         // Récupérer l'utilisateur actuellement connec
         $user = auth()->user();
         $userNumber = $user->phone;
@@ -387,7 +414,7 @@ class AchatDirectGroupe extends Component
 
         // Émettre l'événement si l'utilisateur est éligible
         if ($isEligible) {
-            $this->dispatch('userIsEligible', $isEligible, $montantmax, $prix, $quantiteMax, $nameProd, $quantiteMin);
+            $this->dispatch('navigate', 'credit');
         }
     }
 
