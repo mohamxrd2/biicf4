@@ -239,7 +239,7 @@ class AchatDirectGroupe extends Component
                 ];
             } else {
                 $timeRules = [
-                    'dateTot' => 'required|date',
+                    'dateTot' => 'nullable|date',
                     'dateTard' => 'nullable|date',
                     'timeStart' => 'nullable|date_format:H:i',
                     'dayPeriod' => 'nullable|string',
@@ -365,11 +365,11 @@ class AchatDirectGroupe extends Component
             'montantTotal' => $montantTotal,
             'type_achat' => 'achatDirect',
             'localite' => $validated['localite'],
-            'date_tot' => $validated['dateTot'],
-            'date_tard' => $validated['dateTard'],
-            'timeStart' => $validated['timeStart'],
+            'date_tot' => $validated['dateTot'] ?? null,
+            'date_tard' => $validated['dateTard'] ?? null,
+            'timeStart' => $validated['timeStart'] ?? null,
             'timeEnd' => $validated['timeEnd'] ?? null,
-            'dayPeriod' => $validated['dayPeriod'],
+            'dayPeriod' => $validated['dayPeriod'] ?? null,
             'dayPeriodFin' => $validated['dayPeriodFin'] ?? null,
             'userTrader' => $validated['userTrader'],
             'userSender' => $validated['userSender'],

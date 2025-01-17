@@ -166,7 +166,6 @@ class Achatdirect extends Component
     public function accepter()
     {
         $this->timeServer();
-
         $validated = $this->validate([
             'photoProd' => 'required|image|max:1024', // Limite à 1 MB
             'textareaValue' => 'required',
@@ -201,20 +200,13 @@ class Achatdirect extends Component
             $this->startCountdown($data['code_livr']);
 
             // Envoyer les notifications aux livreurs
-            if ($this->livreursIds->isNotEmpty()) {
-                foreach ($this->livreursIds as $livreurId) {
-                    $livreur = User::find($livreurId);
-                    if ($livreur) {
-                        Notification::send($livreur, new livraisonAchatdirect($data));
-                        event(new NotificationSent($livreur));
-
-                        // Log l'envoi de la notification
-                        Log::info('Notification envoyée au livreur', ['livreur_id' => $livreur->id]);
-                    }
+            foreach ($this->livreursIds as $livreurId) {
+                $livreur = User::find($livreurId);
+                if ($livreur) {
+                    Notification::send($livreur, new livraisonAchatdirect($data));
+                    event(new NotificationSent($livreur));
                 }
             }
-
-
 
             // Mettre à jour la notification
             $this->notification->update(['reponse' => 'accepte']);

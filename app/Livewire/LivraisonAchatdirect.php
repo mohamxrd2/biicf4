@@ -63,12 +63,16 @@ class LivraisonAchatdirect extends Component
         if (!$this->achatdirect) {
             throw new \Exception("Achat direct introuvable pour l'ID: " . $this->notification->data['achat_id']);
         }
-        
-        // First - Handle users locations for OffreGrouper
-        if ($this->achatdirect->type_achat === 'OffreGrouper') {
-            $this->loadUsersLocations();
-        }
 
+
+        // Déterminer la valeur de $Valuecode_unique
+        switch ($this->achatdirect->type_achat) {
+            case 'OffreGrouper':
+                $this->loadUsersLocations();
+
+            default:
+                $this->loadUsersLocations2();
+        }
 
         // Déterminer la valeur de $Valuecode_unique
         switch ($this->achatdirect->type_achat) {
@@ -89,13 +93,19 @@ class LivraisonAchatdirect extends Component
             ->first();
 
         if ($countdown && !$this->achatdirect->count) {
-            dd($this->achatdirect->update(['count' => true]));
+            $this->achatdirect->update(['count' => true]);
         }
 
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
     }
     private function loadUsersLocations()
+    {
+        $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
+            ->select('user_id', 'localite')
+            ->get();
+    }
+    private function loadUsersLocations2()
     {
         $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
             ->select('user_id', 'localite')
@@ -166,8 +176,6 @@ class LivraisonAchatdirect extends Component
                     }
                 ]
             ]);
-
-
 
             // Créer un commentaire
             $comment = Comment::create([
