@@ -52,12 +52,36 @@ class MainleveAd extends Component
         $this->livreur = User::find($this->notification->data['livreur']);
         $this->user = auth()->id();
 
-        if ($this->achatdirect->type_achat === 'OffreGrouper') {
-            $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
-                ->with('user')  // Eager load user relationship
-                ->get();
+        // Update the locations loading logic
+        $this->loadLocations();
 
-            $this->nombreFournisseurs = $this->usersLocations->count();
+        $this->nombreFournisseurs = $this->usersLocations->count();
+    }
+    private function loadLocations()
+    {
+        switch ($this->achatdirect->type_achat) {
+            case 'OffreGrouper':
+                $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
+                    ->select('user_id', 'localite', 'quantite')
+                    ->distinct()
+                    ->with('user:id,name,email,phone')
+                    ->get();
+                break;
+            default:
+                $this->usersLocations = collect([$this->achatdirect->userTraderI])
+                    ->map(function ($user) {
+                        return (object)[
+                            'localite' => $user->commune,
+                            'user_id' => $user->id,
+                            'user' => (object)[
+                                'name' => $user->name,
+                                'email' => $user->email,
+                                'phone' => $user->phone,
+                            ],
+                            'quantite' => $this->achatdirect->quantité,
+                        ];
+                    });
+                break;
         }
     }
 

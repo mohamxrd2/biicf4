@@ -47,12 +47,12 @@
                                 </a>
                             </div>
 
-                            <div class="bg-gray-50 rounded-lg p-4 ">
+                            <div class="bg-gray-50 rounded-lg p-4">
                                 <button onclick="toggleModal()" class="w-full text-left">
                                     <div class="flex items-center justify-between">
                                         <h2 class="text-xl font-semibold text-gray-900">
-                                            Lieux de récupération <span
-                                                class="text-blue-600">({{ count($usersLocations) }})</span>
+                                            {{ $achatdirect->type_achat === 'OffreGrouper' ? 'Lieux de récupération' : 'Lieu de récupération' }}
+                                            <span class="text-blue-600">({{ count($usersLocations) }})</span>
                                         </h2>
                                         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -61,6 +61,32 @@
                                         </svg>
                                     </div>
                                 </button>
+
+                                <!-- Modal -->
+                                <div id="modal"
+                                    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                    <div class="bg-white w-3/4 max-w-lg p-6 rounded-lg shadow-lg relative">
+                                        <h2 class="text-xl font-bold text-gray-900 mb-4">
+                                            {{ $achatdirect->type_achat === 'OffreGrouper' ? 'Tous les lieux de récupération' : 'Lieu de récupération' }}
+                                        </h2>
+                                        <ul class="space-y-2">
+                                            @foreach ($usersLocations as $location)
+                                                <li
+                                                    class="bg-gray-100 p-3 rounded-lg shadow-sm hover:bg-gray-200 transition">
+                                                    {{ $location->localite }}
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                        <button onclick="toggleModal()"
+                                            class="absolute top-4 right-4 text-gray-600 hover:text-gray-900">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             {{-- Spécifications --}}
@@ -130,7 +156,8 @@
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <h3 class="text-sm font-medium text-gray-500">Lieu de livraison</h3>
+                                                    <h3 class="text-sm font-medium text-gray-500">Lieu de livraison
+                                                    </h3>
                                                     <p class="text-lg font-semibold text-gray-900">
                                                         {{ $achatdirect->localite }}</p>
                                                 </div>

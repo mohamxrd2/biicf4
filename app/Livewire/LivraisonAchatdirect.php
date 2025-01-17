@@ -64,15 +64,8 @@ class LivraisonAchatdirect extends Component
             throw new \Exception("Achat direct introuvable pour l'ID: " . $this->notification->data['achat_id']);
         }
 
-
-        // Déterminer la valeur de $Valuecode_unique
-        switch ($this->achatdirect->type_achat) {
-            case 'OffreGrouper':
-                $this->loadUsersLocations();
-
-            default:
-                $this->loadUsersLocations2();
-        }
+        // Update the locations loading logic
+        $this->loadLocations();
 
         // Déterminer la valeur de $Valuecode_unique
         switch ($this->achatdirect->type_achat) {
@@ -86,8 +79,6 @@ class LivraisonAchatdirect extends Component
                 $this->Valuecode_unique = $this->achatdirect->code_unique;
         }
 
-
-
         $countdown = Countdown::where('code_unique', $this->Valuecode_unique)
             ->where('is_active', false)
             ->first();
@@ -99,17 +90,25 @@ class LivraisonAchatdirect extends Component
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
     }
-    private function loadUsersLocations()
+
+    private function loadLocations()
     {
-        $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
-            ->select('user_id', 'localite')
-            ->get();
-    }
-    private function loadUsersLocations2()
-    {
-        $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
-            ->select('user_id', 'localite')
-            ->get();
+        switch ($this->achatdirect->type_achat) {
+            case 'OffreGrouper':
+                $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
+                    ->select('user_id', 'localite')
+                    ->distinct()
+                    ->get();
+                break;
+            default:
+                $this->usersLocations = collect([$this->achatdirect->userTraderI])
+                    ->map(function($user) {
+                        return (object)[
+                            'localite' => $user->commune
+                        ];
+                    });
+                break;
+        }
     }
 
     #[On('echo:comments,CommentSubmitted')]

@@ -200,7 +200,8 @@ class Mainleveclient extends Component
             'COC'
         );
 
-        $commissionService->handleCommissions($totalInterets);
+        $fournisseur = User::findOrFail($fournisseurId);
+        $commissionService->handleCommissions($totalInterets, $fournisseur->parrain);
 
         // Notification des utilisateurs
         $notificationService->notifyUsers([
