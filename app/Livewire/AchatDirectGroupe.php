@@ -28,15 +28,7 @@ class AchatDirectGroupe extends Component
     public $produit;
     public $userId;
     public $selectedOption = "";
-    public $options = [
-        'Achat avec livraison',
-        'Take Away',
-        'Reservation',
-    ];
-    public $optionsC = [
-        'Take Away',
-        'Reservation',
-    ];
+
     //
     public $quantité = "";
     public $localite = "";

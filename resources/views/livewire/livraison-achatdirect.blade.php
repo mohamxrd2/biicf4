@@ -1,6 +1,6 @@
 <div class="max-w-5xl mx-auto">
-    <x-negociation-card name="NÉGOCIATION POUR LA LIVRAISON" :lastActivity="$lastActivity" :nombreParticipants="$nombreParticipants" :isNegociationActive="$isNegociationActive"
-        :commentCount="$commentCount" />
+    <x-negociation-card name="NÉGOCIATION POUR LA LIVRAISON" mot='bas' :lastActivity="$lastActivity" :nombreParticipants="$nombreParticipants"
+        :isNegociationActive="$isNegociationActive" :commentCount="$commentCount" />
 
 
     <x-information-nego :offreIniatiale="$offreIniatiale" :prixLePlusBas="$prixLePlusBas" :id="$id" />

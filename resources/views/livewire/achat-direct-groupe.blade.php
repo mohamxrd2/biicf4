@@ -59,6 +59,7 @@
                 @if ($errorMessage)
                     <span class="text-sm text-red-500">{{ $errorMessage }}</span>
                 @endif
+                
                 <!-- Résumé -->
                 <div class="my-4 p-4 bg-blue-50 rounded-lg border">
                     <h4 class="font-semibold text-gray-800">Résumé :</h4>

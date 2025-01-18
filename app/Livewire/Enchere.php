@@ -61,7 +61,6 @@ class Enchere extends Component
             if (!$this->idProd) {
                 throw new Exception("ID du produit manquant");
             }
-
             $this->produit = ProduitService::findOrFail($this->idProd);
             $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->firstOrFail();
 
@@ -95,12 +94,10 @@ class Enchere extends Component
 
         $this->prixLePlusBas = Comment::where('code_unique', $code_unique)
             ->whereNotNull('prixTrade')
-            ->min('prixTrade');
+            ->max('prixTrade');
 
-        $this->offreIniatiale = Comment::where('code_unique', $code_unique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
+        $this->offreIniatiale =  $this->produit->prix;
+
 
         $this->isNegociationActive = !$this->offgroupe->count;
 
@@ -130,18 +127,17 @@ class Enchere extends Component
 
         try {
             DB::beginTransaction();
-            $offreInitiale = Comment::where('code_unique', $code_unique)
-                ->whereNotNull('prixTrade')
-                ->orderBy('created_at', 'asc')
-                ->first();
+
+            $offreInitiale = $this->produit->prix;
+
             $validatedData = $this->validate([
                 'prixTrade' => [
                     'required',
                     'numeric',
                     function ($attribute, $value, $fail) use ($offreInitiale) {
 
-                        if ($offreInitiale && $value <= $offreInitiale->prixTrade) {
-                            $fail("Le prix doit être supérieur à {$offreInitiale->prixTrade}");
+                        if ($offreInitiale && $value < $offreInitiale) {
+                            $fail("Le prix doit être supérieur à {$offreInitiale}");
                         }
                     }
                 ]

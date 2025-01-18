@@ -131,6 +131,7 @@ class LivraisonAchatdirect extends Component
             ->whereNotNull('prixTrade')
             ->orderBy('created_at', 'asc')
             ->first();
+
         $this->isNegociationActive = !$this->achatdirect->count;
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
