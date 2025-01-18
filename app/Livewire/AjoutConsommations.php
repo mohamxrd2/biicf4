@@ -232,8 +232,6 @@ class AjoutConsommations extends Component
         $this->categories = CategorieProduits_Servives::all();
     }
 
-
-
     public function render()
     {
         return view('livewire.ajout-consommations');

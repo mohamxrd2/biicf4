@@ -28,7 +28,7 @@
                                 @csrf
                                 <x-offre.zone-select />
 
-                                <x-offre.form-buttons :modal-id="'medium-offreneg' . $produit->id" submit-text="Soumettre"
+                                <x-offre.form-buttons submit-text="Soumettre"
                                     loading-target="sendoffneg" />
                             </form>
 
