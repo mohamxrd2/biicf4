@@ -47,7 +47,7 @@ class AjoutProduitServices extends Component
 
     //
 
-    public $produits;
+    public $produits = [];
     public $searchTerm = ''; // Add this property to hold the search term
 
     public $selectedCategories = [];
@@ -90,10 +90,6 @@ class AjoutProduitServices extends Component
                 ->get()
                 ->unique('reference'); // Ensure only unique references are taken
 
-            // Select the first product if available
-            if ($this->produits->isNotEmpty()) {
-                $this->updateProductDetails($this->produits->first()->id);
-            }
         } else {
             $this->produits = collect(); // Reset if no categories selected
         }

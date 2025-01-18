@@ -25,7 +25,6 @@ class AjoutConsommations extends Component
     public $origine  = '';
     public $qteProd  = '';
     public $periodicite = '';
-    public $specification  = '';
     protected $layout = 'components.layouts.app';
 
     //
@@ -45,14 +44,12 @@ class AjoutConsommations extends Component
 
 
     public $locked = false; // Déverrouillé par défaut
-    public $countries = [];
 
     public function mount()
     {
         // Récupère toutes les catégories
         $this->categories = CategorieProduits_Servives::all();
         $this->produits = collect(); // Ensure it's an empty Collection
-        $this->fetchCountries();
     }
 
     public function updatedSearchTerm()
@@ -62,23 +59,17 @@ class AjoutConsommations extends Component
             ->get();
     }
 
-    public function fetchCountries()
-    {
-        try {
-            $response = Http::get('https://restcountries.com/v3.1/all');
-            $this->countries = collect($response->json())->pluck('name.common')->toArray();
-        } catch (\Exception $e) {
-            // Handle the error (e.g., log it, show an error message)
-            $this->countries = [];
-        }
-    }
+
     public function updateProducts(array $selectedCategories)
     {
         $this->selectedCategories = $selectedCategories;
 
         // Update products based on selected categories
         if ($this->selectedCategories) {
-            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)->get();
+            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)
+                ->orderBy('reference')
+                ->get()
+                ->unique('reference'); // Ensure only unique references are taken
         } else {
             $this->produits = collect(); // Reset if no categories selected
         }
@@ -89,13 +80,13 @@ class AjoutConsommations extends Component
 
         if ($selectedProduct) {
             // Remplir les propriétés avec les détails du produit sélectionné
+            $this->categorie = $selectedProduct->categorie->categorie_produit_services;
             $this->reference = $selectedProduct->reference;
             $this->type = $selectedProduct->type;
             $this->name = $selectedProduct->name;
             $this->conditionnement = $selectedProduct->condProd;
             $this->format = $selectedProduct->formatProd;
             $this->origine = $selectedProduct->origine;
-            $this->specification = $selectedProduct->specification;
 
 
             $this->qualification = $selectedProduct->qalifServ;
@@ -125,7 +116,6 @@ class AjoutConsommations extends Component
         $this->format = '';
         $this->origine = '';
         $this->qteProd = '';
-        $this->specification = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
@@ -167,7 +157,6 @@ class AjoutConsommations extends Component
             'format' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'qteProd' => $this->type == 'Produit' ? 'required|integer' : 'nullable|integer',
-            'specification' => $this->type == 'Produit' ? 'required|string'  : 'nullable|string',
             //
             'periodicite' => 'required|string',
             'prix' => 'required|integer',
@@ -200,7 +189,6 @@ class AjoutConsommations extends Component
                 'format' => $this->type === 'Produit' ? $this->format : null,
                 'qte' => $this->type === 'Produit' ? $this->qteProd : null,
                 'origine' => $this->type === 'Produit' ? $this->origine : null,
-                'specialité' => $this->type === 'Produit' ? $this->specification : null,
                 //
                 'periodicite' => $this->periodicite,
                 'prix' => $this->prix,
@@ -235,7 +223,6 @@ class AjoutConsommations extends Component
         $this->format = '';
         $this->origine = '';
         $this->qteProd = '';
-        $this->specification = '';
         $this->prix = '';
         $this->qualification = '';
         $this->specialite = '';
