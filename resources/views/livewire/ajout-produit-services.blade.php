@@ -118,105 +118,7 @@
 
                     <!-- Images -->
                     <h1 class="mb-8 text-xl font-bold text-center">Ajout D'Images</h1>
-                    <div class="grid col-span-2 lg:grid-cols-4 sm:grid-cols-4  mb-6 gap-9">
-
-                        <!-- Image 1 -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">
-                                Image 1 <span class="ml-1 text-red-500">*</span>
-                            </label>
-                            <input type="file" wire:model="photoProd1"
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            @error('photoProd1')
-                                <span class="text-xs text-red-500">{{ $message }}</span>
-                            @enderror
-
-                            <!-- Prévisualisation Image 1 -->
-                            @if ($photoProd1)
-                                <div class="mt-2">
-                                    @if (is_string($photoProd1))
-                                        <img src="{{ asset('post/all/' . $photoProd1) }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @else
-                                        <img src="{{ $photoProd1->temporaryUrl() }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Image 2 -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 2<span
-                                    class="ml-1 text-red-500">*</span></label>
-                            <input type="file" wire:model="photoProd2"
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            @error('photoProd2')
-                                <span class="text-xs text-red-500">{{ $message }}</span>
-                            @enderror
-
-                            <!-- Prévisualisation Image 2 -->
-                            @if ($photoProd2)
-                                <div class="mt-2">
-                                    @if (is_string($photoProd2))
-                                        <img src="{{ asset('post/all/' . $photoProd2) }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @else
-                                        <img src="{{ $photoProd2->temporaryUrl() }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Image 3 -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 3<span
-                                    class="ml-1 text-red-500">*</span></label>
-                            <input type="file" wire:model="photoProd3"
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            @error('photoProd3')
-                                <span class="text-xs text-red-500">{{ $message }}</span>
-                            @enderror
-
-                            <!-- Prévisualisation Image 3 -->
-                            @if ($photoProd3)
-                                <div class="mt-2">
-                                    @if (is_string($photoProd3))
-                                        <img src="{{ asset('post/all/' . $photoProd3) }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @else
-                                        <img src="{{ $photoProd3->temporaryUrl() }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Image 4 -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Image 4<span
-                                    class="ml-1 text-red-500">*</span></label>
-                            <input type="file" wire:model="photoProd4"
-                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            @error('photoProd4')
-                                <span class="text-xs text-red-500">{{ $message }}</span>
-                            @enderror
-
-                            <!-- Prévisualisation Image 4 -->
-                            @if ($photoProd4)
-                                <div class="mt-2">
-                                    @if (is_string($photoProd4))
-                                        <img src="{{ asset('post/all/' . $photoProd4) }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @else
-                                        <img src="{{ $photoProd4->temporaryUrl() }}"
-                                            class="w-full h-32 object-cover rounded-md">
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-                    </div>
+                    <x-image-upload :photos="['photoProd1', 'photoProd2', 'photoProd3', 'photoProd4']" />
 
                     <!-- Boutons d'action -->
                     <div class="text-right">
@@ -249,9 +151,10 @@
         @this.call('updateProducts', Array.from(document.querySelector('select[x-model="selectedCategories"]')
             .selectedOptions).map(option => option.value));
     }
+
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('livewire:navigated', function() {
         const selectElement = document.getElementById('product-select');
 
         selectElement.addEventListener('change', function() {
@@ -278,4 +181,6 @@
             }
         });
     });
+
+
 </script>

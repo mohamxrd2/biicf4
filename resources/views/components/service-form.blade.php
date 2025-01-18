@@ -45,7 +45,7 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div>
                 <label class="block mb-2 text-sm font-medium text-gray-700">Durée estimée</label>
-                <input type="text" wire:model='Duree' x-model='Duree'
+                <input type="text" wire:model='Duree' :disabled="locked" x-model='Duree'
                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex : 10 min, 1 heure, 1 jour">
                 @error('Duree')
                     <span class="text-sm text-red-500">{{ $message }}</span>
@@ -54,8 +54,8 @@
 
             <div>
                 <label class="block mb-2 text-sm font-medium text-gray-700">Disponibilités</label>
-                <input type="text" wire:model='disponibilite' class="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Ex : Lundi au Vendredi, 9h-18h">
+                <input type="text" wire:model='disponibilite' :disabled="locked"
+                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex : Lundi au Vendredi, 9h-18h">
                 @error('disponibilite')
                     <span class="text-sm text-red-500">{{ $message }}</span>
                 @enderror

@@ -47,7 +47,7 @@ class AjoutProduitServices extends Component
 
     //
 
-    public $produits = [];
+    public $produits;
     public $searchTerm = ''; // Add this property to hold the search term
 
     public $selectedCategories = [];
@@ -85,11 +85,20 @@ class AjoutProduitServices extends Component
 
         // Update products based on selected categories
         if ($this->selectedCategories) {
-            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)->get();
+            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)
+                ->orderBy('reference')
+                ->get()
+                ->unique('reference'); // Ensure only unique references are taken
+
+            // Select the first product if available
+            if ($this->produits->isNotEmpty()) {
+                $this->updateProductDetails($this->produits->first()->id);
+            }
         } else {
             $this->produits = collect(); // Reset if no categories selected
         }
     }
+
     public function updateProductDetails($productId)
     {
         $selectedProduct = ProduitService::find($productId);
@@ -102,6 +111,7 @@ class AjoutProduitServices extends Component
             $this->type = $selectedProduct->type;
             $this->conditionnement = $selectedProduct->condProd;
             $this->format = $selectedProduct->formatProd;
+            $this->poids = $selectedProduct->poids;
             $this->particularite = $selectedProduct->Particularite;
             $this->origine = $selectedProduct->origine;
             $this->specification = $selectedProduct->specification;
@@ -111,9 +121,12 @@ class AjoutProduitServices extends Component
             $this->photoProd3 = $selectedProduct->photoProd3;
             $this->photoProd4 = $selectedProduct->photoProd4;
 
-            $this->qualification = $selectedProduct->qalifServ;
-            $this->specialite = $selectedProduct->sepServ;
+            $this->qualification = $selectedProduct->experience;
+            $this->specialite = $selectedProduct->specialite;
             $this->descrip = $selectedProduct->description;
+            $this->Duree = $selectedProduct->duree;
+            $this->disponibilite = $selectedProduct->disponible;
+            $this->lieu_intervention = $selectedProduct->lieu;
 
             $this->qteProd_min = '';
             $this->qteProd_max = '';
@@ -183,7 +196,7 @@ class AjoutProduitServices extends Component
             'conditionnement' => $this->type == 'Produit' ? 'required|string|max:255' : 'nullable|string',
             'format' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'particularite' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
-            'poids' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            'poids' => $this->type == 'Produit' ? 'required|integer' : 'nullable|integer',
             'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'qteProd_min' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
             'qteProd_max' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
