@@ -4,7 +4,7 @@
     <div class="bg-gray-50 rounded-lg p-4">
         <div class="text-sm text-gray-600">Offre initiale</div>
         @if ($offreIniatiale)
-            <div class="text-lg font-bold">{{ $offreIniatiale . ' FCFA' }}</div>
+            <div class="text-lg font-bold">{{ $offreIniatiale->prixTrade . ' FCFA' }}</div>
         @else
             <div class="flex items-center space-x-2 mt-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"

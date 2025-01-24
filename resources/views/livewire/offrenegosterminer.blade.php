@@ -121,15 +121,15 @@
                                     timeModel="timeStart" periodModel="dayPeriod" dateLabel="Date" />
                             </div>
                         @endif
-                        @error('time')
-                            <span class="text-red-500">{{ $message }}</span>
-                        @enderror
-
-                        @error('selectedOption')
-                            <span class="text-red-500">{{ $message }}</span>
-                        @enderror
 
                     </div>
+                    @error('time')
+                        <span class="text-red-500">{{ $message }}</span>
+                    @enderror
+
+                    @error('selectedOption')
+                        <span class="text-red-500">{{ $message }}</span>
+                    @enderror
 
 
                     <div class="text-center mt-3">

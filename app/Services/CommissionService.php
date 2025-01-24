@@ -32,6 +32,8 @@ class CommissionService
     private function distributeToParrains(float $commissions, $parainFournisseur)
     {
         try {
+            $transactionService = new TransactionService();
+
             $currentParrain = auth()->user()->parrain;
             $level = 1;
 
@@ -59,7 +61,8 @@ class CommissionService
                 $wallet->increment('balance', $commission);
                 $commissions -= $commission;
 
-                $this->createTransaction(
+
+                $transactionService->createTransaction(
                     auth()->id(),
                     $parrain->id,
                     'Commission',
@@ -93,6 +96,8 @@ class CommissionService
     private function distributeToAdmin(float $commissions): void
     {
         try {
+            $transactionService = new TransactionService();
+
             $adminWallet = ComissionAdmin::firstOrCreate(
                 ['admin_id' => 1],
                 ['balance' => 0]
@@ -104,16 +109,17 @@ class CommissionService
                 'admin_id' => 1,
                 'commissions' => $commissions,
             ]);
-
-            $this->createTransaction(
+            
+            $transactionService->createTransaction(
                 auth()->id(),
-                 1, // ID de l'admin
+                1, // ID de l'admin
                 'Commission',
                 $commissions,
                 $this->generateIntegerReference(),
                 'Commission de BICF',
                 'COC'
             );
+
         } catch (Exception $e) {
             Log::error('Erreur lors de la distribution à l\'admin:', [
                 'error' => $e->getMessage(),
@@ -122,35 +128,6 @@ class CommissionService
             ]);
             throw $e;
         }
-    }
-
-
-    public function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $type_compte): void
-    {
-        // Vérifiez si l'utilisateur receiver existe
-        $receiverUser = User::find($receiverId);
-
-        if (!$receiverUser) {
-            Log::error('Erreur de transaction : Utilisateur receiver introuvable', [
-                'receiver_id' => $receiverId,
-                'sender_id' => $senderId,
-                'type' => $type,
-                'amount' => $amount,
-            ]);
-            return; // Arrêtez l'exécution si l'utilisateur n'existe pas
-        }
-
-        // Créez la transaction
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = 'effectué';
-        $transaction->save();
     }
 
     protected function generateIntegerReference(): int

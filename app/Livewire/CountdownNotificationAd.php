@@ -176,7 +176,7 @@ class CountdownNotificationAd extends Component
                         'notification' => $this->notification,
                         'fournisseur' => $this->fournisseur,
                         'userId' => $this->user,
-                        'requiredAmount' => $this->requiredAmount
+                        'requiredAmount' => $this->requiredAmount,
                     ]);
                     break;
             }
@@ -322,26 +322,7 @@ class CountdownNotificationAd extends Component
             if (!$this->livreur && $this->notification->data['type_achat'] == 'Take Away') {
                 $this->retait_magasin();
             } else {
-                // Préparer les données pour le fournisseur
 
-                // $dataFournisseur = [
-                //     'code_unique' => $this->achatdirect->code_unique,
-                //     'fournisseurCode' => $fournisseurCode,
-                //     'livreurCode' => $livreurCode,
-                //     'livreur' => $this->notification->data['livreur'],
-                //     'fournisseur' => $this->fournisseur->id ?? null,
-                //     'client' => $this->achatdirect->userSender ?? null,
-                //     'achat_id' => $this->achatdirect->id ?? null,
-                //     'title' => 'Recuperation de la commande',
-                //     'description' => 'Remettez le colis au livreur.',
-                // ];
-
-                // if ($this->fournisseur) {
-                //     Notification::send($this->fournisseur, new mainleveAd($dataFournisseur));
-                //     event(new NotificationSent($this->fournisseur));
-
-                //     Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $fournisseurCode]);
-                // }
 
                 // Préparer les données pour le livreur
                 $dataLivreur = [
@@ -356,11 +337,10 @@ class CountdownNotificationAd extends Component
                     'title' => 'Livraison a effectuer',
                     'description' => 'Deplacez vous pour aller chercher le colis->',
                 ];
+
                 if ($this->livreur) {
                     Notification::send($this->livreur, new mainleveAd($dataLivreur));
                     event(new NotificationSent($this->livreur));
-
-                    Log::info('Notification envoyée au livreur', ['livreurId' => $this->livreur->id, 'code' => $livreurCode]);
                 }
             }
             $this->notification->update(['reponse' => 'mainleveclient']);

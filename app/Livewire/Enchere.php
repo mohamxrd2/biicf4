@@ -113,7 +113,7 @@ class Enchere extends Component
     }
 
 
-    public function commentoffgroup()
+    public function commentFormLivr()
     {
         if ($this->offgroupe->count) {
             $this->dispatch(
@@ -136,7 +136,7 @@ class Enchere extends Component
                     'numeric',
                     function ($attribute, $value, $fail) use ($offreInitiale) {
 
-                        if ($offreInitiale && $value < $offreInitiale) {
+                        if ($offreInitiale && $value <= $offreInitiale) {
                             $fail("Le prix doit être supérieur à {$offreInitiale}");
                         }
                     }
@@ -150,10 +150,10 @@ class Enchere extends Component
                 'id_prod' => $this->produit->id,
             ]);
 
+            $this->reset('prixTrade');
             broadcast(new CommentSubmitted($validatedData['prixTrade'], $comment->id))->toOthers();
 
             DB::commit();
-            $this->reset('prixTrade');
             // Optionnel: Ajouter une notification ou un message de succès
             session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
             $this->listenForMessage();
@@ -169,6 +169,8 @@ class Enchere extends Component
 
     public function render()
     {
-        return view('livewire.enchere');
+        return view('livewire.enchere', [
+            'errors' => $this->getErrorBag()
+        ]);
     }
 }
