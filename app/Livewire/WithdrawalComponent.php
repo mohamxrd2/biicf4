@@ -54,7 +54,7 @@ class WithdrawalComponent extends Component
             ->distinct()
             ->get();
     }
-    
+
 
     public function toggleAddNewRib()
     {
