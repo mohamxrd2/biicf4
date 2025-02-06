@@ -50,9 +50,9 @@ class WithdrawalComponent extends Component
     public function fetchUserRibs()
     {
         $this->ribs = RetraitRib::where('id_user', Auth::id())
-            ->select('rib', 'bank_name', 'cle_iban', 'code_bic', 'code_bank', 'code_guiche', 'numero_compte', 'iban')
-            ->distinct()
-            ->get();
+        ->select('rib', 'bank_name', 'cle_iban', 'code_bic', 'code_bank', 'code_guiche', 'numero_compte', 'iban')
+        ->distinct()
+        ->get();
     }
 
 
@@ -202,32 +202,57 @@ class WithdrawalComponent extends Component
         return rand(1000, 9999);
     }
     public function updatedSelectedRib($ribValue)
-    {
-        $selectedRib = null;
-
-        foreach ($this->ribs as $rib) {
-            if ($rib['rib'] === $ribValue) {
-                $selectedRib = $rib;
-                break;
-            }
-        }
-
-        if ($selectedRib) {
-            $this->bank_account = $selectedRib['rib'];
-            $this->bank_name = $selectedRib['bank_name'];
-            $this->cle_iban = $selectedRib['cle_iban'];
-            $this->code_bic = $selectedRib['code_bic'];
-            $this->code_bank = $selectedRib['code_bank'];
-            $this->code_guiche = $selectedRib['code_guiche'];
-            $this->numero_compte = $selectedRib['numero_compte'];
-            $this->iban = $selectedRib['iban'];
-        } else {
-            $this->reset(['bank_account', 'bank_name', 'cle_iban', 'code_bic', 'code_bank', 'code_guiche', 'numero_compte', 'iban']);
+{
+    // Find the selected RIB in the array
+    $selectedRib = null;
+    foreach ($this->ribs as $rib) {
+        if ($rib['rib'] === $ribValue) {
+            $selectedRib = $rib;
+            break;
         }
     }
 
+    // If no RIB is found, reset all fields
+    if (!$selectedRib) {
+        $this->reset([
+            'bank_account',
+            'bank_name',
+            'cle_iban',
+            'code_bic',
+            'code_bank',
+            'code_guiche',
+            'numero_compte',
+            'iban',
+        ]);
+        return;
+    }
 
+    // Try to find the full RIB details in the database
+    $recupRib = RetraitRib::where('rib', $selectedRib['rib'])->first();
 
+    // If RIB is found in the database, populate all fields
+    if ($recupRib) {
+        $this->bank_account = $recupRib->rib;
+        $this->bank_name = $recupRib->bank_name;
+        $this->cle_iban = $recupRib->cle_iban;
+        $this->code_bic = $recupRib->code_bic;
+        $this->code_bank = $recupRib->code_bank;
+        $this->code_guiche = $recupRib->code_guiche;
+        $this->numero_compte = $recupRib->numero_compte;
+        $this->iban = $recupRib->iban;
+    } 
+    // If not found in database, use available information from the array
+    else {
+        $this->bank_account = $selectedRib['rib'];
+        $this->bank_name = $selectedRib['bank_name'] ?? null;
+        $this->cle_iban = $selectedRib['cle_iban'] ?? null;
+        $this->code_bic = $selectedRib['code_bic'] ?? null;
+        $this->code_bank = $selectedRib['code_bank'] ?? null;
+        $this->code_guiche = $selectedRib['code_guiche'] ?? null;
+        $this->numero_compte = $selectedRib['numero_compte'] ?? null;
+        $this->iban = $selectedRib['iban'] ?? null;
+    }
+}
     public function initiateBankWithdrawal()
     {
         // Si un RIB est sélectionné, l'utiliser comme `bank_account`

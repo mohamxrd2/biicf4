@@ -1,24 +1,32 @@
 <?php
 
-use App\Http\Middleware\CacheControlMiddleware;
-use App\Jobs\TestQueueJob;
-use App\Livewire\AjoutConsommations;
-use App\Livewire\AjoutProduitServices;
 use App\Livewire\Cfa;
-use App\Livewire\NotificationShow;
-use App\Livewire\PostulerComponent;
-use App\Livewire\ProduitServiceDetails;
+use App\Livewire\Notif;
+use App\Livewire\Accueil;
+use App\Livewire\Tontine;
+use App\Jobs\TestQueueJob;
+use App\Livewire\Notification;
+use App\Livewire\ProduitOffre;
+use App\Livewire\Walletclient;
+use App\Livewire\Consommations;
 use App\Livewire\ProjetDetails;
 use App\Livewire\RechargeAgent;
-use App\Livewire\DetailLivraison;
-use App\Http\Controllers\OffreNegos;
-
 use App\Livewire\Remboursement;
+
+use App\Livewire\ProduitService;
+use App\Livewire\DetailLivraison;
+use App\Livewire\NotificationShow;
+use App\Livewire\PostulerComponent;
+use App\Http\Controllers\OffreNegos;
+use App\Livewire\AjoutConsommations;
+use App\Livewire\NotificationDetail;
 use Illuminate\Support\Facades\Auth;
 use App\Livewire\DetailsCreditProjet;
 use App\Livewire\WithdrawalComponent;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\AjoutProduitServices;
 use App\Http\Controllers\SmsController;
+use App\Livewire\ProduitServiceDetails;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsoController;
 use App\Http\Controllers\AdminsController;
@@ -28,6 +36,7 @@ use App\Http\Controllers\AdminChartController;
 use App\Http\Controllers\AppelOffreController;
 use App\Http\Controllers\AchatDirectController;
 use App\Http\Controllers\AdminWalletController;
+use App\Http\Middleware\CacheControlMiddleware;
 use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OffreClientControllerr;
@@ -37,14 +46,6 @@ use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
-use App\Livewire\Accueil;
-use App\Livewire\Consommations;
-use App\Livewire\Notif;
-use App\Livewire\Notification;
-use App\Livewire\NotificationDetail;
-use App\Livewire\ProduitOffre;
-use App\Livewire\ProduitService;
-use App\Livewire\Walletclient;
 
 Route::get('/', function () {
     return view('index');
@@ -229,6 +230,8 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('finance/detail-credit/{id}', [UserController::class, 'detailcredit'])->name('detailcredit');
         Route::get('finance/detail-credit-projet/{id}', [UserController::class, 'detailcreditprojet'])->name('detailcreditprojet');
         Route::get('finance/gagnant-negocation/{id}', [UserController::class, 'gagnantNegocation'])->name('gagnantNegocation');
+
+        Route::get('/tontine', Tontine::class)->name('tontine');
     });
 
 

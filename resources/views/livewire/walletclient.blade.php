@@ -233,11 +233,7 @@
                 <div class="w-full mt-5">
 
                     @if ($currentPage === 'transaction')
-                        <x-transaction-list
-                            :transactions="$transactions"
-                            :userId="$userId"
-                            :hasMoreTransactions="$hasMoreTransactions"
-                        />
+                        <x-transaction-list :transactions="$transactions" :userId="$userId" :hasMoreTransactions="$hasMoreTransactions" />
                     @elseif($currentPage === 'envoie')
                         @livewire('transfert-argent')
                     @elseif($currentPage === 'retrait')
@@ -283,8 +279,28 @@
                         </div>
                     </div>
                 </div>
+                <h2 class="mt-4 font-mono text-xl font-semibold">
+                    Tontine
+                </h2>
+
+                <a href="{{route('tontine')}}"
+                    class="inline-flex items-center justify-center mt-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 
+                text-white text-center font-bold rounded-md shadow-lg hover:from-purple-700 hover:to-blue-700 
+                transform hover:scale-105 transition-all duration-300 ease-in-out">
+                    Initier une tontine
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+
+
+
+
 
                 <h2 class="mt-4 font-mono text-xl font-semibold">Sous comptes</h2>
+
+
 
                 <div class="p-4 mt-4 bg-white border border-gray-300 rounded-xl">
                     <!-- Contenu du premier élément ici -->

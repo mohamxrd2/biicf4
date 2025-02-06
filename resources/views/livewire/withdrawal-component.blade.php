@@ -74,8 +74,7 @@
 
                 <!-- Formulaire de Retrait par virement -->
                 <template x-if="withdrawal_type === 'Retrait par virement'">
-                    <form wire:submit.prevent="initiateBankWithdrawal" wire:loading.class="opacity-50"
-                        class="w-full p-4 bg-white border border-gray-300 rounded-xl">
+                    <form wire:submit.prevent="initiateBankWithdrawal" wire:loading.class="opacity-50" class="w-full p-4 bg-white border border-gray-300 rounded-xl">
                         @if (session()->has('message'))
                             <div class="p-2 mb-4 text-white bg-green-500 rounded">
                                 {{ session('message') }}
@@ -91,128 +90,113 @@
                                 {{ session('info') }}
                             </div>
                         @endif
+                    
                         <h2 class="mb-4 text-xl font-semibold text-center">Retrait par Virement</h2>
+                    
                         <div class="mb-4">
-                            <input type="number" id="amountBank" wire:model="amountBank" min="1"
-                                class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Montant à retirer">
+                            <input type="number" id="amountBank" wire:model="amountBank" min="1" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Montant à retirer">
                             @error('amountBank')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
                         </div>
+                    
                         <div>
                             @if (count($ribs) > 0 && !$showAddNewRib)
                                 <!-- Sélection des RIB existants -->
                                 <div class="mb-4">
-                                    <label for="selected_rib" class="block text-sm font-medium text-gray-700">
-                                        Sélectionnez un compte
-                                    </label>
-                                    <select id="selected_rib" wire:model="selected_rib"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                    <label for="selected_rib" class="block text-sm font-medium text-gray-700">Sélectionnez un compte</label>
+                                    <select id="selected_rib" wire:model="selected_rib" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                         <option value="" selected disabled>-- Sélectionnez un compte --</option>
                                         @foreach ($ribs as $rib)
-                                            <option value="{{ $rib->rib }}">
-                                                {{ $rib->bank_name }} - {{ $rib->rib }}
-                                            </option>
+                                            <option value="{{ $rib->rib }}">{{ $rib->bank_name }} - {{ $rib->rib }}</option>
                                         @endforeach
                                     </select>
                                     @error('selected_rib')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-
-                                <button type="button" wire:click="toggleAddNewRib"
-                                    class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">Ajouter un
-                                    autre compte bancaire</button>
+                    
+                                <button type="button" wire:click="toggleAddNewRib" class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">Ajouter un autre compte bancaire</button>
                             @else
                                 <!-- Champs pour ajouter un nouveau RIB -->
-                                <p class="py-2 text-sm text-gray-400 italic">Nom</p>
-                                <div class="">
-                                    <input type="text" wire:model="bank_name"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Nom de la banque">
+                                <div class="mb-4">
+                                    <label for="bank_name" class="block text-sm font-medium text-gray-700">Nom de la banque</label>
+                                    <input type="text" id="bank_name" wire:model="bank_name" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Nom de la banque">
                                     @error('bank_name')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <p class="py-2 text-sm text-gray-400 italic">Clé</p>
+                    
                                 <div class="mb-4">
-                                    <input type="text" id="bank_account" wire:model="bank_account"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Clé Rib">
+                                    <label for="bank_account" class="block text-sm font-medium text-gray-700">Clé RIB</label>
+                                    <input type="text" id="bank_account" wire:model="bank_account" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Clé RIB">
                                     @error('bank_account')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="">
-                                    <input type="text" wire:model="cle_iban"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Clé Iban">
+                    
+                                <div class="mb-4">
+                                    <label for="cle_iban" class="block text-sm font-medium text-gray-700">Clé IBAN</label>
+                                    <input type="text" id="cle_iban" wire:model="cle_iban" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Clé IBAN">
                                     @error('cle_iban')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <p class="py-2 text-sm text-gray-400 italic">Code</p>
+                    
                                 <div class="mb-4">
-                                    <input type="text" wire:model="code_bic"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Code Bic">
+                                    <label for="code_bic" class="block text-sm font-medium text-gray-700">Code BIC</label>
+                                    <input type="text" id="code_bic" wire:model="code_bic" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Code BIC">
                                     @error('code_bic')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
+                    
                                 <div class="mb-4">
-                                    <input type="text" wire:model="code_bank"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Code Banque">
+                                    <label for="code_bank" class="block text-sm font-medium text-gray-700">Code Banque</label>
+                                    <input type="text" id="code_bank" wire:model="code_bank" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Code Banque">
                                     @error('code_bank')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
+                    
                                 <div class="mb-4">
-                                    <input type="text" wire:model="code_guiche"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Code Guiché">
+                                    <label for="code_guiche" class="block text-sm font-medium text-gray-700">Code Guichet</label>
+                                    <input type="text" id="code_guiche" wire:model="code_guiche" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Code Guichet">
                                     @error('code_guiche')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="">
-                                    <input type="text" wire:model="numero_compte"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Numéro de compte">
+                    
+                                <div class="mb-4">
+                                    <label for="numero_compte" class="block text-sm font-medium text-gray-700">Numéro de compte</label>
+                                    <input type="text" id="numero_compte" wire:model="numero_compte" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Numéro de compte">
                                     @error('numero_compte')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <p class="py-2 text-sm text-gray-400 italic">Iban</p>
+                    
                                 <div class="mb-4">
-                                    <input type="text" wire:model="iban"
-                                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Code Guiché">
+                                    <label for="iban" class="block text-sm font-medium text-gray-700">IBAN</label>
+                                    <input type="text" id="iban" wire:model="iban" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="IBAN">
                                     @error('iban')
                                         <span class="text-xs text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
-
-                                <button type="reset" wire:click="toggleAddNewRib"
-                                    class="px-4 py-2 text-white bg-gray-500 rounded-md hover:bg-gray-600">Annuler</button>
+                    
+                                <button type="reset" wire:click="toggleAddNewRib" class="px-4 py-2 text-white bg-gray-500 rounded-md hover:bg-gray-600">Annuler</button>
                             @endif
-
                         </div>
-
+                    
                         <div class="relative mt-6">
-                            <button type="submit"
-                                class="w-full py-3 font-medium text-white transition-colors bg-purple-600 rounded-md hover:bg-purple-700"
-                                wire:loading.attr="disabled">
+                            <button type="submit" class="w-full py-3 font-medium text-white transition-colors bg-purple-600 rounded-md hover:bg-purple-700" wire:loading.attr="disabled">
                                 Confirmer Retrait
                             </button>
-                            <div wire:loading wire:target="initiateBankWithdrawal"
-                                class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75 rounded-md">
+                            <div wire:loading wire:target="initiateBankWithdrawal" class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75 rounded-md">
                                 <span class="font-semibold text-gray-700">Traitement en cours...</span>
                             </div>
                         </div>
                     </form>
+                    
                 </template>
             @endif
         </div>
