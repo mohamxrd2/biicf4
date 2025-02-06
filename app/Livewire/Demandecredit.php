@@ -13,7 +13,6 @@ use Livewire\Component;
 
 class Demandecredit extends Component
 {
-    public $showSection = false;
     public $referenceCode;
     public $price;
     public $creditotal;
@@ -41,7 +40,6 @@ class Demandecredit extends Component
         // Vérifier si l'utilisateur est éligible
         if ($isEligible) {
             // Afficher la section associée
-            $this->showSection = true;
 
             // Mise à jour des propriétés avec les valeurs transmises
             $this->sommedemnd = $prix;           // Prix du produit ou montant demandé

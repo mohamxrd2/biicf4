@@ -17,9 +17,9 @@ class CommissionService
      * @param float $totalCommissions
      * @return void
      */
-    public function handleCommissions(float $totalCommissions): void
+    public function handleCommissions(float $totalCommissions, int $parainFournisseur): void
     {
-        $remainingCommissions = $this->distributeToParrains($totalCommissions);
+        $remainingCommissions = $this->distributeToParrains($totalCommissions, $parainFournisseur);
         $this->distributeToAdmin($remainingCommissions);
     }
 
@@ -29,51 +29,64 @@ class CommissionService
      * @param float $commissions
      * @return float Remaining commissions after sponsor distribution
      */
-    private function distributeToParrains(float $commissions): float
+    private function distributeToParrains(float $commissions, $parainFournisseur)
     {
-        $currentParrain = auth()->user()->parrain;
-        $level = 1;
+        try {
+            $transactionService = new TransactionService();
 
-        while ($currentParrain && $level <= 3) {
+            $currentParrain = auth()->user()->parrain;
+            $level = 1;
+
             $parrainUser = User::find($currentParrain);
+            $parainFournisseur = User::find($parainFournisseur);
 
-            if (!$parrainUser) {
+            if (!$parrainUser && !$parainFournisseur) {
                 Log::warning('Parrain introuvable', [
                     'parrain_id' => $currentParrain,
-                    'level' => $level,
+                    '$parainFournisseur' => $parainFournisseur,
                 ]);
-                break;
+                return $commissions;
             }
 
-            $parrainWallet = Wallet::where('user_id', $parrainUser->id)->first();
+            // Process parrains automatically
+            foreach ([$parrainUser, $parainFournisseur] as $parrain) {
+                if (!$parrain) continue;
 
-            if ($parrainWallet) {
-                $commissionForParrain = $commissions * 0.01; // 1% per level
-                $parrainWallet->increment('balance', $commissionForParrain);
-                $commissions -= $commissionForParrain;
+                $wallet = Wallet::firstOrCreate(
+                    ['user_id' => $parrain->id],
+                    ['balance' => 0]
+                );
 
-                Log::info("Commission envoyée au parrain niveau $level", [
-                    'parrain_id' => $parrainUser->id,
-                    'commission' => $commissionForParrain,
-                ]);
+                $commission = $commissions * 0.10;
+                $wallet->increment('balance', $commission);
+                $commissions -= $commission;
 
-                $this->createTransaction(
+
+                $transactionService->createTransaction(
                     auth()->id(),
-                    $parrainUser->id,
+                    $parrain->id,
                     'Commission',
-                    $commissionForParrain,
+                    $commission,
                     $this->generateIntegerReference(),
-                    "Commission niveau $level",
+                    "Commission de parrainage niveau $level",
                     'COC'
                 );
+
+                Log::info("Commission envoyée au parrain niveau $level", [
+                    'parrain_id' => $parrain->id,
+                    'commission' => $commission,
+                ]);
             }
 
-            $currentParrain = $parrainUser->parrain;
-            $level++;
+            return $commissions;
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la distribution aux parrains:', [
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
         }
-
-        return $commissions;
     }
+
     /**
      * Distribute remaining commissions to the admin wallet.
      *
@@ -82,17 +95,22 @@ class CommissionService
      */
     private function distributeToAdmin(float $commissions): void
     {
-        $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
+        try {
+            $transactionService = new TransactionService();
 
-        if ($adminWallet) {
+            $adminWallet = ComissionAdmin::firstOrCreate(
+                ['admin_id' => 1],
+                ['balance' => 0]
+            );
+
             $adminWallet->increment('balance', $commissions);
 
             Log::info('Commission envoyée à l\'admin.', [
                 'admin_id' => 1,
                 'commissions' => $commissions,
             ]);
-
-            $this->createTransaction(
+            
+            $transactionService->createTransaction(
                 auth()->id(),
                 1, // ID de l'admin
                 'Commission',
@@ -101,54 +119,15 @@ class CommissionService
                 'Commission de BICF',
                 'COC'
             );
-        } else {
-            Log::error('Erreur : Portefeuille admin introuvable', [
+
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la distribution à l\'admin:', [
+                'error' => $e->getMessage(),
                 'admin_id' => 1,
                 'commissions' => $commissions,
             ]);
+            throw $e;
         }
-    }
-
-    /**
-     * Create a transaction record.
-     *
-     * @param int $senderId
-     * @param int $receiverId
-     * @param string $type
-     * @param float $amount
-     * @param int $reference_id
-     * @param string $description
-     * @param string $type_compte
-     * @return void
-     */
-    public function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $type_compte): void
-    {
-        // Vérifiez si l'utilisateur receiver existe
-        $receiverUser = User::find($receiverId);
-
-        if (!$receiverUser) {
-            Log::error('Erreur de transaction : Utilisateur receiver introuvable', [
-                'receiver_id' => $receiverId,
-                'sender_id' => $senderId,
-                'type' => $type,
-                'amount' => $amount,
-            ]);
-            return; // Arrêtez l'exécution si l'utilisateur n'existe pas
-        }
-
-        // Créez la transaction
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = 'effectué';
-        $transaction->save();
-
-
     }
 
     protected function generateIntegerReference(): int

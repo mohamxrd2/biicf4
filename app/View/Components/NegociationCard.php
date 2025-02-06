@@ -11,6 +11,7 @@ class NegociationCard extends Component
     public $isNegociationActive;
     public $commentCount;
     public $name;
+    public $mot;
 
     /**
      * Create a new component instance.
@@ -20,13 +21,14 @@ class NegociationCard extends Component
      * @param  bool  $isNegociationActive
      * @param  int  $commentCount
      */
-    public function __construct($name, $lastActivity = null, $nombreParticipants = 0, $isNegociationActive = false, $commentCount = 0)
+    public function __construct($name, $mot, $lastActivity = null, $nombreParticipants = 0, $isNegociationActive = false, $commentCount = 0)
     {
         $this->lastActivity = $lastActivity;
         $this->nombreParticipants = $nombreParticipants;
         $this->isNegociationActive = $isNegociationActive;
         $this->commentCount = $commentCount;
         $this->name = $name;
+        $this->mot = $mot;
     }
 
     /**

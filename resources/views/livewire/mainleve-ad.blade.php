@@ -1,12 +1,12 @@
 <div>
     <!-- Main livreur -->
 
-    @if ($this->notification->data['fournisseur'] == $this->user)
+    @if ($notification->data['fournisseur'] == $user)
         @include('biicf.components.fournisseur')
     @endif
 
 
-    @if ($this->notification->data['livreur'] == $this->user)
+    @if ($notification->data['livreur'] == $user)
         @if ($showMainlever)
             @include('biicf.components.mainleveClick')
         @else

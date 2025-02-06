@@ -65,7 +65,7 @@
                                     <span class="font-medium">lieu de recuperation :
                                     </span>{{ $achatdirect->userTraderI->commune }}
                                 </p>
-                                <button wire:click="sendNotification({{ $userLocation->user_id }})"
+                                <button wire:click="sendNotification({{ $achatdirect->userTraderI->id }})"
                                     wire:loading.attr="disabled"
                                     class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                                     <span wire:loading.remove>

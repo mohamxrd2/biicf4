@@ -19,91 +19,8 @@
 
                 <!-- Sélecteur de catégorie -->
                 <div x-data="{ selectedCategories: @entangle('selectedCategories') }">
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Entrez le nom de la
-                                catégorie</label>
-                            <input type="text" wire:model.debounce.30ms="categorie"
-                                class="w-full p-2 border border-gray-300 rounded-md"
-                                placeholder="Entrez le nom de la catégorie">
-                            @error('categorie')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-
-                            <select multiple x-model="selectedCategories"
-                                class="w-full p-2 border border-gray-300 rounded-md mt-2" @change="updateProducts()">
-                                @foreach ($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->categorie_produit_services }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div x-data="{ selectedProduits: @entangle('selectedProduits') }">
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Recherchez votre produit ou
-                                    service</label>
-                                <input type="text" wire:model.live="searchTerm"
-                                    class="w-full p-2 border border-gray-300 rounded-md"
-                                    placeholder="Entrez le nom du produit">
-
-                                <select id="product-select" multiple x-model="selectedProduits"
-                                    class="w-full p-2 border border-gray-300 rounded-md mt-2">
-                                    @foreach ($produits as $produit)
-                                        <option value="{{ $produit->id }}">{{ $produit->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-
-
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <!-- Référence -->
-                        <div class="col-span-1 md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-                                Référence (
-                                <span>Générer</span>
-                                <input wire:click="toggleGenerateReference" type="checkbox"
-                                    class="w-4 h-4 border border-gray-300 rounded-md" />
-                                )
-                            </label>
-                            <input type="text" wire:model="reference"
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici..."
-                                readonly>
-                            @error('reference')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Type -->
-                        <div class="col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                            <select x-model="type" wire:model='type'
-                                class="w-full p-2 border border-gray-300 rounded-md">
-                                <option value="">Choisissez votre type</option>
-                                <option value="Produit">Produit</option>
-                                <option value="Service">Service</option>
-                            </select>
-                            @error('type')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Nom -->
-                        <div class="col-span-1 md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                            <input type="text" wire:model='name' id="product-name" :disabled="locked"
-                                class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici..." />
-                            @error('name')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-
-                    </div>
+                    <!-- Include the new component with props -->
+                    <x-product-category-form :categories="$categories" :produits="$produits" />
 
 
                     <!-- Détails du produit ou du service -->
@@ -146,7 +63,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité<span class="text-red-500">*</span></label>
                                 <input type="text" wire:model='qteProd'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                                 @error('qteProd')
@@ -155,7 +72,8 @@
 
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité
+                                    <span class="text-red-500">*</span></label>
                                 <select wire:model='periodicite' class="w-full p-2 border border-gray-300 rounded-md">
                                     <option value="">Choisissez une périodicité</option>
                                     <option value="jour">Par Jour</option>
@@ -174,17 +92,7 @@
                         <div class="grid grid-cols-2 gap-6 mb-6">
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Spécification</label>
-                                <input type="text" wire:model='specification' :disabled="locked"
-                                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
-                                @error('specification')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Prix</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Prix<span class="text-red-500">*</span></label>
                                 <input type="text" wire:model='prix'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                                 @error('prix')
@@ -200,9 +108,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
                             <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-700 mb-2">Prestation/Description<span
-                                    class="text-red-500 10px">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Prestation/Description</label>
                                 <input type="text" wire:model='descrip' :disabled="locked"
                                     class="w-full p-2 border border-gray-300 rounded-md"
                                     placeholder="Petite Description">
@@ -211,8 +117,8 @@
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
-                                <input type="number" wire:model='Quantite' 
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité<span class="text-red-500">*</span></label>
+                                <input type="number" wire:model='Quantite'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="">
                                 @error('Quantite')
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -220,7 +126,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Périodicité<span class="text-red-500">*</span></label>
                                 <select wire:model='periodicite' class="w-full p-2 border border-gray-300 rounded-md">
                                     <option value="">Choisissez une périodicité</option>
                                     <option value="jour">Par Jour</option>
@@ -236,7 +142,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Prix Unitaire<span
-                                    class="text-red-500 10px">*</span></label>
+                                        class="text-red-500 10px">*</span></label>
                                 <input type="text" wire:model='prix'
                                     class="w-full p-2 border border-gray-300 rounded-md" placeholder="Tapez ici...">
                                 @error('prix')

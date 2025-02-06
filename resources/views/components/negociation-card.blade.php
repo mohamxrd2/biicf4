@@ -23,7 +23,7 @@
                 <!-- Tooltip -->
                 <div id="tooltip-coc" role="tooltip"
                     class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                    Le prix le plus bas remportera la négociation. <br />
+                    Le prix le plus {{ $mot }} remportera la négociation. <br />
                     Le gagnant recevra une notification.
                     <div class="tooltip-arrow" data-popper-arrow></div>
                 </div>
@@ -66,7 +66,7 @@
                             {{ $name }}
                         </h1>
                     </div>
-                    <div class="flex flex-wrap items-center gap-4">
+                    {{-- <div class="flex flex-wrap items-center gap-4">
                         <span
                             class="flex items-center bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm hover:bg-opacity-30 transition-colors cursor-pointer">
                             <i class="fas fa-calendar-alt mr-2"></i>
@@ -77,7 +77,7 @@
                             <i class="fas fa-map-marker-alt mr-2"></i>
                             Distance: 250 km
                         </span>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <!-- Statut et actions -->

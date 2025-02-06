@@ -17,6 +17,7 @@ use App\Models\gelement;
 use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
 use App\Notifications\Confirmation;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -27,15 +28,7 @@ class AchatDirectGroupe extends Component
     public $produit;
     public $userId;
     public $selectedOption = "";
-    public $options = [
-        'Achat avec livraison',
-        'Take Away',
-        'Reservation',
-    ];
-    public $optionsC = [
-        'Take Away',
-        'Reservation',
-    ];
+
     //
     public $quantité = "";
     public $localite = "";
@@ -56,6 +49,18 @@ class AchatDirectGroupe extends Component
     public $dayPeriod = "";
     public $dayPeriodFin = "";
 
+    public $userBalance;
+    public $totalCost;
+    public $isButtonDisabled = false;
+    public $isButtonHidden = false;
+    public $currentPage = 'achat';
+    public $errorMessage = ''; // Add this property
+    protected $listeners = ['navigate' => 'setPage'];
+    public function setPage($page)
+    {
+        $this->currentPage = $page;
+    }
+
     public function mount($id)
     {
         $this->produitId = $id;
@@ -69,7 +74,46 @@ class AchatDirectGroupe extends Component
         $this->idProd = $this->produit->id;
         $this->prix = $this->produit->prix;
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
+        // Récupérer l'identifiant de l'utilisateur connecté
+        $userId = Auth::guard('web')->id();
 
+        // Récupérer le portefeuille de l'utilisateur
+        $userWallet = Wallet::where('user_id', $userId)->first();
+
+        // Assume user balance is fetched from the authenticated user
+        $this->userBalance = $userWallet ?? 0;
+        $this->totalCost = (int)$this->quantité * $this->prix;
+    }
+    public function updatedQuantité()
+    {
+
+        $this->totalCost = (int)$this->quantité * $this->prix;
+
+        // Vérification des conditions selon le type
+        if ($this->type === 'Produit') {
+            $qteMin = $this->produit->qteProd_min;
+            $qteMax = $this->produit->qteProd_max;
+
+            if ($this->quantité < $qteMin || $this->quantité > $qteMax) {
+                $this->errorMessage = "La quantité doit être comprise entre {$qteMin} et {$qteMax}.";
+                $this->isButtonHidden = false;
+                $this->isButtonDisabled = true;
+                return; // Arrêter l'exécution ici, car les autres vérifications ne sont pas nécessaires
+            }
+        }
+
+        // Vérification du solde utilisateur
+        if ($this->totalCost > $this->userBalance->balance) {
+            $solde = $this->userBalance->balance;
+            $this->errorMessage = "Vous n'avez pas assez de fonds pour procéder. Votre solde est : {$solde} FCFA.";
+            $this->isButtonHidden = true;
+            $this->isButtonDisabled = true;
+        } else {
+            // Si toutes les vérifications passent
+            $this->errorMessage = ''; // Clear the error message
+            $this->isButtonHidden = false;
+            $this->isButtonDisabled = false;
+        }
     }
     protected function generateUniqueReference()
     {
@@ -81,6 +125,10 @@ class AchatDirectGroupe extends Component
         // Valider les données
         $validated = $this->validateData();
 
+        if ($validated === false) {
+            return; // Arrête l'exécution si la validation échoue
+        }
+
         $userId = Auth::id();
         if (!$userId) {
             Log::error('Utilisateur non authentifié.');
@@ -88,12 +136,14 @@ class AchatDirectGroupe extends Component
             return;
         }
 
-        $montantTotal = $validated['quantité'] * $validated['prix'];
+        $montantTotal = $this->totalCost;
         $userWallet = $this->getUserWallet($userId);
-        if (!$userWallet || !$this->hasSufficientFunds($userWallet, $montantTotal)) {
-            return;
-        }
 
+        $this->updatedQuantité();
+        // Vérifier si l'option sélectionnée est vide
+        if (empty($this->selectedOption)) {
+            $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');
+        }
         // Commencer la transaction
         DB::beginTransaction();
         try {
@@ -114,26 +164,31 @@ class AchatDirectGroupe extends Component
             // Mettre à jour le portefeuille
             $this->updateWalletBalance($userWallet, $montantTotal);
 
+
+
             // Créer les transactions
             $reference_id = $this->generateIntegerReference();
+            $description = $this->type === 'Produit'
+                ? 'Gele Pour Achat de ' . $validated['nameProd']
+                : 'Gele Pour Service de ' . $validated['nameProd'];
+
             $this->createTransaction(
                 $userId,
                 $validated['userTrader'],
                 'Gele',
                 $montantTotal,
                 $reference_id,
-                'Gele Pour Achat de ' . $validated['nameProd'],
+                $description,
                 'effectué',
                 'COC'
             );
-
             // Gérer les notifications
             $this->sendNotifications($validated, $achat, $codeUnique);
 
             DB::commit();
 
             // Réinitialiser les champs du formulaire
-            $this->resetForm();
+            $this->reset(['quantité', 'localite', 'dateTot', 'dateTard', 'timeStart', 'timeEnd', 'dayPeriod', 'dayPeriodFin']);
 
             // Émettre un événement de succès
             $this->dispatch('formSubmitted', 'Achat Affectué Avec Succès');
@@ -148,62 +203,145 @@ class AchatDirectGroupe extends Component
         }
     }
 
+
     private function validateData()
     {
-        $validated = $this->validate([
+        $baseRules = [
             'quantité' => 'required|integer',
             'localite' => 'required|string|max:255',
             'selectedOption' => 'required|string',
-            'dateTot' => $this->selectedOption === 'Take Away' ? 'required|date' : 'nullable|date',
-            'dateTard' => 'nullable|date',
-            'timeStart' => 'nullable|date_format:H:i',
-            'timeEnd' => 'nullable|date_format:H:i',
-            'dayPeriod' => 'nullable|string',
-            'dayPeriodFin' => 'nullable|string',
             'userTrader' => 'required|exists:users,id',
             'nameProd' => 'required|string',
             'userSender' => 'required|exists:users,id',
             'photoProd' => 'required|string',
             'idProd' => 'required|exists:produit_services,id',
             'prix' => 'required|numeric',
-        ]);
+        ];
+
+        $timeRules = [];
+        if ($this->selectedOption === 'Take Away') {
+            if ($this->type == 'Service') {
+                $timeRules = [
+                    'dateTot' => 'required|date',
+                    'dateTard' => 'required|date',
+                    'timeStart' => 'nullable|date_format:H:i',
+                    'timeEnd' => 'nullable|date_format:H:i',
+                    'dayPeriod' => 'nullable|string',
+                    'dayPeriodFin' => 'nullable|string',
+                ];
+            } else {
+                $timeRules = [
+                    'dateTot' => 'nullable|date',
+                    'dateTard' => 'nullable|date',
+                    'timeStart' => 'nullable|date_format:H:i',
+                    'dayPeriod' => 'nullable|string',
+                ];
+            }
+        }
+
+        $validated = $this->validate(array_merge($baseRules, $timeRules));
 
         if ($this->selectedOption === 'Take Away') {
-            $this->validateTimeStartAndDayPeriod();
+            if ($this->type == 'Service') {
+                if (!$this->validateServiceTimes()) {
+                    return false;
+                }
+            } else {
+                if (!$this->validateTimeStartAndDayPeriod()) {
+                    return false;
+                }
+            }
         }
 
         return $validated;
     }
+
     private function validateTimeStartAndDayPeriod()
     {
-        if (empty($this->timeStart) && empty($this->dayPeriod)) {
-            $this->addError('timeStart', 'Vous devez remplir soit Heure de début soit Période.');
-            $this->addError('dayPeriod', 'Vous devez remplir soit Heure de début soit Période.');
-        } elseif (!empty($this->timeStart) && !empty($this->dayPeriod)) {
-            $this->addError('timeStart', 'Vous ne pouvez pas remplir les deux champs en même temps.');
-            $this->addError('dayPeriod', 'Vous ne pouvez pas remplir les deux champs en même temps.');
-        } else {
-            $this->resetErrorBag(['timeStart', 'dayPeriod']);
+        // Check if either timeStart or dayPeriod is filled (but not both)
+        $hasTimeStart = !empty($this->timeStart);
+        $hasDayPeriod = !empty($this->dayPeriod);
+
+        if (!$hasTimeStart && !$hasDayPeriod) {
+            $this->addError('time', 'Vous devez remplir soit Heure de début soit Période.');
+            return false;
         }
+
+        if ($hasTimeStart && $hasDayPeriod) {
+            $this->addError('time', 'Vous ne pouvez pas remplir les deux champs en même temps.');
+            return false;
+        }
+
+        $this->resetErrorBag(['timeStart', 'dayPeriod']);
+        return true;
     }
+    private function validateServiceTimes()
+    {
+        if (empty($this->dateTot) || empty($this->dateTard)) {
+            $this->addError('time', 'Les dates de début et de fin sont requises pour un service.');
+            return false;
+        }
+
+        // Check if time fields and period fields are filled
+        $hasTimeFields = !empty($this->timeStart) && !empty($this->timeEnd);
+        $hasPeriodFields = !empty($this->dayPeriod) && !empty($this->dayPeriodFin);
+
+        // Validate mutual exclusivity: either time fields or period fields, but not both
+        if ($hasTimeFields && $hasPeriodFields) {
+            $this->addError('time', 'Vous ne pouvez pas utiliser à la fois les heures précises et les périodes.');
+            return false;
+        }
+
+        // Ensure at least one group is filled
+        if (!$hasTimeFields && !$hasPeriodFields) {
+            $this->addError('time', 'Vous devez remplir soit les heures précises soit les périodes de la journée.');
+            return false;
+        }
+
+        // Validate the selected group
+        if ($hasTimeFields) {
+            // Ensure both timeStart and timeEnd are filled
+            if (empty($this->timeStart) || empty($this->timeEnd)) {
+                $this->addError('time', 'Les heures de début et de fin doivent être remplies.');
+                return false;
+            }
+
+            // Validate time range
+            $startDateTime = Carbon::parse($this->dateTot . ' ' . $this->timeStart);
+            $endDateTime = Carbon::parse($this->dateTard . ' ' . $this->timeEnd);
+
+            if ($endDateTime <= $startDateTime) {
+                $this->addError('time', 'La date et heure de fin doivent être après la date et heure de début.');
+                return false;
+            }
+        }
+
+        if ($hasPeriodFields) {
+            // Ensure both dayPeriod and dayPeriodFin are filled
+            if (empty($this->dayPeriod) || empty($this->dayPeriodFin)) {
+                $this->addError('time', 'Les périodes de début et de fin doivent être remplies.');
+                return false;
+            }
+
+            // Validate date range for periods
+            $startDate = Carbon::parse($this->dateTot);
+            $endDate = Carbon::parse($this->dateTard);
+
+            if ($endDate < $startDate) {
+                $this->addError('time', 'La date de fin doit être après ou égale à la date de début.');
+                return false;
+            }
+        }
+
+        // Reset error bag for these fields if validation passes
+        $this->resetErrorBag(['dateTot', 'dateTard', 'timeStart', 'timeEnd', 'dayPeriod', 'dayPeriodFin']);
+        return true;
+    }
+
 
     private function getUserWallet($userId)
     {
         return Wallet::where('user_id', $userId)->first();
-    }
-
-    private function hasSufficientFunds($userWallet, $montantTotal)
-    {
-        if ($userWallet->balance < $montantTotal) {
-            Log::warning('Fonds insuffisants.', [
-                'userId' => $userWallet->user_id,
-                'requiredAmount' => $montantTotal,
-                'walletBalance' => $userWallet->balance,
-            ]);
-            session()->flash('error', 'Fonds insuffisants pour effectuer cet achat.');
-            return false;
-        }
-        return true;
     }
 
     private function updateWalletBalance($userWallet, $montantTotal)
@@ -219,12 +357,12 @@ class AchatDirectGroupe extends Component
             'montantTotal' => $montantTotal,
             'type_achat' => 'achatDirect',
             'localite' => $validated['localite'],
-            'date_tot' => $validated['dateTot'],
-            'date_tard' => $validated['dateTard'],
-            'timeStart' => $validated['timeStart'],
-            'timeEnd' => $validated['timeEnd'],
-            'dayPeriod' => $validated['dayPeriod'],
-            'dayPeriodFin' => $validated['dayPeriodFin'],
+            'date_tot' => $validated['dateTot'] ?? null,
+            'date_tard' => $validated['dateTard'] ?? null,
+            'timeStart' => $validated['timeStart'] ?? null,
+            'timeEnd' => $validated['timeEnd'] ?? null,
+            'dayPeriod' => $validated['dayPeriod'] ?? null,
+            'dayPeriodFin' => $validated['dayPeriodFin'] ?? null,
             'userTrader' => $validated['userTrader'],
             'userSender' => $validated['userSender'],
             'specificite' => $this->produit->specification,
@@ -251,6 +389,7 @@ class AchatDirectGroupe extends Component
         $achatUser = [
             'nameProd' => $validated['nameProd'],
             'idProd' => $validated['idProd'],
+            'type_achat' => $this->selectedOption,
             'code_unique' => $codeUnique,
             'idAchat' => $achat->id,
             'title' => 'Nouvelle commande',
@@ -260,25 +399,8 @@ class AchatDirectGroupe extends Component
         $owner = User::find($validated['userTrader']);
         Notification::send($owner, new AchatBiicf($achatUser));
         event(new NotificationSent($owner));
-
-        // Récupérez la notification pour mise à jour (en supposant que vous pouvez la retrouver via son ID ou une autre méthode)
-        $notification = $owner->notifications()->where('type', AchatBiicf::class)->latest()->first();
-
-        if ($notification) {
-            if ($this->selectedOption === 'Take Away') {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => 'Take Away']);
-            } else {
-                // Mettez à jour le champ 'type_achat' dans la notification
-                $notification->update(['type_achat' => 'Delivery']);
-            }
-        }
     }
 
-    private function resetForm()
-    {
-        $this->reset(['quantité', 'localite']);
-    }
 
 
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
@@ -304,8 +426,10 @@ class AchatDirectGroupe extends Component
         return (int) $timestamp;
     }
 
-    public function requestCredit()
+    public function credit()
     {
+        // $this->dispatch('navigate', 'credit');
+
         // Récupérer l'utilisateur actuellement connec
         $user = auth()->user();
         $userNumber = $user->phone;
@@ -358,7 +482,7 @@ class AchatDirectGroupe extends Component
 
         // Émettre l'événement si l'utilisateur est éligible
         if ($isEligible) {
-            $this->dispatch('userIsEligible', $isEligible, $montantmax, $prix, $quantiteMax, $nameProd, $quantiteMin);
+            $this->dispatch('navigate', 'credit');
         }
     }
 

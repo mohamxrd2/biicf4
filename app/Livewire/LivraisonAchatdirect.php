@@ -63,12 +63,9 @@ class LivraisonAchatdirect extends Component
         if (!$this->achatdirect) {
             throw new \Exception("Achat direct introuvable pour l'ID: " . $this->notification->data['achat_id']);
         }
-        
-        // First - Handle users locations for OffreGrouper
-        if ($this->achatdirect->type_achat === 'OffreGrouper') {
-            $this->loadUsersLocations();
-        }
 
+        // Update the locations loading logic
+        $this->loadLocations();
 
         // Déterminer la valeur de $Valuecode_unique
         switch ($this->achatdirect->type_achat) {
@@ -82,24 +79,36 @@ class LivraisonAchatdirect extends Component
                 $this->Valuecode_unique = $this->achatdirect->code_unique;
         }
 
-
-
         $countdown = Countdown::where('code_unique', $this->Valuecode_unique)
             ->where('is_active', false)
             ->first();
 
         if ($countdown && !$this->achatdirect->count) {
-            dd($this->achatdirect->update(['count' => true]));
+            $this->achatdirect->update(['count' => true]);
         }
 
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
     }
-    private function loadUsersLocations()
+
+    private function loadLocations()
     {
-        $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
-            ->select('user_id', 'localite')
-            ->get();
+        switch ($this->achatdirect->type_achat) {
+            case 'OffreGrouper':
+                $this->usersLocations = userquantites::where('code_unique', $this->achatdirect->code_unique)
+                    ->select('user_id', 'localite')
+                    ->distinct()
+                    ->get();
+                break;
+            default:
+                $this->usersLocations = collect([$this->achatdirect->userTraderI])
+                    ->map(function($user) {
+                        return (object)[
+                            'localite' => $user->commune
+                        ];
+                    });
+                break;
+        }
     }
 
     #[On('echo:comments,CommentSubmitted')]
@@ -122,6 +131,7 @@ class LivraisonAchatdirect extends Component
             ->whereNotNull('prixTrade')
             ->orderBy('created_at', 'asc')
             ->first();
+
         $this->isNegociationActive = !$this->achatdirect->count;
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
@@ -166,8 +176,6 @@ class LivraisonAchatdirect extends Component
                     }
                 ]
             ]);
-
-
 
             // Créer un commentaire
             $comment = Comment::create([

@@ -61,7 +61,6 @@ class Enchere extends Component
             if (!$this->idProd) {
                 throw new Exception("ID du produit manquant");
             }
-
             $this->produit = ProduitService::findOrFail($this->idProd);
             $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->firstOrFail();
 
@@ -95,12 +94,10 @@ class Enchere extends Component
 
         $this->prixLePlusBas = Comment::where('code_unique', $code_unique)
             ->whereNotNull('prixTrade')
-            ->min('prixTrade');
+            ->max('prixTrade');
 
-        $this->offreIniatiale = Comment::where('code_unique', $code_unique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
+        $this->offreIniatiale =  $this->produit->prix;
+
 
         $this->isNegociationActive = !$this->offgroupe->count;
 
@@ -116,7 +113,7 @@ class Enchere extends Component
     }
 
 
-    public function commentoffgroup()
+    public function commentFormLivr()
     {
         if ($this->offgroupe->count) {
             $this->dispatch(
@@ -130,18 +127,17 @@ class Enchere extends Component
 
         try {
             DB::beginTransaction();
-            $offreInitiale = Comment::where('code_unique', $code_unique)
-                ->whereNotNull('prixTrade')
-                ->orderBy('created_at', 'asc')
-                ->first();
+
+            $offreInitiale = $this->produit->prix;
+
             $validatedData = $this->validate([
                 'prixTrade' => [
                     'required',
                     'numeric',
                     function ($attribute, $value, $fail) use ($offreInitiale) {
 
-                        if ($offreInitiale && $value <= $offreInitiale->prixTrade) {
-                            $fail("Le prix doit être supérieur à {$offreInitiale->prixTrade}");
+                        if ($offreInitiale && $value <= $offreInitiale) {
+                            $fail("Le prix doit être supérieur à {$offreInitiale}");
                         }
                     }
                 ]
@@ -154,10 +150,10 @@ class Enchere extends Component
                 'id_prod' => $this->produit->id,
             ]);
 
+            $this->reset('prixTrade');
             broadcast(new CommentSubmitted($validatedData['prixTrade'], $comment->id))->toOthers();
 
             DB::commit();
-            $this->reset('prixTrade');
             // Optionnel: Ajouter une notification ou un message de succès
             session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
             $this->listenForMessage();
@@ -173,6 +169,8 @@ class Enchere extends Component
 
     public function render()
     {
-        return view('livewire.enchere');
+        return view('livewire.enchere', [
+            'errors' => $this->getErrorBag()
+        ]);
     }
 }

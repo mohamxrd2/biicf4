@@ -27,6 +27,7 @@ class AjoutProduitServices extends Component
     //  produit
     public $conditionnement  = '';
     public $format  = '';
+    public $poids  = '';
     public $particularite  = '';
     public $origine  = '';
     public $qteProd_min  = '';
@@ -36,51 +37,16 @@ class AjoutProduitServices extends Component
     //
     public $prix  = '';
     //Service
+    public $disponibilite  = '';
+    public $lieu_intervention  = '';
+    public $Duree  = '';
     public $qualification  = '';
     public $specialite  = '';
     public $Quantite  = '';
     public $descrip  = '';
 
     //
-    public $depart  = '';
-    public $ville  = '';
-    public $commune  = '';
-    public $pays  = '';
-    public $selectedContinent;
-    public $continents = [
-        'Afrique',
-        'Amérique du Nord',
-        'Amérique du Sud',
-        'Antarctique',
-        'Asie',
-        'Europe',
-        'Océanie'
-    ];
-    public $selectedSous_region;
-    public $sousregions = [
-        'Afrique du Nord',
-        'Afrique de l\'Ouest',
-        'Afrique Centrale',
-        'Afrique de l\'Est',
-        'Afrique Australe',
-        'Amérique du Nord',
-        'Amérique Centrale ',
-        'Amérique du Sud  ',
-        'Caraïbes',
-        'Asie de l\'Est',
-        'Asie du Sud',
-        'Asie du Sud-Est',
-        'Asie Centrale',
-        'Asie de l\'Ouest ',
-        'Europe de l\'Est',
-        'Europe de l\'Ouest',
-        'Europe du Nord',
-        'Europe du Sud',
-        'Australie et Nouvelle-Zélande',
-        'Mélanésie ',
-        'Polynésie ',
-        'Micronésie '
-    ];
+
     public $produits = [];
     public $searchTerm = ''; // Add this property to hold the search term
 
@@ -119,11 +85,16 @@ class AjoutProduitServices extends Component
 
         // Update products based on selected categories
         if ($this->selectedCategories) {
-            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)->get();
+            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)
+                ->orderBy('reference')
+                ->get()
+                ->unique('reference'); // Ensure only unique references are taken
+
         } else {
             $this->produits = collect(); // Reset if no categories selected
         }
     }
+
     public function updateProductDetails($productId)
     {
         $selectedProduct = ProduitService::find($productId);
@@ -136,6 +107,7 @@ class AjoutProduitServices extends Component
             $this->type = $selectedProduct->type;
             $this->conditionnement = $selectedProduct->condProd;
             $this->format = $selectedProduct->formatProd;
+            $this->poids = $selectedProduct->poids;
             $this->particularite = $selectedProduct->Particularite;
             $this->origine = $selectedProduct->origine;
             $this->specification = $selectedProduct->specification;
@@ -145,9 +117,12 @@ class AjoutProduitServices extends Component
             $this->photoProd3 = $selectedProduct->photoProd3;
             $this->photoProd4 = $selectedProduct->photoProd4;
 
-            $this->qualification = $selectedProduct->qalifServ;
-            $this->specialite = $selectedProduct->sepServ;
+            $this->qualification = $selectedProduct->experience;
+            $this->specialite = $selectedProduct->specialite;
             $this->descrip = $selectedProduct->description;
+            $this->Duree = $selectedProduct->duree;
+            $this->disponibilite = $selectedProduct->disponible;
+            $this->lieu_intervention = $selectedProduct->lieu;
 
             $this->qteProd_min = '';
             $this->qteProd_max = '';
@@ -201,11 +176,12 @@ class AjoutProduitServices extends Component
     }
     public function submit()
     {
-        if ($this->isSubmitting) {
-            return;
-        }
+        // if ($this->isSubmitting) {
+        //     return;
+        // }
 
-        $this->isSubmitting = true;
+        // $this->isSubmitting = true;
+        // dd('');
 
         $this->validate([
             'categorie' => 'required|string',
@@ -216,17 +192,19 @@ class AjoutProduitServices extends Component
             'conditionnement' => $this->type == 'Produit' ? 'required|string|max:255' : 'nullable|string',
             'format' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'particularite' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
+            'poids' => $this->type == 'Produit' ? 'required|integer' : 'nullable|integer',
             'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'qteProd_min' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
             'qteProd_max' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
-            'specification' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             //
             'prix' => 'required|integer',
             //service
-            'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'specialite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'qualification' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             'descrip' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
-            'Quantite' => $this->type == 'Service' ? 'required|integer' : 'nullable|integer',
+            'Duree' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'disponibilite' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
+            'lieu_intervention' => $this->type == 'Service' ? 'required|string' : 'nullable|string',
             //
 
             //photo
@@ -277,18 +255,20 @@ class AjoutProduitServices extends Component
                 //produit
                 'condProd' => $this->type === 'Produit' ? $this->conditionnement : null,
                 'formatProd' => $this->type === 'Produit' ? $this->format : null,
+                'poids' => $this->type === 'Produit' ? $this->poids : null,
                 'Particularite' => $this->type === 'Produit' ? $this->particularite : null,
                 'origine' => $this->type === 'Produit' ? $this->origine : null,
                 'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,
                 'qteProd_max' => $this->type === 'Produit' ? $this->qteProd_max : null,
-                'specification' => $this->type === 'Produit' ? $this->specification : null,
                 //
                 'prix' => $this->prix,
                 //service
-                'qalifServ' => $this->type === 'Service' ? $this->qualification : null,
-                'sepServ' => $this->type === 'Service' ? $this->specialite : null,
+                'specialite' => $this->type === 'Service' ? $this->specialite : null,
+                'experience' => $this->type === 'Service' ? $this->qualification : null,
                 'description' => $this->type === 'Service' ? $this->descrip : null,
-                'quantite' => $this->type === 'Service' ? $this->Quantite : null,
+                'duree' => $this->type === 'Service' ? $this->Duree : null,
+                'disponible' => $this->type === 'Service' ? $this->disponibilite : null,
+                'lieu' => $this->type === 'Service' ? $this->lieu_intervention : null,
 
                 'user_id' => auth()->id(),
                 'categorie_id' => $categorie->id ?? null,
@@ -332,6 +312,7 @@ class AjoutProduitServices extends Component
         $this->name = '';
         $this->conditionnement = '';
         $this->format = '';
+        $this->poids = '';
         $this->particularite = '';
         $this->origine = '';
         $this->qteProd_min = '';
@@ -342,9 +323,7 @@ class AjoutProduitServices extends Component
         $this->specialite = '';
         $this->descrip = '';
         $this->Quantite = '';
-        $this->depart = '';
-        $this->ville = '';
-        $this->commune = '';
+
         // Réinitialiser les catégories si nécessaire
         $this->categories = CategorieProduits_Servives::all();
         // Réinitialiser les photos

@@ -24,12 +24,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-1 gap-8">
                             <x-offre.alert-messages />
 
-                            <form wire:submit.prevent="sendoffneg" class="space-y-6">
+                            <form wire:submit.prevent="sendOffre" class="space-y-6">
                                 @csrf
                                 <x-offre.zone-select />
 
-                                <x-offre.form-buttons :modal-id="'medium-offreneg' . $produit->id" submit-text="Soumettre"
-                                    loading-target="sendoffneg" />
+                                <x-offre.form-buttons  submit-text="Soumettre"
+                                    loading-target="sendOffre" />
                             </form>
 
 

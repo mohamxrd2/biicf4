@@ -56,7 +56,7 @@
         const dropdownMenu = document.getElementById('dropdown-menu');
         const optionsMenu = document.getElementById('options-menu');
 
-        if (!optionsMenu.contains(event.target) && !dropdownMenu.contains(event.target)) {
+        if (optionsMenu && dropdownMenu && !optionsMenu.contains(event.target) && !dropdownMenu.contains(event.target)) {
             dropdownMenu.classList.add('hidden');
         }
     });
