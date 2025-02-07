@@ -26,27 +26,42 @@
             <div>
                 <label class="text-sm font-semibold text-gray-700 mb-3 block">Fréquence de cotisation</label>
                 <div class="grid grid-cols-3 gap-3">
+                    <!-- Option Quotidienne -->
                     <label class="relative">
-                        <input type="radio" wire:model.defer="frequency" value="quotidienne" class="peer sr-only">
-                        <div class="w-full text-center p-3 border rounded-lg cursor-pointer transition-all peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-600 hover:bg-gray-50">
+                        <input type="radio" name="frequency" wire:model.defer="frequency" value="quotidienne" class="peer sr-only">
+                        <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
+                            peer-checked:bg-purple-600  peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
+                            hover:border-purple-300 hover:shadow-sm
+                            [&:not(:has(input:checked))]:bg-white [&:not(:has(input:checked))]:text-gray-700">
                             Quotidienne
                         </div>
                     </label>
+            
+                    <!-- Option Hebdomadaire -->
                     <label class="relative">
-                        <input type="radio" wire:model.defer="frequency" value="hebdomadaire" class="peer sr-only">
-                        <div class="w-full text-center p-3 border rounded-lg cursor-pointer transition-all peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-600 hover:bg-gray-50">
+                        <input type="radio" name="frequency" wire:model.defer="frequency" value="hebdomadaire" class="peer sr-only">
+                        <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
+                            peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
+                            hover:border-purple-300 hover:shadow-sm
+                            [&:not(:has(input:checked))]:bg-white [&:not(:has(input:checked))]:text-gray-700">
                             Hebdomadaire
                         </div>
                     </label>
+            
+                    <!-- Option Mensuelle -->
                     <label class="relative">
-                        <input type="radio" wire:model.defer="frequency" value="mensuelle" class="peer sr-only">
-                        <div class="w-full text-center p-3 border rounded-lg cursor-pointer transition-all peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-600 hover:bg-gray-50">
+                        <input type="radio" name="frequency" wire:model.defer="frequency" value="mensuelle" class="peer sr-only">
+                        <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
+                            peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
+                            hover:border-purple-300 hover:shadow-sm
+                            [&:not(:has(input:checked))]:bg-white [&:not(:has(input:checked))]:text-gray-700">
                             Mensuelle
                         </div>
                     </label>
                 </div>
                 @error('frequency') <span class="text-sm text-red-500 mt-1">{{ $message }}</span> @enderror
             </div>
+            
 
             <!-- Date de fin avec calendrier moderne -->
             <div>
