@@ -1,5 +1,5 @@
 <div class="max-w-2xl mx-auto p-8">
-    {{-- <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-violet-500 to-purple-600 p-6">
             <h2 class="text-3xl font-bold text-white">Nouvelle Tontine</h2>
@@ -36,7 +36,7 @@
                             Quotidienne
                         </div>
                     </label>
-            
+
                     <!-- Option Hebdomadaire -->
                     <label class="relative">
                         <input type="radio" name="frequency" wire:model.defer="frequency" value="hebdomadaire" class="peer sr-only">
@@ -47,7 +47,7 @@
                             Hebdomadaire
                         </div>
                     </label>
-            
+
                     <!-- Option Mensuelle -->
                     <label class="relative">
                         <input type="radio" name="frequency" wire:model.defer="frequency" value="mensuelle" class="peer sr-only">
@@ -61,7 +61,7 @@
                 </div>
                 @error('frequency') <span class="text-sm text-red-500 mt-1">{{ $message }}</span> @enderror
             </div>
-            
+
 
             <!-- Date de fin avec calendrier moderne -->
             <div>
@@ -136,6 +136,5 @@
                 <span class="ml-2">→</span>
             </button>
         </form>
-    </div> --}}
-    fffff
+    </div>
 </div>
