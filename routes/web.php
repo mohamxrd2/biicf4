@@ -231,7 +231,9 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('finance/detail-credit-projet/{id}', [UserController::class, 'detailcreditprojet'])->name('detailcreditprojet');
         Route::get('finance/gagnant-negocation/{id}', [UserController::class, 'gagnantNegocation'])->name('gagnantNegocation');
 
-        Route::get('/tontine', Tontine::class)->name('tontine');
+        Route::get('/tontine', function(){
+            return view('biicf.tontine');
+        })->name('tontine');
     });
 
 

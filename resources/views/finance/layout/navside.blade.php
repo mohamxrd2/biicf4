@@ -298,11 +298,8 @@
 
                        Mes projets
                     </a>
-<<<<<<< HEAD
-=======
 
 
->>>>>>> 898745db33b2508f9eedd499ec3d77642f220c69
                     <a class="flex items-center gap-x-3.5 p-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
                         href="#" data-hs-overlay="#hs-sign-out-alert">
                         <svg class="flex-shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" fill="none"
