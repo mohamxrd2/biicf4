@@ -115,4 +115,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Psap::class, 'user_id');
     }
+
+    public function cotisations() {
+        return $this->hasMany(Cotisation::class);
+    }
+
+    public function echecsPaiement() {
+        return $this->hasMany(EchecPaiement::class);
+    }
 }
