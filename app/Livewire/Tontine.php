@@ -7,6 +7,7 @@ use Livewire\Attributes\Layout;
 
 class Tontine extends Component
 {
+
     #[Layout('biicf.layout.navside')]
 
     public function startTontine()
@@ -19,6 +20,8 @@ class Tontine extends Component
 
         return response()->json(['message' => 'Tontine créée avec succès!', 'tontine' => $tontine]);
     }
+
+    
     public function render()
     {
         return view('livewire.tontine');
