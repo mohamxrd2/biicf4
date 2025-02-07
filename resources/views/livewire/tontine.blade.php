@@ -1,5 +1,5 @@
 <div class="max-w-2xl mx-auto p-8">
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+    {{-- <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-violet-500 to-purple-600 p-6">
             <h2 class="text-3xl font-bold text-white">Nouvelle Tontine</h2>
@@ -13,7 +13,7 @@
                     Montant de cotisation
                 </label>
                 <div class="relative mt-1 rounded-md shadow-sm">
-                    
+
                     <input type="number" id="amount" wire:model.defer="amount"
                         class="block w-full pl-16 pr-4 py-3 border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
                         placeholder="Montant en FCFA"
@@ -121,5 +121,6 @@
                 <span class="ml-2">→</span>
             </button>
         </form>
-    </div>
+    </div> --}}
+    fffff
 </div>

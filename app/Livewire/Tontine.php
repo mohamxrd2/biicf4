@@ -21,7 +21,7 @@ class Tontine extends Component
         return response()->json(['message' => 'Tontine créée avec succès!', 'tontine' => $tontine]);
     }
 
-    
+
     public function render()
     {
         return view('livewire.tontine');
