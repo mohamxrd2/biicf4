@@ -30,9 +30,8 @@
                     <label class="relative">
                         <input type="radio" name="frequency" wire:model.defer="frequency" value="quotidienne" class="peer sr-only">
                         <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
-                            peer-checked:bg-purple-600  peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
-                            hover:border-purple-300 hover:shadow-sm
-                            [&:not(:has(input:checked))]:bg-white [&:not(:has(input:checked))]:text-gray-700">
+                            peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
+                            hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
                             Quotidienne
                         </div>
                     </label>
@@ -42,8 +41,7 @@
                         <input type="radio" name="frequency" wire:model.defer="frequency" value="hebdomadaire" class="peer sr-only">
                         <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
                             peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
-                            hover:border-purple-300 hover:shadow-sm
-                            [&:not(:has(input:checked))]:bg-white [&:not(:has(input:checked))]:text-gray-700">
+                            hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
                             Hebdomadaire
                         </div>
                     </label>
@@ -53,13 +51,15 @@
                         <input type="radio" name="frequency" wire:model.defer="frequency" value="mensuelle" class="peer sr-only">
                         <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
                             peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
-                            hover:border-purple-300 hover:shadow-sm
-                            [&:not(:has(input:checked))]:bg-white [&:not(:has(input:checked))]:text-gray-700">
+                            hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
                             Mensuelle
                         </div>
                     </label>
                 </div>
-                @error('frequency') <span class="text-sm text-red-500 mt-1">{{ $message }}</span> @enderror
+            
+                @error('frequency') 
+                    <span class="text-sm text-red-500 mt-1">{{ $message }}</span> 
+                @enderror
             </div>
             
 
