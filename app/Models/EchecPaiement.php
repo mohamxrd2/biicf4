@@ -9,14 +9,16 @@ class EchecPaiement extends Model
 {
     use HasFactory;
 
-
+    protected $table = 'echec_paiement';
     protected $fillable = ['user_id', 'cotisation_id', 'montant_du'];
 
-    public function user() {
-        return $this->belongsTo(User::class);
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function cotisation() {
-        return $this->belongsTo(Cotisation::class);
+    public function cotisation()
+    {
+        return $this->belongsTo(Cotisation::class, 'cotisation_id');
     }
 }

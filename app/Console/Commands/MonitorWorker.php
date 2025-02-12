@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 
@@ -44,6 +45,24 @@ class MonitorWorker extends Command
             $isRunning = $process->isSuccessful();
         } catch (\Exception $e) {
             Log::error('Error checking queue worker: ' . $e->getMessage());
+        }
+
+        // Vérifier s'il y a des jobs échoués
+        $failedJobsCount = DB::table('failed_jobs')->count();
+
+        if ($failedJobsCount > 0) {
+            Log::warning("⚠️ {$failedJobsCount} jobs ont échoué. Tentative de relance...");
+
+            $retryProcess = new Process(['php', 'artisan', 'queue:retry', 'all']);
+            $retryProcess->run();
+
+            if ($retryProcess->isSuccessful()) {
+                Log::info("✅ Tous les jobs échoués ont été relancés avec succès !");
+            } else {
+                Log::error("❌ Échec de la relance des jobs : " . $retryProcess->getErrorOutput());
+            }
+        } else {
+            Log::info("✅ Aucun job échoué détecté.");
         }
 
         if (!$isRunning) {

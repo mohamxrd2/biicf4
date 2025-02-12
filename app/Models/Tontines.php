@@ -10,14 +10,28 @@ class Tontines extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nom', 'montant_cotisation', 'frequence', 'date_fin', 'frais_gestion', 'next_payment_date'
+        'nom',
+        'montant_cotisation',
+        'frequence',
+        'date_fin',
+        'frais_gestion',
+        'next_payment_date',
+        'user_id'
     ];
 
-    public function cotisations() {
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'tontine_user', 'tontine_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    public function cotisations()
+    {
         return $this->hasMany(Cotisation::class);
     }
 
-    public function transactions() {
+    public function transactions()
+    {
         return $this->hasMany(Transaction::class);
     }
 }

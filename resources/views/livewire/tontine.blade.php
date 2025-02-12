@@ -8,82 +8,81 @@
                     <p class=" mt-2 text-center text-lg">Créez votre épargne collaborative en quelques clics</p>
                 </div>
 
-        <form wire:submit.prevent="initiateTontine" class="p-6 space-y-6">
-            <!-- Montant avec icône -->
-            <div class="relative">
-                <label for="amount" class="text-sm font-semibold text-gray-700 mb-1 block">
-                    Montant de cotisation
-                </label>
-                <div class="relative mt-1 rounded-md shadow-sm">
+                @if (session()->has('error'))
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                        <p>{{ session('error') }}</p>
+                    </div>
+                @endif
 
-                    <input type="number" id="amount" wire:model.defer="amount"
-                        class="block w-full pl-16 pr-4 py-3 border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
-                        placeholder="Montant en FCFA"
-                        required>
-                </div>
-                @error('amount') <span class="text-sm text-red-500 mt-1">{{ $message }}</span> @enderror
-            </div>
-                <form wire:submit.prevent="initiateTontine" class="p-8 space-y-8">
-                    <!-- Montant avec design amélioré -->
-                    <div class="space-y-2">
-                        <label for="amount" class="text-base font-medium text-gray-900 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                @if (session()->has('success'))
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                        <p>{{ session('success') }}</p>
+                    </div>
+                @endif
+                
+                <form wire:submit.prevent="initiateTontine" class="p-6 space-y-6">
+                    <!-- Montant avec icône -->
+                    <div class="relative">
+                        <label for="amount" class="text-sm font-semibold text-gray-700 mb-1 block">
                             Montant de cotisation
                         </label>
-                        <div class="relative mt-1">
-                            <input type="number" id="amount" wire:model.defer="amount"
-                                class="block w-full pl-12 pr-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
-                                placeholder="Montant en FCFA" required>
+                        <div class="relative mt-1 rounded-md shadow-sm">
 
+                            <input type="number" id="amount" wire:model.defer="amount"
+                                class="block w-full pl-16 pr-4 py-3 border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                                placeholder="Montant en FCFA" required>
                         </div>
                         @error('amount')
-                            <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                            <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
-            <!-- Fréquence avec badges -->
-            <div>
-                <label class="text-sm font-semibold text-gray-700 mb-3 block">Fréquence de cotisation</label>
-                <div class="grid grid-cols-3 gap-3">
-                    <!-- Option Quotidienne -->
-                    <label class="relative">
-                        <input type="radio" name="frequency" wire:model.defer="frequency" value="quotidienne" class="peer sr-only">
-                        <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
+                    <!-- Fréquence avec badges -->
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700 mb-3 block">Fréquence de
+                            cotisation</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <!-- Option Quotidienne -->
+                            <label class="relative">
+                                <input type="radio" name="frequency" wire:model.defer="frequency" value="quotidienne"
+                                    class="peer sr-only">
+                                <div
+                                    class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
                             peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
                             hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
-                            Quotidienne
-                        </div>
-                    </label>
+                                    Quotidienne
+                                </div>
+                            </label>
 
-                    <!-- Option Hebdomadaire -->
-                    <label class="relative">
-                        <input type="radio" name="frequency" wire:model.defer="frequency" value="hebdomadaire" class="peer sr-only">
-                        <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
+                            <!-- Option Hebdomadaire -->
+                            <label class="relative">
+                                <input type="radio" name="frequency" wire:model.defer="frequency" value="hebdomadaire"
+                                    class="peer sr-only">
+                                <div
+                                    class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
                             peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
                             hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
-                            Hebdomadaire
-                        </div>
-                    </label>
+                                    Hebdomadaire
+                                </div>
+                            </label>
 
-                    <!-- Option Mensuelle -->
-                    <label class="relative">
-                        <input type="radio" name="frequency" wire:model.defer="frequency" value="mensuelle" class="peer sr-only">
-                        <div class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
+                            <!-- Option Mensuelle -->
+                            <label class="relative">
+                                <input type="radio" name="frequency" wire:model.defer="frequency" value="mensuelle"
+                                    class="peer sr-only">
+                                <div
+                                    class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
                             peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
                             hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
-                            Mensuelle
+                                    Mensuelle
+                                </div>
+                            </label>
                         </div>
-                    </label>
-                </div>
 
-                @error('frequency')
-                    <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
-                @enderror
-            </div>
+                        @error('frequency')
+                            <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
 
 
                     <!-- Date de fin avec calendrier moderne -->
@@ -134,12 +133,14 @@
                         </div>
                     </div>
 
-            <!-- Submit Button -->
-            <button type="submit"
-                class="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform transition-all duration-300 ease-in-out hover:-translate-y-1">
-                Lancer la Tontine
-                <span class="ml-2">→</span>
-            </button>
-        </form>
-    </div>
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform transition-all duration-300 ease-in-out hover:-translate-y-1">
+                        Lancer la Tontine
+                        <span class="ml-2">→</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>
