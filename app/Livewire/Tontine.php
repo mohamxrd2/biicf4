@@ -119,14 +119,7 @@ class Tontine extends Component
     {
         $this->tontineStart = true;
     }
-<<<<<<< HEAD
 
-
-
-=======
-
-
->>>>>>> 2ad4097ddb23772fa797e0d4fe856f8bc7df35a6
     public function render()
     {
         return view('livewire.tontine');
