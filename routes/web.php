@@ -162,6 +162,13 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
         Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
         Route::get('porte-feuille/tontine', Tontine::class)->name('tontine');
+        Route::get('/tontine', function () {
+            return view('biicf.tontine');
+        })->name('tontine');
+
+        Route::get('/detail-tontine', function () {
+            return view('biicf.detailtontine');
+        })->name('detail-tontine');
 
         Route::get('publication', ProduitService::class)->name('biicf.post');
         Route::get('publication/creer-produit', AjoutProduitServices::class)->name('biicf.postProduit');
