@@ -14,93 +14,104 @@ class Tontine extends Component
     public $end_date;
     public $payment_mode;
     public $tontineStart;
+    const FREQUENCY_DAYS = [
+        'quotidienne' => 1,
+        'hebdomadaire' => 7,
+        'mensuelle' => 30
+    ];
+    // Règles de validation
+    protected $rules = [
+        'amount' => 'required|numeric|min:1000',
+        'frequency' => 'required|in:quotidienne,hebdomadaire,mensuelle',
+        'end_date' => 'required|date|after:today',
+    ];
 
-    public function updatedEndDate()
-    {
-        if (!$this->end_date) {
-            return;
-        }
+    // public function updatedEndDate()
+    // {
+    //     if (!$this->end_date) {
+    //         return;
+    //     }
 
-        $chosenDate = Carbon::parse($this->end_date);
-        $minDate = now()->addMonth();
+    //     $chosenDate = Carbon::parse($this->end_date);
+    //     $minDate = now()->addMonth();
 
-        if ($chosenDate->lessThan($minDate)) {
-            $this->end_date = $minDate->format('Y-m-d'); // Ajuste la date minimale
-        }
+    //     if ($chosenDate->lessThan($minDate)) {
+    //         $this->end_date = $minDate->format('Y-m-d'); // Ajuste la date minimale
+    //     }
 
-        if ($this->frequency === 'hebdomadaire') {
-            $diffFromMin = $minDate->diffInDays($chosenDate);
-            if ($diffFromMin % 7 !== 0) {
-                $this->end_date = $minDate->addWeeks(ceil($diffFromMin / 7))->format('Y-m-d');
-            }
-        }
-    }
+    //     if ($this->frequency === 'hebdomadaire') {
+    //         $diffFromMin = $minDate->diffInDays($chosenDate);
+    //         if ($diffFromMin % 7 !== 0) {
+    //             $this->end_date = $minDate->addWeeks(ceil($diffFromMin / 7))->format('Y-m-d');
+    //         }
+    //     }
+    // }
 
-    public function initiateTontine()
-    {
-        $this->validate([
-            'amount' => 'required|numeric|min:1',
-            'frequency' => 'required|in:quotidienne,hebdomadaire,mensuelle',
-            'end_date' => [
-                'required',
-                'date',
-                function ($attribute, $value, $fail) {
-                    $minDate = now()->addMonth();
-                    $chosenDate = Carbon::parse($value);
+    // public function initiateTontine()
+    // {
+    //     $this->validate([
+    //         'amount' => 'required|numeric|min:1',
+    //         'frequency' => 'required|in:quotidienne,hebdomadaire,mensuelle',
+    //         'end_date' => [
+    //             'required',
+    //             'date',
+    //             function ($attribute, $value, $fail) {
+    //                 $minDate = now()->addMonth();
+    //                 $chosenDate = Carbon::parse($value);
 
-                    if ($chosenDate->lessThan($minDate)) {
-                        $fail("La date de fin doit être d'au moins un mois après aujourd'hui (" . $minDate->format('d/m/Y') . ").");
-                    }
+    //                 if ($chosenDate->lessThan($minDate)) {
+    //                     $fail("La date de fin doit être d'au moins un mois après aujourd'hui (" . $minDate->format('d/m/Y') . ").");
+    //                 }
 
-                    if ($this->frequency === 'hebdomadaire') {
-                        $diffFromMin = $minDate->diffInDays($chosenDate);
-                        if ($diffFromMin % 7 !== 0) {
-                            $fail("Avec une fréquence hebdomadaire, la date de fin doit être un multiple de semaines après la date minimale (" . $minDate->format('d/m/Y') . ").");
-                        }
-                    }
-                }
-            ],
-        ]);
+    //                 if ($this->frequency === 'hebdomadaire') {
+    //                     $diffFromMin = $minDate->diffInDays($chosenDate);
+    //                     if ($diffFromMin % 7 !== 0) {
+    //                         $fail("Avec une fréquence hebdomadaire, la date de fin doit être un multiple de semaines après la date minimale (" . $minDate->format('d/m/Y') . ").");
+    //                     }
+    //                 }
+    //             }
+    //         ],
+    //     ]);
 
-        $this->updatedEndDate();
+    //     $this->updatedEndDate();
 
-        // Vérifier si l'utilisateur a déjà une tontine en cours
-        $existingTontine = Tontines::where('user_id', Auth::id())
-            ->where('date_fin', '>=', now()) // Tontines qui ne sont pas encore terminées
-            ->exists();
+    //     // Vérifier si l'utilisateur a déjà une tontine en cours
+    //     $existingTontine = Tontines::where('user_id', Auth::id())
+    //         ->where('date_fin', '>=', now()) // Tontines qui ne sont pas encore terminées
+    //         ->exists();
 
-        if ($existingTontine) {
-            session()->flash('error', 'Vous avez déjà une tontine en cours. Vous ne pouvez pas en créer une nouvelle tant que l’ancienne n’est pas terminée.');
-            return;
-        }
+    //     if ($existingTontine) {
+    //         session()->flash('error', 'Vous avez déjà une tontine en cours. Vous ne pouvez pas en créer une nouvelle tant que l’ancienne n’est pas terminée.');
+    //         return;
+    //     }
 
-        // Calcul du nombre de dépôts attendus
-        $startDate = now();
-        $endDate = Carbon::parse($this->end_date);
-        $nbre_depot = match ($this->frequency) {
-            'quotidienne' => $startDate->diffInDays($endDate),
-            'hebdomadaire' => $startDate->diffInWeeks($endDate),
-            'mensuelle' => $startDate->diffInMonths($endDate),
-            default => 0
-        };
+    //     // Calcul du nombre de dépôts attendus
+    //     $startDate = now();
+    //     $endDate = Carbon::parse($this->end_date);
+    //     $nbre_depot = match ($this->frequency) {
+    //         'quotidienne' => $startDate->diffInDays($endDate),
+    //         'hebdomadaire' => $startDate->diffInWeeks($endDate),
+    //         'mensuelle' => $startDate->diffInMonths($endDate),
+    //         default => 0
+    //     };
 
-        $frais_gestion = ($nbre_depot * $this->amount) / 30; // Calcul des frais de gestion
+    //     $frais_gestion = ($nbre_depot * $this->amount) / 30; // Calcul des frais de gestion
 
-        Tontines::create([
-            'nom' => 'Tontine ' . now()->format('Y-m-d'),
-            'montant_cotisation' => $this->amount,
-            'montant_total' => $this->amount * $nbre_depot,
-            'frequence' => $this->frequency,
-            'date_fin' => $this->end_date,
-            'next_payment_date' => now(),
-            'frais_gestion' => $frais_gestion,
-            'user_id' => Auth::id(),
-        ]);
+    //     Tontines::create([
+    //         'nom' => 'Tontine ' . now()->format('Y-m-d'),
+    //         'montant_cotisation' => $this->amount,
+    //         'montant_total' => $this->amount * $nbre_depot,
+    //         'frequence' => $this->frequency,
+    //         'date_fin' => $this->end_date,
+    //         'next_payment_date' => now(),
+    //         'frais_gestion' => $frais_gestion,
+    //         'user_id' => Auth::id(),
+    //     ]);
 
-        $this->reset();
+    //     $this->reset();
 
-        session()->flash('message', 'Tontine créée avec succès !');
-    }
+    //     session()->flash('message', 'Tontine créée avec succès !');
+    // }
 
     // public $tontineStart;
     // public $amount ;
@@ -113,19 +124,7 @@ class Tontine extends Component
     {
         $this->tontineStart = true;
     }
-      // Constantes pour les fréquences
-      const FREQUENCY_DAYS = [
-        'quotidienne' => 1,
-        'hebdomadaire' => 7,
-        'mensuelle' => 30
-    ];
-      // Règles de validation
-      protected $rules = [
-        'amount' => 'required|numeric|min:1000',
-        'frequency' => 'required|in:quotidienne,hebdomadaire,mensuelle',
-        'end_date' => 'required|date|after:today',
-    ];
-    // Observateurs pour recalculer le gain potentiel
+
     public function updatedAmount()
     {
         $this->calculatePotentialGain();
@@ -137,37 +136,32 @@ class Tontine extends Component
         $this->calculatePotentialGain();
     }
 
-    // public function updatedEndDate()
-    // {
-    //     $this->calculatePotentialGain();
-    // }
-      // Méthode pour calculer le gain potentiel
-      private function calculatePotentialGain()
-      {
-          if (empty($this->amount) || empty($this->frequency) || empty($this->end_date)) {
-              $this->potentialGain = 0;
-              return;
-          }
+    private function calculatePotentialGain()
+    {
+        if (empty($this->amount) || empty($this->frequency) || empty($this->end_date)) {
+            $this->potentialGain = 0;
+            return;
+        }
 
-          // Calculer le nombre de jours entre aujourd'hui et la date de fin
-          $startDate = Carbon::today();
-          $endDate = Carbon::parse($this->end_date);
-          $totalDays = $endDate->diffInDays($startDate);
+        // Calculer le nombre de jours entre aujourd'hui et la date de fin
+        $startDate = Carbon::today();
+        $endDate = Carbon::parse($this->end_date);
+        $totalDays = $endDate->diffInDays($startDate);
 
-          // Obtenir le nombre de jours pour la fréquence sélectionnée
-          $frequencyDays = self::FREQUENCY_DAYS[$this->frequency] ?? 1;
+        // Obtenir le nombre de jours pour la fréquence sélectionnée
+        $frequencyDays = self::FREQUENCY_DAYS[$this->frequency] ?? 1;
 
-          // Calculer le nombre de cotisations
-          $numberOfContributions = floor($totalDays / $frequencyDays);
+        // Calculer le nombre de cotisations
+        $numberOfContributions = floor($totalDays / $frequencyDays);
 
-          // Calculer le gain potentiel
-          $this->potentialGain = $numberOfContributions * $this->amount;
-      }
-    //   public function initiateTontine()
-    // {
-    //     $this->validate();
-    //     // Logique pour démarrer la tontine...
-    // }
+        // Calculer le gain potentiel
+        $this->potentialGain = $numberOfContributions * $this->amount;
+    }
+    public function initiateTontine()
+    {
+        $this->validate();
+        // Logique pour démarrer la tontine...
+    }
 
 
     public function render()

@@ -80,7 +80,7 @@
                         </div>
 
                         @error('frequency')
-                            <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
+                            {{-- <span class="text-sm text-red-500 mt-1">{{ $message }}</span> --}}
                         @enderror
                     </div>
 
