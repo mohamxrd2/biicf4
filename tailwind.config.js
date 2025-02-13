@@ -10,6 +10,18 @@ export default {
         "./node_modules/flowbite/**/*.js",
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
     ],
+    safelist: [
+        'peer-checked:bg-purple-600',
+        'peer-checked:border-purple-600',
+        'peer-checked:text-white',
+        'peer-checked:shadow-md',
+        'hover:border-purple-300',
+        'hover:shadow-sm',
+        'text-gray-700',
+        'bg-white',
+        'from-indigo-500',
+        'to-purple-500'
+    ],
     theme: {
         extend: {
             fontFamily: {

@@ -234,6 +234,10 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('/tontine', function(){
             return view('biicf.tontine');
         })->name('tontine');
+
+        Route::get('/detail-tontine', function(){
+            return view('biicf.detailtontine');
+        })->name('detail-tontine');
     });
 
 
