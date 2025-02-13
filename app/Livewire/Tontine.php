@@ -112,11 +112,6 @@ class Tontine extends Component
 
     //     session()->flash('message', 'Tontine créée avec succès !');
     // }
-
-    // public $tontineStart;
-    // public $amount ;
-    // public $frequency = '';
-    // public $end_date = '';
     public $potentialGain = 0;
 
 
@@ -124,46 +119,14 @@ class Tontine extends Component
     {
         $this->tontineStart = true;
     }
-
-    public function updatedAmount()
-    {
-        $this->calculatePotentialGain();
-    }
+<<<<<<< HEAD
 
 
-    public function updatedFrequency()
-    {
-        $this->calculatePotentialGain();
-    }
 
-    private function calculatePotentialGain()
-    {
-        if (empty($this->amount) || empty($this->frequency) || empty($this->end_date)) {
-            $this->potentialGain = 0;
-            return;
-        }
-
-        // Calculer le nombre de jours entre aujourd'hui et la date de fin
-        $startDate = Carbon::today();
-        $endDate = Carbon::parse($this->end_date);
-        $totalDays = $endDate->diffInDays($startDate);
-
-        // Obtenir le nombre de jours pour la fréquence sélectionnée
-        $frequencyDays = self::FREQUENCY_DAYS[$this->frequency] ?? 1;
-
-        // Calculer le nombre de cotisations
-        $numberOfContributions = floor($totalDays / $frequencyDays);
-
-        // Calculer le gain potentiel
-        $this->potentialGain = $numberOfContributions * $this->amount;
-    }
-    public function initiateTontine()
-    {
-        $this->validate();
-        // Logique pour démarrer la tontine...
-    }
+=======
 
 
+>>>>>>> 2ad4097ddb23772fa797e0d4fe856f8bc7df35a6
     public function render()
     {
         return view('livewire.tontine');
