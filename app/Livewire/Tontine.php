@@ -28,6 +28,10 @@ class Tontine extends Component
         'end_date' => 'required|date|after:today',
     ];
 
+    public function mount()
+    {
+        $this->tontineStart = true;
+    }
     public function updatedEndDate()
     {
         if (!$this->end_date) {
@@ -116,10 +120,7 @@ class Tontine extends Component
     }
 
 
-    public function mount()
-    {
-        $this->tontineStart = true;
-    }
+
 
     public function render()
     {

@@ -9,22 +9,15 @@
                     </p>
                 </div>
 
-                @if (session()->has('error'))
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-                        <p>{{ session('error') }}</p>
-                    </div>
-                @endif
-
-                @if (session()->has('success'))
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-                        <p>{{ session('success') }}</p>
-                    </div>
-                @endif
-
-                <form wire:submit.prevent="initiateTontine" class="p-6 space-y-6">
-                    <!-- Montant avec icône -->
-                    <div class="relative">
-                        <label for="amount" class="text-sm font-semibold text-gray-700 mb-1 block">
+                <form wire:submit.prevent="initiateTontine" class="p-8 space-y-8">
+                    <!-- Montant avec design amélioré -->
+                    <div class="space-y-2">
+                        <label for="amount" class="text-base font-medium text-gray-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                             Montant de cotisation
                         </label>
                         <div class="relative mt-1">
@@ -33,14 +26,13 @@
                                 placeholder="Montant en FCFA" required>
                         </div>
                         @error('amount')
-                            <span class="text-sm text-red-500 mt-1">{{ $message }}</span>
+                            <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Fréquence avec badges -->
                     <div>
-                        <label class="text-sm font-semibold text-gray-700 mb-3 block">Fréquence de
-                            cotisation</label>
+                        <label class="text-sm font-semibold text-gray-700 mb-3 block">Fréquence de cotisation</label>
                         <div class="grid grid-cols-3 gap-3">
                             <!-- Option Quotidienne -->
                             <label class="relative">
@@ -84,7 +76,6 @@
                         @enderror
                     </div>
 
-
                     <!-- Date de fin avec calendrier moderne -->
                     <div class="space-y-2">
                         <label class="text-base font-medium text-gray-900 flex items-center gap-2">
@@ -116,10 +107,14 @@
                                 </svg>
                                 <h3 class="text-lg font-semibold text-indigo-900">Gain Potentiel</h3>
                             </div>
-                            <div class="grid grid-cols-2 gap-6">
+                            <div class="grid grid-cols-3 gap-6">
                                 <div>
                                     <p class="text-sm text-indigo-600">Montant total</p>
-                                    <p class="text-2xl font-bold text-indigo-700" id="potentialGain">0 FCFA</p>
+                                    <p class="text-2xl font-bold text-indigo-700" id="potentialGain"></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm text-indigo-600">Frais de service</p>
+                                    <p class="text-lg font-semibold text-indigo-700" id="fraisDeSevice">-</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-sm text-indigo-600">Date de fin</p>
@@ -158,231 +153,44 @@
                     </button>
                 </form>
 
-                <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        const amountInput = document.getElementById("amount");
-                        const durationInput = document.getElementById("duration");
-                        const durationLabel = document.getElementById("durationLabel");
-                        const potentialGainDisplay = document.getElementById("potentialGain");
-                        const endDateDisplay = document.getElementById("endDateDisplay");
-                        const amountPerContributionDisplay = document.getElementById("amountPerContribution");
-
-                        const FREQUENCY_DAYS = {
-                            quotidienne: 1,
-                            hebdomadaire: 7,
-                            mensuelle: 30
-                        };
-
-                        const DURATION_LABELS = {
-                            quotidienne: "Nombre de jours",
-                            hebdomadaire: "Nombre de semaines",
-                            mensuelle: "Nombre de mois"
-                        };
-
-                        const DURATION_PLACEHOLDERS = {
-                            quotidienne: "Entrez le nombre de jours",
-                            hebdomadaire: "Entrez le nombre de semaines",
-                            mensuelle: "Entrez le nombre de mois"
-                        };
-
-                        function formatDate(date) {
-                            const options = {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                            };
-                            return date.toLocaleDateString('fr-FR', options);
-                        }
-
-                        function calculateEndDate(duration, frequency) {
-                            const today = new Date();
-                            const durationInDays = duration * FREQUENCY_DAYS[frequency];
-                            const endDate = new Date(today);
-                            endDate.setDate(today.getDate() + durationInDays);
-                            return endDate;
-                        }
-
-                        function calculatePotentialGain() {
-                            const amount = parseFloat(amountInput.value) || 0;
-                            const duration = parseInt(durationInput.value) || 0;
-                            const frequency = document.querySelector('input[name="frequency"]:checked')?.value;
-
-                            if (!amount || !duration || !frequency) {
-                                potentialGainDisplay.textContent = "0 FCFA";
-                                endDateDisplay.textContent = "-";
-                                amountPerContributionDisplay.textContent = "0 FCFA";
-                                return;
-                            }
-
-                            // Calculer la date de fin
-                            const endDate = calculateEndDate(duration, frequency);
-
-                            // Calculer le gain potentiel
-                            const potentialGain = duration * amount;
-
-                            // Mettre à jour l'affichage
-                            potentialGainDisplay.textContent = new Intl.NumberFormat('fr-FR').format(potentialGain) + " FCFA";
-                            endDateDisplay.textContent = formatDate(endDate);
-                            amountPerContributionDisplay.textContent = new Intl.NumberFormat('fr-FR').format(amount) + " FCFA";
-                        }
-
-                        function updateDurationLabel() {
-                            const frequency = document.querySelector('input[name="frequency"]:checked')?.value;
-                            if (frequency) {
-                                durationLabel.textContent = DURATION_LABELS[frequency];
-                                durationInput.placeholder = DURATION_PLACEHOLDERS[frequency];
-                            }
-                        }
-
-                        // Event listeners
-                        amountInput.addEventListener("input", calculatePotentialGain);
-                        durationInput.addEventListener("input", calculatePotentialGain);
-
-                        document.querySelectorAll('input[name="frequency"]').forEach((input) => {
-                            input.addEventListener("change", () => {
-                                updateDurationLabel();
-                                calculatePotentialGain();
-                            });
-                        });
-
-                        // Initial setup
-                        updateDurationLabel();
-                        calculatePotentialGain();
-                    });
-                </script>
-
+                <script src="{{ asset('js/tontine.js') }}"></script>
             </div>
         </div>
     @else
         <!-- Affichage de la tontine active -->
         <div class="max-w-3xl mx-auto ">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Tontines en cours</h2>
-            <div
-                class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group">
-                <div class="p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <div class="flex items-center gap-3">
-                                <h3 class="text-xl font-bold text-gray-900">Tontine #2989</h3>
-                                <span
-                                    class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Active</span>
-                            </div>
-                            <div class="mt-2 space-y-1">
-                                <p class="text-gray-600">Montant: <span class="font-semibold">278,000 FCFA</span></p>
-                                <p class="text-gray-600">Fréquence: <span class="font-semibold">Hebdomadaire</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm text-gray-500">Date de début</p>
-                            <p class="font-bold text-gray-900">12 Mai 2024</p>
-                            <p class="text-sm text-gray-500 mt-2">Date de fin</p>
-                            <p class="font-bold text-gray-900">12 Mai 2025</p>
-                        </div>
-                    </div>
-
-                    <!-- Barre de progression -->
-                    <div class="mt-4">
-                        <div class="flex justify-between text-sm mb-2">
-                            <span class="text-gray-600">Progression</span>
-                            <span class="font-medium text-indigo-600">65%</span>
-                        </div>
-                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full relative group-hover:shadow-lg transition-all duration-300"
-                                style="width: 65%">
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent
-                                    transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Statistiques -->
-                    <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
-                        <div>
-                            <p class="text-sm text-gray-500">Cotisations effectuées</p>
-                            <p class="text-lg font-bold text-gray-900">15/24</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Montant collecté</p>
-                            <p class="text-lg font-bold text-indigo-600">180,000 FCFA</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Prochain paiement</p>
-                            <p class="text-lg font-bold text-gray-900">19 Fév 2025</p>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex justify-end mt-6 gap-3">
-                        <button
-                            class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2 group">
-                            <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-700" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            Détails
-                        </button>
-                        <button
-                            class="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group">
-                            <svg class="w-4 h-4 text-indigo-500 group-hover:text-indigo-700" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Effectuer un paiement
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <x-tontine-card :id="2989" :montant="278000" frequence="Hebdomadaire" dateDebut="12 Mai 2024"
+                dateFin="12 Mai 2025" :progression="65" :cotisationsEffectuees="15" :cotisationsTotales="24" :montantCollecte="180000"
+                prochainPaiement="19 Fév 2025" status="active" />
 
         </div>
     @endif
 
     <!-- Historique des tontines -->
     <div class="max-w-3xl mx-auto mt-12">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Historique des tontines</h2>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Historique des tontines</h2>
+            <div class="flex gap-2">
+                <select
+                    class="px-4 py-2 border border-gray-200 rounded-lg text-gray-600 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="all">Toutes les tontines</option>
+                    <option value="active">Tontines actives</option>
+                    <option value="completed">Tontines terminées</option>
+                </select>
+            </div>
+        </div>
 
         <div class="space-y-4">
-            <!-- Carte de tontine -->
-            <div
-                class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div class="p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900">Tontine #2989</h3>
-                            <p class="text-gray-600 mt-1">Montant: <span class="font-semibold">278,000 FCFA</span></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm text-gray-500">Date</p>
-                            <p class="font-bold text-gray-900">12 Mai 2098</p>
-                        </div>
-                    </div>
+
+            <x-tontine-card :id="2989" :montant="278000" frequence="Hebdomadaire" dateDebut="12 Mai 2024"
+                dateFin="12 Mai 2025" :progression="65" :cotisationsEffectuees="15" :cotisationsTotales="24" :montantCollecte="180000"
+                prochainPaiement="19 Fév 2025" status="active" />
+            <x-tontine-card :id="2989" :montant="278000" frequence="Hebdomadaire" dateDebut="12 Mai 2024"
+                dateFin="12 Mai 2025" :progression="100" :cotisationsEffectuees="3" :cotisationsTotales="3" :montantCollecte="180000"
+                prochainPaiement="19 Fév 2025" status="active" />
 
 
-                </div>
-            </div>
-            <div
-                class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div class="p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900">Tontine #2989</h3>
-                            <p class="text-gray-600 mt-1">Montant: <span class="font-semibold">278,000 FCFA</span></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm text-gray-500">Date</p>
-                            <p class="font-bold text-gray-900">12 Mai 2098</p>
-                        </div>
-                    </div>
-
-
-                </div>
-            </div>
         </div>
     </div>
 </div>
