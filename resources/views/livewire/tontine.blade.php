@@ -169,14 +169,11 @@
         <!-- Affichage de la tontine active -->
         <div class="max-w-3xl mx-auto ">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Tontines en cours </h2>
-            @if ($tontineEnCours)
-                <x-tontine-card :id="$tontineEnCours->id" :montant="$tontineEnCours->montant" :frequence="$tontineEnCours->frequence" :dateDebut="$tontineEnCours->date_debut"
-                    :dateFin="$tontineEnCours->date_fin" :progression="65" :cotisationsEffectuees="15" :cotisationsTotales="24" :montantCollecte="180000"
-                    :prochainPaiement="'19 Fév 2025'" status="active" />
-            @else
-                <p class="text-gray-600">Aucune tontine en cours.</p>
-            @endif
-
+            <x-tontine-card id="{{ $tontineEnCours->id }}" montant="{{ $tontineEnCours->montant_cotisation }}"
+                frequence="{{ $tontineEnCours->frequence }}" dateDebut="{{ $tontineEnCours->created_at }}"
+                dateFin="{{ $tontineEnCours->date_fin }}" progression="65" cotisationsEffectuees="15"
+                cotisationsTotales="24" montantCollecte="180000"
+                prochainPaiement="{{ $tontineEnCours->next_payment_date }}" status="active" />
         </div>
     @endif
 

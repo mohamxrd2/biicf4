@@ -95,12 +95,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (amount && duration && frequency) {
                 // Calculs
                 const endDate = calculateEndDate(duration, frequency);
-                const potentialGain = duration * amount;
                 const fraisDeService = calculateFraisDeService(
                     amount,
                     duration,
                     frequency
                 );
+                const potentialGain = (duration * amount) - fraisDeService;
 
                 // Mise à jour de l'affichage
                 displayAmount = formatMontant(potentialGain);

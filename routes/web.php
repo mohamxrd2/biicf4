@@ -164,7 +164,7 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
 
         Route::get('porte-feuille/tontine', Tontine::class)->name('tontine');
-        Route::get('porte-feuille/tontine/details', DetailTontine::class)->name('tontine.detail');
+        Route::get('porte-feuille/tontine/details/{id}', DetailTontine::class)->name('tontine.detail');
 
 
 
