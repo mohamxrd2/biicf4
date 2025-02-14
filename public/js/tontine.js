@@ -10,6 +10,12 @@ document.addEventListener("DOMContentLoaded", function () {
         frequencyInputs: document.querySelectorAll('input[name="frequency"]'),
     };
 
+    // Get the server time from the data attribute
+    const container = document.querySelector("[data-server-time]");
+    const serverTime = container
+        ? new Date(container.dataset.serverTime)
+        : new Date();
+
     // Vérification des éléments requis
     const requiredElements = [
         "amountInput",
@@ -61,7 +67,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function calculateEndDate(duration, frequency) {
-        const today = new Date();
+        // Use the server time instead of new Date()
+        const today = serverTime;
         const durationInDays = duration * FREQUENCY_DAYS[frequency];
         const endDate = new Date(today);
         endDate.setDate(today.getDate() + durationInDays);
@@ -100,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     duration,
                     frequency
                 );
-                const potentialGain = (duration * amount) - fraisDeService;
+                const potentialGain = duration * amount - fraisDeService;
 
                 // Mise à jour de l'affichage
                 displayAmount = formatMontant(potentialGain);

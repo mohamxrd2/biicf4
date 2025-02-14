@@ -10,7 +10,7 @@ class Tontines extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nom',
+        'date_debut',
         'montant_cotisation',
         'frequence',
         'date_fin',

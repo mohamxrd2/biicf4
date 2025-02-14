@@ -3,7 +3,8 @@
     @if (!$tontineStart)
 
         <div class="max-w-3xl mx-auto">
-            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100"
+                data-server-time="{{ $serverTime }}">
                 <!-- Header avec un design plus moderne -->
                 <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8">
                     <h2 class="text-4xl font-bold  text-center tracking-tight text-white">Nouvelle Tontine</h2>
@@ -146,19 +147,36 @@
                             </div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-medium text-purple-800">Information importante</h3>
-                                <div class="mt-2 text-sm text-purple-700">
-                                    <p>Le premier paiement couvre les frais de gestion.</p>
-                                    <p>Les paiements suivants seront automatiquement ajoutés au CEDD.</p>
+                                <div class="mt-2 text-sm text-purple-700 bg-purple-100 p-4 rounded-lg shadow-md">
+                                    <ul class="list-disc list-inside space-y-2">
+                                        <li><strong>Les frais de gestion</strong> seront prélevés à la fin de la
+                                            tontine.</li>
+                                        <li>Vous devez disposer des fonds nécessaires sur votre compte pour commencer.
+                                            <span class="font-semibold">Veuillez déposer le montant minimum
+                                                requis.</span>
+                                        </li>
+                                        <li>Les paiements suivants seront automatiquement ajoutés au <span
+                                                class="font-semibold">CEDD</span>.</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Submit Button -->
-                    <button type="submit"
+
+                    <button wire:loading.attr="disabled" type="submit"
                         class="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform transition-all duration-300 ease-in-out hover:-translate-y-1">
-                        Lancer la Tontine
-                        <span class="ml-2">→</span>
+                        <span wire:loading.remove> Lancer la Tontine</span>
+                        <span wire:loading.remove class="ml-2">→</span>
+                        <svg wire:loading class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        <span wire:loading>Traitement...</span>
                     </button>
                 </form>
 
@@ -166,14 +184,14 @@
             </div>
         </div>
     @else
-        <!-- Affichage de la tontine active -->
-        <div class="max-w-3xl mx-auto ">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Tontines en cours </h2>
-            <x-tontine-card id="{{ $tontineEnCours->id }}" montant="{{ $tontineEnCours->montant_cotisation }}"
-                frequence="{{ $tontineEnCours->frequence }}" dateDebut="{{ $tontineEnCours->created_at }}"
-                dateFin="{{ $tontineEnCours->date_fin }}" progression="65" cotisationsEffectuees="15"
-                cotisationsTotales="24" montantCollecte="180000"
-                prochainPaiement="{{ $tontineEnCours->next_payment_date }}" status="active" />
+        <!-- Display active tontine -->
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Tontines en cours</h2>
+            @if ($tontineEnCours)
+                <x-tontine-card :id="$tontineEnCours->id" :montant="$tontineEnCours->montant_cotisation" :frequence="$tontineEnCours->frequence" :dateDebut="$tontineEnCours->created_at"
+                    :dateFin="$tontineEnCours->date_fin" :progression="65" :cotisationsEffectuees="15" :cotisationsTotales="24" :montantCollecte="180000"
+                    :prochainPaiement="$tontineEnCours->next_payment_date" status="active" />
+            @endif
         </div>
     @endif
 

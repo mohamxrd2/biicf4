@@ -8,6 +8,7 @@ use App\Services\TimeSync\TimeSyncService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Carbon\Carbon;
+use Livewire\Attributes\On;
 
 class Tontine extends Component
 {
@@ -16,11 +17,12 @@ class Tontine extends Component
     public $duration;
     public $tontineStart = false;
     public $tontineData;
-    public $tontineEnCours;
+    public $tontineEnCours = null;
     public $serverTime;
     public $time;
     public $error;
     public $timestamp;
+    public $startDay;
     public $potentialGain = 0;
     protected $recuperationTimer;
 
@@ -50,8 +52,15 @@ class Tontine extends Component
         $this->tontineStart = Tontines::where('user_id', Auth::id())
             ->where('date_fin', '>=', $this->serverTime)
             ->exists();
+
+        $this->changing();
+    }
+
+
+    #[On('tontineUpdated')] // Écoute l'événement 'tontineUpdated'
+    public function changing()
+    {
         $this->tontineEnCours = Tontines::where('user_id', Auth::id())
-            ->where('date_fin', '>=', $this->serverTime)
             ->first();
     }
 
@@ -158,7 +167,7 @@ class Tontine extends Component
 
             // Création de la tontine
             Tontines::create([
-                'nom' => 'Tontine ' . $this->serverTime->format('Y-m-d'),
+                'date_debut' => $this->serverTime->format('Y-m-d'),
                 'montant_cotisation' => $this->amount,
                 'montant_total' => $this->amount * $nbre_depot,
                 'frequence' => $this->frequency,
@@ -172,7 +181,7 @@ class Tontine extends Component
             // Mise à jour des éléments UI
             $this->dispatch('formSubmitted', 'Tontine créée avec succès !');
             $this->tontineStart = !$this->tontineStart;
-            $this->dispatch('tontineUpdated', $this->tontineStart);
+            $this->dispatch('tontineUpdated');
         } catch (\Exception $e) {
             $this->errors['amount'] = 'Une erreur est survenue lors de la création de la tontine.';
         }
