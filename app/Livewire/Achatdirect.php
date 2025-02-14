@@ -97,6 +97,7 @@ class Achatdirect extends Component
         $this->error = $result['error'];
         $this->timestamp = $result['timestamp'];
     }
+    
     public function ciblageLivreurs()
     {
 

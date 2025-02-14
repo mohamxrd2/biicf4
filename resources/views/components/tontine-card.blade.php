@@ -20,7 +20,7 @@
             <div>
                 <div class="flex items-center gap-3">
                     <a href="{{ route('tontine.detail', $id) }}" class="text-xl font-bold text-gray-900">Tontine
-                        #{{ $id }}</a>
+                        #000{{ $id }}</a>
                     <span @class([
                         'px-3 py-1 text-xs font-semibold rounded-full',
                         'text-green-700 bg-green-100' => $status === 'active',

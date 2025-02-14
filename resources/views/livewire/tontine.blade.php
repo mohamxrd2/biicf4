@@ -1,5 +1,7 @@
 <div class="min-h-screen p-8">
-    @if ($tontineStart)
+
+    @if (!$tontineStart)
+
         <div class="max-w-3xl mx-auto">
             <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
                 <!-- Header avec un design plus moderne -->
@@ -21,13 +23,15 @@
                             Montant de cotisation
                         </label>
                         <div class="relative mt-1">
-                            <input type="number" id="amount" wire:model.debounce.500ms="amount"
+                            <input type="number" id="amount" wire:model.defer="amount"
                                 class="block w-full pl-12 pr-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
                                 placeholder="Montant en FCFA" required>
                         </div>
-                        @error('amount')
-                            <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
+
+                        <!-- Pour le montant -->
+                        @if ($errors['amount'])
+                            <span class="text-sm text-red-500">{{ $errors['amount'] }}</span>
+                        @endif
                     </div>
 
                     <!-- Fréquence avec badges -->
@@ -71,9 +75,10 @@
                             </label>
                         </div>
 
-                        @error('frequency')
-                            {{-- <span class="text-sm text-red-500 mt-1">{{ $message }}</span> --}}
-                        @enderror
+                        <!-- Pour la fréquence -->
+                        @if ($errors['frequency'])
+                            <span class="text-sm text-red-500">{{ $errors['frequency'] }}</span>
+                        @endif
                     </div>
 
                     <!-- Date de fin avec calendrier moderne -->
@@ -90,10 +95,14 @@
                             </span>
                         </label>
                         <div class="relative mt-1">
-                            <input type="number" id="duration"
+                            <input type="number" id="duration" wire:model.defer="duration"
                                 class="block w-full px-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
                                 placeholder="Entrez la durée" required>
                         </div>
+                        <!-- Pour la durée -->
+                        @if ($errors['duration'])
+                            <span class="text-sm text-red-500">{{ $errors['duration'] }}</span>
+                        @endif
                     </div>
 
                     <!-- Section Gain Potentiel -->
@@ -159,10 +168,14 @@
     @else
         <!-- Affichage de la tontine active -->
         <div class="max-w-3xl mx-auto ">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Tontines en cours</h2>
-            <x-tontine-card :id="2989" :montant="278000" frequence="Hebdomadaire" dateDebut="12 Mai 2024"
-                dateFin="12 Mai 2025" :progression="65" :cotisationsEffectuees="15" :cotisationsTotales="24" :montantCollecte="180000"
-                prochainPaiement="19 Fév 2025" status="active" />
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Tontines en cours </h2>
+            @if ($tontineEnCours)
+                <x-tontine-card :id="$tontineEnCours->id" :montant="$tontineEnCours->montant" :frequence="$tontineEnCours->frequence" :dateDebut="$tontineEnCours->date_debut"
+                    :dateFin="$tontineEnCours->date_fin" :progression="65" :cotisationsEffectuees="15" :cotisationsTotales="24" :montantCollecte="180000"
+                    :prochainPaiement="'19 Fév 2025'" status="active" />
+            @else
+                <p class="text-gray-600">Aucune tontine en cours.</p>
+            @endif
 
         </div>
     @endif
