@@ -73,7 +73,7 @@
             </div>
             <div>
                 <p class="text-sm text-gray-500">Prochain paiement</p>
-                <p class="text-lg font-bold text-gray-900">{{ $prochainPaiement }}</p>
+                <p class="text-lg font-bold text-red-700">{{ $prochainPaiement }}</p>
             </div>
         </div>
 
