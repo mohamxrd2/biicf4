@@ -1,8 +1,6 @@
 <div class="min-h-screen p-8">
-
     @if (!$tontineStart)
-    <x-tontine-form :server-time="$serverTime" :errors="$errors" />
-        
+        <x-tontine-form :server-time="$serverTime" :errors="$errors" />
     @else
         <!-- Display active tontine -->
         <div class="max-w-3xl mx-auto">

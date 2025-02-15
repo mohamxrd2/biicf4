@@ -45,6 +45,11 @@ class TontineCreationService
 
             // Mise à jour du wallet
             $userWallet = Wallet::where('user_id', $userId)->first();
+
+            if (!$userWallet || $userWallet->balance < $data['amount']) {
+                throw new \Exception('Solde insuffisant pour créer la tontine.');
+            }
+
             $userWallet->decrement('balance', $data['amount']);
 
             // Création de la transaction
@@ -60,7 +65,7 @@ class TontineCreationService
 
             // Création de l'élément gelé
             gelement::create([
-                'reference_id' => $reference_id,
+                'reference_id' => $this->generateUniqueReference(),
                 'id_wallet' => $userWallet->id,
                 'amount' => $data['amount'],
             ]);

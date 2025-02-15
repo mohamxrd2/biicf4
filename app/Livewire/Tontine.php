@@ -135,7 +135,7 @@ class Tontine extends Component
             $this->tontineStart = !$this->tontineStart;
             $this->dispatch('tontineUpdated');
         } else {
-            $this->errors['amount'] = 'Une erreur est survenue lors de la création de la tontine.';
+            session()->flash('error', 'Une erreur est survenue ou Solde insuffisant pour créer la tontine.');
         }
     }
 
