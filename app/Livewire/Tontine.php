@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Cotisation;
 use App\Models\Tontines;
 use App\Services\RecuperationTimer;
 use App\Services\TimeSync\TimeSyncService;
@@ -17,6 +18,10 @@ class Tontine extends Component
     public $tontineStart = false;
     public $tontineData;
     public $tontineEnCours;
+    public $cotisations;
+    public $cotisationsCount;
+    public $cotisationSum;
+    public $pourcentage;
     public $serverTime;
     public $time;
     public $error;
@@ -51,14 +56,26 @@ class Tontine extends Component
         $this->tontineStart = Tontines::where('user_id', Auth::id())
             ->where('date_fin', '>=', $this->serverTime)
             ->exists();
+
         $this->tontineEnCours = Tontines::where('user_id', Auth::id())
             ->where('date_fin', '>=', $this->serverTime)
             ->first();
-            $this->tontineDatas = Tontines::where('user_id', Auth::id())
+
+        $this->tontineDatas = Tontines::where('user_id', Auth::id())
             ->where('date_fin', '>=', $this->serverTime)
             ->orderBy('created_at', 'desc') // Trie par date de création, du plus récent au plus ancien
             ->get();
-        
+
+        $this->cotisations = Cotisation::where('user_id', Auth::id())
+            ->where('tontine_id', $this->tontineEnCours->id)
+            ->get();
+
+        $this->cotisationsCount = $this->cotisations->where('statut', 'reussi')->count();
+        $this->cotisationSum = $this->cotisations->sum('montant');
+
+        $nombreCotisations = $this->tontineEnCours->nombre_cotisations ?: 1; // Évite la division par zéro
+
+        $this->pourcentage = ($this->cotisationsCount / $nombreCotisations) * 100;
     }
 
     public function timeServer()

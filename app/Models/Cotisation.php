@@ -18,7 +18,7 @@ class Cotisation extends Model
 
     public function tontine()
     {
-        return $this->belongsTo(Tontine::class);
+        return $this->belongsTo(Tontines::class);
     }
 
     public function echecPaiement()

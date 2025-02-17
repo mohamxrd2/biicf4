@@ -1,17 +1,17 @@
 <div>
     @php
         $tontineData = [
-            'id' => '2989',
+            'id' => $tontine->id,
             'status' => 'active',
-            'amount' => 278000,
-            'frequency' => 'Hebdomadaire',
-            'startDate' => '12 Mai 2024',
-            'endDate' => '12 Mai 2025',
-            'progress' => 65,
-            'contributionsMade' => 12,
-            'totalContributions' => 24,
-            'amountCollected' => 180000,
-            'nextPayment' => '19 Fév 2025',
+            'amount' => $tontine->gain_potentiel,
+            'frequency' => $tontine->frequence,
+            'startDate' => $tontine->date_debut,
+            'endDate' => $tontine->date_fin,
+            'progress' => $pourcentage,
+            'contributionsMade' => $cts_reussi,
+            'totalContributions' => $tontine->nombre_cotisations,
+            'amountCollected' => $cts_sum, // Utilisation de la variable correcte
+            'nextPayment' => $tontine->next_payment_date,
         ];
 
         $transactions = [
@@ -81,7 +81,7 @@
                                 </div>
                                 <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-                                        style="width: {{ $poucentage }}%"></div>
+                                        style="width: {{ $pourcentage }}%"></div>
                                 </div>
                             </div>
 
@@ -90,7 +90,7 @@
                                 <div>
                                     <p class="text-sm text-gray-500">Cotisations effectuées</p>
                                     <p class="text-lg font-bold text-gray-900">
-                                        {{ $tontineData['contributionsMade'] }}/{{ $tontine->nb_cotisations }}
+                                        {{ $tontineData['contributionsMade'] }}/{{ $tontine->nombre_cotisations }}
                                     </p>
                                 </div>
                                 <div>
@@ -187,7 +187,8 @@
                                     </svg>
                                     <div>
                                         <p class="font-medium text-gray-900">Date de début</p>
-                                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}
+                                        <p class="text-sm text-gray-500">
+                                            {{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}
                                         </p>
                                     </div>
                                 </div>
@@ -199,7 +200,9 @@
                                     </svg>
                                     <div>
                                         <p class="font-medium text-gray-900">Date de fin</p>
-                                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($tontine->date_fin)->translatedFormat('d F Y') }}</p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ \Carbon\Carbon::parse($tontine->date_fin)->translatedFormat('d F Y') }}
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="flex items-start gap-3">
@@ -210,7 +213,9 @@
                                     </svg>
                                     <div>
                                         <p class="font-medium text-gray-900">Prochain paiement</p>
-                                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}</p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>

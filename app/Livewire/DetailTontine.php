@@ -3,27 +3,38 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\Tontines;
 use App\Models\Cotisation;
+use App\Models\Tontines;
 
 class DetailTontine extends Component
 {
     public $id;
     public $tontine;
-    public $poucentage;
+    public $pourcentage;
     public $cts_reussi;
+    public $cts_sum;
 
     public function mount($id)
     {
         $this->id = $id;
-        // Fetch the tontine data from the database and pass it to the view.
-        $this->tontine = Tontines::find($this->id);
 
-        $this->cts_reussi = Cotisation::where('tontine_id', $this->id)
+        // Récupération de la tontine
+        $this->tontine = Tontines::findOrFail($this->id);
+
+        // Récupération des cotisations réussies
+        $cotisationsReussies = Cotisation::where('tontine_id', $this->id)
             ->where('statut', 'reussi')
-            ->count();
-        $this->poucentage = ($this->cts_reussi / $this->tontine->nombre_cotisations) * 100;
+            ->get();
+
+        // Comptage et somme des montants des cotisations réussies
+        $this->cts_reussi = $cotisationsReussies->count();
+        $this->cts_sum = $cotisationsReussies->sum('montant');
+
+        // Gestion du risque de division par zéro
+        $nombreCotisations = $this->tontine->nombre_cotisations ?: 1;
+        $this->pourcentage = ($this->cts_reussi / $nombreCotisations) * 100;
     }
+
     public function render()
     {
         return view('livewire.detail-tontine');
