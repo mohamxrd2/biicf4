@@ -38,7 +38,7 @@ class TontineCreationService
 
             $calculations = $this->calculationService->calculatePotentialGain(
                 $data['amount'],
-                $data['duration']
+                $data['duration'],
             );
 
             $reference_id = $this->generateIntegerReference();
@@ -52,16 +52,7 @@ class TontineCreationService
 
             $userWallet->decrement('balance', $data['amount']);
 
-            // Création de la transaction
-            $this->transactionService->createTransaction(
-                $userId,
-                $userId,
-                'Réception',
-                $data['amount'],
-                $reference_id,
-                'Paiement pour achat.',
-                'COC'
-            );
+
 
             // Création de l'élément gelé
             gelement::create([
@@ -71,16 +62,28 @@ class TontineCreationService
             ]);
 
             // Création de la tontine
-            Tontines::create([
+            $Tontines = Tontines::create([
                 'date_debut' => $startDate->format('Y-m-d'),
                 'montant_cotisation' => $data['amount'],
-                'montant_total' => $calculations['montant_total'],
                 'frequence' => $data['frequency'],
                 'date_fin' => $endDate,
                 'next_payment_date' => $nextPaymentDate,
+                'gain_potentiel' => $calculations['gain_potentiel'],
+                'nombre_cotisations' => $data['duration'],
                 'frais_gestion' => $calculations['frais_gestion'],
                 'user_id' => $userId,
             ]);
+
+            // Création de la transaction
+            $this->transactionService->createTransaction(
+                $userId,
+                $userId,
+                'Gele',
+                $data['amount'],
+                $reference_id,
+                "Gelemment pour tontine . {$Tontines->id}",
+                'COC'
+            );
 
             return true;
         } catch (\Exception $e) {

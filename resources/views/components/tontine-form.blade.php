@@ -99,10 +99,9 @@
                         <h3 class="text-sm font-medium text-purple-800">Information importante</h3>
                         <div class="mt-2 text-sm text-purple-700 bg-purple-100 p-4 rounded-lg shadow-md">
                             <ul class="list-disc list-inside space-y-2">
-                                <li><strong>Les frais de gestion</strong> seront prélevés à la fin de la tontine.</li>
-                                <li>Vous devez disposer des fonds nécessaires sur votre compte COC pour commencer. <span
-                                        class="font-semibold">Le montant de la première cotisation sera immédiatement
-                                        gelé.</span> </li>
+                                <li><strong>Les frais de service</strong> seront prélevés à la fin de la tontine.</li>
+                                <li><span class="font-semibold">Le montant de la première cotisation sera immédiatement
+                                        gelé</span> (disposer des fonds nécessaires sur votre compte COC ).</li>
                                 <li>Les paiements suivants seront automatiquement ajoutés au <span
                                         class="font-semibold">CEDD</span>.</li>
                             </ul>

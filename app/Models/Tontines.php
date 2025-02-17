@@ -16,6 +16,8 @@ class Tontines extends Model
         'date_fin',
         'frais_gestion',
         'next_payment_date',
+        'gain_potentiel',
+        'nombre_cotisations',
         'user_id'
     ];
 
