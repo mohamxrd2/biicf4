@@ -8,7 +8,7 @@
             'startDate' => '12 Mai 2024',
             'endDate' => '12 Mai 2025',
             'progress' => 65,
-            'contributionsMade' => 15,
+            'contributionsMade' => 12,
             'totalContributions' => 24,
             'amountCollected' => 180000,
             'nextPayment' => '19 Fév 2025',
@@ -36,7 +36,7 @@
                             </svg>
                         </a>
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-900">Tontine #{{ $tontineData['id'] }}</h1>
+                            <h1 class="text-2xl font-bold text-gray-900">Tontine #000{{ $tontine->id }}</h1>
                             <p class="text-sm text-gray-500">Créée le {{ $tontineData['startDate'] }}</p>
                         </div>
                         <span class="ml-4 px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
@@ -55,16 +55,21 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="p-6">
                             <h2 class="text-lg font-semibold text-gray-900 mb-6">Aperçu de la tontine</h2>
-                            <div class="grid grid-cols-2 gap-6">
+                            <div class="grid grid-cols-3 gap-6">
                                 <div class="space-y-1">
                                     <p class="text-sm text-gray-500">Montant de cotisation</p>
                                     <p class="text-xl font-bold text-gray-900">
-                                        {{ number_format($tontineData['amount'], 0, ',', ' ') }} FCFA
+                                        {{ number_format($tontine->montant_cotisation, 0, ',', ' ') }} FCFA
                                     </p>
                                 </div>
                                 <div class="space-y-1">
+                                    <p class="text-sm text-gray-500">Gain potentiel</p>
+                                    <p class="text-xl font-bold text-gray-900">
+                                        {{ number_format($tontine->gain_potentiel, 0, ',', ' ') }} FCFA</p>
+                                </div>
+                                <div class="space-y-1">
                                     <p class="text-sm text-gray-500">Fréquence</p>
-                                    <p class="text-xl font-bold text-gray-900">{{ $tontineData['frequency'] }}</p>
+                                    <p class="text-xl font-bold text-gray-900">{{ $tontine->frequence }}</p>
                                 </div>
                             </div>
 
@@ -76,7 +81,7 @@
                                 </div>
                                 <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-                                        style="width: {{ $tontineData['progress'] }}%"></div>
+                                        style="width: {{ $poucentage }}%"></div>
                                 </div>
                             </div>
 
@@ -85,7 +90,7 @@
                                 <div>
                                     <p class="text-sm text-gray-500">Cotisations effectuées</p>
                                     <p class="text-lg font-bold text-gray-900">
-                                        {{ $tontineData['contributionsMade'] }}/{{ $tontineData['totalContributions'] }}
+                                        {{ $tontineData['contributionsMade'] }}/{{ $tontine->nb_cotisations }}
                                     </p>
                                 </div>
                                 <div>
@@ -164,12 +169,7 @@
                                     class="w-full py-3 px-4 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors">
                                     Effectuer un paiement
                                 </button>
-                                {{-- <button class="w-full py-3 px-4 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                </svg>
-                                Partager
-                            </button> --}}
+
                             </div>
                         </div>
                     </div>
@@ -187,7 +187,8 @@
                                     </svg>
                                     <div>
                                         <p class="font-medium text-gray-900">Date de début</p>
-                                        <p class="text-sm text-gray-500">{{ $tontineData['startDate'] }}</p>
+                                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="flex items-start gap-3">
@@ -198,7 +199,7 @@
                                     </svg>
                                     <div>
                                         <p class="font-medium text-gray-900">Date de fin</p>
-                                        <p class="text-sm text-gray-500">{{ $tontineData['endDate'] }}</p>
+                                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($tontine->date_fin)->translatedFormat('d F Y') }}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-start gap-3">
@@ -209,7 +210,7 @@
                                     </svg>
                                     <div>
                                         <p class="font-medium text-gray-900">Prochain paiement</p>
-                                        <p class="text-sm text-gray-500">{{ $tontineData['nextPayment'] }}</p>
+                                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}</p>
                                     </div>
                                 </div>
                             </div>
