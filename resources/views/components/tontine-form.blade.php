@@ -46,7 +46,7 @@
                 </div>
 
                 @if ($errors['frequency'])
-                    <span class="text-sm text-red-500">{{ $errors['amount'] }}</span>
+                    <span class="text-sm text-red-500">{{ $errors['frequency'] }}</span>
                 @endif
             </div>
 
@@ -54,7 +54,7 @@
             <div class="space-y-2">
                 <label class="text-base font-medium text-gray-900 flex items-center gap-2">
                     <x-icons.calendar class="w-5 h-5 text-indigo-500" />
-                    <span id="durationLabel">Durée</span>
+                    <span id="durationLabel">Nombre de cotisation</span>
                 </label>
                 <div class="relative mt-1">
                     <input type="number" id="duration" wire:model.defer="duration"

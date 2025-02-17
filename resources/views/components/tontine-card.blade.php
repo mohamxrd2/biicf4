@@ -38,9 +38,9 @@
             </div>
             <div class="text-right">
                 <p class="text-sm text-gray-500">Date de début</p>
-                <p class="font-bold text-gray-900">{{ $dateDebut }}</p>
+                <p class="font-bold text-gray-900"> {{ \Carbon\Carbon::parse($dateDebut)->translatedFormat('d F Y') }}</p>
                 <p class="text-sm text-gray-500 mt-2">Date de fin</p>
-                <p class="font-bold text-gray-900">{{ $dateFin }}</p>
+                <p class="font-bold text-gray-900">{{ \Carbon\Carbon::parse($dateFin)->translatedFormat('d F Y') }}</p>
             </div>
         </div>
 
