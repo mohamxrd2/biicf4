@@ -5,32 +5,37 @@
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100"
         data-server-time="{{ $serverTime }}">
         {{-- Header --}}
-        <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8">
-            <h2 class="text-4xl font-bold text-center tracking-tight text-white">Nouvelle Tontine</h2>
-            <p class="mt-2 text-center text-lg text-white">Créez votre épargne collaborative en quelques clics</p>
+        <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-6 sm:p-8 lg:p-12 text-center">
+            <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+                Nouvelle Tontine
+            </h2>
+            <p class="mt-2 sm:mt-4 text-base sm:text-lg text-white">
+                Créez votre épargne collaborative en quelques clics
+            </p>
         </div>
 
         <form wire:submit.prevent="initiateTontine" class="p-8 space-y-8">
             {{-- Montant --}}
-            <div class="space-y-2">
-                <label for="amount" class="text-base font-medium text-gray-900 flex items-center gap-2">
+            <div class="space-y-2 w-full">
+                <label for="amount" class="text-base sm:text-lg font-medium text-gray-900 flex items-center gap-2">
                     <x-icons.currency class="w-5 h-5 text-indigo-500" />
                     Montant de cotisation
                 </label>
                 <div class="relative mt-1">
                     <input type="number" id="amount" wire:model.defer="amount"
-                        class="block w-full pl-12 pr-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
-                        placeholder="Montant en FCFA" required>
+                        class="block w-full pl-16 pr-4 py-3 sm:py-4 text-base sm:text-lg border-gray-200 rounded-xl 
+                               focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
+                        placeholder="Montant" required>
                 </div>
                 @if ($errors['amount'])
                     <span class="text-sm text-red-500">{{ $errors['amount'] }}</span>
                 @endif
             </div>
-
+            
             {{-- Fréquence --}}
             <div>
                 <label class="text-sm font-semibold text-gray-700 mb-3 block">Fréquence de cotisation</label>
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     @foreach (['quotidienne' => 'Quotidienne', 'hebdomadaire' => 'Hebdomadaire', 'mensuelle' => 'Mensuelle'] as $value => $label)
                         <label class="relative">
                             <input type="radio" name="frequency" wire:model.defer="frequency"
@@ -44,11 +49,12 @@
                         </label>
                     @endforeach
                 </div>
-
+            
                 @if ($errors['frequency'])
-                    <span class="text-sm text-red-500">{{ $errors['amount'] }}</span>
+                    <span class="text-sm text-red-500">{{ $errors['frequency'] }}</span>
                 @endif
             </div>
+            
 
             {{-- Durée --}}
             <div class="space-y-2">
@@ -58,14 +64,15 @@
                 </label>
                 <div class="relative mt-1">
                     <input type="number" id="duration" wire:model.defer="duration"
-                        class="block w-full px-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
+                        class="block w-full  px-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
                         placeholder="Entrez la durée" required>
                 </div>
-
+            
                 @if ($errors['duration'])
-                    <span class="text-sm text-red-500">{{ $errors['amount'] }}</span>
+                    <span class="text-sm text-red-500">{{ $errors['duration'] }}</span>
                 @endif
             </div>
+            
 
             {{-- Gain Potentiel --}}
             <div class="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
@@ -74,7 +81,7 @@
                         <x-icons.currency class="w-5 h-5 text-indigo-500" />
                         <h3 class="text-lg font-semibold text-indigo-900">Gain Potentiel</h3>
                     </div>
-                    <div class="grid grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                         <div>
                             <p class="text-sm text-indigo-600">Montant total</p>
                             <p class="text-2xl font-bold text-indigo-700" id="potentialGain"></p>
@@ -90,12 +97,15 @@
                     </div>
                 </div>
             </div>
+            
+            
+            
 
             {{-- Information Box --}}
             <div class="bg-purple-50 border border-purple-100 rounded-xl p-4">
-                <div class="flex items-start">
+                <div class="flex flex-col sm:flex-row items-start">
                     <x-icons.information class="h-5 w-5 text-purple-400 flex-shrink-0" />
-                    <div class="ml-3">
+                    <div class="ml-3 mt-3 sm:mt-0">
                         <h3 class="text-sm font-medium text-purple-800">Information importante</h3>
                         <div class="mt-2 text-sm text-purple-700 bg-purple-100 p-4 rounded-lg shadow-md">
                             <ul class="list-disc list-inside space-y-2">
@@ -109,6 +119,7 @@
                     </div>
                 </div>
             </div>
+            
             <x-offre.alert-messages />
 
             {{-- Submit Button --}}
