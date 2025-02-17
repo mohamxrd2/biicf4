@@ -40,7 +40,6 @@ class TontineCreationService
                 $data['amount'],
                 $data['duration'],
             );
-            $gain_potentiel = ($data['amount'] * $data['duration']);
 
             $reference_id = $this->generateIntegerReference();
 
@@ -69,7 +68,7 @@ class TontineCreationService
                 'frequence' => $data['frequency'],
                 'date_fin' => $endDate,
                 'next_payment_date' => $nextPaymentDate,
-                'gain_potentiel' => $calculations['gain_potentiel'],
+                'gain_potentiel' => $calculations['montant_total'],
                 'nombre_cotisations' => $data['duration'],
                 'frais_gestion' => $calculations['frais_gestion'],
                 'user_id' => $userId,
