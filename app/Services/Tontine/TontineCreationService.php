@@ -73,8 +73,6 @@ class TontineCreationService
                 'nombre_cotisations' => $data['duration'],
                 'frais_gestion' => $calculations['frais_gestion'],
                 'user_id' => $userId,
-                'nb_cotisations' => $data['duration'],
-                'gain_potentiel' => $gain_potentiel
             ]);
 
             // Création de la transaction
