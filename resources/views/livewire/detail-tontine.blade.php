@@ -35,7 +35,7 @@
                         </a>
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900">Tontine #000{{ $tontine->id }}</h1>
-                            <p class="text-sm text-gray-500">Créée le {{ $tontineData['startDate'] }}</p>
+                            <p class="text-sm text-gray-500">Créée le {{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}</p>
                         </div>
                         <span class="ml-4 px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
                             Active
@@ -50,60 +50,62 @@
                 {{-- Main Content --}}
                 <div class="lg:col-span-2 space-y-8">
                     {{-- Overview Card --}}
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div class="p-6">
-                            <h2 class="text-lg font-semibold text-gray-900 mb-6">Aperçu de la tontine</h2>
-                            <div class="grid grid-cols-3 gap-6">
-                                <div class="space-y-1">
-                                    <p class="text-sm text-gray-500">Montant de cotisation</p>
-                                    <p class="text-xl font-bold text-gray-900">
-                                        {{ number_format($tontine->montant_cotisation, 0, ',', ' ') }} FCFA
-                                    </p>
-                                </div>
-                                <div class="space-y-1">
-                                    <p class="text-sm text-gray-500">Gain potentiel</p>
-                                    <p class="text-xl font-bold text-gray-900">
-                                        {{ number_format($tontine->gain_potentiel, 0, ',', ' ') }} FCFA</p>
-                                </div>
-                                <div class="space-y-1">
-                                    <p class="text-sm text-gray-500">Fréquence</p>
-                                    <p class="text-xl font-bold text-gray-900">{{ $tontine->frequence }}</p>
-                                </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-6">Aperçu de la tontine</h2>
+                    
+                        <!-- Grid responsive -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="space-y-1">
+                                <p class="text-sm text-gray-500">Montant de cotisation</p>
+                                <p class="text-xl font-bold text-gray-900">
+                                    {{ number_format($tontine->montant_cotisation, 0, ',', ' ') }} FCFA
+                                </p>
                             </div>
-
-                            {{-- Progress Bar --}}
-                            <div class="mt-8">
-                                <div class="flex justify-between text-sm mb-2">
-                                    <span class="text-gray-600">Progression</span>
-                                    <span class="font-medium text-indigo-600">{{ $tontineData['progress'] }}%</span>
-                                </div>
-                                <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-                                        style="width: {{ $pourcentage }}%"></div>
-                                </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-gray-500">Gain potentiel</p>
+                                <p class="text-xl font-bold text-gray-900">
+                                    {{ number_format($tontine->gain_potentiel, 0, ',', ' ') }} FCFA
+                                </p>
                             </div>
-
-                            {{-- Stats Grid --}}
-                            <div class="grid grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-100">
-                                <div>
-                                    <p class="text-sm text-gray-500">Cotisations effectuées</p>
-                                    <p class="text-lg font-bold text-gray-900">
-                                        {{ $tontineData['contributionsMade'] }}/{{ $tontine->nombre_cotisations }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Montant collecté</p>
-                                    <p class="text-lg font-bold text-indigo-600">
-                                        {{ number_format($tontineData['amountCollected'], 0, ',', ' ') }} FCFA
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Prochain paiement</p>
-                                    <p class="text-lg font-bold text-gray-900">{{ $tontineData['nextPayment'] }}</p>
-                                </div>
+                            <div class="space-y-1">
+                                <p class="text-sm text-gray-500">Fréquence</p>
+                                <p class="text-xl font-bold text-gray-900">{{ $tontine->frequence }}</p>
+                            </div>
+                        </div>
+                    
+                        <!-- Barre de progression -->
+                        <div class="mt-8">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Progression</span>
+                                <span class="font-medium text-indigo-600">{{ $tontineData['progress'] }}%</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                                    style="width: {{ $pourcentage }}%"></div>
+                            </div>
+                        </div>
+                    
+                        <!-- Stats Grid responsive -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-100">
+                            <div>
+                                <p class="text-sm text-gray-500">Cotisations effectuées</p>
+                                <p class="text-lg font-bold text-gray-900">
+                                    {{ $tontineData['contributionsMade'] }}/{{ $tontine->nombre_cotisations }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Montant collecté</p>
+                                <p class="text-lg font-bold text-indigo-600">
+                                    {{ number_format($tontineData['amountCollected'], 0, ',', ' ') }} FCFA
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Prochain paiement</p>
+                                <p class="text-lg font-bold text-gray-900">{{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}</p>
                             </div>
                         </div>
                     </div>
+                    
 
                     {{-- Transactions History --}}
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200">

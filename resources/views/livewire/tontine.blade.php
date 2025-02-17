@@ -4,7 +4,7 @@
     @else
         <!-- Display active tontine -->
         <div class="max-w-3xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Tontines en cours</h2>
+            <h2 class="text-md sm:text-2xl md:text-3xl font-bold text-gray-900 font-bold text-gray-900 mb-6">Tontines en cours</h2>
             @if ($tontineEnCours)
                 <x-tontine-card :id="$tontineEnCours->id" :montant="$tontineEnCours->montant_cotisation" :frequence="$tontineEnCours->frequence" :dateDebut="$tontineEnCours->date_debut"
                     :dateFin="$tontineEnCours->date_fin" :progression="$pourcentage" :cotisationsEffectuees="$cotisationsCount" :cotisationsTotales="$tontineEnCours->nombre_cotisations" :montantCollecte="$cotisationSum"
@@ -15,7 +15,8 @@
     <!-- Historique des tontines -->
     <div class="max-w-3xl mx-auto mt-12">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Historique des tontines</h2>
+            <h2 class="text-md sm:text-2xl md:text-3xl font-bold text-gray-900">Historique des tontines</h2>
+
             <div class="flex gap-2">
                 <select
                     class="px-4 py-2 border border-gray-200 rounded-lg text-gray-600 text-sm focus:ring-indigo-500 focus:border-indigo-500">
