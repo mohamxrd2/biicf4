@@ -14,10 +14,6 @@
             'nextPayment' => $tontine->next_payment_date,
         ];
 
-        $transactions = [
-            ['id' => 1, 'date' => '12 Fév 2024', 'amount' => 12000, 'status' => 'reussi', 'type' => 'Cotisation'],
-            ['id' => 4, 'date' => '22 Jan 2024', 'amount' => 12000, 'status' => 'echoue', 'type' => 'Cotisation'],
-        ];
     @endphp
 
     <div class="min-h-screen bg-gray-50">
@@ -35,7 +31,8 @@
                         </a>
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900">Tontine #000{{ $tontine->id }}</h1>
-                            <p class="text-sm text-gray-500">Créée le {{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}</p>
+                            <p class="text-sm text-gray-500">Créée le
+                                {{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}</p>
                         </div>
                         <span class="ml-4 px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
                             Active
@@ -52,7 +49,7 @@
                     {{-- Overview Card --}}
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-6">
                         <h2 class="text-lg font-semibold text-gray-900 mb-6">Aperçu de la tontine</h2>
-                    
+
                         <!-- Grid responsive -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div class="space-y-1">
@@ -72,21 +69,23 @@
                                 <p class="text-xl font-bold text-gray-900">{{ $tontine->frequence }}</p>
                             </div>
                         </div>
-                    
+
                         <!-- Barre de progression -->
                         <div class="mt-8">
                             <div class="flex justify-between text-sm mb-2">
                                 <span class="text-gray-600">Progression</span>
-                                <span class="font-medium text-indigo-600">{{ $tontineData['progress'] }}%</span>
+                                <span
+                                    class="font-medium text-indigo-600">{{ round($tontineData['progress'], 0) }}%</span>
                             </div>
                             <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                                 <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-                                    style="width: {{ $pourcentage }}%"></div>
+                                    style="width: {{ round($pourcentage ?? 0, 0) }}%"></div>
                             </div>
                         </div>
-                    
+
                         <!-- Stats Grid responsive -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-100">
+                        <div
+                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-100">
                             <div>
                                 <p class="text-sm text-gray-500">Cotisations effectuées</p>
                                 <p class="text-lg font-bold text-gray-900">
@@ -101,11 +100,13 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Prochain paiement</p>
-                                <p class="text-lg font-bold text-gray-900">{{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}</p>
+                                <p class="text-lg font-bold text-gray-900">
+                                    {{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}
+                                </p>
                             </div>
                         </div>
                     </div>
-                    
+
 
                     {{-- Transactions History --}}
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
@@ -123,14 +124,14 @@
                             </div>
 
                             <div class="space-y-4">
-                                @foreach ($transactions as $transaction)
+                                @foreach ($transCotisation as $transaction)
                                     <div
                                         class="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
                                         <div class="flex items-center gap-4">
                                             <div
-                                                class="w-10 h-10 rounded-full flex items-center justify-center {{ $transaction['status'] === 'reussi' ? 'bg-green-100' : 'bg-red-100' }}">
+                                                class="w-10 h-10 rounded-full flex items-center justify-center {{ $transaction->statut === 'payé' ? 'bg-green-100' : 'bg-red-100' }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="w-5 h-5 {{ $transaction['status'] === 'reussi' ? 'text-green-600' : 'text-red-600' }}"
+                                                    class="w-5 h-5 {{ $transaction->statut === 'payé' ? 'text-green-600' : 'text-red-600' }}"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
@@ -138,21 +139,29 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p class="font-medium text-gray-900">{{ $transaction['type'] }}</p>
-                                                <p class="text-sm text-gray-500">{{ $transaction['date'] }}</p>
+                                                <p class="font-medium text-gray-900"> Coisation </p>
+                                                <p class="text-sm text-gray-500">{{ $transaction->created_at }}</p>
                                             </div>
                                         </div>
                                         <div class="text-right">
                                             <p class="font-semibold text-gray-900">
-                                                {{ number_format($transaction['amount'], 0, ',', ' ') }} FCFA
+                                                {{ number_format($transaction->montant, 0, ',', ' ') }} FCFA
                                             </p>
                                             <p
-                                                class="{{ $transaction['status'] === 'reussi' ? 'text-green-600' : 'text-red-600' }} text-sm">
-                                                {{ $transaction['status'] === 'reussi' ? 'Réussi' : 'Échoué' }}
+                                                class="{{ $transaction->statut === 'payé' ? 'text-green-600' : 'text-red-600' }} text-sm">
+                                                {{ $transaction->statut === 'payé' ? 'payé' : 'échec' }}
                                             </p>
                                         </div>
                                     </div>
                                 @endforeach
+                                @if ($hasMoreTransactions)
+                                <div class="mt-6 text-center">
+                                    <button wire:click="loadMoreTransactions"
+                                        class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                        Voir plus
+                                    </button>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
