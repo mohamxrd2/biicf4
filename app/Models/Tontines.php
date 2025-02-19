@@ -10,6 +10,7 @@ class Tontines extends Model
     use HasFactory;
 
     protected $fillable = [
+        'gelement_reference',
         'date_debut',
         'montant_cotisation',
         'frequence',
@@ -18,7 +19,8 @@ class Tontines extends Model
         'next_payment_date',
         'gain_potentiel',
         'nombre_cotisations',
-        'user_id'
+        'user_id',
+        'statut',
     ];
 
     public function users()

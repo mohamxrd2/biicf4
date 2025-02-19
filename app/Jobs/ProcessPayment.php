@@ -40,20 +40,9 @@ class ProcessPayment implements ShouldQueue
             Log::error("❌ Wallet introuvable pour l'utilisateur: {$this->user->id}");
             return;
         }
+        $gelement = gelement::where('id_wallet', $userWallet->id)->first();
 
-        if ($this->tontine->statut === '1st') {
-            $gelement = Gelement::where('id_wallet', $userWallet->id)->first();
-
-            if (!$gelement) {
-                Log::error("❌ Gelement introuvable pour le wallet ID: {$userWallet->id}");
-                return;
-            }
-
-            if ($gelement->amount < $this->tontine->montant_cotisation) {
-                Log::warning("❌ Solde insuffisant dans Gelement pour l'utilisateur: {$this->user->id}");
-                return;
-            }
-
+        if ($this->tontine->statut === '1st' && $gelement && $gelement->amount >= $this->tontine->montant_cotisation) {
             $gelement->amount -= $this->tontine->montant_cotisation;
             $gelement->status = 'ok'; // Correction ici
             $gelement->save();

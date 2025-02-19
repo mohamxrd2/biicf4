@@ -39,20 +39,17 @@ class TontineEpargne extends Command
         }
 
         $serverTime = $result['timestamp'];
-        Log::info("Heure du serveur synchronisée : {$serverTime}");
 
         try {
-            $tontines = Tontines::where('next_payment_date', '<=', now())
-                ->where('date_fin', '>=', now())
+            $tontines = Tontines::where('next_payment_date', '>=', DB::raw('date_debut'))
+                ->where('next_payment_date', '<=', DB::raw('date_fin'))
                 ->get();
-
-            Log::info("liste des tontines : {$tontines}");
 
             foreach ($tontines as $tontine) {
                 DB::beginTransaction();
                 try {
                     // Vérifier si le paiement est dû
-                    if ($tontine->next_payment_date > now()) {
+                    if ($tontine->next_payment_date > $serverTime) {
                         Log::info("Le paiement pour la tontine {$tontine->id} n'est pas encore dû.");
                         DB::commit();
                         continue;
@@ -63,11 +60,11 @@ class TontineEpargne extends Command
 
 
                     if ($users->isEmpty()) {
-                        Log::warning("Aucun utilisateur trouvé pour la tontine {$tontine->nom}. Aucun paiement exécuté.");
+                        Log::warning("Aucun utilisateur trouvé pour la tontine {$tontine->id}. Aucun paiement exécuté.");
                     } else {
                         foreach ($users as $user) {
                             if (!$user instanceof User) {
-                                Log::error("Données utilisateur invalides pour la tontine {$tontine->nom}.");
+                                Log::error("Données utilisateur invalides pour la tontine {$tontine->id}.");
                                 continue;
                             }
 
@@ -76,9 +73,9 @@ class TontineEpargne extends Command
                                     ->onQueue('default')
                                     ->afterCommit();
 
-                                Log::info("Paiement de {$tontine->montant_cotisation} exécuté pour {$user->name} dans la tontine {$tontine->nom}.");
+                                Log::info("Paiement de {$tontine->montant_cotisation} exécuté pour {$user->name} dans la tontine {$tontine->id}.");
                             } catch (\Exception $e) {
-                                Log::error("Erreur lors du traitement du paiement pour {$user->name} dans la tontine {$tontine->nom} : " . $e->getMessage());
+                                Log::error("Erreur lors du traitement du paiement pour {$user->name} dans la tontine {$tontine->id} : " . $e->getMessage());
                             }
                         }
                     }
@@ -88,14 +85,14 @@ class TontineEpargne extends Command
                         'quotidienne' => Carbon::parse($tontine->next_payment_date)->addDay(),
                         'hebdomadaire' => Carbon::parse($tontine->next_payment_date)->addWeek(),
                         'mensuelle' => Carbon::parse($tontine->next_payment_date)->addMonth(),
-                        default => throw new \Exception("Fréquence inconnue pour la tontine {$tontine->nom}")
+                        default => throw new \Exception("Fréquence inconnue pour la tontine ")
                     };
 
-                    Log::info("Nouvelle date de paiement pour {$tontine->nom} : {$nextDayPayment}");
+                    Log::info("Nouvelle date de paiement pour : {$nextDayPayment}");
 
                     // Vérifier si la nouvelle date dépasse la date de fin
-                    if ($nextDayPayment > $tontine->date_fin) {
-                        Log::info("Tontine {$tontine->nom} terminée. Plus de prélèvements.");
+                    if ($tontine->next_payment_date > $tontine->date_fin) {
+                        Log::info("Tontine  terminée. Plus de prélèvements.");
                         DB::commit();
                         continue;
                     }
@@ -106,7 +103,7 @@ class TontineEpargne extends Command
                     DB::commit();
                 } catch (\Exception $e) {
                     DB::rollBack();
-                    Log::error("Erreur lors du traitement de la tontine {$tontine->nom} : " . $e->getMessage());
+                    Log::error("Erreur lors du traitement de la tontine : " . $e->getMessage());
                 }
             }
         } catch (\Exception $e) {

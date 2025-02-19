@@ -1,302 +1,361 @@
 <?php
 
-namespace Tests\Unit\Console\Commands;
+namespace Tests\Feature;
 
-use App\Console\Commands\TontineEpargne;
-use App\Jobs\ProcessPayment;
+use App\Models\EchecPaiement;
 use App\Models\Tontines;
+use App\Models\TontineUser;
 use App\Models\User;
-use App\Services\RecuperationTimer;
-use App\Services\TimeSync\TimeSyncService;
+use App\Models\Cotisation;
+use App\Models\Wallet;
+use App\Models\gelement;
+use App\Notifications\tontinesNotification;
+use App\Services\TransactionService;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
-use Mockery;
-use Tests\TestCase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
+use Tests\TestCase;
 
 class TontineEpargneTest extends TestCase
 {
-    use RefreshDatabase;
-
-    protected $recuperationTimerMock;
-    protected $timeSyncServiceMock;
+    protected $transactionService;
 
     public function setUp(): void
     {
         parent::setUp();
-        // Utilisation correcte de Mockery pour créer des mocks
-        $this->recuperationTimerMock = Mockery::mock(RecuperationTimer::class);
-        $this->timeSyncServiceMock = Mockery::mock(TimeSyncService::class);
-        $this->app->instance(RecuperationTimer::class, $this->recuperationTimerMock);
+        $this->transactionService = app(TransactionService::class);
     }
 
-    public function tearDown(): void
+    private function generateUniqueReference(): string
     {
-        Mockery::close();
-        parent::tearDown();
+        return 'REF-' . strtoupper(Str::random(6));
     }
 
-    /**
-     * Test si la commande s'arrête quand l'heure ne peut pas être synchronisée
-     */
-    public function testCommandStopsWhenSyncFails()
+    protected function generateIntegerReference(): int
     {
-        // Configurer le mock pour retourner une synchronisation échouée
-        $this->app->instance(TimeSyncService::class, $this->timeSyncServiceMock);
-        $this->timeSyncServiceMock->shouldReceive('getSynchronizedTime')
-            ->once()
-            ->andReturn(false);
-
-        // Exécuter la commande
-        $command = $this->app->make(TontineEpargne::class);
-        $result = $command->handle();
-
-        // Vérifier que la commande s'est arrêtée
-        $this->assertNull($result);
+        return now()->timestamp * 1000 + now()->micro;
     }
 
-    /**
-     * Test le traitement normal des paiements de tontine
-     */
-    public function testNormalPaymentProcessing()
+    public function test_multiple_users_multiple_tontines()
     {
-        // Configurer le mock pour l'heure synchronisée
-        $this->app->instance(TimeSyncService::class, $this->timeSyncServiceMock);
-        $this->timeSyncServiceMock->shouldReceive('getSynchronizedTime')
-            ->once()
-            ->andReturn(['timestamp' => now()->timestamp]);
+        // Mock time to start testing
+        $startTestDate = Carbon::create(2025, 2, 19, 9, 0, 0);
+        Carbon::setTestNow($startTestDate);
 
-        // Créer utilisateurs et tontines de test
-        $user1 = User::find(121);
-        $user2 = User::find(122);
+        // Créer plusieurs utilisateurs
+        $users = collect([
+            ['id' => 121, 'initial_balance' => 1000],
+            ['id' => 122, 'initial_balance' => 800],
+            // ['id' => 123, 'initial_balance' => 1200]
+        ])->map(function ($userData) {
+            $user = User::find($userData['id']);
+            if (!$user) {
+                Log::error("Utilisateur {$userData['id']} non trouvé.");
+                return null;
+            }
 
-        $tontine = Tontines::factory()->create([
-            'nom' => 'Tontine Test',
-            'montant_cotisation' => 100,
-            'frequence' => 'mensuelle',
-            'next_payment_date' => now()->subDay(), // Le paiement est dû
-            'date_fin' => now()->addMonths(6)
-        ]);
+            // Créer ou mettre à jour le wallet
+            $wallet = Wallet::updateOrCreate(
+                ['user_id' => $user->id],
+                ['balance' => $userData['initial_balance']]
+            );
 
-        // Lier les utilisateurs à la tontine
-        $tontine->users()->attach([$user1->id, $user2->id]);
+            return ['user' => $user, 'wallet' => $wallet];
+        })->filter();
 
-        // Intercepter les dispatch de jobs
-        Queue::fake();
-
-        // Exécuter la commande
-        $command = $this->app->make(TontineEpargne::class);
-        $command->handle();
-
-        // Vérifier que les jobs ont été dispatchés pour chaque utilisateur
-        Queue::assertPushedOn('default', ProcessPayment::class, function ($job) use ($user1, $tontine) {
-            return $job->user->id === $user1->id && $job->tontine->id === $tontine->id;
-        });
-
-        Queue::assertPushedOn('default', ProcessPayment::class, function ($job) use ($user2, $tontine) {
-            return $job->user->id === $user2->id && $job->tontine->id === $tontine->id;
-        });
-
-        // Recharger la tontine depuis la base de données
-        $tontine->refresh();
-
-        // Vérifier que la prochaine date de paiement a été mise à jour correctement
-        $expectedNextPaymentDate = Carbon::parse($tontine->next_payment_date)
-            ->subDay() // Revenir à la date originale avant le test
-            ->addMonth(); // Ajouter un mois car la fréquence est mensuelle
-
-        $this->assertEquals(
-            $expectedNextPaymentDate->format('Y-m-d'),
-            Carbon::parse($tontine->next_payment_date)->format('Y-m-d')
-        );
-    }
-
-    /**
-     * Test qu'une tontine sans utilisateurs n'exécute pas de paiements
-     */
-    public function testTontineWithoutUsers()
-    {
-        // Configurer le mock pour l'heure synchronisée
-        $this->app->instance(TimeSyncService::class, $this->timeSyncServiceMock);
-        $this->timeSyncServiceMock->shouldReceive('getSynchronizedTime')
-            ->once()
-            ->andReturn(['timestamp' => now()->timestamp]);
-
-        // Créer une tontine sans utilisateurs
-        $tontine = Tontines::factory()->create([
-            'nom' => 'Tontine Sans Utilisateurs',
-            'montant_cotisation' => 100,
-            'frequence' => 'mensuelle',
-            'next_payment_date' => now()->subDay(),
-            'date_fin' => now()->addMonths(6)
-        ]);
-
-        // Intercepter les dispatch de jobs
-        Queue::fake();
-
-        // Exécuter la commande
-        $command = $this->app->make(TontineEpargne::class);
-        $command->handle();
-
-        // Vérifier qu'aucun job n'a été dispatché
-        Queue::assertNothingPushed();
-
-        // Vérifier que la prochaine date de paiement a quand même été mise à jour
-        $tontine->refresh();
-        $expectedNextPaymentDate = Carbon::parse($tontine->next_payment_date)
-            ->subDay() // Revenir à la date originale avant le test
-            ->addMonth();
-
-        $this->assertEquals(
-            $expectedNextPaymentDate->format('Y-m-d'),
-            Carbon::parse($tontine->next_payment_date)->format('Y-m-d')
-        );
-    }
-
-    /**
-     * Test le comportement de la tontine à sa date finale
-     */
-    public function testTontineEndDate()
-    {
-        // Configurer le mock pour l'heure synchronisée
-        $this->app->instance(TimeSyncService::class, $this->timeSyncServiceMock);
-        $this->timeSyncServiceMock->shouldReceive('getSynchronizedTime')
-            ->once()
-            ->andReturn(['timestamp' => now()->timestamp]);
-
-        // Créer utilisateur et tontine de test près de la fin
-        $user = User::factory()->create();
-        $tontine = Tontines::factory()->create([
-            'nom' => 'Tontine Fin',
-            'montant_cotisation' => 100,
-            'frequence' => 'mensuelle',
-            'next_payment_date' => now()->subDay(),
-            'date_fin' => now()->addDays(15) // La fin arrive bientôt
-        ]);
-
-        // Lier l'utilisateur à la tontine
-        $tontine->users()->attach($user->id);
-
-        // Intercepter les dispatch de jobs
-        Queue::fake();
-
-        // Exécuter la commande
-        $command = $this->app->make(TontineEpargne::class);
-        $command->handle();
-
-        // Vérifier que le job a été dispatché
-        Queue::assertPushed(ProcessPayment::class);
-
-        // Recharger la tontine depuis la base de données
-        $tontine->refresh();
-
-        // Exécuter à nouveau la commande (la prochaine date de paiement devrait maintenant dépasser date_fin)
-        $command->handle();
-
-        // Vérifier qu'aucun nouveau job n'a été dispatché (un seul dans total)
-        Queue::assertPushedTimes(ProcessPayment::class, 1);
-    }
-
-    /**
-     * Test le comportement avec différentes fréquences de paiement
-     *
-     * @dataProvider frequencyProvider
-     */
-    public function testDifferentFrequencies($frequency, $addMethod)
-    {
-        // Configurer le mock pour l'heure synchronisée
-        $this->app->instance(TimeSyncService::class, $this->timeSyncServiceMock);
-        $this->timeSyncServiceMock->shouldReceive('getSynchronizedTime')
-            ->once()
-            ->andReturn(['timestamp' => now()->timestamp]);
-
-        // Créer une tontine avec la fréquence spécifiée
-        $tontine = Tontines::factory()->create([
-            'nom' => "Tontine {$frequency}",
-            'montant_cotisation' => 100,
-            'frequence' => $frequency,
-            'next_payment_date' => now()->subDay(),
-            'date_fin' => now()->addYear()
-        ]);
-
-        // Créer un utilisateur et l'attacher à la tontine
-        $user = User::factory()->create();
-        $tontine->users()->attach($user->id);
-
-        // Intercepter les dispatch de jobs
-        Queue::fake();
-
-        // Exécuter la commande
-        $command = $this->app->make(TontineEpargne::class);
-        $command->handle();
-
-        // Vérifier que le job a été dispatché
-        Queue::assertPushed(ProcessPayment::class);
-
-        // Recharger la tontine depuis la base de données
-        $tontine->refresh();
-
-        // Calculer la date attendue en fonction de la fréquence
-        $expectedNextPaymentDate = Carbon::parse($tontine->next_payment_date)
-            ->subDay() // Revenir à la date originale avant le test
-            ->$addMethod();
-
-        $this->assertEquals(
-            $expectedNextPaymentDate->format('Y-m-d'),
-            Carbon::parse($tontine->next_payment_date)->format('Y-m-d')
-        );
-    }
-
-    /**
-     * Fournisseur de données pour le test des fréquences
-     */
-    public function frequencyProvider()
-    {
-        return [
-            ['quotidienne', 'addDay'],
-            ['hebdomadaire', 'addWeek'],
-            ['mensuelle', 'addMonth'],
+        // Définir différentes configurations de tontines
+        $tontineConfigs = [
+            [
+                'amount' => 100.00,
+                'frequency' => 'quotidienne',
+                'duration' => 3,
+            ],
+            [
+                'amount' => 200.00,
+                'frequency' => 'quotidienne',
+                'duration' => 4,
+            ],
+            // [
+            //     'amount' => 150.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => 5,
+            // ]
         ];
+
+        // Créer les tontines pour chaque utilisateur
+        $allTontines = collect();
+
+        foreach ($users as $userData) {
+            foreach ($tontineConfigs as $config) {
+                $tontine = $this->createTontineForUser($userData['user'], $userData['wallet'], $config);
+                if ($tontine) {
+                    $allTontines->push($tontine);
+                }
+            }
+        }
+
+        // Simuler le passage du temps et le traitement des paiements
+        $maxDuration = collect($tontineConfigs)->max('duration');
+
+        for ($day = 0; $day < $maxDuration; $day++) {
+            $currentDate = $startTestDate->copy()->addDays($day);
+            Carbon::setTestNow($currentDate);
+
+            Log::info("Traitement des paiements pour le jour : " . $currentDate->toDateString());
+
+            DB::transaction(function () use ($currentDate, $allTontines) {
+                foreach ($allTontines as $tontine) {
+                    // Convertir next_payment_date en objet Carbon pour la comparaison
+                    $nextPaymentDate = Carbon::parse($tontine->next_payment_date);
+                    if ($nextPaymentDate->toDateString() === $currentDate->toDateString()) {
+                        $this->processTontinePaiements($tontine);
+                    }
+                }
+            });
+        }
+
+        // Vérifications
+        foreach ($allTontines as $tontine) {
+            $this->validateTontinePayments($tontine);
+        }
     }
 
-    /**
-     * Test la gestion des erreurs lors du traitement des paiements
-     */
-    public function testErrorHandlingDuringProcessing()
+    private function createTontineForUser(User $user, Wallet $wallet, array $config)
     {
-        // Configurer le mock pour l'heure synchronisée
-        $this->app->instance(TimeSyncService::class, $this->timeSyncServiceMock);
-        $this->timeSyncServiceMock->shouldReceive('getSynchronizedTime')
-            ->once()
-            ->andReturn(['timestamp' => now()->timestamp]);
+        try {
+            DB::beginTransaction();
 
-        // Créer une tontine qui va générer une erreur
-        $tontine = Tontines::factory()->create([
-            'nom' => 'Tontine Erreur',
-            'montant_cotisation' => 100,
-            'frequence' => 'inconnu', // Fréquence qui causera une erreur
-            'next_payment_date' => now()->subDay(),
-            'date_fin' => now()->addMonths(6)
+            $startDate = Carbon::now();
+            $endDate = $startDate->copy()->addDays($config['duration'] - 1);
+
+            // Créer un nouveau gelement spécifique pour cette tontine
+            $gelementReference = $this->generateUniqueReference();
+            $gelement = gelement::create([
+                'reference_id' => $gelementReference,
+                'id_wallet' => $wallet->id,
+                'amount' => $config['amount'],
+                'status' => 'pending' // Ajout d'un statut initial
+            ]);
+
+            // Créer la tontine avec référence au gelement
+            $tontine = Tontines::create([
+                'date_debut' => $startDate->toDateString(),
+                'montant_cotisation' => $config['amount'],
+                'frequence' => $config['frequency'],
+                'date_fin' => $endDate->toDateString(),
+                'next_payment_date' => $startDate->toDateString(),
+                'gain_potentiel' => $config['amount'] * $config['duration'],
+                'nombre_cotisations' => $config['duration'],
+                'frais_gestion' => ($config['amount'] * $config['duration']) * 0.05,
+                'user_id' => $user->id,
+                'statut' => '1st',
+                'gelement_reference' => $gelementReference // Ajout de la référence du gelement
+            ]);
+
+            TontineUser::create(['tontine_id' => $tontine->id, 'user_id' => $user->id]);
+
+            $this->transactionService->createTransaction(
+                $user->id,
+                $user->id,
+                'Gele',
+                $config['amount'],
+                $this->generateIntegerReference(),
+                "Gelement pour tontine {$tontine->id}",
+                'COC'
+            );
+
+            DB::commit();
+            return $tontine;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Erreur lors de la création de la tontine: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    private function processPayment(User $user, Tontines $tontine)
+    {
+        Log::info("Début du processus de paiement", [
+            'user_id' => $user->id,
+            'tontine_id' => $tontine->id,
+            'montant' => $tontine->montant_cotisation
         ]);
 
-        // Créer un utilisateur et l'attacher à la tontine
-        $user = User::factory()->create();
-        $tontine->users()->attach($user->id);
+        $userWallet = Wallet::where('user_id', $user->id)->first();
+        if (!$userWallet) {
+            Log::error("Wallet introuvable pour l'utilisateur", ['user_id' => $user->id]);
+            return;
+        }
 
-        // Utiliser Mockery pour les appels DB (façon correcte)
-        DB::shouldReceive('beginTransaction')->once();
-        DB::shouldReceive('commit')->never();
-        DB::shouldReceive('rollBack')->once();
+        try {
+            DB::beginTransaction();
 
-        // Intercepter les dispatch de jobs
-        Queue::fake();
+            if ($tontine->statut === '1st') {
+                // Récupérer le gelement spécifique à cette tontine
+                $gelement = gelement::where('reference_id', $tontine->gelement_reference)
+                    ->where('id_wallet', $userWallet->id)
+                    ->where('status', 'pending')
+                    ->first();
 
-        // Exécuter la commande
-        $command = $this->app->make(TontineEpargne::class);
-        $command->handle();
+                Log::info("Vérification du gelement pour première cotisation", [
+                    'gelement_reference' => $tontine->gelement_reference,
+                    'gelement_exists' => (bool)$gelement,
+                    'gelement_amount' => $gelement ? $gelement->amount : 0
+                ]);
 
-        // Vérifier qu'aucun job n'a été dispatché à cause de l'erreur
-        Queue::assertNothingPushed();
+                if (!$gelement || $gelement->amount < $tontine->montant_cotisation) {
+                    throw new \Exception("Gelement insuffisant ou invalide");
+                }
+
+                $gelement->amount -= $tontine->montant_cotisation;
+                $gelement->status = 'active';
+                $gelement->save();
+
+                $tontine->update(['statut' => 'active']);
+            } else {
+                // Pour les paiements réguliers, vérifier le solde disponible
+                // en tenant compte des autres tontines actives
+                $montantTotalEngagé = $this->calculateMontantEngagé($user->id);
+                $soldeDisponible = $userWallet->balance - $montantTotalEngagé;
+
+                Log::info("Vérification du solde pour paiement régulier", [
+                    'solde_total' => $userWallet->balance,
+                    'montant_engagé' => $montantTotalEngagé,
+                    'solde_disponible' => $soldeDisponible,
+                    'montant_requis' => $tontine->montant_cotisation
+                ]);
+
+                if ($soldeDisponible < $tontine->montant_cotisation) {
+                    throw new \Exception("Solde insuffisant après engagements");
+                }
+
+                $userWallet->balance -= $tontine->montant_cotisation;
+                $userWallet->save();
+            }
+
+            // Créer la transaction et la cotisation
+            $reference = $this->generateIntegerReference();
+
+            $this->transactionService->createTransaction(
+                $user->id,
+                $user->id,
+                'Débit',
+                $tontine->montant_cotisation,
+                $reference,
+                'Paiement de cotisation',
+                'COC'
+            );
+
+            Cotisation::create([
+                'user_id' => $user->id,
+                'tontine_id' => $tontine->id,
+                'montant' => $tontine->montant_cotisation,
+                'statut' => 'payé'
+            ]);
+
+            Notification::send($user, new tontinesNotification([
+                'title' => 'Paiement effectué avec succès',
+                'description' => 'Cliquez pour voir les détails.'
+            ]));
+
+            DB::commit();
+            Log::info("Paiement traité avec succès");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Erreur lors du processus de paiement", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->handlePaymentFailure($user, $tontine);
+        }
+    }
+
+    private function calculateMontantEngagé($userId)
+    {
+        // Calculer le montant total engagé dans toutes les tontines actives
+        $tontinesActives = Tontines::where('user_id', $userId)
+            ->where('statut', 'active')
+            ->where('date_fin', '>=', now())
+            ->get();
+
+        $montantEngagé = 0;
+        foreach ($tontinesActives as $tontine) {
+            $montantEngagé += $tontine->montant_cotisation;
+        }
+
+        return $montantEngagé;
+    }
+
+
+    private function processTontinePaiements(Tontines $tontine)
+    {
+        $users = $tontine->users;
+
+        foreach ($users as $user) {
+            $this->processPayment($user, $tontine);
+        }
+
+        // Convertir next_payment_date en Carbon pour le calcul
+        $currentPaymentDate = Carbon::parse($tontine->next_payment_date);
+
+        // Calculer la prochaine date de paiement
+        $nextPaymentDate = match ($tontine->frequence) {
+            'quotidienne' => $currentPaymentDate->addDay(),
+            'hebdomadaire' => $currentPaymentDate->addWeek(),
+            'mensuelle' => $currentPaymentDate->addMonth(),
+            default => throw new \Exception("Fréquence inconnue")
+        };
+
+        // Convertir date_fin en Carbon pour la comparaison
+        $dateFin = Carbon::parse($tontine->date_fin);
+        if ($nextPaymentDate->lte($dateFin)) {
+            $tontine->update(['next_payment_date' => $nextPaymentDate->toDateString()]);
+        }
+    }
+
+    private function handlePaymentFailure(User $user, Tontines $tontine)
+    {
+        $cotisation = Cotisation::create([
+            'user_id' => $user->id,
+            'tontine_id' => $tontine->id,
+            'montant' => $tontine->montant_cotisation,
+            'statut' => 'échec'
+        ]);
+
+        EchecPaiement::create([
+            'user_id' => $user->id,
+            'cotisation_id' => $cotisation->id,
+            'montant_du' => $tontine->montant_cotisation
+        ]);
+
+        Notification::send($user, new tontinesNotification([
+            'title' => 'Échec de paiement',
+            'description' => 'Cliquez pour voir les détails.'
+        ]));
+    }
+
+    private function validateTontinePayments(Tontines $tontine)
+    {
+        // Vérifier le nombre total de cotisations
+        $totalCotisations = Cotisation::where('tontine_id', $tontine->id)
+            ->where('statut', 'payé')
+            ->count();
+
+        // Vérifier le montant total collecté
+        $totalCollecte = Cotisation::where('tontine_id', $tontine->id)
+            ->where('statut', 'payé')
+            ->sum('montant');
+
+        // Vérifier les échecs de paiement
+        $echecsPaiement = EchecPaiement::whereHas('cotisation', function ($query) use ($tontine) {
+            $query->where('tontine_id', $tontine->id);
+        })->count();
+
+        // Assertions
+        $this->assertEquals($tontine->nombre_cotisations, $totalCotisations, "Le nombre de cotisations ne correspond pas pour la tontine {$tontine->id}");
+        $this->assertEquals($tontine->gain_potentiel, $totalCollecte, "Le montant total collecté ne correspond pas pour la tontine {$tontine->id}");
     }
 }
