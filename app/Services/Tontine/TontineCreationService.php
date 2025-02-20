@@ -53,11 +53,13 @@ class TontineCreationService
 
             $userWallet->decrement('balance', $data['amount']);
 
-            // Création de l'élément gelé
-            gelement::create([
-                'reference_id' => $this->generateUniqueReference(),
+            // Créer un nouveau gelement spécifique pour cette tontine
+            $gelementReference = $this->generateUniqueReference();
+            $gelement = gelement::create([
+                'reference_id' => $gelementReference,
                 'id_wallet' => $userWallet->id,
                 'amount' => $data['amount'],
+                'status' => 'pending' // Ajout d'un statut initial
             ]);
 
             // Création de la tontine
@@ -71,8 +73,11 @@ class TontineCreationService
                 'nombre_cotisations' => $data['duration'],
                 'frais_gestion' => $calculations['frais_gestion'],
                 'user_id' => $userId,
+                'statut' => '1st',
+                'gelement_reference' => $gelementReference // Ajout de la référence du gelement
+
             ]);
-            
+
             $TontineUser = TontineUser::create([
                 'tontine_id' => $Tontines->id,
                 'user_id' => $userId,
@@ -85,7 +90,7 @@ class TontineCreationService
                 'Gele',
                 $data['amount'],
                 $reference_id,
-                "Gelemment pour tontine . {$Tontines->id}",
+                "Gelemment pour tontine #00{$Tontines->id}",
                 'COC'
             );
 

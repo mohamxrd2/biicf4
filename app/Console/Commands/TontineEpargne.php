@@ -16,10 +16,8 @@ class TontineEpargne extends Command
 {
     protected $signature = 'tontine:process-payments';
     protected $description = 'Prélève les cotisations des tontines en fonction de la période choisie.';
-    private $recuperationTimer;
-    public $time;
-    public $error;
-    public $timestamp;
+
+    private RecuperationTimer $recuperationTimer;
 
     public function __construct(RecuperationTimer $recuperationTimer)
     {
@@ -29,86 +27,77 @@ class TontineEpargne extends Command
 
     public function handle()
     {
-        // Synchronisation de l'heure du serveur
-        $timeSync = new TimeSyncService($this->recuperationTimer);
-        $result = $timeSync->getSynchronizedTime();
-
-        if (!$result || empty($result['timestamp'])) {
-            Log::error("Échec de la synchronisation de l'heure du serveur. Arrêt du script.");
-            return;
-        }
-
-        $serverTime = $result['timestamp'];
-
         try {
-            $tontines = Tontines::where('next_payment_date', '>=', DB::raw('date_debut'))
-                ->where('next_payment_date', '<=', DB::raw('date_fin'))
+            // Synchronisation de l'heure du serveur
+            $timeSync = new TimeSyncService($this->recuperationTimer);
+            $result = $timeSync->getSynchronizedTime();
+
+            if (!$result || empty($result['timestamp'])) {
+                Log::error("Échec de la synchronisation de l'heure du serveur. Arrêt du script.");
+                return 1;
+            }
+
+            $currentDate = Carbon::createFromTimestamp($result['timestamp'])->startOfDay();
+
+            Log::info("Traitement des paiements pour le jour : " . $currentDate->toDateString());
+
+            $allTontines = Tontines::where('next_payment_date', '=', $currentDate)
+                ->where('date_debut', '<=', $currentDate)
+                ->where('date_fin', '>=', $currentDate)
                 ->get();
 
-            foreach ($tontines as $tontine) {
-                DB::beginTransaction();
-                try {
-                    // Vérifier si le paiement est dû
-                    if ($tontine->next_payment_date > $serverTime) {
-                        Log::info("Le paiement pour la tontine {$tontine->id} n'est pas encore dû.");
-                        DB::commit();
-                        continue;
-                    }
-
-                    // Vérifier si la tontine a bien des utilisateurs avant d'exécuter les paiements
-                    $users = $tontine->users;
-
-
-                    if ($users->isEmpty()) {
-                        Log::warning("Aucun utilisateur trouvé pour la tontine {$tontine->id}. Aucun paiement exécuté.");
-                    } else {
-                        foreach ($users as $user) {
-                            if (!$user instanceof User) {
-                                Log::error("Données utilisateur invalides pour la tontine {$tontine->id}.");
-                                continue;
-                            }
-
-                            try {
-                                dispatch(new ProcessPayment($user, $tontine))
-                                    ->onQueue('default')
-                                    ->afterCommit();
-
-                                Log::info("Paiement de {$tontine->montant_cotisation} exécuté pour {$user->name} dans la tontine {$tontine->id}.");
-                            } catch (\Exception $e) {
-                                Log::error("Erreur lors du traitement du paiement pour {$user->name} dans la tontine {$tontine->id} : " . $e->getMessage());
-                            }
-                        }
-                    }
-
-                    // Calcul de la nouvelle date de paiement
-                    $nextDayPayment = match ($tontine->frequence) {
-                        'quotidienne' => Carbon::parse($tontine->next_payment_date)->addDay(),
-                        'hebdomadaire' => Carbon::parse($tontine->next_payment_date)->addWeek(),
-                        'mensuelle' => Carbon::parse($tontine->next_payment_date)->addMonth(),
-                        default => throw new \Exception("Fréquence inconnue pour la tontine ")
-                    };
-
-                    Log::info("Nouvelle date de paiement pour : {$nextDayPayment}");
-
-                    // Vérifier si la nouvelle date dépasse la date de fin
-                    if ($tontine->next_payment_date > $tontine->date_fin) {
-                        Log::info("Tontine  terminée. Plus de prélèvements.");
-                        DB::commit();
-                        continue;
-                    }
-
-                    // Mise à jour dans la base de données
-                    $tontine->update(['next_payment_date' => $nextDayPayment]);
-
-                    DB::commit();
-                } catch (\Exception $e) {
-                    DB::rollBack();
-                    Log::error("Erreur lors du traitement de la tontine : " . $e->getMessage());
+            DB::transaction(function () use ($allTontines, $currentDate) {
+                foreach ($allTontines as $tontine) {
+                    $this->processTontinePaiements($tontine);
                 }
-            }
+            });
+
+            return 0;
         } catch (\Exception $e) {
-            Log::error('Erreur globale lors du traitement des paiements : ' . $e->getMessage());
-            $this->error('Erreur lors du traitement des paiements. Vérifiez les logs.');
+            Log::error("Erreur lors du traitement des tontines: " . $e->getMessage());
+            return 1;
+        }
+    }
+
+    private function processTontinePaiements(Tontines $tontine)
+    {
+        try {
+            // Load users with eager loading to avoid N+1 query problem
+            $users = $tontine->users()->with('wallet')->get();
+
+            foreach ($users as $user) {
+                dispatch(new ProcessPayment($user, $tontine))
+                    ->onQueue('default')
+                    ->afterCommit();
+            }
+
+            $currentPaymentDate = Carbon::parse($tontine->next_payment_date);
+
+            // Calculer la prochaine date de paiement
+            $nextPaymentDate = match ($tontine->frequence) {
+                'quotidienne' => $currentPaymentDate->addDay(),
+                'hebdomadaire' => $currentPaymentDate->addWeek(),
+                'mensuelle' => $currentPaymentDate->addMonth(),
+                default => throw new \InvalidArgumentException("Fréquence invalide: {$tontine->frequence}")
+            };
+
+            $dateFin = Carbon::parse($tontine->date_fin);
+
+            if ($nextPaymentDate->lte($dateFin)) {
+                $tontine->update([
+                    'next_payment_date' => $nextPaymentDate->toDateString()
+                ]);
+            } else {
+                $tontine->update([
+                    'statut' => 'completed',
+                    'next_payment_date' => null
+                ]);
+            }
+
+            Log::info("Traitement réussi pour la tontine ID: {$tontine->id}");
+        } catch (\Exception $e) {
+            Log::error("Erreur lors du traitement de la tontine {$tontine->id}: " . $e->getMessage());
+            throw $e;
         }
     }
 }

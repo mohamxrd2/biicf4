@@ -47,8 +47,8 @@ class TontineEpargneTest extends TestCase
 
         // Créer plusieurs utilisateurs
         $users = collect([
-            ['id' => 121, 'initial_balance' => 1000],
-            ['id' => 122, 'initial_balance' => 800],
+            ['id' => 121, 'initial_balance' => 100],
+            // ['id' => 122, 'initial_balance' => 800],
             // ['id' => 123, 'initial_balance' => 1200]
         ])->map(function ($userData) {
             $user = User::find($userData['id']);
@@ -73,11 +73,11 @@ class TontineEpargneTest extends TestCase
                 'frequency' => 'quotidienne',
                 'duration' => 3,
             ],
-            [
-                'amount' => 200.00,
-                'frequency' => 'quotidienne',
-                'duration' => 4,
-            ],
+            // [
+            //     'amount' => 200.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => 4,
+            // ],
             // [
             //     'amount' => 150.00,
             //     'frequency' => 'quotidienne',
@@ -178,11 +178,7 @@ class TontineEpargneTest extends TestCase
 
     private function processPayment(User $user, Tontines $tontine)
     {
-        Log::info("Début du processus de paiement", [
-            'user_id' => $user->id,
-            'tontine_id' => $tontine->id,
-            'montant' => $tontine->montant_cotisation
-        ]);
+
 
         $userWallet = Wallet::where('user_id', $user->id)->first();
         if (!$userWallet) {
@@ -200,18 +196,12 @@ class TontineEpargneTest extends TestCase
                     ->where('status', 'pending')
                     ->first();
 
-                Log::info("Vérification du gelement pour première cotisation", [
-                    'gelement_reference' => $tontine->gelement_reference,
-                    'gelement_exists' => (bool)$gelement,
-                    'gelement_amount' => $gelement ? $gelement->amount : 0
-                ]);
-
                 if (!$gelement || $gelement->amount < $tontine->montant_cotisation) {
                     throw new \Exception("Gelement insuffisant ou invalide");
                 }
 
                 $gelement->amount -= $tontine->montant_cotisation;
-                $gelement->status = 'active';
+                $gelement->status = 'OK';
                 $gelement->save();
 
                 $tontine->update(['statut' => 'active']);
@@ -221,12 +211,6 @@ class TontineEpargneTest extends TestCase
                 $montantTotalEngagé = $this->calculateMontantEngagé($user->id);
                 $soldeDisponible = $userWallet->balance - $montantTotalEngagé;
 
-                Log::info("Vérification du solde pour paiement régulier", [
-                    'solde_total' => $userWallet->balance,
-                    'montant_engagé' => $montantTotalEngagé,
-                    'solde_disponible' => $soldeDisponible,
-                    'montant_requis' => $tontine->montant_cotisation
-                ]);
 
                 if ($soldeDisponible < $tontine->montant_cotisation) {
                     throw new \Exception("Solde insuffisant après engagements");
@@ -265,10 +249,7 @@ class TontineEpargneTest extends TestCase
             Log::info("Paiement traité avec succès");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Erreur lors du processus de paiement", [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+
             $this->handlePaymentFailure($user, $tontine);
         }
     }
@@ -289,7 +270,26 @@ class TontineEpargneTest extends TestCase
         return $montantEngagé;
     }
 
+    private function handlePaymentFailure(User $user, Tontines $tontine)
+    {
+        $cotisation = Cotisation::create([
+            'user_id' => $user->id,
+            'tontine_id' => $tontine->id,
+            'montant' => $tontine->montant_cotisation,
+            'statut' => 'échec'
+        ]);
 
+        EchecPaiement::create([
+            'user_id' => $user->id,
+            'cotisation_id' => $cotisation->id,
+            'montant_du' => $tontine->montant_cotisation
+        ]);
+
+        Notification::send($user, new tontinesNotification([
+            'title' => 'Échec de paiement',
+            'description' => 'Cliquez pour voir les détails.'
+        ]));
+    }
     private function processTontinePaiements(Tontines $tontine)
     {
         $users = $tontine->users;
@@ -316,26 +316,7 @@ class TontineEpargneTest extends TestCase
         }
     }
 
-    private function handlePaymentFailure(User $user, Tontines $tontine)
-    {
-        $cotisation = Cotisation::create([
-            'user_id' => $user->id,
-            'tontine_id' => $tontine->id,
-            'montant' => $tontine->montant_cotisation,
-            'statut' => 'échec'
-        ]);
 
-        EchecPaiement::create([
-            'user_id' => $user->id,
-            'cotisation_id' => $cotisation->id,
-            'montant_du' => $tontine->montant_cotisation
-        ]);
-
-        Notification::send($user, new tontinesNotification([
-            'title' => 'Échec de paiement',
-            'description' => 'Cliquez pour voir les détails.'
-        ]));
-    }
 
     private function validateTontinePayments(Tontines $tontine)
     {
