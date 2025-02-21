@@ -68,7 +68,7 @@ class Tontine extends Component
 
         // Récupérer toutes les tontines de l'utilisateur
         $this->tontineDatas = Tontines::where('user_id', Auth::id())
-            ->where('date_fin', '>=', $this->serverTime)
+            ->where('statut', 'inactive')
             ->get();
 
         // Vérifier si une tontine active existe avant d'accéder à ses cotisations

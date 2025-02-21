@@ -183,11 +183,18 @@
                                 @if (count($selectedTransactions ?? []) > 0)
                                     <div
                                         class="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-                                        <p class="text-sm text-gray-600 mb-2">{{ count($selectedTransactions) }}
-                                            paiement(s) sélectionné(s)</p>
-                                        <button wire:click="retrySelectedPayments"
-                                            class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                            Réessayer les paiements
+                                        <p class="text-sm text-gray-600 mb-2">
+                                            {{ count($selectedTransactions) }} paiement(s) sélectionné(s)
+                                        </p>
+
+                                        <button wire:click="preventDoubleSubmission"
+                                            @if ($isProcessing) disabled @endif
+                                            class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors relative
+                                               {{ $isProcessing ? 'opacity-50 cursor-not-allowed' : '' }}">
+                                            <span wire:loading.remove>Réessayer les paiements</span>
+                                            <x-icons.spinner wire:loading
+                                                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                                            <span wire:loading>Traitement...</span>
                                         </button>
                                     </div>
                                 @endif

@@ -93,11 +93,12 @@ class ProcessPayment implements ShouldQueue
                     'COC'
                 );
 
-                
-
-
 
                 $this->tontine->update(['statut' => 'active']);
+                Notification::send($this->user, new tontinesNotification([
+                    'title' => 'Paiement effectué avec succès',
+                    'description' => 'Cliquez pour voir les détails.'
+                ]));
             } else {
                 // Pour les paiements réguliers, vérifier le solde disponible
                 // en tenant compte des autres tontines actives
@@ -132,11 +133,6 @@ class ProcessPayment implements ShouldQueue
                 'montant' => $this->tontine->montant_cotisation,
                 'statut' => 'payé'
             ]);
-
-            Notification::send($this->user, new tontinesNotification([
-                'title' => 'Paiement effectué avec succès',
-                'description' => 'Cliquez pour voir les détails.'
-            ]));
 
             DB::commit();
         } catch (\Exception $e) {
@@ -174,7 +170,7 @@ class ProcessPayment implements ShouldQueue
 
         $transaction->save();
     }
-   
+
 
     private function handlePaymentFailure(User $user, Tontines $tontine)
     {

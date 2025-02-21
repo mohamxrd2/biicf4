@@ -42,7 +42,7 @@ class TontineEpargneTest extends TestCase
     public function test_multiple_users_multiple_tontines()
     {
         // Mock time to start testing
-        $startTestDate = Carbon::create(2025, 2, 19, 9, 0, 0);
+        $startTestDate = Carbon::create(2025, 2, 21, 9, 0, 0);
         Carbon::setTestNow($startTestDate);
 
         // Créer plusieurs utilisateurs
@@ -311,8 +311,16 @@ class TontineEpargneTest extends TestCase
 
         // Convertir date_fin en Carbon pour la comparaison
         $dateFin = Carbon::parse($tontine->date_fin);
+
         if ($nextPaymentDate->lte($dateFin)) {
-            $tontine->update(['next_payment_date' => $nextPaymentDate->toDateString()]);
+            $tontine->update([
+                'next_payment_date' => $nextPaymentDate->toDateString()
+            ]);
+        } else {
+            $tontine->update([
+                'statut' => 'inactive',
+                'next_payment_date' => null
+            ]);
         }
     }
 
