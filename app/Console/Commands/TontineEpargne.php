@@ -89,7 +89,7 @@ class TontineEpargne extends Command
                 ]);
             } else {
                 $tontine->update([
-                    'statut' => 'completed',
+                    'statut' => 'inactive',
                     'next_payment_date' => null
                 ]);
             }

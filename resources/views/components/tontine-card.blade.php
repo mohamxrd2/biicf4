@@ -26,7 +26,7 @@
                     <span @class([
                         'px-3 py-1 text-xs font-semibold rounded-full',
                         'text-green-700 bg-green-100' => $status === 'active',
-                        'text-yellow-700 bg-yellow-100' => $status === 'pending',
+                        'text-yellow-700 bg-yellow-100' => $status === '1st',
                         'text-red-700 bg-red-100' => $status === 'inactive',
                     ])>
                         {{ ucfirst($status) }}

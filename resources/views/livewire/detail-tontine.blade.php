@@ -15,6 +15,7 @@
         ];
 
     @endphp
+    <x-offre.alert-messages />
 
     <div class="min-h-screen bg-gray-50">
         {{-- Header --}}
@@ -34,9 +35,15 @@
                             <p class="text-sm text-gray-500">Créée le
                                 {{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}</p>
                         </div>
-                        <span class="ml-4 px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
-                            Active
+                        <span @class([
+                            'px-3 py-1 text-xs font-semibold rounded-full',
+                            'text-green-700 bg-green-100' => $tontine->statut === 'active',
+                            'text-yellow-700 bg-yellow-100' => $tontine->statut === '1st',
+                            'text-red-700 bg-red-100' => $tontine->statut === 'inactive',
+                        ])>
+                            {{ $tontine->statut }}
                         </span>
+
                     </div>
                 </div>
             </div>
@@ -44,7 +51,6 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {{-- Main Content --}}
                 <div class="lg:col-span-2 space-y-8">
                     {{-- Overview Card --}}
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-6">
@@ -126,20 +132,39 @@
                             <div class="space-y-4">
                                 @foreach ($transCotisation as $transaction)
                                     <div
-                                        class="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
+                                        @if ($transaction->statut !== 'payé') wire:click="toggleTransactionSelection({{ $transaction->id }})"
+                                            class="flex items-center justify-between p-4 rounded-xl border cursor-pointer
+                                                {{ in_array($transaction->id, $selectedTransactions ?? []) ? 'bg-blue-50 border-blue-300' : 'border-gray-100 hover:border-gray-200' }}
+                                                transition-all duration-200"
+                                        @else
+                                            class="flex items-center justify-between p-4 rounded-xl border border-gray-100" @endif>
                                         <div class="flex items-center gap-4">
-                                            <div
-                                                class="w-10 h-10 rounded-full flex items-center justify-center {{ $transaction->statut === 'payé' ? 'bg-green-100' : 'bg-red-100' }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="w-5 h-5 {{ $transaction->statut === 'payé' ? 'text-green-600' : 'text-red-600' }}"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
+                                            <div class="relative">
+                                                <div
+                                                    class="w-10 h-10 rounded-full flex items-center justify-center {{ $transaction->statut === 'payé' ? 'bg-green-100' : 'bg-red-100' }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="w-5 h-5 {{ $transaction->statut === 'payé' ? 'text-green-600' : 'text-red-600' }}"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </div>
+                                                @if ($transaction->statut !== 'payé' && in_array($transaction->id, $selectedTransactions ?? []))
+                                                    <div
+                                                        class="absolute -top-2 -right-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-3 w-3 text-white" viewBox="0 0 20 20"
+                                                            fill="currentColor">
+                                                            <path fill-rule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clip-rule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div>
-                                                <p class="font-medium text-gray-900"> Coisation </p>
+                                                <p class="font-medium text-gray-900">Cotisation</p>
                                                 <p class="text-sm text-gray-500">{{ $transaction->created_at }}</p>
                                             </div>
                                         </div>
@@ -154,13 +179,26 @@
                                         </div>
                                     </div>
                                 @endforeach
+
+                                @if (count($selectedTransactions ?? []) > 0)
+                                    <div
+                                        class="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+                                        <p class="text-sm text-gray-600 mb-2">{{ count($selectedTransactions) }}
+                                            paiement(s) sélectionné(s)</p>
+                                        <button wire:click="retrySelectedPayments"
+                                            class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                            Réessayer les paiements
+                                        </button>
+                                    </div>
+                                @endif
+
                                 @if ($hasMoreTransactions)
-                                <div class="mt-6 text-center">
-                                    <button wire:click="loadMoreTransactions"
-                                        class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                        Voir plus
-                                    </button>
-                                </div>
+                                    <div class="mt-6 text-center">
+                                        <button wire:click="loadMoreTransactions"
+                                            class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                            Voir plus
+                                        </button>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -176,7 +214,7 @@
                             <div class="space-y-3">
                                 <button
                                     class="w-full py-3 px-4 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors">
-                                    Effectuer un paiement
+                                    Régler les cotisations impayées
                                 </button>
 
                             </div>
