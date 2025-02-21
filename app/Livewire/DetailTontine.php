@@ -23,7 +23,7 @@ class DetailTontine extends Component
 
         // Récupération des cotisations réussies
         $cotisationsReussies = Cotisation::where('tontine_id', $this->id)
-            ->where('statut', 'reussi')
+            ->where('statut', 'payé')
             ->get();
 
         // Comptage et somme des montants des cotisations réussies

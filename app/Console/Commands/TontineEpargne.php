@@ -42,16 +42,18 @@ class TontineEpargne extends Command
         Log::info("Heure du serveur synchronisée : {$serverTime}");
 
         try {
-            $tontines = Tontines::where('next_payment_date', '<=', $serverTime)
-                ->where('date_fin', '>=', $serverTime)
+            $tontines = Tontines::where('next_payment_date', '<=', now())
+                ->where('date_fin', '>=', now())
                 ->get();
+
+            Log::info("liste des tontines : {$tontines}");
 
             foreach ($tontines as $tontine) {
                 DB::beginTransaction();
                 try {
                     // Vérifier si le paiement est dû
-                    if ($tontine->next_payment_date > $serverTime) {
-                        Log::info("Le paiement pour la tontine {$tontine->nom} n'est pas encore dû.");
+                    if ($tontine->next_payment_date > now()) {
+                        Log::info("Le paiement pour la tontine {$tontine->id} n'est pas encore dû.");
                         DB::commit();
                         continue;
                     }

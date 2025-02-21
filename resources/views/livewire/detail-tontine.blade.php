@@ -15,10 +15,8 @@
         ];
 
         $transactions = [
-            ['id' => 1, 'date' => '12 Fév 2024', 'amount' => 12000, 'status' => 'success', 'type' => 'Cotisation'],
-            ['id' => 2, 'date' => '05 Fév 2024', 'amount' => 12000, 'status' => 'success', 'type' => 'Cotisation'],
-            ['id' => 3, 'date' => '29 Jan 2024', 'amount' => 12000, 'status' => 'success', 'type' => 'Cotisation'],
-            ['id' => 4, 'date' => '22 Jan 2024', 'amount' => 12000, 'status' => 'failed', 'type' => 'Cotisation'],
+            ['id' => 1, 'date' => '12 Fév 2024', 'amount' => 12000, 'status' => 'reussi', 'type' => 'Cotisation'],
+            ['id' => 4, 'date' => '22 Jan 2024', 'amount' => 12000, 'status' => 'echoue', 'type' => 'Cotisation'],
         ];
     @endphp
 
@@ -128,9 +126,9 @@
                                         class="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
                                         <div class="flex items-center gap-4">
                                             <div
-                                                class="w-10 h-10 rounded-full flex items-center justify-center {{ $transaction['status'] === 'success' ? 'bg-green-100' : 'bg-red-100' }}">
+                                                class="w-10 h-10 rounded-full flex items-center justify-center {{ $transaction['status'] === 'reussi' ? 'bg-green-100' : 'bg-red-100' }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="w-5 h-5 {{ $transaction['status'] === 'success' ? 'text-green-600' : 'text-red-600' }}"
+                                                    class="w-5 h-5 {{ $transaction['status'] === 'reussi' ? 'text-green-600' : 'text-red-600' }}"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
@@ -147,8 +145,8 @@
                                                 {{ number_format($transaction['amount'], 0, ',', ' ') }} FCFA
                                             </p>
                                             <p
-                                                class="{{ $transaction['status'] === 'success' ? 'text-green-600' : 'text-red-600' }} text-sm">
-                                                {{ $transaction['status'] === 'success' ? 'Réussi' : 'Échoué' }}
+                                                class="{{ $transaction['status'] === 'reussi' ? 'text-green-600' : 'text-red-600' }} text-sm">
+                                                {{ $transaction['status'] === 'reussi' ? 'Réussi' : 'Échoué' }}
                                             </p>
                                         </div>
                                     </div>

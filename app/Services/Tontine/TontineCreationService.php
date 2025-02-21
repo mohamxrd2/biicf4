@@ -4,6 +4,7 @@ namespace App\Services\Tontine;
 
 use App\Models\Tontines;
 use App\Models\gelement;
+use App\Models\TontineUser;
 use App\Models\Wallet;
 use App\Services\TransactionService;
 use Illuminate\Support\Str;
@@ -52,8 +53,6 @@ class TontineCreationService
 
             $userWallet->decrement('balance', $data['amount']);
 
-
-
             // Création de l'élément gelé
             gelement::create([
                 'reference_id' => $this->generateUniqueReference(),
@@ -71,6 +70,11 @@ class TontineCreationService
                 'gain_potentiel' => $calculations['montant_total'],
                 'nombre_cotisations' => $data['duration'],
                 'frais_gestion' => $calculations['frais_gestion'],
+                'user_id' => $userId,
+            ]);
+            
+            $TontineUser = TontineUser::create([
+                'tontine_id' => $Tontines->id,
                 'user_id' => $userId,
             ]);
 

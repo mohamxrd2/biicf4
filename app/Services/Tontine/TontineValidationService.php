@@ -38,7 +38,7 @@ class TontineValidationService
     private function getMinDuration(string $frequency): int
     {
         return match ($frequency) {
-            'quotidienne' => 30,
+            'quotidienne' => 7,
             'hebdomadaire' => 4,
             'mensuelle' => 1,
             default => 1,

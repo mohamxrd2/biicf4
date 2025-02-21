@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
             // $schedule->command('app:rappel-journalieres-projets')->everyMinute();
             // $schedule->command('app:finacementProjetAccorde')->everyMinute();
             // $schedule->command('app:finacementCredits')->everyMinute();
-            $schedule->command('worker:monitor')->everyMinute();
+            // $schedule->command('worker:monitor')->everyMinute();
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             // $schedule->command('check:countdowns')->cron('* * * * *');
@@ -41,7 +41,7 @@ class Kernel extends ConsoleKernel
             // $schedule->command('app:finacementCredits')->cron('* * * * *');
 
             // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
-            $schedule->command('worker:monitor')->cron('* * * * *');
+            // $schedule->command('worker:monitor')->cron('* * * * *');
         }
     }
     /**

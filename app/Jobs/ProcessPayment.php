@@ -7,6 +7,7 @@ use App\Models\EchecPaiement;
 use App\Models\Tontines;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\Gelement;
 use App\Notifications\tontinesNotification;
 use App\Services\TransactionService;
 use Illuminate\Bus\Queueable;
@@ -33,67 +34,89 @@ class ProcessPayment implements ShouldQueue
     public function handle()
     {
         $transactionService = new TransactionService();
-
-        // Récupérer le portefeuille utilisateur
         $userWallet = Wallet::where('user_id', $this->user->id)->first();
 
-        if ($userWallet && $userWallet->balance >= $this->tontine->montant_cotisation) {
-            // Déduction du solde de l'utilisateur
+        if (!$userWallet) {
+            Log::error("❌ Wallet introuvable pour l'utilisateur: {$this->user->id}");
+            return;
+        }
+
+        if ($this->tontine->statut === '1st') {
+            $gelement = Gelement::where('id_wallet', $userWallet->id)->first();
+
+            if (!$gelement) {
+                Log::error("❌ Gelement introuvable pour le wallet ID: {$userWallet->id}");
+                return;
+            }
+
+            if ($gelement->amount < $this->tontine->montant_cotisation) {
+                Log::warning("❌ Solde insuffisant dans Gelement pour l'utilisateur: {$this->user->id}");
+                return;
+            }
+
+            $gelement->amount -= $this->tontine->montant_cotisation;
+            $gelement->status = 'ok'; // Correction ici
+            $gelement->save();
+
+            $this->tontine->statut = 'active'; // Correction ici
+            $this->tontine->save();
+        } elseif ($userWallet->balance >= $this->tontine->montant_cotisation && $this->tontine->statut === 'active') {
+
             $userWallet->balance -= $this->tontine->montant_cotisation;
             $userWallet->save();
-
-            // Création de la transaction
-            $transactionService->createTransaction(
-                $this->user->id,
-                $this->tontine->id,
-                'Débit',
-                $this->tontine->montant_cotisation,
-                $this->generateIntegerReference(),
-                'Paiement de cotisation',
-                'TONTINE'
-            );
-
-            // Enregistrement de la cotisation
-            Cotisation::create([
-                'user_id' => $this->user->id,
-                'tontine_id' => $this->tontine->id,
-                'montant' => $this->tontine->montant_cotisation,
-                'statut' => 'payé',
-            ]);
-
-            // Envoi de notification
-            Notification::send($this->user, new tontinesNotification([
-                'code_unique' => $this->generateIntegerReference(),
-                'title' => 'Paiement effectué avec succès',
-                'description' => 'Cliquez pour voir les détails de votre paiement.',
-            ]));
-
-            Log::info("✅ Paiement réussi : {$this->user->name} a payé {$this->tontine->montant_cotisation} pour la tontine {$this->tontine->nom}.");
         } else {
-            // Enregistrement de l'échec de cotisation
-            $cotisation = Cotisation::create([
-                'user_id' => $this->user->id,
-                'tontine_id' => $this->tontine->id,
-                'montant' => $this->tontine->montant_cotisation,
-                'statut' => 'échec',
-            ]);
-
-            // Stocker l’échec de paiement
-            EchecPaiement::create([
-                'user_id' => $this->user->id,
-                'cotisation_id' => $cotisation->id,
-                'montant_du' => $this->tontine->montant_cotisation,
-            ]);
-
-            // Envoi de notification d'échec
-            Notification::send($this->user, new tontinesNotification([
-                'code_unique' => $this->generateIntegerReference(),
-                'title' => 'Échec de paiement',
-                'description' => 'Cliquez pour voir les détails de votre paiement.',
-            ]));
-
-            Log::warning("❌ Échec de paiement : {$this->user->name} n'a pas assez de solde pour la tontine {$this->tontine->nom}.");
+            $this->handlePaymentFailure();
+            return;
         }
+
+        $transactionService->createTransaction(
+            $this->user->id,
+            $this->user->id,
+            'Débit',
+            $this->tontine->montant_cotisation,
+            $this->generateIntegerReference(),
+            'Paiement de cotisation',
+            'COC'
+        );
+
+        Cotisation::create([
+            'user_id' => $this->user->id,
+            'tontine_id' => $this->tontine->id,
+            'montant' => $this->tontine->montant_cotisation,
+            'statut' => 'payé',
+        ]);
+
+        Notification::send($this->user, new tontinesNotification([
+            'code_unique' => $this->generateIntegerReference(),
+            'title' => 'Paiement effectué avec succès',
+            'description' => 'Cliquez pour voir les détails de votre paiement.',
+        ]));
+
+        Log::info("✅ Paiement réussi : {$this->user->name} a payé {$this->tontine->montant_cotisation} pour la tontine.");
+    }
+
+    private function handlePaymentFailure()
+    {
+        $cotisation = Cotisation::create([
+            'user_id' => $this->user->id,
+            'tontine_id' => $this->tontine->id,
+            'montant' => $this->tontine->montant_cotisation,
+            'statut' => 'échec',
+        ]);
+
+        EchecPaiement::create([
+            'user_id' => $this->user->id,
+            'cotisation_id' => $cotisation->id,
+            'montant_du' => $this->tontine->montant_cotisation,
+        ]);
+
+        Notification::send($this->user, new tontinesNotification([
+            'code_unique' => $this->generateIntegerReference(),
+            'title' => 'Échec de paiement',
+            'description' => 'Cliquez pour voir les détails de votre paiement.',
+        ]));
+
+        Log::warning("❌ Échec de paiement : {$this->user->name} n'a pas assez de solde pour la tontine .");
     }
 
     private function generateIntegerReference()

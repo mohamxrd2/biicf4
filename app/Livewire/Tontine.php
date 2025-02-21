@@ -23,7 +23,7 @@ class Tontine extends Component
     public $cotisations;
     public $cotisationsCount;
     public $cotisationSum;
-    public $poucentage;
+    public $pourcentage;
     public $tontineEnCours = null;
     public $serverTime;
     public $time;
@@ -77,18 +77,18 @@ class Tontine extends Component
                 ->where('tontine_id', $this->tontineEnCours->id)
                 ->get();
 
-            $this->cotisationsCount = $this->cotisations->where('statut', 'reussi')->count();
+            $this->cotisationsCount = $this->cotisations->where('statut', 'payé')->count();
             $this->cotisationSum = $this->cotisations->sum('montant');
 
             // Éviter la division par zéro
             $nombreCotisations = $this->tontineEnCours->nombre_cotisations ?: 1;
-            $this->poucentage = ($this->cotisationsCount / $nombreCotisations) * 100;
+            $this->pourcentage = ($this->cotisationsCount / $nombreCotisations) * 100;
         } else {
             // Initialiser les valeurs si aucune tontine active n'est trouvée
             $this->cotisations = collect(); // Collection vide
             $this->cotisationsCount = 0;
             $this->cotisationSum = 0;
-            $this->poucentage = 0;
+            $this->pourcentage = 0;
         }
 
         $this->changing();

@@ -9,7 +9,7 @@ class EchecPaiement extends Model
 {
     use HasFactory;
 
-    protected $table = 'echec_paiement';
+    protected $table = 'echecs_paiement';
     protected $fillable = ['user_id', 'cotisation_id', 'montant_du'];
 
     public function user()
