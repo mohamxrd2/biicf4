@@ -47,7 +47,7 @@ class TontineEpargneTest extends TestCase
 
         // Créer plusieurs utilisateurs
         $users = collect([
-            ['id' => 121, 'initial_balance' => 100],
+            ['id' => 121, 'initial_balance' => 1000],
             // ['id' => 122, 'initial_balance' => 800],
             // ['id' => 123, 'initial_balance' => 1200]
         ])->map(function ($userData) {
