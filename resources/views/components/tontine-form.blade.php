@@ -54,49 +54,88 @@
                     <span class="text-sm text-red-500">{{ $errors['frequency'] }}</span>
                 @endif
             </div>
-            
 
-            {{-- Durée --}}
-            <div class="space-y-2">
-                <label class="text-base font-medium text-gray-900 flex items-center gap-2">
-                    <x-icons.calendar class="w-5 h-5 text-indigo-500" />
-                    <span id="durationLabel">Durée</span>
+            <div class="flex items-center space-x-4">
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="toggleSwitch" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-4 peer-focus:ring-purple-300 relative 
+                        after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full 
+                        after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-full peer-checked:bg-purple-600">
+                    </div>
                 </label>
-                <div class="relative mt-1">
-                    <input type="number" id="duration" wire:model.defer="duration"
-                        class="block w-full  px-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
-                        placeholder="Entrez la durée" required>
-                </div>
-            
-                @if ($errors['duration'])
-                    <span class="text-sm text-red-500">{{ $errors['duration'] }}</span>
-                @endif
+                <span class="text-base font-medium text-gray-700 hover:text-gray-900 select-none">
+                    Tontine sans limite
+                    <div class="text-xs text-gray-500 font-normal mt-0.5">Activez pour une tontine illimitée</div>
+                </span>
             </div>
             
-
-            {{-- Gain Potentiel --}}
-            <div class="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+            <!-- Texte affiché lorsque le switch est activé -->
+            <div id="cotisationText" class="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded hidden">
+                <p class="text-sm text-yellow-800 font-medium">
+                    **Le montant de la première cotisation sera prélevé pour les frais de service**  
+                </p>
+            </div>
+            
+            <!-- Sections cachées si le switch est activé -->
+            <div id="durationSection" class="space-y-2 mt-6">
+                <label class="text-base font-medium text-gray-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Durée</span>
+                </label>
+                <input type="number" placeholder="Entrez la durée" required
+                    class="block w-full px-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-sm hover:shadow-md">
+            </div>
+            
+            <div id="gainSection" class="bg-indigo-50 rounded-xl p-6 border border-indigo-100 mt-6">
                 <div class="space-y-4">
                     <div class="flex items-center gap-2">
-                        <x-icons.currency class="w-5 h-5 text-indigo-500" />
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 1.343-3 3m6 0c0-1.657-1.343-3-3-3m0 10v-6m9 6v2H3v-2a9 9 0 0118 0z" />
+                        </svg>
                         <h3 class="text-lg font-semibold text-indigo-900">Gain Potentiel</h3>
                     </div>
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                         <div>
                             <p class="text-sm text-indigo-600">Montant total</p>
-                            <p class="text-2xl font-bold text-indigo-700" id="potentialGain"></p>
+                            <p class="text-2xl font-bold text-indigo-700">-</p>
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-indigo-600">Frais de service</p>
-                            <p class="text-lg font-semibold text-indigo-700" id="fraisDeSevice">-</p>
+                            <p class="text-lg font-semibold text-indigo-700">-</p>
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-indigo-600">Date de fin</p>
-                            <p class="text-lg font-semibold text-indigo-700" id="endDateDisplay">-</p>
+                            <p class="text-lg font-semibold text-indigo-700">-</p>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <script>
+                const toggleSwitch = document.getElementById('toggleSwitch');
+                const durationSection = document.getElementById('durationSection');
+                const gainSection = document.getElementById('gainSection');
+                const cotisationText = document.getElementById('cotisationText');
+            
+                toggleSwitch.addEventListener('change', function () {
+                    if (this.checked) {
+                        // Cacher Durée & Gain Potentiel + Afficher le texte
+                        durationSection.classList.add('hidden');
+                        gainSection.classList.add('hidden');
+                        cotisationText.classList.remove('hidden');
+                    } else {
+                        // Afficher Durée & Gain Potentiel + Cacher le texte
+                        durationSection.classList.remove('hidden');
+                        gainSection.classList.remove('hidden');
+                        cotisationText.classList.add('hidden');
+                    }
+                });
+            </script>
+            
             
             
             
