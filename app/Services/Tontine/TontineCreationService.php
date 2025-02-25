@@ -22,9 +22,14 @@ class TontineCreationService
         $this->transactionService = $transactionService;
     }
 
-    public function createTontine(array $data, int $userId): bool
+    public function createTontine(array $data, int $userId, bool $isUnlimited = false): bool
     {
         try {
+            // Si la tontine est illimitée, on attribue la durée minimale
+            if ($isUnlimited) {
+                $data['duration'] = $this->getMinDuration($data['frequency']);
+            }
+
             $startDate = $data['server_time'];
             $endDate = $this->calculationService->calculateEndDate(
                 $startDate,
@@ -67,7 +72,7 @@ class TontineCreationService
                 'date_debut' => $startDate->format('Y-m-d'),
                 'montant_cotisation' => $data['amount'],
                 'frequence' => $data['frequency'],
-                'date_fin' => $endDate,
+                'date_fin' => $endDate ?? null,
                 'next_payment_date' => $nextPaymentDate,
                 'gain_potentiel' => $calculations['montant_total'],
                 'nombre_cotisations' => $data['duration'],
@@ -99,7 +104,15 @@ class TontineCreationService
             return false;
         }
     }
-
+    private function getMinDuration(string $frequency): int
+    {
+        return match ($frequency) {
+            'quotidienne' => 30,
+            'hebdomadaire' => 4,
+            'mensuelle' => 3,
+            default => 1,
+        };
+    }
     private function generateUniqueReference(): string
     {
         return 'REF-' . strtoupper(Str::random(6));

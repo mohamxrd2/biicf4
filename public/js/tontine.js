@@ -1,4 +1,20 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const toggleSwitch = document.getElementById("toggleSwitch");
+    const durationSection = document.getElementById("durationSection");
+    const gainSection = document.getElementById("gainSection");
+    const cotisationText = document.getElementById("cotisationText");
+    const frequencyOptions = document.querySelectorAll(".frequency-option");
+    const frequencyLabel = document.getElementById("frequencyLabel");
+    const frequencyLabel2 = document.getElementById("frequencyLabel2");
+    const frequencyCount = document.getElementById("frequencyCount");
+
+    // Ajout d'une propriété "count" pour chaque fréquence
+    const frequencyValues = {
+        quotidienne: { label: "jours", days: 1, count: 30 }, // 30 jours
+        hebdomadaire: { label: "semaines", days: 7, count: 4 }, // 4 semaines
+        mensuelle: { label: "mois", days: 30, count: 1 }, // 12 mois
+    };
+
     // Récupération des éléments DOM avec vérification
     const elements = {
         amountInput: document.getElementById("amount"),
@@ -6,6 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
         durationLabel: document.getElementById("durationLabel"),
         potentialGainDisplay: document.getElementById("potentialGain"),
         endDateDisplay: document.getElementById("endDateDisplay"),
+        endDateDisplay2: document.getElementById("endDateDisplay2"),
         fraisDeServiceDisplay: document.getElementById("fraisDeSevice"),
         frequencyInputs: document.querySelectorAll('input[name="frequency"]'),
     };
@@ -15,25 +32,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const serverTime = container
         ? new Date(container.dataset.serverTime)
         : new Date();
-
-    // Vérification des éléments requis
-    const requiredElements = [
-        "amountInput",
-        "durationInput",
-        "durationLabel",
-        "potentialGainDisplay",
-        "endDateDisplay",
-        "fraisDeServiceDisplay",
-    ];
-
-    const missingElements = requiredElements.filter(
-        (elementName) => !elements[elementName]
-    );
-
-    if (missingElements.length > 0) {
-        console.error("Éléments manquants dans le DOM:", missingElements);
-        return;
-    }
 
     const FREQUENCY_DAYS = {
         quotidienne: 1,
@@ -141,9 +139,51 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Event listeners
+    function updateEndDate() {
+        const frequency =
+            document.querySelector('input[name="frequency"]:checked')?.value ||
+            "mensuelle";
+        const duration = frequencyValues[frequency].count || null;
+        if (duration > 0) {
+            const endDate = calculateEndDate(duration, frequency);
+            displayDate = formatDate(endDate);
+        }
+        elements.endDateDisplay2.textContent = displayDate;
+    }
+
+    // Event listeners for frequency options
+    frequencyOptions.forEach((option) => {
+        option.addEventListener("change", function () {
+            const selectedValue = this.value;
+            if (frequencyValues[selectedValue]) {
+                frequencyLabel.textContent =
+                    frequencyValues[selectedValue].label;
+            }
+        });
+    });
+
+    // Event listener for toggle switch
+    toggleSwitch?.addEventListener("change", function () {
+        if (this.checked) {
+            // Cacher Durée & Gain Potentiel + Afficher le texte
+            durationSection.classList.add("hidden");
+            gainSection.classList.add("hidden");
+            cotisationText.classList.remove("hidden");
+        } else {
+            // Afficher Durée & Gain Potentiel + Cacher le texte
+            durationSection.classList.remove("hidden");
+            gainSection.classList.remove("hidden");
+            cotisationText.classList.add("hidden");
+        }
+    });
+
+    // Event listeners for inputs
     elements.amountInput?.addEventListener("input", calculatePotentialGain);
     elements.durationInput?.addEventListener("input", calculatePotentialGain);
+    // Écouteurs d'événements
+    elements.frequencyInputs.forEach((input) =>
+        input.addEventListener("change", updateEndDate)
+    );
 
     elements.frequencyInputs.forEach((input) => {
         input.addEventListener("change", () => {
@@ -152,7 +192,28 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Check if required elements exist before proceeding
+    const requiredElements = [
+        "amountInput",
+        "durationInput",
+        "durationLabel",
+        "potentialGainDisplay",
+        "endDateDisplay",
+        "fraisDeServiceDisplay",
+    ];
+
+    const missingElements = requiredElements.filter(
+        (elementName) => !elements[elementName]
+    );
+
+    if (missingElements.length > 0) {
+        console.error("Éléments manquants dans le DOM:", missingElements);
+        return;
+    }
+
     // Configuration initiale
     updateDurationLabel();
     calculatePotentialGain();
+    // Initialisation
+    updateEndDate();
 });

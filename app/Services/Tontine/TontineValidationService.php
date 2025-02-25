@@ -1,10 +1,10 @@
 <?php
-// app/Services/Tontine/TontineCalculationService.php
+
 namespace App\Services\Tontine;
 
 class TontineValidationService
 {
-    public function validateTontine(array $data): array
+    public function validateTontine(array $data, bool $isUnlimited = false): array
     {
         $errors = [
             'amount' => '',
@@ -26,6 +26,11 @@ class TontineValidationService
             $errors['frequency'] = 'Veuillez sélectionner une fréquence.';
         }
 
+        // Si "isUnlimited" est vrai, alors la durée prend la valeur minimale requise
+        if ($isUnlimited) {
+            $data['duration'] = $minDuration;
+        }
+
         if (empty($data['duration'])) {
             $errors['duration'] = 'Veuillez entrer une durée.';
         } elseif ($data['duration'] < $minDuration) {
@@ -38,9 +43,9 @@ class TontineValidationService
     private function getMinDuration(string $frequency): int
     {
         return match ($frequency) {
-            'quotidienne' => 7,
+            'quotidienne' => 30,
             'hebdomadaire' => 4,
-            'mensuelle' => 1,
+            'mensuelle' => 3,
             default => 1,
         };
     }

@@ -1,5 +1,4 @@
-{{-- resources/views/components/tontine-form.blade.php --}}
-@props(['serverTime', 'errors' => []])
+@props(['serverTime', 'errors' => [], 'isUnlimited'])
 
 <div class="max-w-3xl mx-auto">
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100"
@@ -23,7 +22,7 @@
                 </label>
                 <div class="relative mt-1">
                     <input type="number" id="amount" wire:model.defer="amount"
-                        class="block w-full pl-16 pr-4 py-3 sm:py-4 text-base sm:text-lg border-gray-200 rounded-xl 
+                        class="block w-full pl-16 pr-4 py-3 sm:py-4 text-base sm:text-lg border-gray-200 rounded-xl
                                focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
                         placeholder="Montant" required>
                 </div>
@@ -31,33 +30,64 @@
                     <span class="text-sm text-red-500">{{ $errors['amount'] }}</span>
                 @endif
             </div>
-            
+
             {{-- Fréquence --}}
             <div>
                 <label class="text-sm font-semibold text-gray-700 mb-3 block">Fréquence de cotisation</label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     @foreach (['quotidienne' => 'Quotidienne', 'hebdomadaire' => 'Hebdomadaire', 'mensuelle' => 'Mensuelle'] as $value => $label)
                         <label class="relative">
-                            <input type="radio" name="frequency" wire:model.defer="frequency"
-                                value="{{ $value }}" class="peer sr-only">
+                            <input type="radio" name="frequency" wire:model.defer="frequency" value="{{ $value }}"
+                                class="peer sr-only frequency-option">
                             <div
                                 class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
-                                peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
-                                hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
+                    peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
+                    hover:border-purple-300 hover:shadow-sm text-gray-700 bg-white">
                                 {{ $label }}
                             </div>
                         </label>
                     @endforeach
                 </div>
-            
+
                 @if ($errors['frequency'])
                     <span class="text-sm text-red-500">{{ $errors['frequency'] }}</span>
                 @endif
             </div>
-            
+
+            {{-- tontine illimitée button --}}
+            <div class="flex items-center space-x-4">
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="toggleSwitch" wire:model.live="isUnlimited" class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-4 peer-focus:ring-purple-300 relative
+                        after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full
+                        after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-full peer-checked:bg-purple-600">
+                    </div>
+                </label>
+                <span class="text-base font-medium text-gray-700 hover:text-gray-900 select-none">
+                    Tontine sans limite
+                    <div class="text-xs text-gray-500 font-normal mt-0.5">Activez pour une tontine illimitée</div>
+                </span>
+            </div>
+
+            <div id="cotisationText"
+                class="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded {{ $isUnlimited ? '' : 'hidden' }}">
+
+                <p class="text-sm text-yellow-800 font-medium">
+                    💡 Le prochain frais de service sera prélevé <strong>le <span id="endDateDisplay2"></span>
+                    </strong>
+                <p class="ml-5 text-sm text-yellow-800 font-medium"> sera renouvelé automatiquement à la même période si
+                    l'abonnement se poursuit.</p>
+                </p>
+                <p class="text-sm text-yellow-800 font-medium">
+                    📅 Le gain total est calculé sur une période de <strong><span id="frequencyLabel"></span></strong>.
+                </p>
+            </div>
+
+
 
             {{-- Durée --}}
-            <div class="space-y-2">
+            <div id="durationSection" class="space-y-2 {{ $isUnlimited ? 'hidden' : '' }}">
                 <label class="text-base font-medium text-gray-900 flex items-center gap-2">
                     <x-icons.calendar class="w-5 h-5 text-indigo-500" />
                     <span id="durationLabel">Durée</span>
@@ -65,17 +95,17 @@
                 <div class="relative mt-1">
                     <input type="number" id="duration" wire:model.defer="duration"
                         class="block w-full  px-4 py-4 text-lg border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
-                        placeholder="Entrez la durée" required>
+                        placeholder="Entrez la durée" @if (!$isUnlimited) required @endif>
                 </div>
-            
+
                 @if ($errors['duration'])
                     <span class="text-sm text-red-500">{{ $errors['duration'] }}</span>
                 @endif
             </div>
-            
 
             {{-- Gain Potentiel --}}
-            <div class="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+            <div id="gainSection"
+                class="bg-indigo-50 rounded-xl p-6 border border-indigo-100 {{ $isUnlimited ? 'hidden' : '' }}">
                 <div class="space-y-4">
                     <div class="flex items-center gap-2">
                         <x-icons.currency class="w-5 h-5 text-indigo-500" />
@@ -97,9 +127,9 @@
                     </div>
                 </div>
             </div>
-            
-            
-            
+
+
+
 
             {{-- Information Box --}}
             <div class="bg-purple-50 border border-purple-100 rounded-xl p-4">
@@ -109,17 +139,18 @@
                         <h3 class="text-sm font-medium text-purple-800">Information importante</h3>
                         <div class="mt-2 text-sm text-purple-700 bg-purple-100 p-4 rounded-lg shadow-md">
                             <ul class="list-disc list-inside space-y-2">
-                                <li><strong>Les frais de service</strong> seront prélevés à la fin de la tontine.</li>
+                                <li><strong>les frais de service </strong>seront prélèvés au moment du premier paiement
+                                </li>
                                 <li><span class="font-semibold">Le montant de la première cotisation sera immédiatement
                                         gelé</span> (disposer des fonds nécessaires sur votre compte COC ).</li>
                                 <li>Les paiements suivants seront automatiquement ajoutés au <span
-                                        class="font-semibold">CEDD</span>.</li>
+                                        class="font-semibold">{{ $isUnlimited ? 'CEDD' : 'CEFP' }}</span>.</li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <x-offre.alert-messages />
 
             {{-- Submit Button --}}

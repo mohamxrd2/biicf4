@@ -35,6 +35,7 @@ class Tontine extends Component
         'frequency' => '',
         'duration' => ''
     ];
+    public $isUnlimited = false;
 
     private $calculationService;
     private $validationService;
@@ -143,11 +144,14 @@ class Tontine extends Component
     {
         $this->resetErrors();
 
+        // Ajustement de la durée si isUnlimited est activé
+        $duration = $this->isUnlimited ? $this->calculationService->getMinDuration($this->frequency) : $this->duration;
+
         $this->errors = $this->validationService->validateTontine([
             'amount' => $this->amount,
             'frequency' => $this->frequency,
-            'duration' => $this->duration
-        ]);
+            'duration' => $duration
+        ], $this->isUnlimited);
 
         if (array_filter($this->errors)) {
             return;
@@ -156,7 +160,7 @@ class Tontine extends Component
         $success = $this->creationService->createTontine([
             'amount' => $this->amount,
             'frequency' => $this->frequency,
-            'duration' => $this->duration,
+            'duration' => $duration,
             'server_time' => $this->serverTime
         ], Auth::id());
 
@@ -169,6 +173,7 @@ class Tontine extends Component
             session()->flash('error', 'Une erreur est survenue ou Solde insuffisant pour créer la tontine.');
         }
     }
+
 
     public function render()
     {
