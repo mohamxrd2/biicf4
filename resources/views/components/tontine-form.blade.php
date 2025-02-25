@@ -108,21 +108,24 @@
                 class="bg-indigo-50 rounded-xl p-6 border border-indigo-100 {{ $isUnlimited ? 'hidden' : '' }}">
                 <div class="space-y-4">
                     <div class="flex items-center gap-2">
-                        <x-icons.currency class="w-5 h-5 text-indigo-500" />
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 1.343-3 3m6 0c0-1.657-1.343-3-3-3m0 10v-6m9 6v2H3v-2a9 9 0 0118 0z" />
+                        </svg>
                         <h3 class="text-lg font-semibold text-indigo-900">Gain Potentiel</h3>
                     </div>
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                         <div>
                             <p class="text-sm text-indigo-600">Montant total</p>
-                            <p class="text-2xl font-bold text-indigo-700" id="potentialGain"></p>
+                            <p class="text-2xl font-bold text-indigo-700">-</p>
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-indigo-600">Frais de service</p>
-                            <p class="text-lg font-semibold text-indigo-700" id="fraisDeSevice">-</p>
+                            <p class="text-lg font-semibold text-indigo-700">-</p>
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-indigo-600">Date de fin</p>
-                            <p class="text-lg font-semibold text-indigo-700" id="endDateDisplay">-</p>
+                            <p class="text-lg font-semibold text-indigo-700">-</p>
                         </div>
                     </div>
                 </div>
