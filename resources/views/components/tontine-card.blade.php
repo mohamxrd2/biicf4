@@ -10,7 +10,8 @@
     'cotisationsTotales',
     'montantCollecte',
     'prochainPaiement',
-    'status' => 'active',
+    'status',
+    'isUnlimited',
 ])
 
 <div
@@ -23,15 +24,27 @@
                     <a href="{{ route('tontine.detail', $id) }}" class="text-xl font-bold text-gray-900">
                         Tontine #000{{ $id }}
                     </a>
+
+                    <!-- Statut de la tontine -->
                     <span @class([
                         'px-3 py-1 text-xs font-semibold rounded-full',
                         'text-green-700 bg-green-100' => $status === 'active',
                         'text-yellow-700 bg-yellow-100' => $status === '1st',
                         'text-red-700 bg-red-100' => $status === 'inactive',
                     ])>
-                        {{ ucfirst($status) }}
+                        {{ $status === '1st' ? 'En attente' : ucfirst($status) }}
+                    </span>
+
+                    <!-- Indicateur de durée -->
+                    <span @class([
+                        'px-3 py-1 text-xs font-semibold rounded-full',
+                        'text-blue-700 bg-blue-100' => $isUnlimited,
+                        'text-gray-700 bg-gray-200' => !$isUnlimited,
+                    ])>
+                        {{ $isUnlimited ? 'Période indéfinie' : 'Période définie' }}
                     </span>
                 </div>
+
                 <div class="mt-2 space-y-1">
                     <p class="text-gray-600">Montant:
                         <span class="font-semibold">

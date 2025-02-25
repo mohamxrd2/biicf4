@@ -35,13 +35,24 @@
                             <p class="text-sm text-gray-500">Créée le
                                 {{ \Carbon\Carbon::parse($tontine->date_debut)->translatedFormat('d F Y') }}</p>
                         </div>
+
+                        <!-- Statut de la tontine -->
                         <span @class([
                             'px-3 py-1 text-xs font-semibold rounded-full',
                             'text-green-700 bg-green-100' => $tontine->statut === 'active',
                             'text-yellow-700 bg-yellow-100' => $tontine->statut === '1st',
                             'text-red-700 bg-red-100' => $tontine->statut === 'inactive',
                         ])>
-                            {{ $tontine->statut }}
+                            {{ $tontine->statut === '1st' ? 'En attente' : $tontine->statut }}
+                        </span>
+
+                        <!-- Indicateur de durée -->
+                        <span @class([
+                            'px-3 py-1 text-xs font-semibold rounded-full',
+                            'text-blue-700 bg-blue-100' => $tontine->isUnlimited,
+                            'text-gray-700 bg-gray-200' => !$tontine->isUnlimited,
+                        ])>
+                            {{ $tontine->isUnlimited ? 'Période indéfinie' : 'Période définie' }}
                         </span>
 
                     </div>
@@ -215,18 +226,27 @@
                 {{-- Sidebar --}}
                 <div class="space-y-6">
                     {{-- Quick Actions --}}
-                    {{-- <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
-                            <div class="space-y-3">
-                                <button
-                                    class="w-full py-3 px-4 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors">
-                                    Régler les cotisations impayées
-                                </button>
+                    @if ($tontine->status === 'active' && $tontine->isUnlimited)
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+                            <div class="p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
+                                <div class="space-y-3">
+                                    <button
+                                        class="w-full py-3 px-4 bg-red-600 text-white font-medium rounded-xl flex items-center justify-center gap-2
+           hover:bg-red-700 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                        <span>Arrêter la tontine</span>
+                                    </button>
 
+                                </div>
                             </div>
                         </div>
-                    </div> --}}
+                    @endif
+
 
                     {{-- Important Dates --}}
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200">

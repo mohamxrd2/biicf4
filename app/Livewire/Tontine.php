@@ -162,7 +162,7 @@ class Tontine extends Component
             'frequency' => $this->frequency,
             'duration' => $duration,
             'server_time' => $this->serverTime
-        ], Auth::id());
+        ], Auth::id(), $this->isUnlimited);
 
         if ($success) {
             $this->reset(['amount', 'frequency', 'duration']);

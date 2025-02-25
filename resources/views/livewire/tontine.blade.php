@@ -1,6 +1,6 @@
 <div class="min-h-screen p-8">
     @if (!$tontineStart)
-        <x-tontine-form :server-time="$serverTime" :errors="$errors" :isUnlimited="$isUnlimited"  />
+        <x-tontine-form :server-time="$serverTime" :errors="$errors" :isUnlimited="$isUnlimited" />
     @else
         <!-- Display active tontine -->
         <div class="max-w-3xl mx-auto">
@@ -8,7 +8,7 @@
             @if ($tontineEnCours)
                 <x-tontine-card :id="$tontineEnCours->id" :montant="$tontineEnCours->montant_cotisation" :frequence="$tontineEnCours->frequence" :dateDebut="$tontineEnCours->date_debut"
                     :dateFin="$tontineEnCours->date_fin" :progression="$pourcentage" :cotisationsEffectuees="$cotisationsCount" :cotisationsTotales="$tontineEnCours->nombre_cotisations" :montantCollecte="$cotisationSum"
-                    :prochainPaiement="$tontineEnCours->next_payment_date" :status="$tontineEnCours->statut" />
+                    :prochainPaiement="$tontineEnCours->next_payment_date" :status="$tontineEnCours->statut" :isUnlimited="$tontineEnCours->isUnlimited" />
             @endif
         </div>
     @endif
