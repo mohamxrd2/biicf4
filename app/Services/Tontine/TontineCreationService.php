@@ -79,7 +79,8 @@ class TontineCreationService
                 'frais_gestion' => $calculations['frais_gestion'],
                 'user_id' => $userId,
                 'statut' => '1st',
-                'gelement_reference' => $gelementReference // Ajout de la référence du gelement
+                'gelement_reference' => $gelementReference ,// Ajout de la référence du gelement
+                'isUnlimited' => $isUnlimited // Ajout de la référence du gelement
 
             ]);
 

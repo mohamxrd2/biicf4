@@ -10,6 +10,7 @@ class Tontines extends Model
     use HasFactory;
 
     protected $fillable = [
+        'isUnlimited',
         'gelement_reference',
         'date_debut',
         'montant_cotisation',
