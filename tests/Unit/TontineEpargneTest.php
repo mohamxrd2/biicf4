@@ -109,11 +109,17 @@ class TontineEpargneTest extends TestCase
         $hasUnlimited = collect($tontineConfigs)->contains('unlimited', true);
         Log::info("hasUnlimited : " . $hasUnlimited);
 
-        $simulationDays = $hasUnlimited ? 7 : max($maxLimitedDuration, $maxLimitedDuration);
+        $simulationDays = $maxLimitedDuration; // On s'arrête à la durée max des tontines limitées
+
+        // Si une tontine illimitée existe, on continue jusqu'à ce qu'il n'y ait plus de tontines actives
+        if ($hasUnlimited) {
+            $simulationDays = 0; // On ne met pas de limite fixe, la boucle s'arrêtera quand il n'y aura plus de tontines actives
+        }
         Log::info("simulationDays: " . $simulationDays);
 
         // $this->assertTrue(true);
-        for ($day = 0; $day < $simulationDays; $day++) {
+        $day = 0;
+        while ($hasUnlimited || $day < $maxLimitedDuration) {
             $currentDate = $startTestDate->copy()->addDays($day);
             Carbon::setTestNow($currentDate);
 
@@ -121,16 +127,22 @@ class TontineEpargneTest extends TestCase
 
             DB::transaction(function () use ($currentDate, $allTontines) {
                 foreach ($allTontines as $tontine) {
-                    // Convertir next_payment_date en objet Carbon pour la comparaison
                     $nextPaymentDate = Carbon::parse($tontine->next_payment_date);
                     if ($nextPaymentDate->toDateString() === $currentDate->toDateString()) {
                         $this->processTontinePaiements($tontine);
                     }
                 }
             });
+
+            // Vérifier si toutes les tontines sont inactives
+            if ($allTontines->every(fn($t) => $t->statut === 'inactive')) {
+                break; // On arrête si toutes les tontines sont inactives
+            }
+
+            $day++;
         }
 
-        // Vérifications
+        //Vérifications
         foreach ($allTontines as $tontine) {
             $this->validateTontinePayments($tontine);
         }
@@ -352,6 +364,9 @@ class TontineEpargneTest extends TestCase
 
                 // Réinitialiser la durée à zéro
                 // $tontine->update(['nombre_cotisations' => 0]);
+                $tontine->update([
+                    'statut' => 'inactive',
+                ]);
             }
 
             // Mettre à jour la prochaine date de paiement
@@ -370,6 +385,7 @@ class TontineEpargneTest extends TestCase
                     'statut' => 'inactive',
                     'next_payment_date' => null
                 ]);
+                Log::info("End");
             }
         }
     }
@@ -398,7 +414,7 @@ class TontineEpargneTest extends TestCase
 
         // Vérifier le montant total collecté
         $totalCollecte = Cotisation::where('tontine_id', $tontine->id)
-            ->where('statut', 'payé')
+            // ->where('statut', 'payé')
             ->sum('montant');
 
         // Vérifier les échecs de paiement
