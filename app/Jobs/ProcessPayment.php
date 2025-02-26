@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Cedd;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Gelement;
@@ -111,6 +112,9 @@ class ProcessPayment implements ShouldQueue
                 }
 
                 $userWallet->balance -= $this->tontine->montant_cotisation;
+
+                $userCedd = Cedd::where('id_wallet', $userWallet->id)->first();
+                $userCedd->increment('Solde', $this->tontine->montant_cotisation);
                 $userWallet->save();
             }
 
