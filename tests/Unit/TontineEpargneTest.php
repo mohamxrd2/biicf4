@@ -68,28 +68,31 @@ class TontineEpargneTest extends TestCase
 
         // Définir différentes configurations de tontines
         $tontineConfigs = [
-            // [
-            //     'amount' => 100.00,
-            //     'frequency' => 'quotidienne',
-            //     'duration' => 3,
-            //     'unlimited' => false,
-            // ],
+            [
+                'amount' => 100.00,
+                'frequency' => 'quotidienne',
+                'duration' => 3,
+                'unlimited' => false,
+            ],
+            [
+                'amount' => 150.00,
+                'frequency' => 'quotidienne',
+                'duration' => null,
+                'unlimited' => true,
+            ],
+
             // [
             //     'amount' => 200.00,
             //     'frequency' => 'quotidienne',
             //     'duration' => 4,
             //     'unlimited' => false,
             // ],
-            [
-                'amount' => 150.00,
-                'frequency' => 'quotidienne',
-                'duration' => null,
-                'unlimited' => true,
-            ]
+
         ];
 
         // Créer les tontines pour chaque utilisateur
         $allTontines = collect();
+        
 
         foreach ($users as $userData) {
             foreach ($tontineConfigs as $config) {
@@ -100,47 +103,50 @@ class TontineEpargneTest extends TestCase
             }
         }
 
-        // Déterminer la durée de simulation
+        // Déterminer la durée maximale des tontines limitées
         $maxLimitedDuration = collect($tontineConfigs)
             ->where('unlimited', false)
             ->max('duration') ?: 0;
-        Log::info("maxLimitedDuration : " . $maxLimitedDuration);
 
+        // Vérifier si une tontine illimitée existe
         $hasUnlimited = collect($tontineConfigs)->contains('unlimited', true);
+        Log::info("maxLimitedDuration : " . $maxLimitedDuration);
         Log::info("hasUnlimited : " . $hasUnlimited);
 
-        $simulationDays = $maxLimitedDuration; // On s'arrête à la durée max des tontines limitées
-
-        // Si une tontine illimitée existe, on continue jusqu'à ce qu'il n'y ait plus de tontines actives
-        if ($hasUnlimited) {
-            $simulationDays = 0; // On ne met pas de limite fixe, la boucle s'arrêtera quand il n'y aura plus de tontines actives
-        }
+        // Fixer la durée de simulation :
+        // - Si tontine illimitée => max 7 jours
+        // - Sinon, jusqu'à la durée max des tontines limitées
+        $simulationDays = $hasUnlimited ? 7 : $maxLimitedDuration;
         Log::info("simulationDays: " . $simulationDays);
 
-        // $this->assertTrue(true);
-        $day = 0;
-        while ($hasUnlimited || $day < $maxLimitedDuration) {
+        // Début de la simulation
+        for ($day = 0; $day < $simulationDays; $day++) {
             $currentDate = $startTestDate->copy()->addDays($day);
             Carbon::setTestNow($currentDate);
 
             Log::info("Traitement des paiements pour le jour : " . $currentDate->toDateString());
 
+            $allTontines = $allTontines->filter(fn($tontine) => $tontine->statut !== 'inactive');
+
+            if ($allTontines->isEmpty()) {
+                Log::info("Toutes les tontines limitées sont terminées. Arrêt de la simulation.");
+                break;
+            }
+
             DB::transaction(function () use ($currentDate, $allTontines) {
                 foreach ($allTontines as $tontine) {
+                    if ($tontine->statut === 'inactive') {
+                        continue;
+                    }
+
                     $nextPaymentDate = Carbon::parse($tontine->next_payment_date);
                     if ($nextPaymentDate->toDateString() === $currentDate->toDateString()) {
                         $this->processTontinePaiements($tontine);
                     }
                 }
             });
-
-            // Vérifier si toutes les tontines sont inactives
-            if ($allTontines->every(fn($t) => $t->statut === 'inactive')) {
-                break; // On arrête si toutes les tontines sont inactives
-            }
-
-            $day++;
         }
+
 
         //Vérifications
         foreach ($allTontines as $tontine) {
@@ -385,7 +391,7 @@ class TontineEpargneTest extends TestCase
                     'statut' => 'inactive',
                     'next_payment_date' => null
                 ]);
-                Log::info("End");
+                Log::info("INACTIVE");
             }
         }
     }
