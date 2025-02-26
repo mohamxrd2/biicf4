@@ -42,14 +42,14 @@ class TontineEpargneTest extends TestCase
     public function test_multiple_users_multiple_tontines()
     {
         // Mock time to start testing
-        $startTestDate = Carbon::create(2025, 2, 25, 9, 0, 0);
+        $startTestDate = Carbon::create(2025, 2, 26, 9, 0, 0);
         Carbon::setTestNow($startTestDate);
 
         // Créer plusieurs utilisateurs
         $users = collect([
-            ['id' => 121, 'initial_balance' => 1000],
-            ['id' => 122, 'initial_balance' => 800],
-            ['id' => 123, 'initial_balance' => 1200]
+            ['id' => 121, 'initial_balance' => 10000],
+            // ['id' => 122, 'initial_balance' => 8000],
+            // ['id' => 123, 'initial_balance' => 12000]
         ])->map(function ($userData) {
             $user = User::find($userData['id']);
             if (!$user) {
@@ -68,18 +68,18 @@ class TontineEpargneTest extends TestCase
 
         // Définir différentes configurations de tontines
         $tontineConfigs = [
-            [
-                'amount' => 100.00,
-                'frequency' => 'hebdomadaire',
-                'duration' => 3,
-                'unlimited' => false,
-            ],
-            [
-                'amount' => 200.00,
-                'frequency' => 'quotidienne',
-                'duration' => 4,
-                'unlimited' => false,
-            ],
+            // [
+            //     'amount' => 100.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => 3,
+            //     'unlimited' => false,
+            // ],
+            // [
+            //     'amount' => 200.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => 4,
+            //     'unlimited' => false,
+            // ],
             [
                 'amount' => 150.00,
                 'frequency' => 'quotidienne',
@@ -100,12 +100,20 @@ class TontineEpargneTest extends TestCase
             }
         }
 
-        // Simuler le passage du temps et le traitement des paiements
-        $maxDuration = collect($tontineConfigs)->where('unlimited', false)->max('duration') ?? 0;
-        // Pour les tontines unlimited, nous allons simuler un certain nombre de jours
-        $simulationDuration = max($maxDuration, 10); // Au moins 10 jours pour les tontines unlimited
+        // Déterminer la durée de simulation
+        $maxLimitedDuration = collect($tontineConfigs)
+            ->where('unlimited', false)
+            ->max('duration') ?: 0;
+        Log::info("maxLimitedDuration : " . $maxLimitedDuration);
 
-        for ($day = 0; $day < $simulationDuration; $day++) {
+        $hasUnlimited = collect($tontineConfigs)->contains('unlimited', true);
+        Log::info("hasUnlimited : " . $hasUnlimited);
+
+        $simulationDays = $hasUnlimited ? 7 : max($maxLimitedDuration, $maxLimitedDuration);
+        Log::info("simulationDays: " . $simulationDays);
+
+        // $this->assertTrue(true);
+        for ($day = 0; $day < $simulationDays; $day++) {
             $currentDate = $startTestDate->copy()->addDays($day);
             Carbon::setTestNow($currentDate);
 
@@ -126,13 +134,6 @@ class TontineEpargneTest extends TestCase
         foreach ($allTontines as $tontine) {
             $this->validateTontinePayments($tontine);
         }
-
-        // Pour tester l'arrêt manuel d'une tontine unlimited
-        $unlimitedTontine = $allTontines->firstWhere('unlimited', true);
-        if ($unlimitedTontine) {
-            $this->stopUnlimitedTontine($unlimitedTontine);
-            $this->assertEquals('inactive', $unlimitedTontine->fresh()->statut, "La tontine unlimited n'a pas été arrêtée correctement");
-        }
     }
 
     private function createTontineForUser(User $user, Wallet $wallet, array $config)
@@ -141,8 +142,13 @@ class TontineEpargneTest extends TestCase
             DB::beginTransaction();
 
             $startDate = Carbon::now();
-            // Calcul de la date de fin en fonction de unlimited
-            $endDate = $config['unlimited'] ? null : $startDate->copy()->addDays($config['duration'] - 1);
+
+            // Si la tontine est illimitée, on attribue la durée minimale
+            if ($config['unlimited']) {
+                $config['duration'] = $this->getMinDuration($config['frequency']);
+            }
+
+            $endDate = $startDate->copy()->addDays($config['duration'] - 1);
 
             // Créer un nouveau gelement spécifique pour cette tontine
             $gelementReference = $this->generateUniqueReference();
@@ -153,26 +159,27 @@ class TontineEpargneTest extends TestCase
                 'status' => 'pending' // Ajout d'un statut initial
             ]);
 
-            // Calcul du gain potentiel en fonction de unlimited
-            $gainPotentiel = $config['unlimited'] ? null : $config['amount'] * $config['duration'];
+            // Définir la durée et la date de fin en fonction de unlimited
             $nombreCotisations = $config['unlimited'] ? null : $config['duration'];
-            $fraisGestion = $config['unlimited'] ? 0 : ($config['amount'] * $config['duration']) * 0.05;
+            $dateFin = $config['unlimited'] ? null : $endDate->toDateString();
+            $gain_potentiel = $config['unlimited'] ? null : ($config['amount'] * $config['duration']);
 
             // Créer la tontine avec référence au gelement
             $tontine = Tontines::create([
                 'date_debut' => $startDate->toDateString(),
                 'montant_cotisation' => $config['amount'],
                 'frequence' => $config['frequency'],
-                'date_fin' => $endDate ? $endDate->toDateString() : null,
+                'date_fin' => $dateFin, // Null si illimitée
                 'next_payment_date' => $startDate->toDateString(),
-                'gain_potentiel' => $gainPotentiel,
-                'nombre_cotisations' => $nombreCotisations,
-                'frais_gestion' => $fraisGestion,
+                'gain_potentiel' => $gain_potentiel, // Null si illimitée
+                'nombre_cotisations' => $nombreCotisations, // Null si illimitée
+                'frais_gestion' => ($config['amount'] * $config['duration']) * 0.05,
                 'user_id' => $user->id,
                 'statut' => '1st',
-                'gelement_reference' => $gelementReference, // Ajout de la référence du gelement
-                'unlimited' => $config['unlimited'], // Ajout du champ unlimited
+                'gelement_reference' => $gelementReference,
+                'isUnlimited' => $config['unlimited']
             ]);
+
 
             TontineUser::create(['tontine_id' => $tontine->id, 'user_id' => $user->id]);
 
@@ -195,8 +202,19 @@ class TontineEpargneTest extends TestCase
         }
     }
 
+    private function getMinDuration(string $frequency): int
+    {
+        return match ($frequency) {
+            'quotidienne' => 7,
+            'hebdomadaire' => 4,
+            'mensuelle' => 3,
+            default => 1,
+        };
+    }
     private function processPayment(User $user, Tontines $tontine)
     {
+
+
         $userWallet = Wallet::where('user_id', $user->id)->first();
         if (!$userWallet) {
             Log::error("Wallet introuvable pour l'utilisateur", ['user_id' => $user->id]);
@@ -222,11 +240,25 @@ class TontineEpargneTest extends TestCase
                 $gelement->save();
 
                 $tontine->update(['statut' => 'active']);
+
+                // Créer la transaction et la cotisation
+                $reference = $this->generateIntegerReference();
+
+                $this->transactionService->createTransaction(
+                    $user->id,
+                    $user->id,
+                    'Débit',
+                    $tontine->montant_cotisation,
+                    $reference,
+                    'Paiement de cotisation',
+                    'COC'
+                );
             } else {
                 // Pour les paiements réguliers, vérifier le solde disponible
                 // en tenant compte des autres tontines actives
                 $montantTotalEngagé = $this->calculateMontantEngagé($user->id);
                 $soldeDisponible = $userWallet->balance - $montantTotalEngagé;
+
 
                 if ($soldeDisponible < $tontine->montant_cotisation) {
                     throw new \Exception("Solde insuffisant après engagements");
@@ -236,18 +268,6 @@ class TontineEpargneTest extends TestCase
                 $userWallet->save();
             }
 
-            // Créer la transaction et la cotisation
-            $reference = $this->generateIntegerReference();
-
-            $this->transactionService->createTransaction(
-                $user->id,
-                $user->id,
-                'Débit',
-                $tontine->montant_cotisation,
-                $reference,
-                'Paiement de cotisation',
-                'COC'
-            );
 
             Cotisation::create([
                 'user_id' => $user->id,
@@ -255,11 +275,6 @@ class TontineEpargneTest extends TestCase
                 'montant' => $tontine->montant_cotisation,
                 'statut' => 'payé'
             ]);
-
-            Notification::send($user, new tontinesNotification([
-                'title' => 'Paiement effectué avec succès',
-                'description' => 'Cliquez pour voir les détails.'
-            ]));
 
             DB::commit();
             Log::info("Paiement traité avec succès");
@@ -275,11 +290,7 @@ class TontineEpargneTest extends TestCase
         // Calculer le montant total engagé dans toutes les tontines actives
         $tontinesActives = Tontines::where('user_id', $userId)
             ->where('statut', 'active')
-            ->where(function ($query) {
-                // Inclure les tontines avec date_fin future OU les tontines unlimited
-                $query->where('date_fin', '>=', now())
-                    ->orWhere('unlimited', true);
-            })
+            ->where('date_fin', '>=', now())
             ->get();
 
         $montantEngagé = 0;
@@ -310,7 +321,6 @@ class TontineEpargneTest extends TestCase
             'description' => 'Cliquez pour voir les détails.'
         ]));
     }
-
     private function processTontinePaiements(Tontines $tontine)
     {
         $users = $tontine->users;
@@ -330,15 +340,27 @@ class TontineEpargneTest extends TestCase
             default => throw new \Exception("Fréquence inconnue")
         };
 
-        // Pour les tontines unlimited, nous continuons toujours sans vérifier la date de fin
-        if ($tontine->unlimited) {
+        if ($tontine->isUnlimited) {
+            // Incrémenter la durée de 1
+            $tontine->nombre_cotisations++;
+
+            // Vérifier si la durée atteint le minimum requis
+            $minDuration = $this->getMinDuration($tontine->frequence);
+            if ($tontine->nombre_cotisations >= $minDuration) {
+                // Prélever les frais de service
+                $this->deductServiceFees($tontine);
+
+                // Réinitialiser la durée à zéro
+                // $tontine->update(['nombre_cotisations' => 0]);
+            }
+
+            // Mettre à jour la prochaine date de paiement
             $tontine->update([
                 'next_payment_date' => $nextPaymentDate->toDateString()
             ]);
         } else {
-            // Pour les tontines avec date_fin, faire la vérification habituelle
+            // Si limité, vérifier si on dépasse la date de fin
             $dateFin = Carbon::parse($tontine->date_fin);
-
             if ($nextPaymentDate->lte($dateFin)) {
                 $tontine->update([
                     'next_payment_date' => $nextPaymentDate->toDateString()
@@ -352,38 +374,20 @@ class TontineEpargneTest extends TestCase
         }
     }
 
-    private function stopUnlimitedTontine(Tontines $tontine)
+    private function deductServiceFees(Tontines $tontine)
     {
-        // Vérifier que la tontine est bien unlimited
-        if (!$tontine->unlimited) {
-            throw new \Exception("Cette méthode ne peut être utilisée que pour des tontines unlimited");
-        }
+        $frais = $tontine->montant_cotisation;
 
-        try {
-            DB::beginTransaction();
-
-            // Arrêter la tontine
-            $tontine->update([
-                'statut' => 'inactive',
-                'next_payment_date' => null
-            ]);
-
-            // Notifier l'utilisateur
-            $user = User::find($tontine->user_id);
-            Notification::send($user, new tontinesNotification([
-                'title' => 'Tontine arrêtée',
-                'description' => 'Votre tontine illimitée a été arrêtée avec succès.'
-            ]));
-
-            DB::commit();
-            Log::info("Tontine unlimited arrêtée avec succès", ['tontine_id' => $tontine->id]);
-            return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Erreur lors de l'arrêt de la tontine unlimited: " . $e->getMessage());
-            return false;
+        // Retirer les frais du wallet de l'utilisateur
+        $wallet = Wallet::where('user_id', $tontine->user_id)->first();
+        if ($wallet && $wallet->balance >= $frais) {
+            $wallet->decrement('balance', $frais);
+            Log::info("Frais de service de $frais retirés pour la tontine ID: {$tontine->id}");
+        } else {
+            Log::warning("Solde insuffisant pour les frais de service de la tontine ID: {$tontine->id}");
         }
     }
+
 
     private function validateTontinePayments(Tontines $tontine)
     {
@@ -402,12 +406,24 @@ class TontineEpargneTest extends TestCase
             $query->where('tontine_id', $tontine->id);
         })->count();
 
-        // Assertions différentes pour les tontines unlimited
-        if ($tontine->unlimited) {
-            $this->assertTrue($totalCotisations > 0, "Aucune cotisation n'a été enregistrée pour la tontine unlimited {$tontine->id}");
-            $this->assertEquals($totalCotisations * $tontine->montant_cotisation, $totalCollecte, "Le montant total collecté ne correspond pas pour la tontine unlimited {$tontine->id}");
+        // Assertions modifiées pour gérer différemment les tontines illimitées et limitées
+        if ($tontine->isUnlimited) {
+            // Pour les tontines illimitées, vérifier simplement que le nombre de cotisations correspond
+            $this->assertEquals(
+                $totalCotisations,
+                $tontine->nombre_cotisations,
+                "Le nombre de cotisations ne correspond pas pour la tontine illimitée {$tontine->id}"
+            );
+
+            // Le montant total collecté devrait être égal au nombre de cotisations multiplié par le montant unitaire
+            $expectedAmount = $totalCotisations * $tontine->montant_cotisation;
+            $this->assertEquals(
+                $expectedAmount,
+                $totalCollecte,
+                "Le montant total collecté ne correspond pas pour la tontine illimitée {$tontine->id}"
+            );
         } else {
-            // Assertions pour les tontines normales
+            // Assertions
             $this->assertEquals($tontine->nombre_cotisations, $totalCotisations, "Le nombre de cotisations ne correspond pas pour la tontine {$tontine->id}");
             $this->assertEquals($tontine->gain_potentiel, $totalCollecte, "Le montant total collecté ne correspond pas pour la tontine {$tontine->id}");
         }

@@ -6,6 +6,7 @@ use App\Models\Tontines;
 use Illuminate\Console\Command;
 use App\Jobs\ProcessPayment;
 use App\Models\User;
+use App\Models\Wallet;
 use App\Services\RecuperationTimer;
 use App\Services\TimeSync\TimeSyncService;
 use Illuminate\Support\Facades\Log;
@@ -58,7 +59,28 @@ class TontineEpargne extends Command
             return 1;
         }
     }
+    private function getMinDuration(string $frequency): int
+    {
+        return match ($frequency) {
+            'quotidienne' => 7,
+            'hebdomadaire' => 4,
+            'mensuelle' => 3,
+            default => 1,
+        };
+    }
+    private function deductServiceFees(Tontines $tontine)
+    {
+        $frais = $tontine->montant_cotisation;
 
+        // Retirer les frais du wallet de l'utilisateur
+        $wallet = Wallet::where('user_id', $tontine->user_id)->first();
+        if ($wallet && $wallet->balance >= $frais) {
+            $wallet->decrement('balance', $frais);
+            Log::info("Frais de service de $frais retirés pour la tontine ID: {$tontine->id}");
+        } else {
+            Log::warning("Solde insuffisant pour les frais de service de la tontine ID: {$tontine->id}");
+        }
+    }
     private function processTontinePaiements(Tontines $tontine)
     {
         try {
@@ -81,17 +103,37 @@ class TontineEpargne extends Command
                 default => throw new \InvalidArgumentException("Fréquence invalide: {$tontine->frequence}")
             };
 
-            $dateFin = Carbon::parse($tontine->date_fin);
+            if ($tontine->unlimited) {
+                // Incrémenter la durée de 1
+                $tontine->increment('nombre_cotisations', 1);
 
-            if ($nextPaymentDate->lte($dateFin)) {
+                // Vérifier si la durée atteint le minimum requis
+                $minDuration = $this->getMinDuration($tontine->frequence);
+                if ($tontine->nombre_cotisations >= $minDuration) {
+                    // Prélever les frais de service
+                    $this->deductServiceFees($tontine);
+
+                    // Réinitialiser la durée à zéro
+                    $tontine->update(['nombre_cotisations' => 0]);
+                }
+
+                // Mettre à jour la prochaine date de paiement
                 $tontine->update([
                     'next_payment_date' => $nextPaymentDate->toDateString()
                 ]);
             } else {
-                $tontine->update([
-                    'statut' => 'inactive',
-                    'next_payment_date' => null
-                ]);
+                $dateFin = Carbon::parse($tontine->date_fin);
+
+                if ($nextPaymentDate->lte($dateFin)) {
+                    $tontine->update([
+                        'next_payment_date' => $nextPaymentDate->toDateString()
+                    ]);
+                } else {
+                    $tontine->update([
+                        'statut' => 'inactive',
+                        'next_payment_date' => null
+                    ]);
+                }
             }
 
             Log::info("Traitement réussi pour la tontine ID: {$tontine->id}");

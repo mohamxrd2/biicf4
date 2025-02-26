@@ -95,10 +95,24 @@ class ProcessPayment implements ShouldQueue
 
 
                 $this->tontine->update(['statut' => 'active']);
+
                 Notification::send($this->user, new tontinesNotification([
                     'title' => 'Paiement effectué avec succès',
                     'description' => 'Cliquez pour voir les détails.'
                 ]));
+
+                // Créer la transaction et la cotisation
+                $reference = $this->generateIntegerReference();
+
+                $transactionService->createTransaction(
+                    $this->user->id,
+                    $this->user->id,
+                    'Débit',
+                    $this->tontine->montant_cotisation,
+                    $reference,
+                    'Paiement de cotisation',
+                    'COC'
+                );
             } else {
                 // Pour les paiements réguliers, vérifier le solde disponible
                 // en tenant compte des autres tontines actives
@@ -114,18 +128,6 @@ class ProcessPayment implements ShouldQueue
                 $userWallet->save();
             }
 
-            // Créer la transaction et la cotisation
-            $reference = $this->generateIntegerReference();
-
-            $transactionService->createTransaction(
-                $this->user->id,
-                $this->user->id,
-                'Débit',
-                $this->tontine->montant_cotisation,
-                $reference,
-                'Paiement de cotisation',
-                'COC'
-            );
 
             Cotisation::create([
                 'user_id' => $this->user->id,
