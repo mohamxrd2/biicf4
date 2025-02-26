@@ -37,8 +37,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     @foreach (['quotidienne' => 'Quotidienne', 'hebdomadaire' => 'Hebdomadaire', 'mensuelle' => 'Mensuelle'] as $value => $label)
                         <label class="relative">
-                            <input type="radio" name="frequency" wire:model.defer="frequency" value="{{ $value }}"
-                                class="peer sr-only frequency-option">
+                            <input type="radio" name="frequency" wire:model.defer="frequency"
+                                value="{{ $value }}" class="peer sr-only frequency-option">
                             <div
                                 class="w-full text-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200
                     peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white peer-checked:shadow-md
