@@ -92,7 +92,7 @@ class TontineEpargneTest extends TestCase
 
         // Créer les tontines pour chaque utilisateur
         $allTontines = collect();
-        
+
 
         foreach ($users as $userData) {
             foreach ($tontineConfigs as $config) {
@@ -135,10 +135,6 @@ class TontineEpargneTest extends TestCase
 
             DB::transaction(function () use ($currentDate, $allTontines) {
                 foreach ($allTontines as $tontine) {
-                    if ($tontine->statut === 'inactive') {
-                        continue;
-                    }
-
                     $nextPaymentDate = Carbon::parse($tontine->next_payment_date);
                     if ($nextPaymentDate->toDateString() === $currentDate->toDateString()) {
                         $this->processTontinePaiements($tontine);
