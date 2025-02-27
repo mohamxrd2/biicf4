@@ -51,7 +51,7 @@ class TontineEpargneTest extends TestCase
 
         // Créer plusieurs utilisateurs
         $users = collect([
-            ['id' => 121, 'initial_balance' => 10000],
+            ['id' => 121, 'initial_balance' => 2000],
             // ['id' => 122, 'initial_balance' => 8000],
             // ['id' => 123, 'initial_balance' => 12000]
         ])->map(function ($userData) {
@@ -72,18 +72,18 @@ class TontineEpargneTest extends TestCase
 
         // Définir différentes configurations de tontines
         $tontineConfigs = [
-            // [
-            //     'amount' => 100.00,
-            //     'frequency' => 'quotidienne',
-            //     'duration' => 3,
-            //     'unlimited' => false,
-            // ],
             [
-                'amount' => 150.00,
+                'amount' => 1000.00,
                 'frequency' => 'quotidienne',
-                'duration' => null,
-                'unlimited' => true,
+                'duration' => 4,
+                'unlimited' => false,
             ],
+            // [
+            //     'amount' => 3000.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => null,
+            //     'unlimited' => true,
+            // ],
 
         ];
 
@@ -160,15 +160,7 @@ class TontineEpargneTest extends TestCase
             }
 
             $endDate = $startDate->copy()->addDays($config['duration'] - 1);
-
-            // Créer un nouveau gelement spécifique pour cette tontine
             $gelementReference = $this->generateUniqueReference();
-            $gelement = gelement::create([
-                'reference_id' => $gelementReference,
-                'id_wallet' => $wallet->id,
-                'amount' => $config['amount'],
-                'status' => 'pending' // Ajout d'un statut initial
-            ]);
 
             // Définir la durée et la date de fin en fonction de unlimited
             $nombreCotisations = $config['unlimited'] ? null : $config['duration'];
@@ -194,6 +186,22 @@ class TontineEpargneTest extends TestCase
 
             TontineUser::create(['tontine_id' => $tontine->id, 'user_id' => $user->id]);
 
+            $userWallet = Wallet::where('user_id', $user->id)->first();
+            if (!$userWallet) {
+                Log::error("Wallet introuvable pour l'utilisateur", ['user_id' => $user->id]);
+                return;
+            }
+            $userWallet->balance -= $tontine->montant_cotisation;
+
+            // Créer un nouveau gelement spécifique pour cette tontine
+
+            $gelement = gelement::create([
+                'reference_id' => $gelementReference,
+                'id_wallet' => $wallet->id,
+                'amount' => $config['amount'],
+                'status' => 'pending' // Ajout d'un statut initial
+            ]);
+
             $this->transactionService->createTransaction(
                 $user->id,
                 $user->id,
@@ -203,6 +211,7 @@ class TontineEpargneTest extends TestCase
                 "Gelement pour tontine {$tontine->id}",
                 'COC'
             );
+
 
             DB::commit();
             return $tontine;
