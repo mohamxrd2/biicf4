@@ -51,7 +51,7 @@ class TontineEpargneTest extends TestCase
 
         // Créer plusieurs utilisateurs
         $users = collect([
-            ['id' => 121, 'initial_balance' => 10000],
+            ['id' => 121, 'initial_balance' => 1000],
             // ['id' => 122, 'initial_balance' => 8000],
             // ['id' => 123, 'initial_balance' => 12000]
         ])->map(function ($userData) {
@@ -72,18 +72,18 @@ class TontineEpargneTest extends TestCase
 
         // Définir différentes configurations de tontines
         $tontineConfigs = [
-            // [
-            //     'amount' => 100.00,
-            //     'frequency' => 'quotidienne',
-            //     'duration' => 3,
-            //     'unlimited' => false,
-            // ],
             [
-                'amount' => 150.00,
+                'amount' => 1000.00,
                 'frequency' => 'quotidienne',
-                'duration' => null,
-                'unlimited' => true,
+                'duration' => 3,
+                'unlimited' => false,
             ],
+            // [
+            //     'amount' => 150.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => null,
+            //     'unlimited' => true,
+            // ],
 
         ];
 
@@ -160,6 +160,15 @@ class TontineEpargneTest extends TestCase
             }
 
             $endDate = $startDate->copy()->addDays($config['duration'] - 1);
+
+            // Mise à jour du wallet
+            $userWallet = Wallet::where('user_id', $user->id)->first();
+
+            if (!$userWallet || $userWallet->balance < $config['amount']) {
+                throw new \Exception('Solde insuffisant pour créer la tontine.');
+            }
+
+            $userWallet->decrement('balance', $config['amount']);
 
             // Créer un nouveau gelement spécifique pour cette tontine
             $gelementReference = $this->generateUniqueReference();
