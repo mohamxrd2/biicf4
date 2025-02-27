@@ -9,6 +9,7 @@ use App\Services\TimeSync\TimeSyncService;
 use App\Services\Tontine\TontineCalculationService;
 use App\Services\Tontine\TontineValidationService;
 use App\Services\Tontine\TontineCreationService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -24,7 +25,7 @@ class Tontine extends Component
     public $cotisationsCount;
     public $cotisationSum;
     public $pourcentage;
-    public $tontineEnCours = null;
+    public $tontineEnCours;
     public $serverTime;
     public $time;
     public $error;
@@ -62,8 +63,9 @@ class Tontine extends Component
 
         // Récupérer la tontine active de l'utilisateur
         $this->tontineEnCours = Tontines::where('user_id', Auth::id())
-            ->where('date_fin', '>=', $this->serverTime)
+            ->whereIn('statut', ['active', '1st'])
             ->first();
+
 
         $this->tontineStart = $this->tontineEnCours !== null;
 
@@ -72,7 +74,7 @@ class Tontine extends Component
             ->where('statut', 'inactive')
             ->get();
 
-        // Vérifier si une tontine active existe avant d'accéder à ses cotisations
+        //Vérifier si une tontine active existe avant d'accéder à ses cotisations
         if ($this->tontineEnCours) {
             $this->cotisations = Cotisation::where('user_id', Auth::id())
                 ->where('tontine_id', $this->tontineEnCours->id)
@@ -84,6 +86,13 @@ class Tontine extends Component
             // Éviter la division par zéro
             $nombreCotisations = $this->tontineEnCours->nombre_cotisations ?: 1;
             $this->pourcentage = ($this->cotisationsCount / $nombreCotisations) * 100;
+
+            // Calculate percentage differently for unlimited tontines
+            if ($this->tontineEnCours->isUnlimited) {
+
+            } else {
+
+            }
         } else {
             // Initialiser les valeurs si aucune tontine active n'est trouvée
             $this->cotisations = collect(); // Collection vide
@@ -177,6 +186,12 @@ class Tontine extends Component
 
     public function render()
     {
-        return view('livewire.tontine');
+        $this->tontineEnCours = Tontines::where('user_id', Auth::id())
+            ->whereIn('statut', ['active', '1st'])
+            ->first();
+
+        return view('livewire.tontine', [
+            'tontineEnCours' => $this->tontineEnCours,
+        ]);
     }
 }

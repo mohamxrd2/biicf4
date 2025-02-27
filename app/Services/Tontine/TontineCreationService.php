@@ -29,7 +29,7 @@ class TontineCreationService
             if ($isUnlimited) {
                 $data['duration'] = $this->getMinDuration($data['frequency']);
             }
-            
+
             $startDate = $data['server_time'];
             $endDate = $this->calculationService->calculateEndDate(
                 $startDate,
@@ -67,15 +67,21 @@ class TontineCreationService
                 'status' => 'pending' // Ajout d'un statut initial
             ]);
 
+            // Définir la durée et la date de fin en fonction de unlimited
+            $nombreCotisations = $isUnlimited ? null : $data['duration'];
+            $dateFin = $isUnlimited ? null : $endDate;
+            $gain_potentiel = $isUnlimited ? null : $calculations['montant_total'];
+
+
             // Création de la tontine
             $Tontines = Tontines::create([
                 'date_debut' => $startDate->format('Y-m-d'),
                 'montant_cotisation' => $data['amount'],
                 'frequence' => $data['frequency'],
-                'date_fin' => $endDate ?? null,
+                'date_fin' => $dateFin,
                 'next_payment_date' => $nextPaymentDate,
-                'gain_potentiel' => $calculations['montant_total'],
-                'nombre_cotisations' => $data['duration'],
+                'gain_potentiel' => $gain_potentiel,
+                'nombre_cotisations' => $nombreCotisations,
                 'frais_gestion' => $calculations['frais_gestion'],
                 'user_id' => $userId,
                 'statut' => '1st',

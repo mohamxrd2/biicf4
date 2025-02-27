@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Cedd;
+use App\Models\Cefp;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Gelement;
@@ -62,19 +63,16 @@ class ProcessPayment implements ShouldQueue
                 $gelement->status = 'OK';
                 $gelement->save();
 
-                // Générer une référence de transaction
-                $referenceId = $this->generateIntegerReference();
-
                 // frais de service pour l'admin
                 $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
                 if ($adminWallet) {
                     $adminWallet->increment('balance', $this->tontine->montant_cotisation);
                     $this->createTransactionAdmin(
-                        $userWallet->id,
+                        $this->user->id,
                         1,
                         'Commission',
                         $this->tontine->montant_cotisation,
-                        $referenceId,
+                        $this->generateIntegerReference(),
                         'Commission de BICF',
                         'effectué',
                         'commission'
@@ -82,13 +80,12 @@ class ProcessPayment implements ShouldQueue
                 }
 
                 // Créer la transaction pour l'utlisateur
-
                 $this->createTransactionAdmin(
-                    $userWallet->id,
+                    $this->user->id,
                     1,
                     'Envoie',
                     $this->tontine->montant_cotisation,
-                    $referenceId,
+                    $this->generateIntegerReference(),
                     'Frais de service',
                     'effectué',
                     'COC'
@@ -127,9 +124,15 @@ class ProcessPayment implements ShouldQueue
 
                 $userWallet->balance -= $this->tontine->montant_cotisation;
 
-                $userCedd = Cedd::where('id_wallet', $userWallet->id)->first();
-                $userCedd->increment('Solde', $this->tontine->montant_cotisation);
-                $userWallet->save();
+                if ($this->tontine->isUnlimited) {
+                    $userCedd = Cefp::where('id_wallet', $userWallet->id)->first();
+                    $userCedd->increment('Solde', $this->tontine->montant_cotisation);
+                    $userWallet->save();
+                } else {
+                    $userCedd = Cedd::where('id_wallet', $userWallet->id)->first();
+                    $userCedd->increment('Solde', $this->tontine->montant_cotisation);
+                    $userWallet->save();
+                }
             }
 
 

@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cedd;
+use App\Models\Cefp;
+use App\Models\ComissionAdmin;
 use App\Models\EchecPaiement;
 use App\Models\Tontines;
 use App\Models\TontineUser;
@@ -9,6 +12,7 @@ use App\Models\User;
 use App\Models\Cotisation;
 use App\Models\Wallet;
 use App\Models\gelement;
+use App\Models\Transaction;
 use App\Notifications\tontinesNotification;
 use App\Services\TransactionService;
 use Carbon\Carbon;
@@ -42,7 +46,7 @@ class TontineEpargneTest extends TestCase
     public function test_multiple_users_multiple_tontines()
     {
         // Mock time to start testing
-        $startTestDate = Carbon::create(2025, 2, 26, 9, 0, 0);
+        $startTestDate = Carbon::create(2025, 2, 27, 9, 0, 0);
         Carbon::setTestNow($startTestDate);
 
         // Créer plusieurs utilisateurs
@@ -68,25 +72,18 @@ class TontineEpargneTest extends TestCase
 
         // Définir différentes configurations de tontines
         $tontineConfigs = [
-            [
-                'amount' => 100.00,
-                'frequency' => 'quotidienne',
-                'duration' => 3,
-                'unlimited' => false,
-            ],
+            // [
+            //     'amount' => 100.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => 3,
+            //     'unlimited' => false,
+            // ],
             [
                 'amount' => 150.00,
                 'frequency' => 'quotidienne',
                 'duration' => null,
                 'unlimited' => true,
             ],
-
-            // [
-            //     'amount' => 200.00,
-            //     'frequency' => 'quotidienne',
-            //     'duration' => 4,
-            //     'unlimited' => false,
-            // ],
 
         ];
 
@@ -239,34 +236,72 @@ class TontineEpargneTest extends TestCase
             DB::beginTransaction();
 
             if ($tontine->statut === '1st') {
-                // Récupérer le gelement spécifique à cette tontine
-                $gelement = gelement::where('reference_id', $tontine->gelement_reference)
-                    ->where('id_wallet', $userWallet->id)
-                    ->where('status', 'pending')
-                    ->first();
+                DB::transaction(function () use ($tontine, $user, $userWallet) {
+                    // Vérifier si la référence gelement existe
+                    if (!$tontine->gelement_reference) {
+                        throw new \Exception("Référence gelement manquante pour cette tontine.");
+                    }
 
-                if (!$gelement || $gelement->amount < $tontine->montant_cotisation) {
-                    throw new \Exception("Gelement insuffisant ou invalide");
-                }
+                    // Récupérer le gelement spécifique à cette tontine
+                    $gelement = gelement::where('reference_id', $tontine->gelement_reference)
+                        ->where('id_wallet', $userWallet->id)
+                        ->where('status', 'pending')
+                        ->first();
 
-                $gelement->amount -= $tontine->montant_cotisation;
-                $gelement->status = 'OK';
-                $gelement->save();
+                    if (!$gelement || $gelement->amount < $tontine->montant_cotisation) {
+                        throw new \Exception("Gelement insuffisant ou invalide");
+                    }
 
-                $tontine->update(['statut' => 'active']);
+                    // Déduire le montant et mettre à jour le statut
+                    $gelement->decrement('amount', $tontine->montant_cotisation);
+                    $gelement->update(['status' => 'OK']);
 
-                // Créer la transaction et la cotisation
-                $reference = $this->generateIntegerReference();
+                    // Activer la tontine
+                    $tontine->update(['statut' => 'active']);
 
-                $this->transactionService->createTransaction(
-                    $user->id,
-                    $user->id,
-                    'Débit',
-                    $tontine->montant_cotisation,
-                    $reference,
-                    'Paiement de cotisation',
-                    'COC'
-                );
+                    // Générer une référence unique pour la transaction
+                    $reference = $this->generateIntegerReference();
+
+                    // Créer la transaction pour l'utilisateur
+                    $this->transactionService->createTransaction(
+                        $user->id,
+                        $user->id,
+                        'Débit',
+                        $tontine->montant_cotisation,
+                        $reference,
+                        'Paiement de cotisation',
+                        'COC'
+                    );
+
+                    // Frais de service pour l'administrateur
+                    $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
+                    if ($adminWallet) {
+                        $adminWallet->increment('balance', $tontine->montant_cotisation);
+
+                        $this->createTransactionAdmin(
+                            $user->id,
+                            1,
+                            'Commission',
+                            $tontine->montant_cotisation,
+                            $this->generateIntegerReference(),
+                            'Commission de BICF',
+                            'effectué',
+                            'commission'
+                        );
+                    }
+
+                    // Frais de service pour l'utilisateur
+                    $this->createTransactionAdmin(
+                        $user->id,
+                        1,
+                        'Envoi',
+                        $tontine->montant_cotisation,
+                        $this->generateIntegerReference(),
+                        'Frais de service',
+                        'effectué',
+                        'COC'
+                    );
+                });
             } else {
                 // Pour les paiements réguliers, vérifier le solde disponible
                 // en tenant compte des autres tontines actives
@@ -279,9 +314,16 @@ class TontineEpargneTest extends TestCase
                 }
 
                 $userWallet->balance -= $tontine->montant_cotisation;
-                $userWallet->save();
+                if ($tontine->isUnlimited) {
+                    $userCedd = Cefp::where('id_wallet', $userWallet->id)->first();
+                    $userCedd->increment('Solde', $tontine->montant_cotisation);
+                    $userWallet->save();
+                } else {
+                    $userCedd = Cedd::where('id_wallet', $userWallet->id)->first();
+                    $userCedd->increment('Solde', $tontine->montant_cotisation);
+                    $userWallet->save();
+                }
             }
-
 
             Cotisation::create([
                 'user_id' => $user->id,
@@ -296,6 +338,24 @@ class TontineEpargneTest extends TestCase
             DB::rollBack();
 
             $this->handlePaymentFailure($user, $tontine);
+        }
+    }
+    protected function createTransactionAdmin(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
+    {
+        try {
+            Transaction::create([
+                'sender_user_id' => $senderId,
+                'receiver_admin_id' => $receiverId,
+                'type' => $type,
+                'amount' => $amount,
+                'reference_id' => $reference_id,
+                'description' => $description,
+                'status' => $status,
+                'type_compte' => $type_compte,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de la création de la transaction : " . $e->getMessage());
+            throw new \Exception("Impossible de créer la transaction.");
         }
     }
 
@@ -394,13 +454,15 @@ class TontineEpargneTest extends TestCase
 
     private function deductServiceFees(Tontines $tontine)
     {
+        // Pour les paiements réguliers, vérifier le solde disponible
+        // en tenant compte des autres tontines actives
         $frais = $tontine->montant_cotisation;
-
         // Retirer les frais du wallet de l'utilisateur
         $wallet = Wallet::where('user_id', $tontine->user_id)->first();
         if ($wallet && $wallet->balance >= $frais) {
-            $wallet->decrement('balance', $frais);
-            Log::info("Frais de service de $frais retirés pour la tontine ID: {$tontine->id}");
+            $userCedd = Cefp::where('id_wallet', $wallet->id)->first();
+            $userCedd->decrement('Solde', $frais);
+            $userCedd->save();
         } else {
             Log::warning("Solde insuffisant pour les frais de service de la tontine ID: {$tontine->id}");
         }

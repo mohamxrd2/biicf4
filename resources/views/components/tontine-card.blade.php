@@ -11,7 +11,7 @@
     'montantCollecte',
     'prochainPaiement',
     'status',
-    'isUnlimited',
+    'isUnlimited' => false, // Valeur par défaut pour éviter l'erreur
 ])
 
 <div
@@ -64,7 +64,11 @@
                 </p>
                 <p class="text-sm text-gray-500 mt-2">Date de fin</p>
                 <p class="font-bold text-gray-900">
-                    {{ \Carbon\Carbon::parse($dateFin)->translatedFormat('d F Y') }}
+                    @if ($isUnlimited)
+                        Indéfinie
+                    @else
+                        {{ \Carbon\Carbon::parse($dateFin)->translatedFormat('d F Y') }}
+                    @endif
                 </p>
             </div>
         </div>
@@ -100,7 +104,7 @@
             <div class="text-center md:text-left">
                 <p class="text-sm text-gray-500">Prochain paiement</p>
                 <p class="text-lg font-bold text-red-700">
-                    {{ \Carbon\Carbon::parse($prochainPaiement)->translatedFormat('d F Y') }}
+                    {{ $status === 'inactive' ? '✅ Tontine terminée' : \Carbon\Carbon::parse($prochainPaiement)->translatedFormat('d F Y') }}
                 </p>
             </div>
         </div>
@@ -118,7 +122,7 @@
                 </svg>
                 Détails
             </a>
-            <button
+            {{-- <button
                 class="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group">
                 <svg class="w-4 h-4 text-indigo-500 group-hover:text-indigo-700" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
@@ -126,7 +130,7 @@
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 Effectuer un paiement
-            </button>
+            </button> --}}
         </div>
     </div>
 </div>

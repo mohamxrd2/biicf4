@@ -116,11 +116,17 @@
                                 </p>
                             </div>
                             <div>
+
                                 <p class="text-sm text-gray-500">Prochain paiement</p>
                                 <p class="text-lg font-bold text-gray-900">
-                                    {{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}
+                                    @if ($tontine->statut === 'inactive')
+                                        ✅ Tontine terminée
+                                    @else
+                                        {{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}
+                                    @endif
                                 </p>
                             </div>
+
                         </div>
                     </div>
 

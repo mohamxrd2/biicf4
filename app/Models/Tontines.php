@@ -24,6 +24,10 @@ class Tontines extends Model
         'statut',
     ];
 
+    // Also add this if you're using boolean casting
+    protected $casts = [
+        'isUnlimited' => 'boolean',
+    ];
     public function users()
     {
         return $this->belongsToMany(User::class, 'tontine_user', 'tontine_id', 'user_id')
