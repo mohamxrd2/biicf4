@@ -59,19 +59,33 @@ class ProcessPayment implements ShouldQueue
                     throw new \Exception("Gelement insuffisant ou invalide");
                 }
 
-                $gelement->amount -= $this->tontine->montant_cotisation;
-                $gelement->status = 'OK';
-                $gelement->save();
+                // Déduire les frais de gestion du gelement
+                $gelement->decrement('amount', $this->tontine->frais_gestion);
+
+                // Calculer le reste et l'envoyer au solde disponible (CEDD) si existant
+                $reste = $gelement->amount;
+                if ($reste > 0) {
+                    if ($this->tontine->isUnlimited) {
+                        $userWallet->cefp->increment('Solde', $reste);
+                    } else {
+                        $userWallet->cedd->increment('Solde', $reste);
+                    }
+                    
+                    $gelement->update(['amount' => 0]);
+                }
+
+                // Mettre à jour le statut du gelement
+                $gelement->update(['status' => 'OK']);
 
                 // frais de service pour l'admin
                 $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
                 if ($adminWallet) {
-                    $adminWallet->increment('balance', $this->tontine->montant_cotisation);
+                    $adminWallet->increment('balance', $this->tontine->frais_gestion);
                     $this->createTransactionAdmin(
                         $this->user->id,
                         1,
                         'Commission',
-                        $this->tontine->montant_cotisation,
+                        $this->tontine->frais_gestion,
                         $this->generateIntegerReference(),
                         'Commission de BICF',
                         'effectué',

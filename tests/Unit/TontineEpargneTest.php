@@ -75,7 +75,7 @@ class TontineEpargneTest extends TestCase
             [
                 'amount' => 1000.00,
                 'frequency' => 'quotidienne',
-                'duration' => 3,
+                'duration' => 9,
                 'unlimited' => false,
             ],
             // [
@@ -272,8 +272,22 @@ class TontineEpargneTest extends TestCase
                         throw new \Exception("Gelement insuffisant ou invalide");
                     }
 
-                    // Déduire le montant et mettre à jour le statut
-                    $gelement->decrement('amount', $tontine->montant_cotisation);
+                    // Déduire les frais de gestion du gelement
+                    $gelement->decrement('amount', $tontine->frais_gestion);
+
+                    // Calculer le reste et l'envoyer au solde disponible (CEDD) si existant
+                    $reste = $gelement->amount;
+                    if ($reste > 0) {
+                        if ($tontine->isUnlimited) {
+                            $userWallet->cefp->increment('Solde', $reste);
+                        } else {
+                            $userWallet->cedd->increment('Solde', $reste);
+                        }
+                        Log::error("Wallet ", [$reste]);
+                        $gelement->update(['amount' => 0]);
+                    }
+
+                    // Mettre à jour le statut du gelement
                     $gelement->update(['status' => 'OK']);
 
                     // Activer la tontine
@@ -296,13 +310,13 @@ class TontineEpargneTest extends TestCase
                     // Frais de service pour l'administrateur
                     $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
                     if ($adminWallet) {
-                        $adminWallet->increment('balance', $tontine->montant_cotisation);
+                        $adminWallet->increment('balance', $tontine->frais_gestion);
 
                         $this->createTransactionAdmin(
                             $user->id,
                             1,
                             'Commission',
-                            $tontine->montant_cotisation,
+                            $tontine->frais_gestion,
                             $this->generateIntegerReference(),
                             'Commission de BICF',
                             'effectué',
