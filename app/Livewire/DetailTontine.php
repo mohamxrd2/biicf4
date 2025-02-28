@@ -181,7 +181,7 @@ class DetailTontine extends Component
             ->latest('created_at')
             ->offset($this->transactionsOffset)
             ->limit($this->transactionsLimit)
-            ->with(['user', 'user.wallet'])
+            ->with('user')
             ->get();
 
         // Append new transactions to existing ones
