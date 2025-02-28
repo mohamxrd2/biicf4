@@ -72,18 +72,18 @@ class TontineEpargneTest extends TestCase
 
         // Définir différentes configurations de tontines
         $tontineConfigs = [
-            // [
-            //     'amount' => 1000.00,
-            //     'frequency' => 'quotidienne',
-            //     'duration' => 3,
-            //     'unlimited' => false,
-            // ],
             [
-                'amount' => 150.00,
+                'amount' => 1000.00,
                 'frequency' => 'quotidienne',
-                'duration' => null,
-                'unlimited' => true,
+                'duration' => 3,
+                'unlimited' => false,
             ],
+            // [
+            //     'amount' => 150.00,
+            //     'frequency' => 'quotidienne',
+            //     'duration' => null,
+            //     'unlimited' => true,
+            // ],
 
         ];
 

@@ -25,6 +25,8 @@ class DetailTontine extends Component
     public $selectedTransactions = [];
     public $isProcessing = false;
 
+    public $userGain;
+
     protected $listeners = ['preventDoubleSubmission'];
 
     public function mount($id)
@@ -48,6 +50,10 @@ class DetailTontine extends Component
         // Gestion du risque de division par zéro
         $nombreCotisations = $this->tontine->nombre_cotisations ?: 1;
         $this->pourcentage = ($this->cts_reussi / $nombreCotisations) * 100;
+
+        $this->userGain = $this->tontine->gain_potentiel - $this->tontine->frais_gestion;
+
+
 
         $this->loadTransactions();
     }

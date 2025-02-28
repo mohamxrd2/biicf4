@@ -72,7 +72,27 @@ class Tontine extends Component
         // Récupérer toutes les tontines de l'utilisateur
         $this->tontineDatas = Tontines::where('user_id', Auth::id())
             ->where('statut', 'inactive')
-            ->get();
+            ->get()
+            ->map(function ($tontine) {
+                // Récupération des cotisations réussies
+                $cotisationsReussies = Cotisation::where('tontine_id', $tontine->id)
+                    ->where('statut', 'payé')
+                    ->get();
+
+                // Calculs des valeurs nécessaires
+                $cts_reussi = $cotisationsReussies->count();
+                $cts_sum = $cotisationsReussies->sum('montant');
+                $nombreCotisations = $tontine->nombre_cotisations ?: 1;
+                $pourcentage = ($cts_reussi / $nombreCotisations) * 100;
+
+                // Ajouter les valeurs calculées à l'objet tontine
+                $tontine->cts_reussi = $cts_reussi;
+                $tontine->cts_sum = $cts_sum;
+                $tontine->pourcentage = round($pourcentage, 2);
+
+                return $tontine;
+            });
+
 
         //Vérifier si une tontine active existe avant d'accéder à ses cotisations
         if ($this->tontineEnCours) {
@@ -89,9 +109,7 @@ class Tontine extends Component
 
             // Calculate percentage differently for unlimited tontines
             if ($this->tontineEnCours->isUnlimited) {
-
             } else {
-
             }
         } else {
             // Initialiser les valeurs si aucune tontine active n'est trouvée

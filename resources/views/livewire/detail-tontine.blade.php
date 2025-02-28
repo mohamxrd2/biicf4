@@ -75,17 +75,22 @@
                                     {{ number_format($tontine->montant_cotisation, 0, ',', ' ') }} FCFA
                                 </p>
                             </div>
+                            @if(!$tontine->isUnlimited)
                             <div class="space-y-1">
                                 <p class="text-sm text-gray-500">Gain potentiel</p>
                                 <p class="text-xl font-bold text-gray-900">
-                                    {{ number_format($tontine->gain_potentiel, 0, ',', ' ') }} FCFA
+                                    {{ number_format($userGain, 0, ',', ' ') }} FCFA
                                 </p>
                             </div>
+                            @endif
+                            
                             <div class="space-y-1">
                                 <p class="text-sm text-gray-500">Fréquence</p>
                                 <p class="text-xl font-bold text-gray-900">{{ $tontine->frequence }}</p>
                             </div>
                         </div>
+
+                        @if (!$tontine->isUnlimited)
 
                         <!-- Barre de progression -->
                         <div class="mt-8">
@@ -99,6 +104,10 @@
                                     style="width: {{ round($pourcentage ?? 0, 0) }}%"></div>
                             </div>
                         </div>
+                            
+                        @endif
+
+                        
 
                         <!-- Stats Grid responsive -->
                         <div
@@ -285,19 +294,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="flex items-start gap-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 mt-1"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <div>
-                                        <p class="font-medium text-gray-900">Prochain paiement</p>
-                                        <p class="text-sm text-gray-500">
-                                            {{ \Carbon\Carbon::parse($tontine->next_payment_date)->translatedFormat('d F Y') }}
-                                        </p>
-                                    </div>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>

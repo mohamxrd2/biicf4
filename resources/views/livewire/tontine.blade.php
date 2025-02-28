@@ -33,7 +33,7 @@
         <div class="space-y-4">
             @forelse ($tontineDatas as $tontine)
                 <x-tontine-card :id="$tontine->id" :montant="$tontine->montant_cotisation" :frequence="$tontine->frequence" :dateDebut="$tontine->date_debut"
-                    :dateFin="$tontine->date_fin" :progression="$pourcentage" :cotisationsEffectuees="$cotisationsCount" :cotisationsTotales="$tontine->nombre_cotisations" :montantCollecte="$cotisationSum"
+                    :dateFin="$tontine->date_fin" :progression="$tontine->pourcentage" :cotisationsEffectuees="$tontine->cts_reussi" :cotisationsTotales="$tontine->nombre_cotisations" :montantCollecte="$tontine->cts_sum"
                     :prochainPaiement="$tontine->next_payment_date" :status="$tontine->statut" :isUnlimited="$tontine->isUnlimited" />
             @empty
                 <div

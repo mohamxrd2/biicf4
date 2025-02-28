@@ -74,6 +74,8 @@
         </div>
 
         <!-- Barre de progression -->
+        @if (!$isUnlimited)
+
         <div class="mt-4">
             <div class="flex justify-between text-sm mb-2">
                 <span class="text-gray-600">Progression</span>
@@ -88,6 +90,9 @@
                 </div>
             </div>
         </div>
+            
+        @endif
+        
 
         <!-- Statistiques (responsive grid) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
