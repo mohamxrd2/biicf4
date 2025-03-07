@@ -14,20 +14,21 @@
             </div>
             <div>
                 <label class="block mb-2 text-sm font-medium text-gray-700">Dimensions</label>
-                <input type="text" wire:model='format' :disabled="locked"
-                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex : 10 x 20 x 5 cm">
+                <textarea wire:model="format" :disabled="locked" class="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="Ex : 10 x 20 x 5 cm&#10;Ex : 30 x 40 cm&#10;Ex : Diamètre 15 cm, Hauteur 25 cm">
+                </textarea>
+                <p class="text-xs text-gray-500 mt-1">
+                    Exemples de formats :<br>
+                    - 10 x 20 x 5 cm (Longueur x Largeur x Hauteur)<br>
+                    - 30 x 40 cm (Longueur x Largeur, si plat)<br>
+                    - Diamètre 15 cm, Hauteur 25 cm (cylindrique)
+                </p>
                 @error('format')
                     <span class="text-sm text-red-500">{{ $message }}</span>
                 @enderror
             </div>
-            <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Poids(kg)</label>
-                <input type="text" wire:model='poids' :disabled="locked"
-                    class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex : 10 kg">
-                @error('poids')
-                    <span class="text-sm text-red-500">{{ $message }}</span>
-                @enderror
-            </div>
+
+
         </div>
     </div>
 

@@ -17,7 +17,7 @@
         @enderror
 
         <select
-            multiple
+            multiple x-data="{ selectedCategories: [] }" 
             x-model="selectedCategories"
             class="w-full p-2 mt-2 border border-gray-300 rounded-md"
             @change="updateProducts()">

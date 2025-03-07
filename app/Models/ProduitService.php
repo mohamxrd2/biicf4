@@ -18,7 +18,6 @@ class ProduitService extends Model
         //produit
         'condProd',
         'formatProd',
-        'poids',
         'qteProd_min',
         'qteProd_max',
         'specification',

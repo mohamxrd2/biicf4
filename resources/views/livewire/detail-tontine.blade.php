@@ -83,7 +83,7 @@
                                 </p>
                             </div>
                             @endif
-                            
+
                             <div class="space-y-1">
                                 <p class="text-sm text-gray-500">Fréquence</p>
                                 <p class="text-xl font-bold text-gray-900">{{ $tontine->frequence }}</p>
@@ -104,10 +104,10 @@
                                     style="width: {{ round($pourcentage ?? 0, 0) }}%"></div>
                             </div>
                         </div>
-                            
+
                         @endif
 
-                        
+
 
                         <!-- Stats Grid responsive -->
                         <div
@@ -206,7 +206,7 @@
                                     </div>
                                 @endforeach
 
-                                @if (count($selectedTransactions ?? []) > 0)
+                                {{-- @if (count($selectedTransactions ?? []) > 0) --}}
                                     <div
                                         class="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg border border-gray-200">
                                         <p class="text-sm text-gray-600 mb-2">
@@ -223,7 +223,7 @@
                                             <span wire:loading>Traitement...</span>
                                         </button>
                                     </div>
-                                @endif
+                                {{-- @endif --}}
 
                                 @if ($hasMoreTransactions)
                                     <div class="mt-6 text-center">
@@ -241,7 +241,7 @@
                 {{-- Sidebar --}}
                 <div class="space-y-6">
                     {{-- Quick Actions --}}
-                    @if ($tontine->status === 'active' && $tontine->isUnlimited)
+                    {{-- @if ($tontine->status === 'active' && $tontine->isUnlimited) --}}
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
                             <div class="p-6">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
@@ -260,7 +260,7 @@
                                 </div>
                             </div>
                         </div>
-                    @endif
+                    {{-- @endif --}}
 
 
                     {{-- Important Dates --}}
@@ -294,7 +294,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>

@@ -192,7 +192,6 @@ class AjoutProduitServices extends Component
             'conditionnement' => $this->type == 'Produit' ? 'required|string|max:255' : 'nullable|string',
             'format' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'particularite' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
-            'poids' => $this->type == 'Produit' ? 'required|integer' : 'nullable|integer',
             'origine' => $this->type == 'Produit' ? 'required|string' : 'nullable|string',
             'qteProd_min' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
             'qteProd_max' => $this->type == 'Produit' ? 'required|string' : 'nullable|integer',
@@ -209,9 +208,9 @@ class AjoutProduitServices extends Component
 
             //photo
             'photoProd1' => $this->photoProd1 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
-            'photoProd2' => $this->photoProd2 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
-            'photoProd3' => $this->photoProd3 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
-            'photoProd4' => $this->photoProd4 ? '' : 'required|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd2' => $this->photoProd2 ? '' : 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd3' => $this->photoProd3 ? '' : 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
+            'photoProd4' => $this->photoProd4 ? '' : 'nullable|image|mimes:jpeg,png,jpg,gif|dimensions:min_width=500,min_height=400',
         ], [
             'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
@@ -255,7 +254,6 @@ class AjoutProduitServices extends Component
                 //produit
                 'condProd' => $this->type === 'Produit' ? $this->conditionnement : null,
                 'formatProd' => $this->type === 'Produit' ? $this->format : null,
-                'poids' => $this->type === 'Produit' ? $this->poids : null,
                 'Particularite' => $this->type === 'Produit' ? $this->particularite : null,
                 'origine' => $this->type === 'Produit' ? $this->origine : null,
                 'qteProd_min' => $this->type === 'Produit' ? $this->qteProd_min : null,

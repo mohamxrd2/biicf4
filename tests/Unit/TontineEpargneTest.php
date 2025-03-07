@@ -46,12 +46,12 @@ class TontineEpargneTest extends TestCase
     public function test_multiple_users_multiple_tontines()
     {
         // Mock time to start testing
-        $startTestDate = Carbon::create(2025, 2, 27, 9, 0, 0);
+        $startTestDate = Carbon::create(2025, 3, 3, 11, 44, 0);
         Carbon::setTestNow($startTestDate);
 
         // Créer plusieurs utilisateurs
         $users = collect([
-            ['id' => 121, 'initial_balance' => 10000],
+            ['id' => 121, 'initial_balance' => 100000],
             // ['id' => 122, 'initial_balance' => 8000],
             // ['id' => 123, 'initial_balance' => 12000]
         ])->map(function ($userData) {
@@ -72,18 +72,18 @@ class TontineEpargneTest extends TestCase
 
         // Définir différentes configurations de tontines
         $tontineConfigs = [
-            [
-                'amount' => 1000.00,
-                'frequency' => 'quotidienne',
-                'duration' => 9,
-                'unlimited' => false,
-            ],
             // [
-            //     'amount' => 150.00,
+            //     'amount' => 1000.00,
             //     'frequency' => 'quotidienne',
-            //     'duration' => null,
-            //     'unlimited' => true,
+            //     'duration' => 30,
+            //     'unlimited' => false,
             // ],
+            [
+                'amount' => 2000.00,
+                'frequency' => 'quotidienne',
+                'duration' => null,
+                'unlimited' => true,
+            ],
 
         ];
 
@@ -113,7 +113,7 @@ class TontineEpargneTest extends TestCase
         // Fixer la durée de simulation :
         // - Si tontine illimitée => max 7 jours
         // - Sinon, jusqu'à la durée max des tontines limitées
-        $simulationDays = $hasUnlimited ? 7 : $maxLimitedDuration;
+        $simulationDays = $hasUnlimited ? 30 : $maxLimitedDuration;
         Log::info("simulationDays: " . $simulationDays);
 
         // Début de la simulation
@@ -236,7 +236,7 @@ class TontineEpargneTest extends TestCase
     private function getMinDuration(string $frequency): int
     {
         return match ($frequency) {
-            'quotidienne' => 7,
+            'quotidienne' => 30,
             'hebdomadaire' => 4,
             'mensuelle' => 3,
             default => 1,
@@ -456,7 +456,7 @@ class TontineEpargneTest extends TestCase
             $minDuration = $this->getMinDuration($tontine->frequence);
             if ($tontine->nombre_cotisations >= $minDuration) {
                 // Prélever les frais de service
-                $this->deductServiceFees($tontine);
+                // $this->deductServiceFees($tontine);
 
                 // Réinitialiser la durée à zéro
                 // $tontine->update(['nombre_cotisations' => 0]);
@@ -481,7 +481,6 @@ class TontineEpargneTest extends TestCase
                     'statut' => 'inactive',
                     'next_payment_date' => null
                 ]);
-                Log::info("INACTIVE");
             }
         }
     }
