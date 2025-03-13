@@ -8,7 +8,7 @@
         </label>
         <input
             type="text"
-            wire:model.debounce.30ms="categorie"
+            wire:model="categorie"
             :disabled="locked"
             class="w-full p-2 border border-gray-300 rounded-md"
             placeholder="Entrez le nom de la catégorie">
@@ -17,7 +17,7 @@
         @enderror
 
         <select
-            multiple x-data="{ selectedCategories: [] }" 
+            multiple x-data="{ selectedCategories: [] }"
             x-model="selectedCategories"
             class="w-full p-2 mt-2 border border-gray-300 rounded-md"
             @change="updateProducts()">
