@@ -197,7 +197,7 @@ class AjoutProduitServices extends Component
         $this->isSubmitting = true;
 
         $this->validate([
-            'categorie' => 'required|string',
+            'categorie' => 'required',
             'type' => 'required|string|in:Produit,Service',
             'reference' => 'required|string|unique:produit_services,reference,NULL,id,user_id,' . auth()->id(),
             'name' => 'required|string|max:255',
