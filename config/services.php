@@ -34,7 +34,7 @@ return [
     'twilio' => [
         'sid' => env('TWILIO_SID'),
         'token' => env('TWILIO_TOKEN'),
-        'verify_service_id' => env('TWILIO_VERIFY_SERVICE_ID'),
+        'phone_number' => env('TWILIO_PHONE_NUMBER'),
     ],
 
 ];

@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -271,9 +272,9 @@ class UserController extends Controller
     {
         // $sid = config('services.twilio.sid');
         // $token = config('services.twilio.token');
-        // $verifyServiceId = config('services.twilio.verify_service_id');
+        // $twilioPhoneNumber  = config('services.twilio.verify_service_id');
 
-        // dd($sid, $token, $verifyServiceId);
+        // dd($sid, $token, $twilioPhoneNumber );
 
         return view('auth.signup');
     }
@@ -297,8 +298,6 @@ class UserController extends Controller
             'ville' => 'required|string',
             'commune' => 'required|string',
             'parrain' => 'nullable', // Ajout du champ parrain
-
-
         ], [
             'name.required' => 'Le champ nom est requis.',
             'last-name.required' => 'Le champ prénom est requis.',
@@ -324,9 +323,20 @@ class UserController extends Controller
             'commune.required' => 'Le champ commune est requis.',
         ]);
 
-        // dd($validatedData);
-
         try {
+            // Tentative d'envoi de SMS avant la création de l'utilisateur
+            try {
+                // Envoi du SMS de vérification
+                $this->sendSmsVerification($validatedData['phone']);
+
+                // Si l'envoi du SMS réussit, on stocke le code OTP et l'état dans la session
+                session(['phone' => $validatedData['phone'], 'otp_sent_at' => now()]);
+            } catch (Exception $smsException) {
+                // Si l'envoi du SMS échoue, on retourne une erreur
+                return back()->withErrors(['sms_error' => 'Impossible d\'envoyer le SMS de vérification. Veuillez réessayer plus tard.'])->withInput();
+            }
+
+            // Si l'envoi du SMS a réussi, on procède à la création de l'utilisateur
             $user = new User();
             $user->name = $validatedData['name'] . ' ' . $request->input('last-name');
             $user->username = $validatedData['username'];
@@ -344,21 +354,9 @@ class UserController extends Controller
             $user->commune = $request->input('commune');
             $user->parrain = $request->input('parrain');
 
-
-            // Après la création de l'utilisateur, on envoie le SMS de vérification
-            $this->sendSmsVerification($user->phone);
             $user->save();
 
-            // Stockage du code OTP et de l'état dans la session
-            session(['phone' => $user->phone, 'otp_sent_at' => now()]);
-
-            //envoi du couriel au nouveau client
-            // $user->sendEmailVerificationNotification();
-            // $user->email_verified_at = now();
-
-            // return redirect()->route('biicf.login')->with('success', 'Client ajouté avec succès, veillez confirmer votre email!');
-            // return redirect()->route('biicf.login')->with('success', 'Création du compte avec succès, Connectez-vous!');
-            // Récupérer les informations Twilio depuis le fichier .env
+            // Redirection vers la page de vérification du téléphone
             return redirect()->route('verify.phone', [
                 'phone' => Crypt::encryptString($user->phone)
             ])->with('success', 'Code de vérification envoyé par SMS. Veuillez vérifier votre numéro.');
@@ -368,32 +366,58 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
         }
     }
-
+    /**
+     * Envoie un code de vérification par SMS via Twilio
+     *
+     * @param string $phoneNumber Numéro de téléphone du destinataire
+     * @return void
+     * @throws Exception Si l'envoi du SMS échoue
+     */
     private function sendSmsVerification($phoneNumber)
     {
-        // Récupération des informations Twilio depuis le fichier .env
-        $sid = config('services.twilio.sid');
-        $token = config('services.twilio.token');
-        $verifyServiceId = config('services.twilio.verify_service_id');
-
-        // Vérification des variables
-        if (!$sid || !$token || !$verifyServiceId) {
-            Log::error('Twilio: Identifiants manquants');
-            return response()->json(['message' => 'Identifiants Twilio manquants dans .env'], 500);
-        }
-
         try {
-            $twilio = new Client($sid, $token);
-            // Création de la vérification via le service Twilio Verify
-            $twilio->verify->v2->services($verifyServiceId)
-                ->verifications
-                ->create($phoneNumber, "sms");
+            // Génération d'un code OTP à 6 chiffres
+            $otp = sprintf("%06d", mt_rand(1, 999999));
 
-            Log::info('SMS de vérification envoyé avec succès', ['phone' => $phoneNumber]);
-            return response()->json(['message' => 'SMS de vérification envoyé avec succès'], 200);
+            // Stockage du code OTP dans la session
+            session(['verification_code' => $otp]);
+
+            // Récupération des informations Twilio depuis le fichier .env
+            $sid = config('services.twilio.sid');
+            $token = config('services.twilio.token');
+            $twilioPhoneNumber = config('services.twilio.phone_number');
+
+            // Vérification des variables
+            if (!$sid || !$token || !$twilioPhoneNumber) {
+                Log::error('Twilio: Identifiants manquants');
+                throw new Exception('Configuration Twilio manquante.');
+            }
+
+            // Formatage du numéro de téléphone au format E.164 si nécessaire
+            if (!Str::startsWith($phoneNumber, '+')) {
+                // Ajoutez le code du pays approprié (exemple avec +225 pour la Côte d'Ivoire)
+                $phoneNumber = '+' . ltrim($phoneNumber, '0');
+            }
+
+            $twilio = new Client($sid, $token);
+
+            // Envoi direct du SMS avec le code OTP
+            $message = $twilio->messages->create(
+                $phoneNumber,
+                [
+                    'from' => $twilioPhoneNumber,
+                    'body' => "Votre code de vérification BIICF est : $otp. Ce code expire dans 10 minutes."
+                ]
+            );
+
+            // Enregistrement du moment d'envoi et du code pour gérer l'expiration
+            session(['otp_sent_at' => now(), 'verification_code' => $otp]);
+
+            Log::info("SMS envoyé au numéro $phoneNumber avec le SID: " . $message->sid);
+
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
-            return response()->json(['message' => 'Erreur lors de l\'envoi du SMS de vérification', 'error' => $e->getMessage()], 400);
+            throw new Exception('Échec de l\'envoi du SMS: ' . $e->getMessage());
         }
     }
 
@@ -410,73 +434,53 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Vérifie le code OTP soumis par l'utilisateur
+     *
+     * @param Request $request La requête contenant le code OTP et le numéro de téléphone
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function verifyPhoneCode(Request $request)
     {
-        // Ajout d'un log pour indiquer que la vérification commence
-        Log::info('Début de la vérification du code OTP.', ['phone' => $request->phone]);
-
         // Validation du code de vérification
         $validatedData = $request->validate([
-            'verification_code' => 'required|array|min:6|max:6', // Le code doit être un tableau de 6 éléments
-            'verification_code.*' => 'required|string|max:1', // Chaque champ doit être un caractère
+            'verification_code' => 'required|array|min:6|max:6',
+            'verification_code.*' => 'required|string|max:1',
             'phone' => 'required|string'
         ]);
 
-        // Récupérer l'OTP stocké en session
+        Log::info('Début de la vérification du code OTP.', ['phone' => $request->phone]);
+
+        // Récupérer l'OTP stocké en session et le timestamp d'envoi
+        $storedCode = session('verification_code');
         $otpSentAt = session('otp_sent_at');
 
-        // Vérifier si l'OTP est encore valide (par exemple, expiré après 10 minutes)
-        if ($otpSentAt && now()->diffInMinutes($otpSentAt) > 10) {
-            // L'OTP a expiré
-            return back()->withErrors(['verification_code' => 'Le code OTP a expiré. Veuillez demander un nouveau code.']);
+        // Vérifier si l'OTP est encore valide (expiré après 10 minutes)
+        if (!$storedCode || !$otpSentAt || now()->diffInMinutes($otpSentAt) > 10) {
+            return back()->withErrors(['verification_code' => 'Le code a expiré. Veuillez demander un nouveau code.']);
         }
-
-        // Ajout d'un log pour vérifier les données validées
-        Log::info('Données validées pour la vérification.', $validatedData);
 
         // Combinaison du tableau en une seule chaîne
-        $verificationCode = implode('', $validatedData['verification_code']);
-        Log::info('Code OTP combiné', ['code' => $verificationCode]);
+        $submittedCode = implode('', $validatedData['verification_code']);
+        Log::info('Code OTP soumis', ['code' => $submittedCode, 'stored_code' => $storedCode]);
 
-        //Récupération des informations Twilio
-        $sid = config('services.twilio.sid');
-        $token = config('services.twilio.token');
-        $verifyServiceId = config('services.twilio.verify_service_id');
+        // Vérification directe du code OTP (sans Twilio Verify)
+        if ($submittedCode === $storedCode) {
+            Log::info('Code OTP validé pour le téléphone', ['phone' => $validatedData['phone']]);
 
-        // Vérification des variables
-        if (!$sid || !$token || !$verifyServiceId) {
-            Log::error('Twilio: Identifiants manquants');
-            return response()->json(['message' => 'Identifiants Twilio manquants dans .env'], 500);
-        }
-
-        try {
-            $twilio = new Client($sid, $token);
-            // Vérification du code via Twilio Verify
-            Log::info('Envoi du code OTP à Twilio pour vérification.', ['phone' => $validatedData['phone'], 'code' => $verificationCode]);
-
-            $verificationCheck = $twilio->verify->v2->services($verifyServiceId)
-                ->verificationChecks
-                ->create([
-                    'to' => $validatedData['phone'],
-                    'code' => $verificationCode // Utilisation du code combiné
-                ]);
-
-            Log::info('Réponse de Twilio', ['status' => $verificationCheck->status]);
-
-            if ($verificationCheck->status == 'approved') {
-                Log::info('Code OTP approuvé pour le téléphone', ['phone' => $validatedData['phone']]);
-
-                // Récupération de l'utilisateur lié au numéro de téléphone
+            // Récupération de l'utilisateur
+            try {
                 $user = User::where('phone', $validatedData['phone'])->firstOrFail();
                 Log::info('Utilisateur trouvé', ['user_id' => $user->id]);
 
                 if ($user->email_verified_at) {
                     Log::warning('Numéro déjà vérifié.', ['phone' => $validatedData['phone']]);
-                    // Arrêter l'exécution et retourner un message d'erreur
-                    return back()->withErrors(['verification_code' => 'Ce code a déjà été utilisé pour vérifier votre numéro.']);
+                    return back()->withErrors([
+                        'verification_code' => 'Ce numéro a déjà été vérifié.'
+                    ]);
                 }
 
-
+                // Marquer le numéro comme vérifié
                 $user->email_verified_at = now();
                 $user->save();
 
@@ -494,17 +498,21 @@ class UserController extends Controller
                 $this->createUserWallets($user->id);
                 Log::info('Sous-comptes créés pour l\'utilisateur', ['user_id' => $user->id]);
 
+                // Nettoyer les variables de session
+                session()->forget(['verification_code', 'otp_sent_at']);
+
                 return redirect()->route('biicf.login')
                     ->with('success', 'Votre numéro a été vérifié avec succès et vous avez été ajouté en tant qu\'investisseur !');
-            } else {
-                Log::warning('Code OTP incorrect pour le téléphone', ['phone' => $validatedData['phone']]);
-                return back()->withErrors(['verification_code' => 'Code de vérification incorrect.']);
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                Log::error('Utilisateur non trouvé avec ce numéro', ['phone' => $validatedData['phone']]);
+                return back()->withErrors(['error' => 'Aucun utilisateur trouvé avec ce numéro de téléphone.']);
             }
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la vérification du code OTP', ['message' => $e->getMessage()]);
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de la vérification du code.']);
+        } else {
+            Log::warning('Code OTP incorrect pour le téléphone', ['phone' => $validatedData['phone']]);
+            return back()->withErrors(['verification_code' => 'Code de vérification incorrect.']);
         }
     }
+
     public function resendOtp(Request $request)
     {
         // Récupérer le numéro de téléphone depuis la requête
