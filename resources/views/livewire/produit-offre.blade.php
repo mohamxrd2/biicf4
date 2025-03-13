@@ -1,38 +1,11 @@
 <div>
     @if ($currentPage === 'produit')
+        <!-- Inclure les fichiers CSS et JavaScript -->
+        <link rel="stylesheet" href="{{ asset('css/produit-details.css') }}">
+        <script src="{{ asset('js/produit-details.js') }}" defer></script>
+
         <!-- Carousel wrapper -->
         <section id="checkoutSection" class="bg-white md:py-16 dark:bg-gray-900 antialiased rounded-lg shadow-lg">
-
-            <ol
-                class="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base  p-5">
-                <li
-                    class="after:border-1 flex items-center text-primary-700  after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                    <span
-                        class="flex items-center text-blue-600 after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                        <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                            width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                        Details
-                    </span>
-                </li>
-
-                <li
-                    class="after:border-1 flex items-center text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
-                    <span
-                        class="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
-                        <svg class="me-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                            width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                        Achat
-                    </span>
-                </li>
-
-
-            </ol>
 
             <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0 ">
                 <div class="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
@@ -196,7 +169,7 @@
     @elseif($currentPage === 'simple')
         <x-dynamic-component component="offre-simple-modal" :produit="$produit" :nombreProprietaires="$nombreProprietaires" />
     @elseif($currentPage === 'negocie')
-        <x-dynamic-component component="offre-negociee-modal" :produit="$produit" :nombreProprietaires="$nombreProprietaires"/>
+        <x-dynamic-component component="offre-negociee-modal" :produit="$produit" :nombreProprietaires="$nombreProprietaires" />
     @elseif($currentPage === 'groupe')
         <x-dynamic-component component="offre-groupee-modal" :produit="$produit" :nombreFournisseurs="$nomFournisseurCount" :users="$users" />
     @endif
