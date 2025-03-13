@@ -83,21 +83,35 @@ class AjoutProduitServices extends Component
     {
         $this->selectedCategories = $selectedCategories;
 
-        // Update products based on selected categories
-        if ($this->selectedCategories) {
-            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)
-                ->orderBy('reference')
-                ->get()
-                ->unique('reference'); // Ensure only unique references are taken
+        if (!empty($this->selectedCategories)) {
+            // Récupérer les catégories sélectionnées
+            $categories = CategorieProduits_Servives::whereIn('id', $this->selectedCategories)->get();
 
+            if ($categories->isNotEmpty()) {
+                // Stocker les noms des catégories sélectionnées
+                $this->categorie = $categories->pluck('categorie_produit_services')->toArray();
+
+                // Récupération des produits avec des références uniques
+                $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)
+                    ->orderBy('reference')
+                    ->get()
+                    ->unique('reference')
+                    ->values(); // Réindexation des clés
+            } else {
+                $this->categorie = [];
+                $this->produits = collect(); // Aucune catégorie trouvée
+            }
         } else {
-            $this->produits = collect(); // Reset if no categories selected
+            $this->categorie = [];
+            $this->produits = collect(); // Aucun filtre appliqué
         }
     }
+
 
     public function updateProductDetails($productId)
     {
         $selectedProduct = ProduitService::find($productId);
+
 
         if ($selectedProduct) {
             // Remplir les propriétés avec les détails du produit sélectionné
@@ -176,12 +190,11 @@ class AjoutProduitServices extends Component
     }
     public function submit()
     {
-        // if ($this->isSubmitting) {
-        //     return;
-        // }
+        if ($this->isSubmitting) {
+            return;
+        }
 
-        // $this->isSubmitting = true;
-        // dd('');
+        $this->isSubmitting = true;
 
         $this->validate([
             'categorie' => 'required|string',
