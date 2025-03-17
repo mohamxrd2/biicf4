@@ -86,6 +86,9 @@ class AjoutProduitServices extends Component
         if (!empty($this->selectedCategories)) {
             // Récupérer les catégories sélectionnées
             $categories = CategorieProduits_Servives::whereIn('id', $this->selectedCategories)->get();
+            $this->selectedProduits = [];
+
+            $this->resetForm();
 
             if ($categories->isNotEmpty()) {
                 // Stocker les noms des catégories sélectionnées
@@ -156,20 +159,7 @@ class AjoutProduitServices extends Component
         }
     }
 
-    protected function resetProductFields()
-    {
-        $this->conditionnement = '';
-        $this->format = '';
-        $this->particularite = '';
-        $this->origine = '';
-        $this->qteProd_min = '';
-        $this->qteProd_max = '';
-        $this->specification = '';
-        $this->prix = '';
-        $this->qualification = '';
-        $this->specialite = '';
-        $this->descrip = '';
-    }
+    protected function resetProductFields() {}
 
 
     // Méthode appelée lors du clic sur la case à cocher
@@ -315,33 +305,41 @@ class AjoutProduitServices extends Component
         }
     }
     // Méthode pour réinitialiser les champs du formulaire
+    /**
+     * Réinitialisation complète du formulaire
+     */
     public function resetForm()
     {
-        $this->type = '';
-        $this->generateReference = false;
-        $this->reference = '';
-        $this->name = '';
-        $this->conditionnement = '';
-        $this->format = '';
-        $this->poids = '';
-        $this->particularite = '';
-        $this->origine = '';
-        $this->qteProd_min = '';
-        $this->qteProd_max = '';
-        $this->specification = '';
-        $this->prix = '';
-        $this->qualification = '';
-        $this->specialite = '';
-        $this->descrip = '';
-        $this->Quantite = '';
+        $this->reset([
+            'type',
+            'generateReference',
+            'reference',
+            'name',
+            'conditionnement',
+            'format',
+            'poids',
+            'particularite',
+            'origine',
+            'qteProd_min',
+            'qteProd_max',
+            'specification',
+            'prix',
+            'qualification',
+            'specialite',
+            'descrip',
+            'Duree',
+            'disponibilite',
+            'lieu_intervention',
+            'Quantite',
+            'photoProd1',
+            'photoProd2',
+            'photoProd3',
+            'photoProd4',
+            'locked'
+        ]);
 
-        // Réinitialiser les catégories si nécessaire
+        // Réinitialiser les catégories
         $this->categories = CategorieProduits_Servives::all();
-        // Réinitialiser les photos
-        $this->photoProd1 = null;
-        $this->photoProd2 = null;
-        $this->photoProd3 = null;
-        $this->photoProd4 = null;
     }
 
     protected function handlePhotoUpload($produitService, $photoField)
