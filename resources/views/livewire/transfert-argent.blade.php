@@ -35,17 +35,23 @@
                 </div>
 
                 <!-- Champ de saisie du montant -->
-                <div class="mb-4">
-                    <label for="amount" class="block text-sm font-medium text-gray-600 mb-1">Montant</label>
-                    <input type="number" wire:model.live="amount" id="amount" placeholder="Entrez le montant"
-                        class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                <div x-data="{ amount: @entangle('amount').defer }">
+                    <!-- Champ de saisie -->
+                    <div class="mb-4">
+                        <label for="amount" class="block text-sm font-medium text-gray-600 mb-1">Montant Envoyé</label>
+                        <input type="number" x-model="amount" id="amount" placeholder="Entrez le montant"
+                            class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Affichage du montant total -->
+                    <p class="text-sm text-gray-700 my-2">
+                        Montant(avec 1%):
+                        <span class="font-bold text-gray-900"
+                            x-text="(amount ? (parseFloat(amount) + parseFloat(amount) * 0.01).toFixed(2) : '0.00') + ' CFA'">
+                        </span>
+                    </p>
                 </div>
-                <p class="text-sm text-gray-700 my-2">
-                    Montant total (avec 1%):
-                    <span class="font-bold text-gray-900">
-                        {{ number_format($amount + $amount * 0.01, 2) }} CFA
-                    </span>
-                </p>
+
 
                 <!-- Boutons de soumission et annulation -->
                 <div class="flex justify-end items-center space-x-3">

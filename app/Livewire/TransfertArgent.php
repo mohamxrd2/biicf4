@@ -52,153 +52,152 @@ class TransfertArgent extends Component
     }
 
     public function submit()
-{
-    // Réinitialiser le message d'erreur
-    $this->errorMessage = '';
+    {
+        // Réinitialiser le message d'erreur
+        $this->errorMessage = '';
 
-    // Validation des données du formulaire
-    $this->validate([
-        'user_id' => 'required|exists:users,id',
-        'amount' => 'required|numeric|min:1|max:99999999',
-    ], [
-        'user_id.required' => 'Veuillez sélectionner un utilisateur.',
-        'amount.required' => 'Veuillez entrer un montant.',
-        'amount.numeric' => 'Le montant doit être numérique.',
-        'amount.min' => 'Le montant doit être supérieur à 0.',
-        'amount.max' => 'Le montant doit être inférieur à 100 millions.',
-    ]);
-
-    $senderId = Auth::id();
-    $receiver = User::find($this->user_id);
-
-    // Vérification du destinataire
-    if (!$receiver) {
-        Log::error('Utilisateur spécifié introuvable.', ['user_id' => $this->user_id]);
-        $this->errorMessage = 'L\'utilisateur spécifié n\'existe pas.';
-        return;
-    }
-
-    $senderWallet = Wallet::where('user_id', $senderId)->first();
-    $receiverWallet = Wallet::where('user_id', $receiver->id)->first();
-
-    // Vérification des portefeuilles
-    if (!$senderWallet || !$receiverWallet) {
-        Log::error('Erreur lors de la récupération des portefeuilles.', [
-            'sender_id' => $senderId,
-            'receiver_id' => $receiver->id
+        // Validation des données du formulaire
+        $this->validate([
+            'user_id' => 'required|exists:users,id',
+            'amount' => 'required|numeric|min:1|max:99999999',
+        ], [
+            'user_id.required' => 'Veuillez sélectionner un utilisateur.',
+            'amount.required' => 'Veuillez entrer un montant.',
+            'amount.numeric' => 'Le montant doit être numérique.',
+            'amount.min' => 'Le montant doit être supérieur à 0.',
+            'amount.max' => 'Le montant doit être inférieur à 100 millions.',
         ]);
-        $this->errorMessage = 'Erreur lors de la récupération des portefeuilles.';
-        return;
-    }
 
-    // Vérification du solde suffisant
-    if ($senderWallet->balance < $this->amount) {
-        Log::warning('Solde insuffisant.', [
-            'sender_balance' => $senderWallet->balance,
-            'requested_amount' => $this->amount
-        ]);
-        $this->errorMessage = 'Solde insuffisant pour effectuer la recharge.';
-        return;
-    }
+        $senderId = Auth::id();
+        $receiver = User::find($this->user_id);
 
-    try {
-        // Calcul des montants
-        $commissions = round($this->amount * 0.01, 2);
-        $totalDebit = $this->amount + $commissions;
+        // Vérification du destinataire
+        if (!$receiver) {
+            Log::error('Utilisateur spécifié introuvable.', ['user_id' => $this->user_id]);
+            $this->errorMessage = 'L\'utilisateur spécifié n\'existe pas.';
+            return;
+        }
 
-        // Débiter l'expéditeur et créditer le récepteur
-        $senderWallet->decrement('balance', $totalDebit);
-        $receiverWallet->increment('balance', $this->amount);
+        $senderWallet = Wallet::where('user_id', $senderId)->first();
+        $receiverWallet = Wallet::where('user_id', $receiver->id)->first();
 
-        // Générer une référence de transaction
-        $referenceId = $this->generateIntegerReference();
+        // Vérification des portefeuilles
+        if (!$senderWallet || !$receiverWallet) {
+            Log::error('Erreur lors de la récupération des portefeuilles.', [
+                'sender_id' => $senderId,
+                'receiver_id' => $receiver->id
+            ]);
+            $this->errorMessage = 'Erreur lors de la récupération des portefeuilles.';
+            return;
+        }
 
-        // Transactions principales
-        $this->createTransactionNew($senderId, $receiver->id, 'Réception', 'COC', $this->amount, $referenceId, 'Réception d\'argent');
-        $this->createTransactionNew($senderId, $receiver->id, 'Envoie', 'COC', $totalDebit, $referenceId, 'Envoi d\'argent avec frais');
+        // Vérification du solde suffisant
+        if ($senderWallet->balance < $this->amount) {
+            Log::warning('Solde insuffisant.', [
+                'sender_balance' => $senderWallet->balance,
+                'requested_amount' => $this->amount
+            ]);
+            $this->errorMessage = 'Solde insuffisant pour effectuer la recharge.';
+            return;
+        }
 
-        // Gestion des commissions
-        $this->handleCommissions($senderId, $receiver, $commissions, $referenceId);
+        try {
+            // Calcul des montants
+            $commissions = round($this->amount * 0.01, 2);
+            $totalDebit = $this->amount + $commissions;
 
-        // Message de succès et réinitialisation du formulaire
-        $this->dispatch('formSubmitted', 'Transfert effectué avec succès.');
-        $this->resetForm();
-        return redirect()->to(request()->header('Referer'));
+            // Débiter l'expéditeur et créditer le récepteur
+            $senderWallet->decrement('balance', $totalDebit);
+            $receiverWallet->increment('balance', $this->amount);
 
-    } catch (\Exception $e) {
-        // Gestion des erreurs
-        Log::error('Erreur lors du transfert.', [
-            'exception' => $e->getMessage(),
-            'sender_id' => $senderId,
-            'receiver_id' => $receiver->id,
-            'amount' => $this->amount
-        ]);
-        $this->errorMessage = 'Une erreur est survenue lors du transfert.';
-    }
-}
+            // Générer une référence de transaction
+            $referenceId = $this->generateIntegerReference();
 
-/**
- * Gérer les commissions pour les parrains et l'admin.
- */
-private function handleCommissions($senderId, $receiver, $commissions, $referenceId)
-{
-    $remainingCommission = $commissions;
+            // Transactions principales
+            $this->createTransactionNew($senderId, $receiver->id, 'Réception', 'COC', $this->amount, $referenceId, 'Réception d\'argent');
+            $this->createTransactionNew($senderId, $receiver->id, 'Envoie', 'COC', $totalDebit, $referenceId, 'Envoi d\'argent avec frais');
 
-    // Commission pour le parrain de l'expéditeur
-    $userSender = User::find($senderId);
-    if ($userSender->parrain) {
-        $parrainSender = User::find($userSender->parrain);
-        if ($parrainSender) {
-            $parrainSenderWallet = Wallet::where('user_id', $parrainSender->id)->first();
-            if ($parrainSenderWallet) {
-                $parrainCommission = round($commissions * 0.01, 2);
-                $parrainSenderWallet->increment('balance', $parrainCommission);
-                $this->createTransactionNew($senderId, $parrainSender->id, 'Commission', 'COC', $parrainCommission, $referenceId, 'Commission pour le parrain');
-                $remainingCommission -= $parrainCommission;
-            }
+            // Gestion des commissions
+            $this->handleCommissions($senderId, $receiver, $commissions, $referenceId);
+
+            // Message de succès et réinitialisation du formulaire
+            $this->dispatch('formSubmitted', 'Transfert effectué avec succès.');
+            $this->resetForm();
+            return redirect()->to(request()->header('Referer'));
+        } catch (\Exception $e) {
+            // Gestion des erreurs
+            Log::error('Erreur lors du transfert.', [
+                'exception' => $e->getMessage(),
+                'sender_id' => $senderId,
+                'receiver_id' => $receiver->id,
+                'amount' => $this->amount
+            ]);
+            $this->errorMessage = 'Une erreur est survenue lors du transfert.';
         }
     }
 
-    // Commission pour le parrain du destinataire
-    if ($receiver->parrain) {
-        $parrainReceive = User::find($receiver->parrain);
-        if ($parrainReceive) {
-            $parrainReceiveWallet = Wallet::where('user_id', $parrainReceive->id)->first();
-            if ($parrainReceiveWallet) {
-                $parrainCommission = round($commissions * 0.01, 2);
-                $parrainReceiveWallet->increment('balance', $parrainCommission);
-                $this->createTransactionNew($senderId, $parrainReceive->id, 'Commission', 'COC', $parrainCommission, $referenceId, 'Commission pour le parrain');
-                $remainingCommission -= $parrainCommission;
+    /**
+     * Gérer les commissions pour les parrains et l'admin.
+     */
+    private function handleCommissions($senderId, $receiver, $commissions, $referenceId)
+    {
+        $remainingCommission = $commissions;
+
+        // Commission pour le parrain de l'expéditeur
+        $userSender = User::find($senderId);
+        if ($userSender->parrain) {
+            $parrainSender = User::find($userSender->parrain);
+            if ($parrainSender) {
+                $parrainSenderWallet = Wallet::where('user_id', $parrainSender->id)->first();
+                if ($parrainSenderWallet) {
+                    $parrainCommission = round($commissions * 0.01, 2);
+                    $parrainSenderWallet->increment('balance', $parrainCommission);
+                    $this->createTransactionNew($senderId, $parrainSender->id, 'Commission', 'COC', $parrainCommission, $referenceId, 'Commission pour le parrain');
+                    $remainingCommission -= $parrainCommission;
+                }
             }
+        }
+
+        // Commission pour le parrain du destinataire
+        if ($receiver->parrain) {
+            $parrainReceive = User::find($receiver->parrain);
+            if ($parrainReceive) {
+                $parrainReceiveWallet = Wallet::where('user_id', $parrainReceive->id)->first();
+                if ($parrainReceiveWallet) {
+                    $parrainCommission = round($commissions * 0.01, 2);
+                    $parrainReceiveWallet->increment('balance', $parrainCommission);
+                    $this->createTransactionNew($senderId, $parrainReceive->id, 'Commission', 'COC', $parrainCommission, $referenceId, 'Commission pour le parrain');
+                    $remainingCommission -= $parrainCommission;
+                }
+            }
+        }
+
+        // Commission pour l'admin
+        $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
+        if ($adminWallet) {
+            $adminWallet->increment('balance', $remainingCommission);
+            $this->createTransactionAdmin(
+                $senderId,
+                1,
+                'Commission',
+                $remainingCommission,
+                $referenceId,
+                'Commission de BICF',
+                'effectué',
+                'commission'
+            );
         }
     }
 
-    // Commission pour l'admin
-    $adminWallet = ComissionAdmin::where('admin_id', 1)->first();
-    if ($adminWallet) {
-        $adminWallet->increment('balance', $remainingCommission);
-        $this->createTransactionAdmin(
-            $senderId,
-            1,
-            'Commission',
-            $remainingCommission,
-            $referenceId,
-            'Commission de BICF',
-            'effectué',
-            'commission'
-        );
+    /**
+     * Réinitialiser le formulaire après soumission.
+     */
+    private function resetForm()
+    {
+        $this->search = '';
+        $this->reset(['user_id', 'amount']);
+        $this->errorMessage = '';
     }
-}
-
-/**
- * Réinitialiser le formulaire après soumission.
- */
-private function resetForm()
-{
-    $this->search = '';
-    $this->reset(['user_id', 'amount']);
-    $this->errorMessage = '';
-}
 
 
     protected function processTransaction($senderWallet, $receiverWallet)
