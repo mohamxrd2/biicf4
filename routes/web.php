@@ -117,6 +117,8 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
 
 
     Route::get('/edit-agent/{username}', [UserController::class, 'editAgent'])->name('client.editad');
+    Route::get('/reset-password/{username}', [UserController::class, 'resetPassword'])->name('client.resetPassword');
+
     Route::post('/edit-agent/{username}', [UserController::class, 'updateAdmin'])->name('update.admin');
 
 

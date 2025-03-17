@@ -242,6 +242,23 @@ class UserController extends Controller
         return view('admin.editagent', compact('user', 'agents', 'totalAgents'));
     }
 
+
+    public function resetPassword($username)
+    {
+        // Trouver l'utilisateur
+        $user = User::where('username', $username)->first();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'Utilisateur non trouvé.');
+        }
+
+        // Changer son mot de passe
+        $user->password = Hash::make('Azerty12345');
+        $user->save();
+
+        return redirect()->back()->with('success', 'Mot de passe réinitialisé avec succès.');
+    }
+
     public function updateAdmin(Request $request, $username)
     {
         // Récupérer l'utilisateur
@@ -255,18 +272,7 @@ class UserController extends Controller
         return back()->with('success', 'Administrateur mis à jour avec succès.');
     }
 
-    // public $countries = [];
 
-    // public function fetchCountries()
-    // {
-    //     try {
-    //         $response = Http::get('https://restcountries.com/v3.1/all');
-    //         $this->countries = collect($response->json())->pluck('name.common')->sort()->toArray();
-    //     } catch (\Exception $e) {
-    //         // Handle the error (e.g., log it, show an error message)
-    //         $this->countries = [];
-    //     }
-    // }
 
     public function createPageBiicf()
     {
@@ -414,7 +420,6 @@ class UserController extends Controller
             session(['otp_sent_at' => now(), 'verification_code' => $otp]);
 
             Log::info("SMS envoyé au numéro $phoneNumber avec le SID: " . $message->sid);
-
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
             throw new Exception('Échec de l\'envoi du SMS: ' . $e->getMessage());

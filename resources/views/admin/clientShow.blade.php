@@ -864,9 +864,7 @@
                                                             </p>
                                                             {{-- {{ route('admin.consprod.destroy', $consommation->id) }} --}}
                                                             <div class="mt-6 flex justify-center gap-x-4">
-                                                                <form
-                                                                    action=""
-                                                                    method="POST">
+                                                                <form action="" method="POST">
                                                                     @csrf
                                                                     @method('DELETE')
 
@@ -1097,12 +1095,9 @@
                 <p class="font-semibold text-sm">Email</p>
                 <p class="text-sm text-gray-400">{{ $user->email }}
                     @if ($user->email_verified_at)
-                    <span class="text-green-400">(Vérifié)</span>
-                        
+                        <span class="text-green-400">(Vérifié)</span>
                     @else
-
-                    <span class="text-red-400">(Non vérifié)</span>
-
+                        <span class="text-red-400">(Non vérifié)</span>
                     @endif
                 </p>
             </div>
@@ -1238,6 +1233,13 @@
                         Modifier agent
 
                     </a>
+
+                    <a href="{{ route('client.resetPassword', ['username' => $user->username]) }}"
+                        class="w-full text-blue-800 bg-blue-100 rounded-md text-center p-1 mb-3"
+                        onclick="return confirm('Voulez-vous vraiment réinitialiser le mot de passe ?');">
+                        Réinitialiser le mot de passe
+                    </a>
+
 
                     <a href="#" data-hs-overlay="#hs-delete1"
                         class="w-full  text-red-800 bg-red-100 rounded-md text-center p-1 ">
