@@ -479,6 +479,8 @@
             // Initialisation des données régionales
             updateRegionInfo(iti.getSelectedCountryData().iso2);
         });
+
+        
     </script>
 </body>
 

@@ -330,17 +330,17 @@ class UserController extends Controller
         ]);
 
         try {
-            // Tentative d'envoi de SMS avant la création de l'utilisateur
-            try {
-                // Envoi du SMS de vérification
-                $this->sendSmsVerification($validatedData['phone']);
+            // // Tentative d'envoi de SMS avant la création de l'utilisateur
+            // try {
+            //     // Envoi du SMS de vérification
+            //     $this->sendSmsVerification($validatedData['phone']);
 
-                // Si l'envoi du SMS réussit, on stocke le code OTP et l'état dans la session
-                session(['phone' => $validatedData['phone'], 'otp_sent_at' => now()]);
-            } catch (Exception $smsException) {
-                // Si l'envoi du SMS échoue, on retourne une erreur
-                return back()->withErrors(['sms_error' => 'Impossible d\'envoyer le SMS de vérification. Veuillez réessayer plus tard.'])->withInput();
-            }
+            //     // Si l'envoi du SMS réussit, on stocke le code OTP et l'état dans la session
+            //     session(['phone' => $validatedData['phone'], 'otp_sent_at' => now()]);
+            // } catch (Exception $smsException) {
+            //     // Si l'envoi du SMS échoue, on retourne une erreur
+            //     return back()->withErrors(['sms_error' => 'Impossible d\'envoyer le SMS de vérification. Veuillez réessayer plus tard.'])->withInput();
+            // }
 
             // Si l'envoi du SMS a réussi, on procède à la création de l'utilisateur
             $user = new User();
@@ -359,19 +359,46 @@ class UserController extends Controller
             $user->ville = $request->input('ville');
             $user->commune = $request->input('commune');
             $user->parrain = $request->input('parrain');
+            // $user->save();
 
+
+            ////pour les test sans sms
+
+
+            // Marquer le numéro comme vérifié
+            $user->email_verified_at = now();
             $user->save();
 
+            // Création de l'investisseur
+            $investisseur = new Investisseur();
+            $investisseur->nom = $user->name;
+            $investisseur->prenom = $user->username;
+            $investisseur->tranche = $user->investissement;
+            $investisseur->invest_type = $user->invest_type;
+            $investisseur->user_id = $user->id;
+            $investisseur->save();
+            Log::info('Investisseur créé avec succès', ['investisseur_id' => $investisseur->id]);
+
+            // Création des sous-comptes
+            $this->createUserWallets($user->id);
+            Log::info('Sous-comptes créés pour l\'utilisateur', ['user_id' => $user->id]);
+
+
+            return redirect()->route('biicf.login')
+                ->with('success', 'Votre numéro a été vérifié avec succès et vous avez été ajouté en tant qu\'investisseur !');
+            //////////////////////
+
             // Redirection vers la page de vérification du téléphone
-            return redirect()->route('verify.phone', [
-                'phone' => Crypt::encryptString($user->phone)
-            ])->with('success', 'Code de vérification envoyé par SMS. Veuillez vérifier votre numéro.');
+            // return redirect()->route('verify.phone', [
+            //     'phone' => Crypt::encryptString($user->phone)
+            // ])->with('success', 'Code de vérification envoyé par SMS. Veuillez vérifier votre numéro.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->validator->errors())->withInput();
         } catch (Exception $e) {
             return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
         }
     }
+
     /**
      * Envoie un code de vérification par SMS via Twilio
      *
