@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Models\CategorieProduits_Servives;
 use App\Models\Consommation;
-use App\Models\ProduitService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -54,7 +53,7 @@ class AjoutConsommations extends Component
 
     public function updatedSearchTerm()
     {
-        $this->produits = ProduitService::where('name', 'like', '%' . $this->searchTerm . '%')
+        $this->produits = Consommation::where('name', 'like', '%' . $this->searchTerm . '%')
             ->orWhere('name', 'like', '%' . $this->searchTerm . '%')
             ->get();
     }
@@ -63,20 +62,33 @@ class AjoutConsommations extends Component
     public function updateProducts(array $selectedCategories)
     {
         $this->selectedCategories = $selectedCategories;
+        if (!empty($this->selectedCategories)) {
+            // Récupérer les catégories sélectionnées
+            $categories = CategorieProduits_Servives::whereIn('id', $this->selectedCategories)->get();
+            $this->selectedProduits = [];
+            $this->resetForm();
 
-        // Update products based on selected categories
-        if ($this->selectedCategories) {
-            $this->produits = ProduitService::whereIn('categorie_id', $this->selectedCategories)
-                ->orderBy('reference')
-                ->get()
-                ->unique('reference'); // Ensure only unique references are taken
+            if ($categories->isNotEmpty()) {
+                // Stocker les noms des catégories sélectionnées
+                $this->categorie = $categories->pluck('categorie_produit_services')->toArray();
+
+                // Update products based on selected categories
+                $this->produits = Consommation::whereIn('categorie_id', $this->selectedCategories)
+                    ->orderBy('reference')
+                    ->get()
+                    ->unique('reference'); // Ensure only unique references are taken
+            } else {
+                $this->categorie = [];
+                $this->produits = collect(); // Aucune catégorie trouvée
+            }
         } else {
-            $this->produits = collect(); // Reset if no categories selected
+            $this->categorie = [];
+            $this->produits = collect(); // Aucun filtre appliqué
         }
     }
     public function updateProductDetails($productId)
     {
-        $selectedProduct = ProduitService::find($productId);
+        $selectedProduct = Consommation::find($productId);
 
         if ($selectedProduct) {
             // Remplir les propriétés avec les détails du produit sélectionné
@@ -84,8 +96,8 @@ class AjoutConsommations extends Component
             $this->reference = $selectedProduct->reference;
             $this->type = $selectedProduct->type;
             $this->name = $selectedProduct->name;
-            $this->conditionnement = $selectedProduct->condProd;
-            $this->format = $selectedProduct->formatProd;
+            $this->conditionnement = $selectedProduct->conditionnement;
+            $this->format = $selectedProduct->format;
             $this->origine = $selectedProduct->origine;
 
 
@@ -110,17 +122,6 @@ class AjoutConsommations extends Component
         }
     }
 
-    protected function resetProductFields()
-    {
-        $this->conditionnement = '';
-        $this->format = '';
-        $this->origine = '';
-        $this->qteProd = '';
-        $this->prix = '';
-        $this->qualification = '';
-        $this->specialite = '';
-        $this->descrip = '';
-    }
 
 
     // Méthode appelée lors du clic sur la case à cocher
@@ -142,7 +143,7 @@ class AjoutConsommations extends Component
     public function submit()
     {
         $this->validate([
-            'categorie' => 'required|string',
+            'categorie' => 'required',
             'type' => 'required|string|in:Produit,Service',
             'reference' => [
                 'required',

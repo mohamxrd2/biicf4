@@ -159,7 +159,6 @@ class AjoutProduitServices extends Component
         }
     }
 
-    protected function resetProductFields() {}
 
 
     // Méthode appelée lors du clic sur la case à cocher

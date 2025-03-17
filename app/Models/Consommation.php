@@ -29,12 +29,17 @@ class Consommation extends Model
         'zoneAct',
         'villeCons',
         'id_user',
-        'statuts'
+        'statuts',
+        'categorie_id',
+
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'id_user');
     }
-
+    public function categorie()
+    {
+        return $this->belongsTo(CategorieProduits_Servives::class, 'categorie_id');
+    }
 }
