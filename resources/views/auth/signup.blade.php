@@ -53,17 +53,23 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nom ou raison sociale *</label>
-                            <input type="text" name="name"
+                            <input type="text" name="name" value="{{ old('name') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('name')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
-                            <input type="text" name="last-name"
+                            <input type="text" name="last-name" value="{{ old('last-name') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('last-name')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
                     </div>
@@ -72,17 +78,23 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'utilisateur *</label>
-                            <input type="text" name="username"
+                            <input type="text" name="username" value="{{ old('username') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('username')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                            <input type="email" name="email"
+                            <input type="email" name="email" value="{{ old('email') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('email')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
                     </div>
@@ -92,7 +104,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe *</label>
                             <div class="relative">
-                                <input type="password" name="password" id="password"
+                                <input type="password" name="password" id="password" value="{{ old('password') }}"
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                     required>
                                 <button type="button"
@@ -106,6 +118,9 @@
                                     </svg>
                                 </button>
                             </div>
+                            @error('password')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
@@ -114,7 +129,9 @@
                                 *</label>
                             <div class="relative">
                                 <input type="password" name="repeat-password" id="repeat-password"
-                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                    value="{{ old('password') }}"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500
+                                    focus:border-blue-500"
                                     required>
                                 <button type="button"
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
@@ -127,6 +144,9 @@
                                     </svg>
                                 </button>
                             </div>
+                            @error('password')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
                     </div>
@@ -135,7 +155,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Type d'acteur *</label>
-                            <select name="user_type"
+                            <select name="user_type" value="{{ old('user_type') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
                                 <option value="">Sélectionnez un type</option>
@@ -147,12 +167,15 @@
                                 <option value="Communauté">Communauté</option>
                                 <option value="Menage">Ménage</option>
                             </select>
+                            @error('user_type')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Type d'investisseur *</label>
-                            <select name="invest_type"
+                            <select name="invest_type" value="{{ old('invest_type') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
                                 <option value="">Sélectionnez un type</option>
@@ -161,6 +184,9 @@
                                 <option value="Fonds d'investissement">Fonds d'investissement</option>
                                 <option value="Particulier">Particulier</option>
                             </select>
+                            @error('invest_type')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
                     </div>
@@ -168,7 +194,7 @@
                     <!-- Proportion à investir -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Proportion à investir *</label>
-                        <select name="investisement"
+                        <select name="investisement" value="{{ old('investisement') }}"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             required>
                             <option value="">Choisissez une tranche (FCFA)</option>
@@ -179,6 +205,9 @@
                             <option value="10.000.001-50.000.000">10.000.001-50.000.000</option>
                             <option value="50.000.001 et plus">50.000.001 et plus</option>
                         </select>
+                        @error('investisement')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                        @enderror
                         <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                     </div>
                 </div>
@@ -189,19 +218,25 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de téléphone *</label>
-                            <input type="tel" id="phone" name="phone"
+                            <input type="tel" id="phone" name="phone" value="{{ old('phone') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('phone')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pays *</label>
-                            <select id="address-country" name="country"
+                            <select id="address-country" name="country" value="{{ old('country') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
                                 <option value="">Sélectionnez un pays</option>
                             </select>
+                            @error('country')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
                     </div>
@@ -210,14 +245,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Continent</label>
-                            <input type="text" id="continent" name="continent"
+                            <input type="text" id="continent" name="continent" value="{{ old('continent') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50" readonly>
+                            @error('continent')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Sous-région</label>
                             <input type="text" id="subregion" name="sous_region"
+                                value="{{ old('sous_region') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50" readonly>
+                            @error('continent')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
 
@@ -225,17 +267,23 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Département *</label>
-                            <input type="text" name="departement"
+                            <input type="text" name="departement" value="{{ old('departement') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('departement')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ville *</label>
-                            <input type="text" name="ville"
+                            <input type="text" name="ville" value="{{ old('ville') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('ville')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
                     </div>
@@ -244,17 +292,23 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Commune *</label>
-                            <input type="text" name="commune"
+                            <input type="text" name="commune" value="{{ old('commune') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 required>
+                            @error('commune')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Code de parrainage</label>
-                            <input type="number" name="parrain"
+                            <input type="number" name="parrain" value="{{ old('parrain') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Optionnel">
+                            @error('parrain')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -479,8 +533,6 @@
             // Initialisation des données régionales
             updateRegionInfo(iti.getSelectedCountryData().iso2);
         });
-
-        
     </script>
 </body>
 
