@@ -26,44 +26,12 @@ class ProduitServiceController extends Controller
         return view('admin.products');
     }
 
-    public function destroyProduct($id)
-    {
-        $produit = ProduitService::find($id);
-
-        if (!$produit) {
-            return redirect()->back()->with('error', 'Produit non trouvé.');
-        }
-
-        $produit->delete();
-
-        return redirect()->back()->with('success', 'Produit supprimé avec succès.');
-    }
-
-
 
     public function adminService()
     {
 
         return view('admin.services');
     }
-
-    public function destroyService($id)
-    {
-
-        $services = ProduitService::find($id);
-
-        if (!$services) {
-            return redirect()->back()->with('error', 'Service non trouvé.');
-        }
-
-        $services->delete();
-
-        return redirect()->route('admin.services')->with('success', 'Le service a été supprimé avec succès');
-    }
-
-
-
-
 
     public function pubDet($id)
     {

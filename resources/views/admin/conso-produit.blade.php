@@ -9,6 +9,4 @@
         <livewire:consommation-list lazy />
     </div>
 
-
-
 @endsection

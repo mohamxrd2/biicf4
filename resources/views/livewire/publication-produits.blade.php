@@ -1,3 +1,4 @@
+
 <div wire:poll.15000ms>
     <div id="resultsContainer"
         class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">

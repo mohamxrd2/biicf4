@@ -77,7 +77,8 @@
                             <a href="{{ route('produit.pubShow', $service->id) }}" class="flex items-center">
 
                                 <img class="w-10 h-10 rounded-md"
-                                    src="{{ $service->photoProd1 ? asset($service->photoProd1) : asset('img/noimg.jpeg') }}">
+                                    src="{{ $service->photoProd1 ? asset('post/all/' . $service->photoProd1) : asset('img/noimg.jpeg') }}"
+                                    alt="produits image">
                                 <div class="ps-3">
                                     <div class="text-base font-semibold">{{ $service->name }}</div>
                                     <div class="font-normal text-gray-500">{{ $service->username }}</div>

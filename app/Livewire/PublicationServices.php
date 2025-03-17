@@ -13,6 +13,20 @@ class PublicationServices extends Component
     {
         return view('admin.components.placeholder');
     }
+
+    public function destroyProduct($id)
+    {
+        $service = ProduitService::find($id);
+
+        if (!$service) {
+            return redirect()->back()->with('error', 'service non trouvé.');
+        }
+
+        $service->delete();
+
+        return redirect()->back()->with('success', 'service supprimé avec succès.');
+    }
+    
     public function render()
     {
 
