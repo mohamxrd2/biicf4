@@ -38,8 +38,10 @@
                 <div x-data="{ amount: @entangle('amount').defer }">
                     <!-- Champ de saisie -->
                     <div class="mb-4">
-                        <label for="amount" class="block text-sm font-medium text-gray-600 mb-1">Montant Envoyé</label>
-                        <input type="number" x-model="amount" id="amount" placeholder="Entrez le montant"
+                        <label for="amount" class="block text-sm font-medium text-gray-600 mb-1">Montant
+                            Envoyé</label>
+                        <input type="number" x-model="amount" wire:model="amount" id="amount"
+                            placeholder="Entrez le montant"
                             class="py-3 px-4 block w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
 
@@ -58,10 +60,13 @@
                     <button type="reset" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
                         Annuler
                     </button>
-                    <button type="submit"
-                        class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                        Envoyer
+                    <button wire:click="submit" wire:loading.attr="disabled"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                        <span wire:loading.remove>Envoyer</span>
+                        <span wire:loading>Chargement...</span>
                     </button>
+
+
                 </div>
             </div>
         </div>

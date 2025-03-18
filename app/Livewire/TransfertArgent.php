@@ -51,12 +51,20 @@ class TransfertArgent extends Component
         $this->users = [];
     }
 
+    public bool $isProcessing = false;
+
     public function submit()
     {
-        // Réinitialiser le message d'erreur
+        // Vérifier si un traitement est déjà en cours
+        if ($this->isProcessing) {
+            return;
+        }
+
+        // Activer le mode "en traitement"
+        $this->isProcessing = true;
         $this->errorMessage = '';
 
-        // Validation des données du formulaire
+        // Validation des données
         $this->validate([
             'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:1|max:99999999',
@@ -71,61 +79,57 @@ class TransfertArgent extends Component
         $senderId = Auth::id();
         $receiver = User::find($this->user_id);
 
-        // Vérification du destinataire
         if (!$receiver) {
             Log::error('Utilisateur spécifié introuvable.', ['user_id' => $this->user_id]);
             $this->errorMessage = 'L\'utilisateur spécifié n\'existe pas.';
+            $this->isProcessing = false; // Réinitialisation
             return;
         }
 
         $senderWallet = Wallet::where('user_id', $senderId)->first();
         $receiverWallet = Wallet::where('user_id', $receiver->id)->first();
 
-        // Vérification des portefeuilles
         if (!$senderWallet || !$receiverWallet) {
             Log::error('Erreur lors de la récupération des portefeuilles.', [
                 'sender_id' => $senderId,
                 'receiver_id' => $receiver->id
             ]);
             $this->errorMessage = 'Erreur lors de la récupération des portefeuilles.';
+            $this->isProcessing = false; // Réinitialisation
             return;
         }
 
-        // Vérification du solde suffisant
         if ($senderWallet->balance < $this->amount) {
             Log::warning('Solde insuffisant.', [
                 'sender_balance' => $senderWallet->balance,
                 'requested_amount' => $this->amount
             ]);
             $this->errorMessage = 'Solde insuffisant pour effectuer la recharge.';
+            $this->isProcessing = false; // Réinitialisation
             return;
         }
 
         try {
-            // Calcul des montants
             $commissions = round($this->amount * 0.01, 2);
             $totalDebit = $this->amount + $commissions;
 
-            // Débiter l'expéditeur et créditer le récepteur
+            // Débiter et créditer les portefeuilles
             $senderWallet->decrement('balance', $totalDebit);
             $receiverWallet->increment('balance', $this->amount);
 
-            // Générer une référence de transaction
+            // Générer la référence et enregistrer les transactions
             $referenceId = $this->generateIntegerReference();
-
-            // Transactions principales
             $this->createTransactionNew($senderId, $receiver->id, 'Réception', 'COC', $this->amount, $referenceId, 'Réception d\'argent');
             $this->createTransactionNew($senderId, $receiver->id, 'Envoie', 'COC', $totalDebit, $referenceId, 'Envoi d\'argent avec frais');
 
             // Gestion des commissions
             $this->handleCommissions($senderId, $receiver, $commissions, $referenceId);
 
-            // Message de succès et réinitialisation du formulaire
+            // Succès
             $this->dispatch('formSubmitted', 'Transfert effectué avec succès.');
             $this->resetForm();
             return redirect()->to(request()->header('Referer'));
         } catch (\Exception $e) {
-            // Gestion des erreurs
             Log::error('Erreur lors du transfert.', [
                 'exception' => $e->getMessage(),
                 'sender_id' => $senderId,
@@ -133,8 +137,11 @@ class TransfertArgent extends Component
                 'amount' => $this->amount
             ]);
             $this->errorMessage = 'Une erreur est survenue lors du transfert.';
+        } finally {
+            $this->isProcessing = false; // Toujours réinitialiser à la fin
         }
     }
+
 
     /**
      * Gérer les commissions pour les parrains et l'admin.
