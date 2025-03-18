@@ -55,7 +55,7 @@
                 </div>
 
 
-                <!-- Boutons de soumission et annulation -->
+                <!-- Boutons de soumission -->
                 <div class="flex justify-end items-center space-x-3">
                     <button type="reset" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
                         Annuler
@@ -65,8 +65,6 @@
                         <span wire:loading.remove>Envoyer</span>
                         <span wire:loading>Chargement...</span>
                     </button>
-
-
                 </div>
             </div>
         </div>
