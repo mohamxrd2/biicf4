@@ -47,6 +47,7 @@ use App\Http\Controllers\Auth\BiicfAuthController;
 use App\Http\Controllers\ProduitServiceController;
 use App\Http\Controllers\OffreGroupClientController;
 use App\Livewire\DetailTontine;
+use App\Livewire\Profile;
 
 Route::get('/', function () {
     return view('index');
@@ -185,11 +186,7 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
 
         Route::post('envoyer-client', [AdminWalletController::class, 'sendToClientAccount'])->name('biicf.send');
 
-
-        Route::get('profile', [UserController::class, 'showProfile'])->name('biicf.showProfile');
-        Route::put('/profile/profile-photo/{user}', [UserController::class, 'updateProfilePhoto'])->name('biicf.updateProfilePhoto');
-        Route::put('/profile/update/{user}', [UserController::class, 'updateProfile'])->name('biicf.updateProfile');
-        Route::put('/profile/password/{user}', [UserController::class, 'updatePassword'])->name('biicf.updatePassword');
+        Route::get('profile', Profile::class)->name('biicf.profile');
 
         Route::get('Appel-offre', [AppelOffreController::class, 'search'])->name('biicf.appeloffre');
         Route::match(['get', 'post'], 'formumelaire-appel-offre', [AppelOffreController::class, 'formAppel'])->name('biicf.form');

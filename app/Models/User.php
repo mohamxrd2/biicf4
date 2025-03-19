@@ -83,10 +83,6 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'parrain');
     }
 
-    public function parrainees()
-    {
-        return $this->hasMany(User::class, 'parrain');
-    }
 
     public function achatsDirectsEnvoyes()
     {
