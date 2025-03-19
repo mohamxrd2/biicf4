@@ -53,52 +53,14 @@
                 <div id="step1" class="space-y-6">
                     <!-- Nom et Prénom -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom ou raison sociale *</label>
-                            <input type="text" name="name" value="{{ old('name') }}"
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                required>
-                            @error('name')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
-                            <input type="text" name="last-name" value="{{ old('last-name') }}"
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                required>
-                            @error('last-name')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
-                        </div>
+                        <x-input label="Nom ou raison sociale *" name="name" :errors="$errors" required />
+                        <x-input label="Prénom *" name="last-name" :errors="$errors" required />
                     </div>
 
                     <!-- Nom d'utilisateur et Email -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'utilisateur *</label>
-                            <input type="text" name="username" value="{{ old('username') }}"
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                required>
-                            @error('username')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                            <input type="email" name="email" value="{{ old('email') }}"
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                required>
-                            @error('email')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
-                        </div>
+                        <x-input label="Nom d'utilisateur *" name="username" :errors="$errors" required />
+                        <x-input label="Email *" type="email" name="email" :errors="$errors" required />
                     </div>
 
                     <!-- Mot de passe -->
@@ -234,6 +196,7 @@
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pays *</label>
                             <select id="address-country" name="country" value="{{ old('country') }}"
@@ -258,6 +221,7 @@
                                 <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                             @enderror
                         </div>
+                        
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Sous-région</label>
