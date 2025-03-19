@@ -99,20 +99,4 @@ function togglePassword(inputId) {
     }
 }
 
-// Validation en temps réel des mots de passe
-document
-    .getElementById("repeat-password")
-    .addEventListener("input", function () {
-        const password = document.getElementById("password").value;
-        const repeatPassword = this.value;
-        const errorSpan = this.nextElementSibling.nextElementSibling;
 
-        if (password !== repeatPassword) {
-            errorSpan.textContent = "Les mots de passe ne correspondent pas";
-            errorSpan.classList.remove("hidden");
-            this.classList.add("border-red-500");
-        } else {
-            errorSpan.classList.add("hidden");
-            this.classList.remove("border-red-500");
-        }
-    });
