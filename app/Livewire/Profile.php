@@ -16,6 +16,7 @@ class Profile extends Component
 
     public $user, $parrain, $name, $username, $phonenumber, $current_password, $new_password, $new_password_confirmation, $image;
     public $liaison_reussie = false;
+    protected $listeners = ['liaisonReussie' => 'mettreAJourLiaison'];
 
     public function mount()
     {
@@ -27,7 +28,11 @@ class Profile extends Component
         $this->liaison_reussie = Promir::where('user_id', Auth::id())->exists();; // Mettre à true si la liaison est réussie
 
     }
-
+    // Mise à jour en temps réel après liaison
+    public function mettreAJourLiaison()
+    {
+        $this->liaison_reussie = true;
+    }
     private function separerIndicatif($numero)
     {
         $client = new Client();
@@ -85,22 +90,32 @@ class Profile extends Component
         }
 
         if ($numeroExiste) {
-            // Si l'utilisateur existe, insérer les données dans la table `promir`
-            Promir::create([
-                'user_id' => Auth::id(), // L'ID de l'utilisateur trouvé
-                'name' => $userTrouve['name'],
-                'last_stname' => $userTrouve['last_stname'],
-                'user_name' => $userTrouve['user_name'],
-                'email' => $userTrouve['email'],
-                'phone_number' => $userTrouve['phone_number'],
-                'system_client_id' => $userTrouve['system_client_id'],
-                'mois_depuis_creation' => $userTrouve['mois_depuis_creation'],
-            ]);
+            // Vérifier si le compte a au moins 3 mois d'ancienneté
+            if ($userTrouve['mois_depuis_creation'] >= 3) {
+                // Si l'utilisateur existe et est éligible, insérer dans `promir`
+                Promir::create([
+                    'user_id' => Auth::id(),
+                    'name' => $userTrouve['name'],
+                    'last_stname' => $userTrouve['last_stname'],
+                    'user_name' => $userTrouve['user_name'],
+                    'email' => $userTrouve['email'],
+                    'phone_number' => $userTrouve['phone_number'],
+                    'system_client_id' => $userTrouve['system_client_id'],
+                    'mois_depuis_creation' => $userTrouve['mois_depuis_creation'],
+                ]);
 
+                $this->dispatch('liaisonReussie');
+            } else {
+                $this->dispatch(
+                    'formSubmitted',
+                    "Votre compte doit avoir au moins 3 mois d'ancienneté pour être lié."
+                );
+            }
         } else {
             dd("Le numéro de téléphone {$numeroRecherche} n'existe pas dans la liste.");
         }
     }
+
 
     public function updateProfile()
     {

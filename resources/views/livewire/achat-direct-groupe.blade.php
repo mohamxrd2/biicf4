@@ -1,5 +1,4 @@
 <div>
-
     <div class="bg-white rounded-lg p-6 shadow-md border-b">
         <div class="flex items-center justify-between">
             <!-- Stepper -->
@@ -59,7 +58,7 @@
                 @if ($errorMessage)
                     <span class="text-sm text-red-500">{{ $errorMessage }}</span>
                 @endif
-                
+
                 <!-- Résumé -->
                 <div class="my-4 p-4 bg-blue-50 rounded-lg border">
                     <h4 class="font-semibold text-gray-800">Résumé :</h4>
@@ -129,15 +128,26 @@
 
 
                     <div class="text-center mt-3">
-                        <button wire:click="credit" wire:loading.attr="disabled"
-                            class="py-2 px-3 w-full inline-flex items-center
-                            justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent
-                            bg-blue-600 text-white hover:bg-blue-700"
-                            :class="{ 'hidden': !$wire.isButtonHidden }">
-                            <span wire:loading.remove>Demander un crédit</span>
-                            <span wire:loading>Envoi en cours...</span>
-                        </button>
+                        @if($userInPromir)
+                            <!-- Afficher le bouton si l'utilisateur est dans la table Promir -->
+                            <button wire:click="credit" wire:loading.attr="disabled"
+                                class="py-2 px-3 w-full inline-flex items-center
+                                justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent
+                                bg-blue-600 text-white hover:bg-blue-700">
+                                <span wire:loading.remove>Demander un crédit</span>
+                                <span wire:loading>Envoi en cours...</span>
+                            </button>
+                        @else
+                            <!-- Afficher un message avec un lien vers le profil si l'utilisateur n'est pas dans Promir -->
+                            <div class="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+                                <p>Vous devez d'abord lier votre compte à Promir pour être éligible au crédit.</p>
+                                <a href="{{ route('biicf.profile') }}" class="text-blue-600 font-semibold underline">
+                                    Aller à mon profil
+                                </a>
+                            </div>
+                        @endif
                     </div>
+
 
                     <div class="flow-root">
                         <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">

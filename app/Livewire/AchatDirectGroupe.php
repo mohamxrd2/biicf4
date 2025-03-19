@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Promir;
 use Livewire\Component;
 use App\Models\ProduitService;
 use Illuminate\Support\Facades\Auth;
@@ -18,43 +19,30 @@ use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
 use App\Notifications\Confirmation;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AchatDirectGroupe extends Component
 {
-    public $produitId;
-    public $produit;
-    public $userId;
+
     public $selectedOption = "";
 
     //
     public $quantité = "";
     public $localite = "";
     public $selectedSpec = false;
-    public $userTrader;
-    public $nameProd;
-    public $userSender;
-    public $message = "Un utilisateur veut acheter ce produit";
-    public $photoProd;
-    public $idProd;
-    public $prix;
-    public $code_unique;
-    public $type;
-    public $dateTard;
-    public $dateTot;
-    public $timeStart;
-    public $timeEnd;
+
+
     public $dayPeriod = "";
     public $dayPeriodFin = "";
 
-    public $userBalance;
-    public $totalCost;
+    public  $produitId, $produit, $userId, $userTrader, $nameProd, $userSender, $userBalance, $totalCost, $userInPromir, $code_unique, $type, $dateTard, $dateTot, $timeStart, $timeEnd, $photoProd, $idProd, $prix;
     public $isButtonDisabled = false;
     public $isButtonHidden = false;
     public $currentPage = 'achat';
-    public $errorMessage = ''; // Add this property
+    public $errorMessage = '';
     protected $listeners = ['navigate' => 'setPage'];
     public function setPage($page)
     {
@@ -73,16 +61,16 @@ class AchatDirectGroupe extends Component
         $this->photoProd = $this->produit->photoProd1;
         $this->idProd = $this->produit->id;
         $this->prix = $this->produit->prix;
-        $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionnée
-        // Récupérer l'identifiant de l'utilisateur connecté
-        $userId = Auth::guard('web')->id();
+        $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionné
 
         // Récupérer le portefeuille de l'utilisateur
-        $userWallet = Wallet::where('user_id', $userId)->first();
+        $userWallet = Wallet::where('user_id', $this->userId)->first();
 
         // Assume user balance is fetched from the authenticated user
         $this->userBalance = $userWallet ?? 0;
         $this->totalCost = (int)$this->quantité * $this->prix;
+
+        $this->userInPromir = Promir::where('user_id', Auth::id())->first();
     }
     public function updatedQuantité()
     {
@@ -275,6 +263,7 @@ class AchatDirectGroupe extends Component
         $this->resetErrorBag(['timeStart', 'dayPeriod']);
         return true;
     }
+
     private function validateServiceTimes()
     {
         if (empty($this->dateTot) || empty($this->dateTard)) {
@@ -338,7 +327,6 @@ class AchatDirectGroupe extends Component
         return true;
     }
 
-
     private function getUserWallet($userId)
     {
         return Wallet::where('user_id', $userId)->first();
@@ -401,8 +389,6 @@ class AchatDirectGroupe extends Component
         event(new NotificationSent($owner));
     }
 
-
-
     protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
     {
         $transaction = new Transaction();
@@ -428,31 +414,48 @@ class AchatDirectGroupe extends Component
 
     public function credit()
     {
-        // $this->dispatch('navigate', 'credit');
+        $this->dispatch('navigate', 'credit');
 
-        // Récupérer l'utilisateur actuellement connec
-        $user = auth()->user();
-        $userNumber = $user->phone;
+        // Vérifier si l'utilisateur est bien enregistré dans Promir
+        if ($this->userInPromir) {
+            $systemClientId = $this->userInPromir->system_client_id;
+            $moisDepuisCreation = $this->userInPromir->mois_depuis_creation;
 
-        // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-        $userInPromir = UserPromir::where('numero', $userNumber)->first();
+            if (!$systemClientId || !$moisDepuisCreation) {
+                $this->dispatch(
+                    'formSubmitted',
+                    'Les informations de votre compte Promir sont incomplètes.'
+                );
+                return;
+            }
 
-        if ($userInPromir) {
-            // Vérifier si un score de crédit existe pour cet utilisateur
-            $crediScore = CrediScore::where('id_user', $userInPromir->id)->first();
+            // Appel API pour récupérer le score de crédit
+            try {
+                $client = new Client();
+                $response = $client->get("http://127.0.0.1:8001/api/cote/{$systemClientId}/{$moisDepuisCreation}");
+                $crediScoreData = json_decode($response->getBody()->getContents(), true);
+            } catch (\Exception $e) {
+                $this->dispatch(
+                    'formSubmitted',
+                    'Erreur lors de la récupération de votre score de crédit.'
+                );
+                return;
+            }
 
-            if ($crediScore) {
-                // Vérifier si le score est A+, A, ou A-
-                if (in_array($crediScore->ccc, ['A+', 'A', 'A-'])) {
+            // Vérifier si la réponse contient bien une clé "grade"
+            if (isset($crediScoreData['grade'])) {
+                $crediScore = $crediScoreData['grade']; // Récupérer le grade
+
+                if (in_array($crediScore, ['A+', 'A', 'A-', 'B+', 'B', 'B-'])) {
                     $this->dispatch(
                         'formSubmitted',
-                        'Votre numéro existe dans Promir et votre score de crédit est ' . $crediScore->ccc . ', Alors vous etes éligible au credit'
+                        "Votre numéro existe dans Promir et votre score de crédit est {$crediScore}, vous êtes éligible au crédit."
                     );
                     $this->checkEligibility();
                 } else {
                     $this->dispatch(
                         'formSubmitted',
-                        'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.'
+                        "Votre numéro existe dans Promir, mais votre score de crédit est {$crediScore}, ce qui n'est pas éligible."
                     );
                 }
             } else {
@@ -462,10 +465,9 @@ class AchatDirectGroupe extends Component
                 );
             }
         } else {
-            // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
             $this->dispatch(
                 'formSubmitted',
-                'Votre numéro n\'existe pas dans la base de données Promir. Vous n\'etes pas eligible.'
+                'Votre numéro n\'existe pas dans la base de données Promir. Vous n\'êtes pas éligible.'
             );
         }
     }
@@ -485,7 +487,6 @@ class AchatDirectGroupe extends Component
             $this->dispatch('navigate', 'credit');
         }
     }
-
 
 
     public function render()

@@ -195,6 +195,39 @@
                                     'icon' => 'office-building',
                                 ];
                             }
+
+                            // Define SVG paths for each icon type
+                            $iconPaths = [
+                                'user' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+                                'at-symbol' =>
+                                    'M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207',
+                                'users' =>
+                                    'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+                                'phone' =>
+                                    'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z',
+                                'ticket' =>
+                                    'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
+                                'mail' =>
+                                    'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+                                'globe' =>
+                                    'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                                'location-marker' =>
+                                    'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z',
+                                'home' =>
+                                    'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+                                'map' =>
+                                    'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
+                                'user-group' =>
+                                    'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+                                'user-circle' =>
+                                    'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                                'briefcase' =>
+                                    'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+                                'office-building' =>
+                                    'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+                                // Default icon as fallback
+                                'default' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                            ];
                         @endphp
 
                         @foreach ($userInfo as $info)
@@ -205,7 +238,7 @@
                                             class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M{{ $info['icon'] }}" />
+                                                d="{{ $iconPaths[$info['icon']] ?? $iconPaths['default'] }}" />
                                         </svg>
                                     </div>
                                     <div>
@@ -245,31 +278,30 @@
 
                         {{-- Profil --}}
                         <button wire:click="LiaisonPromir" wire:loading.attr="disabled"
-                            class="px-5 py-2.5
-                              {{ $liaison_reussie ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700' }}
-                              text-white font-semibold rounded-xl focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-                              flex items-center justify-center transition-all duration-300 ease-in-out shadow-md
-                              disabled:opacity-50 disabled:cursor-not-allowed relative"
-                            {{ $liaison_reussie ? 'disabled' : '' }}>
-
-                            <!-- Texte normal -->
+                            class="px-5 py-2.5 text-white font-semibold rounded-xl
+                              focus:ring-2 focus:ring-opacity-50 flex items-center justify-center
+                              transition-all duration-300 ease-in-out shadow-md disabled:opacity-50
+                              disabled:cursor-not-allowed relative"
+                            :class="{
+                                'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500': !@js($liaison_reussie),
+                                'bg-green-600 hover:bg-green-700 focus:ring-green-500': @js($liaison_reussie)
+                            }"
+                            :disabled="@js($liaison_reussie)" wire:listen.live="liaisonReussie">
                             <span wire:loading.remove>
                                 {{ $liaison_reussie ? 'Liaison approuvée à Promir' : 'Liaison avec Promir' }}
                             </span>
 
-                            <!-- Texte et spinner en chargement -->
                             <span wire:loading class="flex items-center gap-2">
-                                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                                <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10"
                                         stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                                 </svg>
                                 Patientez, cela ne prendra que quelques instants...
                             </span>
                         </button>
+
 
 
                     </div>
