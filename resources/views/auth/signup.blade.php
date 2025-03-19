@@ -10,6 +10,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.21/css/intlTelInput.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.0/cdn.min.js" defer></script>
+
 </head>
 
 <body class="bg-gray-50">
@@ -100,11 +102,20 @@
                     </div>
 
                     <!-- Mot de passe -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div x-data="{
+                        password: '',
+                        repeatPassword: '',
+                        get passwordsMatch() {
+                            return this.password === this.repeatPassword;
+                        },
+                        get showError() {
+                            return this.repeatPassword.length > 0 && !this.passwordsMatch;
+                        }
+                    }" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe *</label>
                             <div class="relative">
-                                <input type="password" name="password" id="password" value="{{ old('password') }}"
+                                <input type="password" name="password" id="password" x-model="password"
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                     required>
                                 <button type="button"
@@ -118,10 +129,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            @error('password')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                            <span class="text-red-500 text-sm mt-1 error-message"></span>
                         </div>
 
                         <div>
@@ -129,10 +137,9 @@
                                 *</label>
                             <div class="relative">
                                 <input type="password" name="repeat-password" id="repeat-password"
-                                    value="{{ old('password') }}"
-                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500
-                                    focus:border-blue-500"
-                                    required>
+                                    x-model="repeatPassword"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                    :class="{ 'border-red-500': showError }" required>
                                 <button type="button"
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                                     onclick="togglePassword('repeat-password')">
@@ -144,10 +151,9 @@
                                     </svg>
                                 </button>
                             </div>
-                            @error('password')
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                            @enderror
-                            <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
+                            <span x-show="showError" x-transition class="text-red-500 text-sm mt-1 block">
+                                Les mots de passe ne correspondent pas
+                            </span>
                         </div>
 
                     </div>
