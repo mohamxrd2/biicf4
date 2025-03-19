@@ -149,6 +149,7 @@
                             @enderror
                             <span class="hidden text-red-500 text-sm mt-1 error-message"></span>
                         </div>
+
                     </div>
 
                     <!-- Type d'acteur et Type d'investisseur -->
