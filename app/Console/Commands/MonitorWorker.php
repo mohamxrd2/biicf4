@@ -14,7 +14,7 @@ class MonitorWorker extends Command
      *
      * @var string
      */
-    protected $signature = 'worker:monitor';
+    protected $signature = 'app:monitor';
 
     /**
      * The console command description.
