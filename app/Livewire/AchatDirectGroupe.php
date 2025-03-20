@@ -73,7 +73,7 @@ class AchatDirectGroupe extends Component
         $this->userBalance = $this->userWallet ?? 0;
         $this->totalCost = (int)$this->quantité * $this->prix;
 
-        $this->userInPromir = Promir::where('user_id', Auth::id())->first();
+        // $this->userInPromir = Promir::where('user_id', Auth::id())->first();
     }
 
     public function updatedQuantité()
