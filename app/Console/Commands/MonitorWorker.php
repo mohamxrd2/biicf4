@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class MonitorWorker extends Command
 {
@@ -24,59 +25,115 @@ class MonitorWorker extends Command
     protected $description = 'Monitor the queue worker and restart if needed';
 
     /**
-     * Create a new command instance.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Execute the console command.
+     *
+     * @return int
      */
     public function handle()
     {
-        $isRunning = false;
+        $this->info('Starting queue worker monitoring...');
+        $isRunning = $this->checkQueueWorkerStatus();
 
+        // Check for failed jobs
+        $this->handleFailedJobs();
+
+        // Restart worker if needed
+        if (!$isRunning) {
+            $this->restartQueueWorker();
+        } else {
+            $this->info('Queue worker is already running.');
+            Log::info('Queue worker is already running.');
+        }
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Check if the queue worker is running
+     *
+     * @return bool
+     */
+    private function checkQueueWorkerStatus(): bool
+    {
         try {
-            $process = new Process(['pgrep', '-f', 'php artisan queue:listen']);
+            $process = new Process(['pgrep', '-f', 'queue:listen']);
             $process->run();
 
             $isRunning = $process->isSuccessful();
-        } catch (\Exception $e) {
-            Log::error('Error checking queue worker: ' . $e->getMessage());
-        }
 
-        // Vérifier s'il y a des jobs échoués
-        $failedJobsCount = DB::table('failed_jobs')->count();
-
-        if ($failedJobsCount > 0) {
-            Log::warning("⚠️ {$failedJobsCount} jobs ont échoué. Tentative de relance...");
-
-            $retryProcess = new Process(['php', 'artisan', 'queue:retry', 'all']);
-            $retryProcess->run();
-
-            if ($retryProcess->isSuccessful()) {
-                Log::info("✅ Tous les jobs échoués ont été relancés avec succès !");
+            if ($isRunning) {
+                $this->info('Queue worker status: Running');
             } else {
-                Log::error("❌ Échec de la relance des jobs : " . $retryProcess->getErrorOutput());
+                $this->warn('Queue worker status: Not running');
             }
-        } else {
-            Log::info("✅ Aucun job échoué détecté.");
-        }
 
-        if (!$isRunning) {
-            // Démarrer le processus queue:listen
-            $startProcess = new Process(['bash', '/home/u474923210/public_html/biicf/monitor_worker.sh']);
+            return $isRunning;
+        } catch (\Exception $e) {
+            $this->error('Error checking queue worker: ' . $e->getMessage());
+            Log::error('Error checking queue worker: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Handle failed jobs
+     *
+     * @return void
+     */
+    private function handleFailedJobs(): void
+    {
+        try {
+            $failedJobsCount = DB::table('failed_jobs')->count();
+
+            if ($failedJobsCount > 0) {
+                $this->warn("⚠️ {$failedJobsCount} failed jobs detected. Attempting to retry...");
+                Log::warning("⚠️ {$failedJobsCount} jobs ont échoué. Tentative de relance...");
+
+                $retryProcess = new Process(['php', 'artisan', 'queue:retry', 'all']);
+                $retryProcess->run();
+
+                if ($retryProcess->isSuccessful()) {
+                    $this->info("✅ All failed jobs have been successfully retried!");
+                    Log::info("✅ Tous les jobs échoués ont été relancés avec succès !");
+                } else {
+                    $this->error("❌ Failed to retry jobs: " . $retryProcess->getErrorOutput());
+                    Log::error("❌ Échec de la relance des jobs : " . $retryProcess->getErrorOutput());
+                }
+            } else {
+                $this->info("✅ No failed jobs detected.");
+                Log::info("✅ Aucun job échoué détecté.");
+            }
+        } catch (\Exception $e) {
+            $this->error('Error handling failed jobs: ' . $e->getMessage());
+            Log::error('Error handling failed jobs: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Restart the queue worker
+     *
+     * @return void
+     */
+    private function restartQueueWorker(): void
+    {
+        $this->info('Attempting to restart queue worker...');
+
+        try {
+            $startProcess = new Process(['php', 'artisan', 'queue:listen', '--daemon', '--tries=3', '--timeout=90']);
+            $startProcess->setTimeout(60);
             $startProcess->run();
 
             if ($startProcess->isSuccessful()) {
+                $this->info('Queue worker restarted successfully.');
                 Log::info('Queue worker restarted successfully.');
             } else {
-                Log::error('Failed to restart queue worker: ' . $startProcess->getErrorOutput());
+                $error = $startProcess->getErrorOutput();
+                $this->error('Failed to restart queue worker: ' . $error);
+                Log::error('Failed to restart queue worker: ' . $error);
             }
-        } else {
-            Log::info('Queue worker is already running.');
+        } catch (\Exception $e) {
+            $this->error('Exception while restarting queue worker: ' . $e->getMessage());
+            Log::error('Exception while restarting queue worker: ' . $e->getMessage());
         }
     }
 }
