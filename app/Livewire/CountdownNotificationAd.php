@@ -17,6 +17,7 @@ use App\Notifications\RefusAchat;
 use App\Notifications\VerifUser;
 use App\Services\AchatDirectService;
 use App\Services\CommissionService;
+use App\Services\RetraitMagasinService;
 use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -28,25 +29,8 @@ use Livewire\Component;
 class CountdownNotificationAd extends Component
 {
 
-    public $notification;
-    public $id;
-    public $produit;
-    public $userFour;
-    public $totalPrice;
-    public $user;
-    public $achatdirect;
-    public $livreur;
-    public $codeVerification;
-    public $fournisseur;
-    public $userWallet;
-    public $quantite;
-    public $qualite;
-    public $diversite;
-    public $userId;
-    public $userWalletFournisseur;
-    public $requiredAmount;
-    public $statusText;
-    public $statusClass;
+    public $notification, $id, $produit, $userFour, $totalPrice, $user, $achatdirect, $livreur, $codeVerification, $fournisseur, $userWallet, $quantite, $qualite, $diversite, $userId, $userWalletFournisseur, $requiredAmount, $statusText, $statusClass;
+
     public $showMainlever = false;
     public $isLoading = false;
 
@@ -201,103 +185,6 @@ class CountdownNotificationAd extends Component
         }
     }
 
-    private function retait_magasin()
-    {
-        $commissionService = new CommissionService();
-
-        // Calcul du montant requis avec une réduction de 10% cest pour le retrait en magasin
-        $requiredAmount = floatval($this->notification->data['prixFin']);
-
-        // Vérification de l'existence de l'achat dans les transactions gelées
-        $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
-            ->first();
-
-        if (!$existingGelement || $existingGelement->amount < $requiredAmount) {
-            Log::warning('Montant insuffisant ou aucune transaction gelée trouvée.', [
-                'reference_id' => $this->notification->data['code_unique'],
-                'required_amount' => $requiredAmount,
-                'available_amount' => $existingGelement->amount ?? 0,
-            ]);
-            session()->flash('error', 'Le montant requis est insuffisant dans les transactions gelées.');
-            return;
-        }
-
-        DB::beginTransaction(); // Démarre une transaction pour garantir la cohérence
-        try {
-
-            // Retirer le montant du gel
-            $existingGelement->amount -= $requiredAmount;
-            $existingGelement->status = 'OK';
-            $existingGelement->save();
-
-            // met a jour le portefeuille de l'Fournisseur
-            $this->userWalletFournisseur->balance += $requiredAmount;
-            $this->userWalletFournisseur->save();
-
-            $this->createTransaction(
-                $this->user,
-                $this->fournisseur->id ?? null,
-                'Envoie',
-                $this->achatdirect->montantTotal,
-                $this->generateIntegerReference(),
-                'Debité pour achat',
-                'effectué',
-                'COC'
-            );
-            $this->createTransaction(
-                $this->user,
-                $this->fournisseur->id ?? null,
-                'Réception',
-                $requiredAmount,
-                $this->generateIntegerReference(),
-                'Réception pour achat',
-                'effectué',
-                'COC'
-            );
-
-            // Calcul des commissions
-            $commissions = $this->achatdirect->montantTotal - $requiredAmount;
-
-            // Paiement des commissions aux parrains
-            $commissionService->handleCommissions($commissions, $this->fournisseur->parrain);
-
-            // Préparer les données pour le fournisseur
-            $dataFournisseur = [
-                'code_unique' => $this->achatdirect->code_unique,
-                'id' => $this->achatdirect->id ?? null,
-                'idProd' => $this->produit->id ?? null,
-                'title' => 'Commande récupérée avec succès',
-                'description' => 'Votre commande a été récupérée avec succès. Merci de votre confiance !',
-            ];
-
-            if ($this->fournisseur) {
-                Notification::send($this->fournisseur, new Confirmation($dataFournisseur));
-                event(new NotificationSent($this->fournisseur));
-
-                Log::info('Notification envoyée au fournisseur', ['fournisseurId' => $this->fournisseur->id, 'code' => $this->codeVerification]);
-            }
-
-            if ($this->userId) {
-                Notification::send($this->userId, new Confirmation($dataFournisseur));
-            } else {
-                Log::warning("Fournisseur introuvable pour l'achat direct ID : " . $this->achatdirect->id);
-            }
-
-
-
-            DB::commit(); // Valide la transaction
-        } catch (Exception $e) {
-            DB::rollBack(); // Annule les modifications en cas d'erreur
-            Log::error('Erreur lors du traitement de la livraison.', [
-                'message' => $e->getMessage(),
-                'user_id' => $this->userWallet->user_id,
-                'required_amount' => $requiredAmount
-            ]);
-            session()->flash('error', 'Une erreur s\'est produite lors du traitement de la livraison.');
-        }
-    }
-
-
     public function mainleve()
     {
         DB::beginTransaction();
@@ -322,9 +209,20 @@ class CountdownNotificationAd extends Component
             $livreurCode = random_int(1000, 9999);
 
             if (!$this->livreur && $this->notification->data['type_achat'] == 'Take Away') {
-                $this->retait_magasin();
-            } else {
+                $data = [
+                    'notification' => $this->notification,
+                    'user' => $this->user,
+                    'fournisseur' => $this->fournisseur,
+                    'userWalletFournisseur' => $this->userWalletFournisseur,
+                    'achatdirect' => $this->achatdirect,
+                    'produit' => $this->produit,
+                    'userId' => $this->userId,
+                    'codeVerification' => $this->codeVerification
+                ];
 
+                $service = new RetraitMagasinService($data);
+                $service->retraitMagasin();
+            } else {
 
                 // Préparer les données pour le livreur
                 $dataLivreur = [
@@ -348,7 +246,6 @@ class CountdownNotificationAd extends Component
             $this->notification->update(['reponse' => 'mainleveclient']);
             // Réinitialisation et fermeture du modal
             $this->reset('showMainlever');
-            session()->flash('message', 'Livraison marquée comme livrée.');
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -361,42 +258,6 @@ class CountdownNotificationAd extends Component
         }
     }
 
-
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
-    }
-    protected function generateIntegerReference(): int
-    {
-        // Récupère l'horodatage en millisecondes
-        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
-
-        // Retourne l'horodatage comme entier
-        return (int) $timestamp;
-    }
-    protected function createTransactionAdmin(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_admin_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->status = $status;
-        $transaction->type_compte = $type_compte;
-
-        $transaction->save();
-    }
 
     public function render()
     {

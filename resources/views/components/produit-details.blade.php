@@ -50,18 +50,24 @@
 
                         <!-- Thumbnail Images -->
                         <div class="flex justify-center space-x-4 xs:space-x-1">
-                            <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd1) }}')"
-                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
-                                src="{{ asset('post/all/' . $produit->photoProd1) }}" alt="Thumbnail 1">
-                            <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd2) }}')"
-                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
-                                src="{{ asset('post/all/' . $produit->photoProd2) }}" alt="Thumbnail 2">
-                            <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd3) }}')"
-                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
-                                src="{{ asset('post/all/' . $produit->photoProd3) }}" alt="Thumbnail 3">
-                            <img onclick="changeImage('{{ asset('post/all/' . $produit->photoProd4) }}')"
-                                class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
-                                src="{{ asset('post/all/' . $produit->photoProd4) }}" alt="Thumbnail 4">
+                            @php
+                                $productPhotos = [
+                                    1 => $produit->photoProd1 ?? null,
+                                    2 => $produit->photoProd2 ?? null,
+                                    3 => $produit->photoProd3 ?? null,
+                                    4 => $produit->photoProd4 ?? null,
+                                ];
+                            @endphp
+
+                            <div class="product-thumbnails flex gap-2">
+                                @foreach ($productPhotos as $index => $photo)
+                                    @if ($photo)
+                                        <img onclick="changeImage('{{ asset('post/all/' . $photo) }}')"
+                                            class="w-20 h-20 object-cover cursor-pointer border-2 border-gray-300 rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
+                                            src="{{ asset('post/all/' . $photo) }}" alt="Thumbnail {{ $index }}">
+                                    @endif
+                                @endforeach
+                            </div>
                         </div>
                     </div>
 

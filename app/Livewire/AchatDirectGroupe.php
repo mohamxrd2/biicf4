@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Promir;
+use App\Services\generateIntegerReference;
+use App\Services\generateUniqueReference;
 use Livewire\Component;
 use App\Models\ProduitService;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +20,7 @@ use App\Models\gelement;
 use App\Models\UserPromir;
 use App\Notifications\AchatBiicf;
 use App\Notifications\Confirmation;
+use App\Services\TransactionService;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +41,7 @@ class AchatDirectGroupe extends Component
     public $dayPeriod = "";
     public $dayPeriodFin = "";
 
-    public  $produitId, $produit, $userId, $userTrader, $nameProd, $userSender, $userBalance, $totalCost, $userInPromir, $code_unique, $type, $dateTard, $dateTot, $timeStart, $timeEnd, $photoProd, $idProd, $prix;
+    public $userWallet, $produitId, $produit, $userId, $userTrader, $nameProd, $userSender, $userBalance, $totalCost, $userInPromir, $code_unique, $type, $dateTard, $dateTot, $timeStart, $timeEnd, $photoProd, $idProd, $prix;
     public $isButtonDisabled = false;
     public $isButtonHidden = false;
     public $currentPage = 'achat';
@@ -64,14 +67,15 @@ class AchatDirectGroupe extends Component
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionné
 
         // Récupérer le portefeuille de l'utilisateur
-        $userWallet = Wallet::where('user_id', $this->userId)->first();
+        $this->userWallet = Wallet::where('user_id', $this->userId)->first();
 
         // Assume user balance is fetched from the authenticated user
-        $this->userBalance = $userWallet ?? 0;
+        $this->userBalance = $this->userWallet ?? 0;
         $this->totalCost = (int)$this->quantité * $this->prix;
 
         $this->userInPromir = Promir::where('user_id', Auth::id())->first();
     }
+
     public function updatedQuantité()
     {
 
@@ -103,16 +107,11 @@ class AchatDirectGroupe extends Component
             $this->isButtonDisabled = false;
         }
     }
-    protected function generateUniqueReference()
-    {
-        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
-    }
 
     public function AchatDirectForm()
     {
         // Valider les données
         $validated = $this->validateData();
-
         if ($validated === false) {
             return; // Arrête l'exécution si la validation échoue
         }
@@ -125,51 +124,51 @@ class AchatDirectGroupe extends Component
         }
 
         $montantTotal = $this->totalCost;
-        $userWallet = $this->getUserWallet($userId);
 
-        $this->updatedQuantité();
+        // $this->updatedQuantité();
         // Vérifier si l'option sélectionnée est vide
         if (empty($this->selectedOption)) {
             $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');
+            return; // Arrête l'exécution si l'option n'est pas sélectionnée
         }
+
         // Commencer la transaction
         DB::beginTransaction();
         try {
-            $codeUnique = $this->generateUniqueReference();
+            // Utilisation :
+            $referenceService = new GenerateUniqueReference();
+            $codeUnique = $referenceService->generate();
             if (!$codeUnique) {
                 throw new \Exception('Code unique non généré.');
             }
 
             // Traiter l'achat
             $achat = $this->createPurchase($validated, $montantTotal, $codeUnique);
+
             // Vérification de l'existence de l'achat dans les transactions gelées
             gelement::create([
                 'reference_id' => $codeUnique,
-                'id_wallet' => $userWallet->id,
+                'id_wallet' => $this->userWallet->id,
                 'amount' => $montantTotal,
             ]);
 
             // Mettre à jour le portefeuille
-            $this->updateWalletBalance($userWallet, $montantTotal);
-
-
+            $this->userWallet->decrement('balance', $montantTotal);
 
             // Créer les transactions
-            $reference_id = $this->generateIntegerReference();
+            $reference_service = new generateIntegerReference();
+            $reference_id = $reference_service->generate();
+            // Suppression du dd() qui stoppait l'exécution
+
             $description = $this->type === 'Produit'
                 ? 'Gele Pour Achat de ' . $validated['nameProd']
                 : 'Gele Pour Service de ' . $validated['nameProd'];
 
-            $this->createTransaction(
-                $userId,
-                $validated['userTrader'],
-                'Gele',
-                $montantTotal,
-                $reference_id,
-                $description,
-                'effectué',
-                'COC'
-            );
+            $TransactionService = new TransactionService();
+            // Ici vous devez probablement appeler une méthode du TransactionService
+            // Par exemple:
+            $TransactionService->createTransaction($userId, $this->userTrader, $this->type, $montantTotal,  $reference_id, $description, 'COC');
+
             // Gérer les notifications
             $this->sendNotifications($validated, $achat, $codeUnique);
 
@@ -327,15 +326,8 @@ class AchatDirectGroupe extends Component
         return true;
     }
 
-    private function getUserWallet($userId)
-    {
-        return Wallet::where('user_id', $userId)->first();
-    }
 
-    private function updateWalletBalance($userWallet, $montantTotal)
-    {
-        $userWallet->decrement('balance', $montantTotal);
-    }
+
 
     private function createPurchase($validated, $montantTotal, $codeUnique)
     {
@@ -387,29 +379,6 @@ class AchatDirectGroupe extends Component
         $owner = User::find($validated['userTrader']);
         Notification::send($owner, new AchatBiicf($achatUser));
         event(new NotificationSent($owner));
-    }
-
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
-    }
-
-    protected function generateIntegerReference(): int
-    {
-        // Récupère l'horodatage en millisecondes
-        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
-
-        // Retourne l'horodatage comme entier
-        return (int) $timestamp;
     }
 
     public function credit()
