@@ -101,6 +101,8 @@ class CountdownNotificationAd extends Component
 
     public function toggleComponent()
     {
+        // Simulation d'un délai (à supprimer dans un environnement de production)
+        sleep(1); // Simuler un délai de 1 seconde (PHP)
         $this->showMainlever = true;
     }
     public function getNotificationStatus($response)
@@ -199,7 +201,6 @@ class CountdownNotificationAd extends Component
         }
     }
 
-
     private function retait_magasin()
     {
         $commissionService = new CommissionService();
@@ -226,6 +227,7 @@ class CountdownNotificationAd extends Component
 
             // Retirer le montant du gel
             $existingGelement->amount -= $requiredAmount;
+            $existingGelement->status = 'OK';
             $existingGelement->save();
 
             // met a jour le portefeuille de l'Fournisseur
@@ -349,6 +351,7 @@ class CountdownNotificationAd extends Component
             session()->flash('message', 'Livraison marquée comme livrée.');
             DB::commit();
         } catch (Exception $e) {
+            DB::rollBack();
             // Gérer les exceptions générales
             Log::error('Erreur lors de la validation', [
                 'message' => $e->getMessage(),

@@ -127,7 +127,7 @@
                     @enderror
 
 
-                    <div class="text-center mt-3">
+                    {{-- <div class="text-center mt-3">
                         @if($userInPromir)
                             <!-- Afficher le bouton si l'utilisateur est dans la table Promir -->
                             <button wire:click="credit" wire:loading.attr="disabled"
@@ -146,7 +146,7 @@
                                 </a>
                             </div>
                         @endif
-                    </div>
+                    </div> --}}
 
 
                     <div class="flow-root">

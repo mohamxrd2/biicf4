@@ -75,6 +75,7 @@ class AjoutProduitServices extends Component
     public function updatedSearchTerm()
     {
         $this->produits = ProduitService::where('name', 'like', '%' . $this->searchTerm . '%')
+            ->Where('statuts', 'Accepté')
             ->orWhere('name', 'like', '%' . $this->searchTerm . '%')
             ->get();
     }

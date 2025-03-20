@@ -109,16 +109,17 @@ class CommissionService
                 'admin_id' => 1,
                 'commissions' => $commissions,
             ]);
-            
-            $transactionService->createTransaction(
-                auth()->id(),
-                1, // ID de l'admin
-                'Commission',
-                $commissions,
-                $this->generateIntegerReference(),
-                'Commission de BICF',
-                'COC'
-            );
+
+            $transaction = new Transaction();
+            $transaction->sender_user_id = auth()->id();
+            $transaction->receiver_admin_id = 1;
+            $transaction->type = 'Commission';
+            $transaction->amount = $commissions;
+            $transaction->reference_id = $this->generateIntegerReference();
+            $transaction->description = 'Commission de BICF';
+            $transaction->type_compte = 'COC';
+            $transaction->status = 'effectué';
+            $transaction->save();
 
         } catch (Exception $e) {
             Log::error('Erreur lors de la distribution à l\'admin:', [
