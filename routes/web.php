@@ -157,10 +157,10 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('notification', Notification::class)->name('biicf.notif');
         Route::get('notification/detail/{id}', NotificationDetail::class)->name('notification.show');
 
-        // Route::get('test-queue', function () {
-        //     TestQueueJob::dispatch();
-        //     return 'Job dispatché !';
-        // });
+        Route::get('test-queue', function () {
+            TestQueueJob::dispatch();
+            return 'Job dispatché !';
+        });
 
         Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
         Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
