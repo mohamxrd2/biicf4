@@ -27,25 +27,8 @@ class LivraisonAchatdirect extends Component
     public $oldestComment;
     public $oldestCommentDate;
     public $serverTime;
-    public $quantite;
-    public $idProd;
-    public $userSender;
-    public $code_livr;
-    public $prixProd;
-    public $id_trader;
-    public $prixTrade;
-    public $user;
-    public $commentCount;
-    public $produit, $nombreParticipants, $achatdirect;
-    public $Valuecode_unique;
-    public $prixLePlusBas;
-    public $offreIniatiale;
-    public $time;
-    public $error;
-    public $timestamp;
-    public $lastActivity;
-    public $isNegociationActive;
-    public $usersLocations;
+
+    public $commentCount, $produit, $nombreParticipants, $achatdirect, $Valuecode_unique, $prixLePlusBas, $offreIniatiale, $time, $error, $timestamp, $lastActivity, $isNegociationActive, $usersLocations, $quantite, $idProd, $userSender, $code_livr, $prixProd, $id_trader, $prixTrade, $user;
     protected $listeners = ['negotiationEnded' => '$refresh'];
 
     public function mount($id)
@@ -102,7 +85,7 @@ class LivraisonAchatdirect extends Component
                 break;
             default:
                 $this->usersLocations = collect([$this->achatdirect->userTraderI])
-                    ->map(function($user) {
+                    ->map(function ($user) {
                         return (object)[
                             'localite' => $user->commune
                         ];
@@ -156,6 +139,7 @@ class LivraisonAchatdirect extends Component
             );
             return;
         }
+        
         DB::beginTransaction();
         try {
             // Récupérer d'abord l'offre initiale pour la validation

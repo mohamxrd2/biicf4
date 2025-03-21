@@ -1,7 +1,7 @@
 <div>
     @if ($showMainlever)
         @include('biicf.components.mainlevePayment')
-    @elseif($this->notification->reponse)
+    @elseif($notification->reponse)
         <div class="max-w-4xl mx-auto mb-8">
             <div class="bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.01] transition-all duration-300">
                 <div class="text-center">

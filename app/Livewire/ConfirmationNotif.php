@@ -46,7 +46,7 @@ class ConfirmationNotif extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $id = Auth::id();
         $this->user = User::findOrFail($id);
-        $this->produit = ProduitService::findOrFail($this->notification->data['idProd']);
+        $this->produit = $this->notification->data['idProd'] ? ProduitService::findOrFail($this->notification->data['idProd']) : null;
         $this->userWallet = Wallet::where('user_id', $id)->first();
     }
     public function CommandeAccepter()

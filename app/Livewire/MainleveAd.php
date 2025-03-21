@@ -11,6 +11,7 @@ use App\Notifications\mainleveAd as NotificationsMainleveAd;
 use App\Notifications\mainleveclient;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
@@ -32,6 +33,7 @@ class MainleveAd extends Component
     public $quantite;
     public $qualite;
     public $diversite;
+    public $notificationSent = false;
     public $matine; // Ajoutez cette propriété publique
     public $livreur; // Ajoutez cette propriété publique
     public $user; // Ajoutez cette propriété publique
@@ -87,6 +89,12 @@ class MainleveAd extends Component
 
     public function sendNotification($userId)
     {
+        // Vérifier si l'achat a déjà été validé
+        if ($this->notification->type_achat) {
+            session()->flash('error', 'Cette action a déjà été effectuée.');
+            return;
+        }
+
         $fournisseurCode = $this->notification->data['livreurCode'];
 
         $dataFournisseur = [
@@ -101,11 +109,24 @@ class MainleveAd extends Component
             'description' => 'Remettez le colis au livreur.',
         ];
 
-        $user = User::find($userId);
-        Notification::send($user, new NotificationsMainleveAd($dataFournisseur));
-        event(new NotificationSent($user));
-        session()->flash('success', 'Notification envoyée au fournisseur');
+        DB::beginTransaction();
+        try {
+            $user = User::find($userId);
+            Notification::send($user, new NotificationsMainleveAd($dataFournisseur));
+            event(new NotificationSent($user));
+
+            // Mettre à jour type_achat à true après envoi
+            $this->notification->update(['type_achat' => 'block']);
+
+            session()->flash('success', 'Notification envoyée au fournisseur.');
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage());
+        }
     }
+
+
 
     public function toggleComponent()
     {
