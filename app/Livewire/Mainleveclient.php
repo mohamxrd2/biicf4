@@ -159,10 +159,10 @@ class Mainleveclient extends Component
         $prixTrade = $this->notification->data['prixTrade'];
         $valeurGelement = $this->gelement->amount;
 
-        $interetFournisseur = ($valeurGelement - $prixTrade) * 0.01;
-        $montantPourFournisseur = ($valeurGelement - $prixTrade) - $interetFournisseur;
+        $interetFournisseur = $this->achatdirect->montantTotal * 0.1;
+        $montantPourFournisseur = $this->achatdirect->montantTotal - $interetFournisseur;
 
-        $interetLivreur = $prixTrade * 0.01;
+        $interetLivreur = $prixTrade * 0.1;
         $montantPourLivreur = $prixTrade - $interetLivreur;
 
         $totalInterets = $interetFournisseur + $interetLivreur;

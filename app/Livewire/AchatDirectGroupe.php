@@ -327,8 +327,6 @@ class AchatDirectGroupe extends Component
     }
 
 
-
-
     private function createPurchase($validated, $montantTotal, $codeUnique)
     {
         return AchatDirectModel::create([

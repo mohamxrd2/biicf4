@@ -21,11 +21,11 @@
                             <ul class="space-y-3">
                                 <li class="flex justify-between">
                                     <span class="text-gray-600">Référence</span>
-                                    <span class="font-medium">{{ session('payment_details.reference') ?? 'N/A' }}</span>
+                                    <span class="font-medium">{{ $gelement->reference_id ?? 'N/A' }}</span>
                                 </li>
                                 <li class="flex justify-between">
                                     <span class="text-gray-600">Montant</span>
-                                    <span class="font-medium">{{ session('payment_details.amount') ?? 'N/A' }}
+                                    <span class="font-medium">{{ $gelement->amount ?? 'N/A' }}
                                         FCFA</span>
                                 </li>
                                 <li class="flex justify-between">

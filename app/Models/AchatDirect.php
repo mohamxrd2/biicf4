@@ -20,6 +20,7 @@ class AchatDirect extends Model
         'message',
         'localite',
         'type_achat',
+        'details_paiement',
         'code_unique',
         'timeStart',
         'timeEnd',
