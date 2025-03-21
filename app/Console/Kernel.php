@@ -46,9 +46,6 @@ class Kernel extends ConsoleKernel
         }
     }
 
-    protected $commands = [
-        \App\Console\Commands\MonitorWorker::class,
-    ];
 
     /**
      * Register the commands for the application.

@@ -97,12 +97,24 @@ class MonitorWorker extends Command
         $stopProcess = new Process(['php', base_path('artisan'), 'queue:restart']);
         $stopProcess->run();
 
-        // Lancer un nouveau worker
-        $startProcess = new Process(['php', base_path('artisan'), 'queue:work', '--tries=3', '--timeout=90']);
-        $startProcess->setTimeout(60);
+        // Lancer un nouveau worker (correction de la commande)
+        $startProcess = new Process([
+            'php',
+            base_path('artisan'),
+            'queue:work',
+            '--tries=3',
+            '--timeout=90'
+        ]);
+
+        // Exécuter en arrière-plan correctement
+        $startProcess->setOptions(['create_new_console' => true]);
+        $startProcess->disableOutput();
         $startProcess->start();
 
-        if ($startProcess->isRunning()) {
+        // Attendre un court moment pour vérifier si le processus a bien démarré
+        sleep(2);
+
+        if ($this->isWorkerRunning()) {
             $this->info('✅ Worker redémarré avec succès.');
             Log::info('✅ Worker redémarré avec succès.');
         } else {
