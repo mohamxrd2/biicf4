@@ -25,100 +25,100 @@ class Profile extends Component
         $this->name = $this->user->name;
         $this->username = $this->user->username;
         $this->phonenumber = $this->user->phone;
-        // $this->liaison_reussie = Promir::where('user_id', Auth::id())->exists();; // Mettre à true si la liaison est réussie
+        $this->liaison_reussie = Promir::where('user_id', Auth::id())->exists();; // Mettre à true si la liaison est réussie
 
     }
 
-    // // Mise à jour en temps réel après liaison
-    // public function mettreAJourLiaison()
-    // {
-    //     $this->liaison_reussie = true;
-    // }
-    // private function separerIndicatif($numero)
-    // {
-    //     $client = new Client();
+    // Mise à jour en temps réel après liaison
+    public function mettreAJourLiaison()
+    {
+        $this->liaison_reussie = true;
+    }
+    private function separerIndicatif($numero)
+    {
+        $client = new Client();
 
-    //     try {
-    //         // Récupérer l'indicatif téléphonique à partir du pays de l'utilisateur
-    //         $response = $client->get("https://restcountries.com/v3.1/alpha/{$this->user->country}");
-    //         $data = json_decode($response->getBody()->getContents(), true);
+        try {
+            // Récupérer l'indicatif téléphonique à partir du pays de l'utilisateur
+            $response = $client->get("https://restcountries.com/v3.1/alpha/{$this->user->country}");
+            $data = json_decode($response->getBody()->getContents(), true);
 
-    //         // Extraire l'indicatif
-    //         $indicatif = $data[0]['idd']['root'] ?? null;
-    //         if (isset($data[0]['idd']['suffixes']) && is_array($data[0]['idd']['suffixes'])) {
-    //             $indicatif .= $data[0]['idd']['suffixes'][0]; // Certains pays ont des suffixes
-    //         }
+            // Extraire l'indicatif
+            $indicatif = $data[0]['idd']['root'] ?? null;
+            if (isset($data[0]['idd']['suffixes']) && is_array($data[0]['idd']['suffixes'])) {
+                $indicatif .= $data[0]['idd']['suffixes'][0]; // Certains pays ont des suffixes
+            }
 
-    //         // Vérifier si le numéro commence par l'indicatif et le retirer
-    //         if ($indicatif && strpos($numero, $indicatif) === 0) {
-    //             $numero = substr($numero, strlen($indicatif));
-    //         }
+            // Vérifier si le numéro commence par l'indicatif et le retirer
+            if ($indicatif && strpos($numero, $indicatif) === 0) {
+                $numero = substr($numero, strlen($indicatif));
+            }
 
-    //         return [
-    //             'indicatif' => $indicatif,
-    //             'numero_principal' => $numero
-    //         ];
-    //     } catch (\Exception $e) {
-    //         return [
-    //             'indicatif' => null,
-    //             'numero_principal' => $numero
-    //         ];
-    //     }
-    // }
+            return [
+                'indicatif' => $indicatif,
+                'numero_principal' => $numero
+            ];
+        } catch (\Exception $e) {
+            return [
+                'indicatif' => null,
+                'numero_principal' => $numero
+            ];
+        }
+    }
 
-    // public function LiaisonPromir()
-    // {
-    //     $client = new Client();
-    //     $response = $client->get('http://127.0.0.1:8001/api/users/all');
-    //     $users = json_decode($response->getBody()->getContents(), true);
+    public function LiaisonPromir()
+    {
+        $client = new Client();
+        $response = $client->get('http://127.0.0.1:8001/api/users/all');
+        $users = json_decode($response->getBody()->getContents(), true);
 
-    //     // Séparer le numéro de l'utilisateur actuel
-    //     $numeroRecherche = $this->user->phone;
-    //     $numeroData = $this->separerIndicatif($numeroRecherche);
-    //     $numeroPrincipal = $numeroData['numero_principal'];
+        // Séparer le numéro de l'utilisateur actuel
+        $numeroRecherche = $this->user->phone;
+        $numeroData = $this->separerIndicatif($numeroRecherche);
+        $numeroPrincipal = $numeroData['numero_principal'];
 
-    //     $numeroExiste = false;
-    //     $userTrouve = null;
+        $numeroExiste = false;
+        $userTrouve = null;
 
-    //     // Recherche de l'utilisateur dans la liste
-    //     foreach ($users['users'] as $user) {
-    //         $numeroUserData = $this->separerIndicatif($user['phone_number']);
-    //         if ($numeroUserData['numero_principal'] === $numeroPrincipal) {
-    //             $numeroExiste = true;
-    //             $userTrouve = $user;
-    //             break;
-    //         }
-    //     }
+        // Recherche de l'utilisateur dans la liste
+        foreach ($users['users'] as $user) {
+            $numeroUserData = $this->separerIndicatif($user['phone_number']);
+            if ($numeroUserData['numero_principal'] === $numeroPrincipal) {
+                $numeroExiste = true;
+                $userTrouve = $user;
+                break;
+            }
+        }
 
-    //     if ($numeroExiste) {
-    //         // Vérifier si le compte a au moins 3 mois d'ancienneté
-    //         if ($userTrouve['mois_depuis_creation'] >= 3) {
-    //             // Si l'utilisateur existe et est éligible, insérer dans `promir`
-    //             Promir::create([
-    //                 'user_id' => Auth::id(),
-    //                 'name' => $userTrouve['name'],
-    //                 'last_stname' => $userTrouve['last_stname'],
-    //                 'user_name' => $userTrouve['user_name'],
-    //                 'email' => $userTrouve['email'],
-    //                 'phone_number' => $userTrouve['phone_number'],
-    //                 'system_client_id' => $userTrouve['system_client_id'],
-    //                 'mois_depuis_creation' => $userTrouve['mois_depuis_creation'],
-    //             ]);
+        if ($numeroExiste) {
+            // Vérifier si le compte a au moins 3 mois d'ancienneté
+            if ($userTrouve['mois_depuis_creation'] >= 3) {
+                // Si l'utilisateur existe et est éligible, insérer dans `promir`
+                Promir::create([
+                    'user_id' => Auth::id(),
+                    'name' => $userTrouve['name'],
+                    'last_stname' => $userTrouve['last_stname'],
+                    'user_name' => $userTrouve['user_name'],
+                    'email' => $userTrouve['email'],
+                    'phone_number' => $userTrouve['phone_number'],
+                    'system_client_id' => $userTrouve['system_client_id'],
+                    'mois_depuis_creation' => $userTrouve['mois_depuis_creation'],
+                ]);
 
-    //             $this->dispatch('liaisonReussie');
-    //         } else {
-    //             $this->dispatch(
-    //                 'formSubmitted',
-    //                 "Votre compte doit avoir au moins 3 mois d'ancienneté pour être lié."
-    //             );
-    //         }
-    //     } else {
-    //         $this->dispatch(
-    //             'formSubmitted',
-    //             "Le numéro de téléphone {$numeroRecherche} n'existe pas dans la liste."
-    //         );
-    //     }
-    // }
+                $this->dispatch('liaisonReussie');
+            } else {
+                $this->dispatch(
+                    'formSubmitted',
+                    "Votre compte doit avoir au moins 3 mois d'ancienneté pour être lié."
+                );
+            }
+        } else {
+            $this->dispatch(
+                'formSubmitted',
+                "Le numéro de téléphone {$numeroRecherche} n'existe pas dans la liste."
+            );
+        }
+    }
 
 
     public function updateProfile()

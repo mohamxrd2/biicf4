@@ -73,7 +73,7 @@ class AchatDirectGroupe extends Component
         $this->userBalance = $this->userWallet ?? 0;
         $this->totalCost = (int)$this->quantité * $this->prix;
 
-        // $this->userInPromir = Promir::where('user_id', Auth::id())->first();
+        $this->userInPromir = Promir::where('user_id', Auth::id())->first();
     }
 
     public function updatedQuantité()
@@ -125,7 +125,7 @@ class AchatDirectGroupe extends Component
 
         $montantTotal = $this->totalCost;
 
-        // $this->updatedQuantité();
+        $this->updatedQuantité();
         // Vérifier si l'option sélectionnée est vide
         if (empty($this->selectedOption)) {
             $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');

@@ -37,7 +37,7 @@
             <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    
+
                     <!-- Champ de quantité -->
                     <div class="mb-4">
                         <h2 class="text-lg font-bold mb-2">Quantité du produit/service</h2>
@@ -128,7 +128,7 @@
                     @enderror
 
 
-                    {{-- <div class="text-center mt-3">
+                    <div class="text-center mt-3">
                         @if($userInPromir)
                             <!-- Afficher le bouton si l'utilisateur est dans la table Promir -->
                             <button wire:click="credit" wire:loading.attr="disabled"
@@ -147,7 +147,7 @@
                                 </a>
                             </div>
                         @endif
-                    </div> --}}
+                    </div>
 
 
                     <div class="flow-root">
