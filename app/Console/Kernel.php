@@ -45,6 +45,11 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:monitor')->cron('* * * * *');
         }
     }
+
+    protected $commands = [
+        \App\Console\Commands\MonitorWorker::class,
+    ];
+
     /**
      * Register the commands for the application.
      */
