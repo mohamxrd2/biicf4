@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 class MonitorWorker extends Command
 {
     protected $signature = 'app:monitor';
-    protected $description = 'Monitor the queue worker and restart if needed';
+    protected $description = 'Surveille le worker et le redémarre si nécessaire';
 
     public function handle()
     {
@@ -32,14 +32,14 @@ class MonitorWorker extends Command
     }
 
     /**
-     * Vérifie si un worker est actif
+     * Vérifie si un worker est actif (compatible mutualisé)
      */
     private function isWorkerRunning(): bool
     {
-        $process = new Process(['pgrep', '-f', 'queue:work']);
+        $process = new Process(['ps', 'aux']);
         $process->run();
 
-        return $process->isSuccessful();
+        return str_contains($process->getOutput(), 'queue:work');
     }
 
     /**
@@ -81,12 +81,20 @@ class MonitorWorker extends Command
         $stopProcess = new Process(['php', base_path('artisan'), 'queue:restart']);
         $stopProcess->run();
 
-        // Lancer un nouveau worker
-        $startProcess = new Process(['php', base_path('artisan'), 'queue:work', '--tries=3', '--timeout=90']);
+        // Lancer un nouveau worker avec nohup
+        $startProcess = new Process([
+            'nohup',
+            'php',
+            base_path('artisan'),
+            'queue:work',
+            '--tries=3',
+            '--timeout=90',
+            '> /dev/null 2>&1 &'
+        ]);
         $startProcess->setTimeout(60);
-        $startProcess->start();
+        $startProcess->run();
 
-        if ($startProcess->isRunning()) {
+        if ($this->isWorkerRunning()) {
             $this->info('✅ Worker redémarré avec succès.');
             Log::info('✅ Worker redémarré avec succès.');
         } else {
