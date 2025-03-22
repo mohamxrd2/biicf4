@@ -157,13 +157,16 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('notification', Notification::class)->name('biicf.notif');
         Route::get('notification/detail/{id}', NotificationDetail::class)->name('notification.show');
 
+        //TEST
         Route::get('test-queue', function () {
             TestQueueJob::dispatch();
             return 'Job dispatché !';
         });
-        Route::get('/test-abort', function () {
-            abort(500);
+        Route::get('/test-error/{code}', function ($code) {
+            abort($code);
         });
+        
+
         Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
         Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
 
