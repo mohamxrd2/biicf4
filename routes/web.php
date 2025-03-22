@@ -161,7 +161,9 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
             TestQueueJob::dispatch();
             return 'Job dispatché !';
         });
-
+        Route::get('/test-abort', function () {
+            abort(500);
+        });
         Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
         Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
 
