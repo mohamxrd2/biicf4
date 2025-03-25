@@ -223,7 +223,12 @@
 
 
                         <!-- Message pour les types de services -->
-                        @if ($type == 'Service')
+                        @if (!$produitExiste)
+                            <!-- Message si aucun utilisateur ne recherche ce produit -->
+                            <p class="text-center text-red-600">
+                                Aucun utilisateur n'a exprimé le besoin pour ce produit actuellement.
+                            </p>
+                        @elseif ($type == 'Service')
                             <p class="text-center text-gray-600">
                                 Le type est un service, il n'est pas possible de grouper avec les clients. Passez à une
                                 offre

@@ -38,7 +38,7 @@ class Appaeloffre extends Component
     public $appliedZoneValue, $quantité, $localite, $selectedOption, $dateTot, $dateTard;
     public $timeStart, $timeEnd, $dayPeriod, $dayPeriodFin, $id, $prodUsers = [];
     public $time, $error, $timestamp, $countdownId, $isRunning, $loading = false;
-    public $timeRemaining, $distinctCondProds, $lowestPricedProduct, $wallet, $type;
+    public $timeRemaining, $distinctCondProds, $lowestPricedProduct, $wallet, $type, $produitExiste;
 
     protected $recuperationTimer, $referenceService, $reference_service, $TransactionService;
 
@@ -81,6 +81,8 @@ class Appaeloffre extends Component
 
 
         $this->id = ProduitService::where('reference', $reference)->first();
+
+        $this->produitExiste = $this->id ? Consommation::where('reference', $this->id->reference)->exists() : false;
     }
 
 
@@ -193,23 +195,59 @@ class Appaeloffre extends Component
     }
     private function notifyUsers($appelOffre)
     {
+        $notified = false; // Variable pour vérifier si au moins un fournisseur est notifié
+
+        Log::info("Début de la notification pour l'appel d'offre ID: {$appelOffre->id}");
+
         foreach ($this->prodUsers as $prodUser) {
             $owner = User::find($prodUser);
 
             if ($owner) {
-                $data = [
-                    'id_appelOffre' => $appelOffre->id,
-                    'code_unique' => $appelOffre->code_unique,
-                    'type_achat' => $this->selectedOption,
-                ];
+                $produit = $owner->produitService()->first(); // Récupérer le premier produit lié
 
-                Notification::send($owner, new AppelOffre($data));
+                if (!$produit) {
+                    Log::warning("Utilisateur ID: {$owner->id} n'a pas de produit associé.");
+                    continue; // Passer à l'utilisateur suivant
+                }
 
-                // Déclencher un événement
-                event(new NotificationSent($owner));
+                $quantiteUserMin = $produit->qteProd_min ?? 0;
+                $quantiteUserMax = $produit->qteProd_max ?? 0;
+                $quantiteAppelOffre = $appelOffre->quantity;
+
+                Log::info("Utilisateur ID: {$owner->id}, Quantité min: {$quantiteUserMin}, Quantité max: {$quantiteUserMax}, Quantité requise: {$quantiteAppelOffre}");
+
+                // Vérifier si la quantité demandée est comprise entre min et max
+                if ($quantiteUserMin <= $quantiteAppelOffre && $quantiteAppelOffre <= $quantiteUserMax) {
+                    $data = [
+                        'id_appelOffre' => $appelOffre->id,
+                        'code_unique' => $appelOffre->code_unique,
+                        'type_achat' => $this->selectedOption,
+                    ];
+
+                    Notification::send($owner, new AppelOffre($data));
+                    event(new NotificationSent($owner));
+
+                    Log::info("Notification envoyée à l'utilisateur ID: {$owner->id}");
+
+                    $notified = true; // Un fournisseur a été notifié
+                } else {
+                    Log::info("Utilisateur ID: {$owner->id} ignoré, quantité hors de sa tranche.");
+                }
+            } else {
+                Log::warning("Utilisateur ID: {$prodUser} introuvable.");
             }
         }
+
+        // Vérifier si aucun fournisseur n'a été notifié
+        if (!$notified) {
+            $message = "Aucun fournisseur ne répond aux critères de quantité.";
+            session()->flash('warning', $message);
+            Log::warning($message);
+        }
+
+        Log::info("Fin de la notification pour l'appel d'offre ID: {$appelOffre->id}");
     }
+
 
     public function submitGroupe()
     {
@@ -379,52 +417,52 @@ class Appaeloffre extends Component
         $userId = Auth::id();
         DB::beginTransaction();
 
-        try {
-            // Étape 1 : Valider les données du formulaire
-            $validatedData = $this->validate([
-                'quantité' => 'required|integer|min:1',
-                'localite' => 'required|string|max:255',
-                'selectedOption' => 'required|string',
-                'dateTot' => 'required|date|before_or_equal:dateTard',
-                'dateTard' => 'required|date|after_or_equal:dateTot',
-            ]);
+        // try {
+        // Étape 1 : Valider les données du formulaire
+        $validatedData = $this->validate([
+            'quantité' => 'required|integer|min:1',
+            'localite' => 'required|string|max:255',
+            'selectedOption' => 'required|string',
+            'dateTot' => 'required|date|before_or_equal:dateTard',
+            'dateTard' => 'required|date|after_or_equal:dateTot',
+        ]);
 
-            $code_unique = $this->referenceService->generate();
+        $code_unique = $this->referenceService->generate();
 
-            // Étape 4 : Créer un appel d'offre et gérer les transactions
-            $appelOffre = $this->createAppelOffre($validatedData, $userId, $code_unique);
-            // Étape 5 : Gérer les notifications des utilisateurs
-            $this->notifyUsers($appelOffre);
+        // Étape 4 : Créer un appel d'offre et gérer les transactions
+        $appelOffre = $this->createAppelOffre($validatedData, $userId, $code_unique);
+        // Étape 5 : Gérer les notifications des utilisateurs
+        $this->notifyUsers($appelOffre);
 
-            $difference = $this->selectedOption == 'Delivery' ? 'appelOffreD' : 'appelOffreR';
-            $AppelOffreGrouper_id = 'id_appeloffre';
-            $id = $appelOffre->id;
+        $difference = $this->selectedOption == 'Delivery' ? 'appelOffreD' : 'appelOffreR';
+        $AppelOffreGrouper_id = 'id_appeloffre';
+        $id = $appelOffre->id;
 
-            $this->startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id);
+        $this->startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id);
 
-            // Étape 6 : Réinitialiser le formulaire
-            $this->reset([
-                'quantité',
-                'localite',
-                'selectedOption',
-                'dateTot',
-                'dateTard',
-                'timeStart',
-                'timeEnd',
-                'dayPeriod',
-                'dayPeriodFin',
-            ]);
+        // Étape 6 : Réinitialiser le formulaire
+        $this->reset([
+            'quantité',
+            'localite',
+            'selectedOption',
+            'dateTot',
+            'dateTard',
+            'timeStart',
+            'timeEnd',
+            'dayPeriod',
+            'dayPeriodFin',
+        ]);
 
-            // Confirmer la transaction
-            DB::commit();
+        // Confirmer la transaction
+        DB::commit();
 
-            $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
-        } catch (Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Erreur lors de la validation : ' . $e->getMessage());
-        } finally {
-            $this->loading = false;
-        }
+        $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
+        // } catch (Exception $e) {
+        //     DB::rollBack();
+        //     session()->flash('error', 'Erreur lors de la validation : ' . $e->getMessage());
+        // } finally {
+        //     $this->loading = false;
+        // }
     }
 
     public function render()
