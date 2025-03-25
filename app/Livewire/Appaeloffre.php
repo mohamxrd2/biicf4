@@ -228,6 +228,13 @@ class Appaeloffre extends Component
                     event(new NotificationSent($owner));
 
                     Log::info("Notification envoyée à l'utilisateur ID: {$owner->id}");
+                    // Notification pour l'utilisateur actuel
+                    Notification::send(auth()->user(), new Confirmation([
+                        'code_unique' => $this->referenceService->generate(),
+                        'Id' => $appelOffre->id,
+                        'title' => 'Confirmation de commande',
+                        'description' => 'Cliquez pour voir les détails.',
+                    ]));
 
                     $notified = true; // Un fournisseur a été notifié
                 } else {
@@ -274,7 +281,6 @@ class Appaeloffre extends Component
                 'selectedOption' => 'required|string|max:255',
                 'dateTot' => 'required|date|before_or_equal:dateTard',
                 'dateTard' => 'required|date|after_or_equal:dateTot',
-                'distinctSpecifications' => 'required|string|max:500',
                 'localite' => 'required|string|max:255',
                 'appliedZoneValue' => 'required|string|max:255',
                 'prodUsers' => 'required|array|min:1',
@@ -292,7 +298,7 @@ class Appaeloffre extends Component
                 'Livraison' => $validatedData['selectedOption'],
                 'dateTot' => $validatedData['dateTot'],
                 'dateTard' => $validatedData['dateTard'],
-                'specificity' => $validatedData['distinctSpecifications'],
+                // 'specificity' => $validatedData['distinctSpecifications'],
                 'localite' => $validatedData['localite'],
                 'image' => $validatedData['image'] ?? null,
                 'prodUsers' => json_encode($validatedData['prodUsers']),
@@ -322,14 +328,13 @@ class Appaeloffre extends Component
             $this->wallet->decrement('balance', $totalCost);
 
             // Enregistrer la transaction
-            $this->createTransaction(
+            $this->TransactionService->createTransaction(
                 $userId,
                 $userId,
                 'Gele',
                 $totalCost,
                 $this->reference_service->generate(),
                 'Gele pour groupage de ' . $validatedData['name'],
-                'effectué',
                 'COC'
             );
             Log::info('Transaction enregistrée.');
@@ -417,52 +422,52 @@ class Appaeloffre extends Component
         $userId = Auth::id();
         DB::beginTransaction();
 
-        // try {
-        // Étape 1 : Valider les données du formulaire
-        $validatedData = $this->validate([
-            'quantité' => 'required|integer|min:1',
-            'localite' => 'required|string|max:255',
-            'selectedOption' => 'required|string',
-            'dateTot' => 'required|date|before_or_equal:dateTard',
-            'dateTard' => 'required|date|after_or_equal:dateTot',
-        ]);
+        try {
+            // Étape 1 : Valider les données du formulaire
+            $validatedData = $this->validate([
+                'quantité' => 'required|integer|min:1',
+                'localite' => 'required|string|max:255',
+                'selectedOption' => 'required|string',
+                'dateTot' => 'required|date|before_or_equal:dateTard',
+                'dateTard' => 'required|date|after_or_equal:dateTot',
+            ]);
 
-        $code_unique = $this->referenceService->generate();
+            $code_unique = $this->referenceService->generate();
 
-        // Étape 4 : Créer un appel d'offre et gérer les transactions
-        $appelOffre = $this->createAppelOffre($validatedData, $userId, $code_unique);
-        // Étape 5 : Gérer les notifications des utilisateurs
-        $this->notifyUsers($appelOffre);
+            // Étape 4 : Créer un appel d'offre et gérer les transactions
+            $appelOffre = $this->createAppelOffre($validatedData, $userId, $code_unique);
+            // Étape 5 : Gérer les notifications des utilisateurs
+            $this->notifyUsers($appelOffre);
 
-        $difference = $this->selectedOption == 'Delivery' ? 'appelOffreD' : 'appelOffreR';
-        $AppelOffreGrouper_id = 'id_appeloffre';
-        $id = $appelOffre->id;
+            $difference = $this->selectedOption == 'Delivery' ? 'appelOffreD' : 'appelOffreR';
+            $AppelOffreGrouper_id = 'id_appeloffre';
+            $id = $appelOffre->id;
 
-        $this->startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id);
+            $this->startCountdown($code_unique, $difference, $AppelOffreGrouper_id, $id);
 
-        // Étape 6 : Réinitialiser le formulaire
-        $this->reset([
-            'quantité',
-            'localite',
-            'selectedOption',
-            'dateTot',
-            'dateTard',
-            'timeStart',
-            'timeEnd',
-            'dayPeriod',
-            'dayPeriodFin',
-        ]);
+            // Étape 6 : Réinitialiser le formulaire
+            $this->reset([
+                'quantité',
+                'localite',
+                'selectedOption',
+                'dateTot',
+                'dateTard',
+                'timeStart',
+                'timeEnd',
+                'dayPeriod',
+                'dayPeriodFin',
+            ]);
 
-        // Confirmer la transaction
-        DB::commit();
+            // Confirmer la transaction
+            DB::commit();
 
-        $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
-        // } catch (Exception $e) {
-        //     DB::rollBack();
-        //     session()->flash('error', 'Erreur lors de la validation : ' . $e->getMessage());
-        // } finally {
-        //     $this->loading = false;
-        // }
+            $this->dispatch('formSubmitted', "Demande d'appel d'offre effectuée avec succès.");
+        } catch (Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Erreur lors de la validation : ' . $e->getMessage());
+        } finally {
+            $this->loading = false;
+        }
     }
 
     public function render()

@@ -21,3 +21,6 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('countdown.{code_unique}', function ($user, $code_unique) {
     return true;
 });
+Broadcast::channel('comments.{code_unique}', function ($user, $code_unique) {
+    return true;
+});

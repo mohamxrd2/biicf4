@@ -33,33 +33,11 @@ class Appeloffre extends Component
     public $id;
     public $comments = [];
     public $oldestComment;
-    public $oldestCommentDate;
-    public $serverTime;
-    public $quantite;
-    public $idProd;
-    public $idsender;
-    public $prixProd;
-    public $localite;
-    public $specificite;
-    public $nameprod;
-    public $quantiteC;
-    public $difference;
-    public $id_trader;
-    public $prixTrade;
-    public $namefourlivr;
-    public $appeloffre;
-    public $commentCount;
-    public $nombreParticipants;
-    public $produit;
-    public $code_unique;
-    public $ServerTime;
+    public $oldestCommentDate, $serverTime, $quantite, $idProd, $idsender, $prixProd, $localite, $specificite;
+    public $nameprod, $quantiteC, $difference, $id_trader, $prixTrade, $namefourlivr, $appeloffre, $commentCount, $nombreParticipants, $produit, $code_unique, $ServerTime;
 
 
-    public $time;
-    public $error;
-    public $prixLePlusBas;
-    public $offreIniatiale;
-    public $timestamp;
+    public $time, $error, $prixLePlusBas, $offreIniatiale, $timestamp;
     protected $recuperationTimer;
     public $lastActivity;
     public $isNegociationActive;
@@ -68,7 +46,9 @@ class Appeloffre extends Component
     {
         $this->recuperationTimer = new RecuperationTimer();
     }
-    protected $listeners = ['negotiationEnded' => '$refresh'];
+    protected $listeners = [
+        'negotiationEnded' => '$refresh',
+    ];
 
     public function mount($id)
     {
@@ -92,7 +72,7 @@ class Appeloffre extends Component
         $this->listenForMessage();
     }
 
-    #[On('echo:comments,CommentSubmitted')]
+    #[On('echo:comments.{code_unique},CommentSubmitted')]
     public function listenForMessage()
     {
         // Déboguer pour vérifier la structure de l'événement
@@ -116,7 +96,6 @@ class Appeloffre extends Component
 
         $this->isNegociationActive = !$this->appeloffre->count;
 
-        // Assure
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
             $this->commentCount = $this->comments->count();
@@ -132,7 +111,7 @@ class Appeloffre extends Component
     public function commentFormLivr()
     {
 
-        // Vérifier si la négociation est terminée
+        //Vérifier si la négociation est terminée
         if ($this->appeloffre->count) {
             $this->dispatch(
                 'formSubmitted',
@@ -140,29 +119,27 @@ class Appeloffre extends Component
             );
             return;
         }
-
-        // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->code_unique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        // Valider les données avec une règle personnalisée
-        $validatedData = $this->validate([
-            'prixTrade' => [
-                'required',
-                'numeric',
-                function ($attribute, $value, $fail) use ($offreInitiale) {
-                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
-                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
-                    }
-                }
-            ]
-        ]);
+        
         DB::beginTransaction();
-
         try {
+            // Récupérer d'abord l'offre initiale pour la validation
+            $offreInitiale = Comment::where('code_unique', $this->code_unique)
+                ->whereNotNull('prixTrade')
+                ->orderBy('created_at', 'asc')
+                ->first();
 
+            // Valider les données avec une règle personnalisée
+            $validatedData = $this->validate([
+                'prixTrade' => [
+                    'required',
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($offreInitiale) {
+                        if ($offreInitiale && $value > $offreInitiale->prixTrade) {
+                            $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
+                        }
+                    }
+                ]
+            ]);
 
             $comment = Comment::create([
                 'prixTrade' => $this->prixTrade,
@@ -172,12 +149,13 @@ class Appeloffre extends Component
                 'id_sender' => json_encode($this->appeloffre->prodUsers),
             ]);
 
-            event(new CommentSubmitted($this->prixTrade,  $comment->id));
+            // Déclencher l'événement avec le commentaire
+            event(new CommentSubmitted($this->code_unique, $comment));
             $this->listenForMessage();
 
+            $this->reset(['prixTrade']);
             DB::commit();
 
-            $this->reset(['prixTrade']);
         } catch (Exception $e) {
             // Gérer l'exception, enregistrer l'erreur dans les logs et afficher un message d'erreur
             Log::error('Erreur lors de la soummission: ' . $e->getMessage());

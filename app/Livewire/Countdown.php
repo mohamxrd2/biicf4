@@ -54,7 +54,6 @@ class Countdown extends Component
             ->where('is_active', true)
             ->orderBy('created_at', 'asc')
             ->first();
-
         if ($activeCountdown) {
             if ($activeCountdown->end_time) {
                 $timeRemaining = max(0, $activeCountdown->end_time->diffInSeconds($this->timestamp));
@@ -77,7 +76,7 @@ class Countdown extends Component
                 case 'App\Notifications\livraisonAchatdirect':
                     if (isset($this->notification->data['achat_id'])) {
                         $this->achatdirect = AchatDirect::findOrFail($this->notification->data['achat_id']);
-                        $this->valueCodeUnique = ($this->achatdirect->type_achat === 'appelOffreGrouper' || $this->achatdirect->type_achat === 'OffreGrouper')
+                        $this->valueCodeUnique = ($this->achatdirect->type_achat === 'appelOffreGrouper' || $this->achatdirect->type_achat === 'OffreGrouper' || $this->achatdirect->type_achat === 'appelOffre')
                             ? ($this->notification->data['code_unique'] ?? null)
                             : $this->achatdirect->code_unique;
                         $this->etat = $this->achatdirect->count;

@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Comment;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -13,39 +12,26 @@ class CommentSubmitted implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $prix;
-    public $commentId;
-    public $timestamp;
+    public $code_unique;
+    public $comment;
 
-    /**
-     * Create a new event instance.
-     *
-     * @return void
-     */
-    public function __construct($prix, $commentId)
+    public function __construct($code_unique, $comment = null)
     {
-        $this->prix = $prix;
-        $this->commentId = $commentId;
-        $this->timestamp = now()->toIso8601String(); // Ajoute l'heure actuelle
-
+        $this->code_unique = $code_unique;
+        $this->comment = $comment;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return Channel|array
-     */
     public function broadcastOn()
     {
-        return new Channel('comments');
+        return new Channel("comments.{$this->code_unique}");
     }
 
     public function broadcastWith()
     {
         return [
-            'prix' => $this->prix,
-            'commentId' => $this->commentId,
-
+            'code_unique' => $this->code_unique,
+            'comment' => $this->comment ? $this->comment->toArray() : null,
+            'timestamp' => now()->toIso8601String()
         ];
     }
 }

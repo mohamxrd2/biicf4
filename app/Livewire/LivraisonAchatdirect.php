@@ -21,14 +21,11 @@ use Livewire\Component;
 
 class LivraisonAchatdirect extends Component
 {
-    public $notification;
-    public $id;
-    public $comments = [];
-    public $oldestComment;
-    public $oldestCommentDate;
-    public $serverTime;
+    public $notification, $id, $comments = [], $oldestComment, $oldestCommentDate, $serverTime;
 
-    public $commentCount, $produit, $nombreParticipants, $achatdirect, $Valuecode_unique, $prixLePlusBas, $offreIniatiale, $time, $error, $timestamp, $lastActivity, $isNegociationActive, $usersLocations, $quantite, $idProd, $userSender, $code_livr, $prixProd, $id_trader, $prixTrade, $user;
+    public $commentCount, $produit, $nombreParticipants, $achatdirect, $Valuecode_unique, $prixLePlusBas,
+        $offreIniatiale, $time, $error, $timestamp, $lastActivity, $isNegociationActive, $usersLocations,
+        $quantite, $idProd, $userSender, $code_livr, $prixProd, $id_trader, $prixTrade, $user;
     protected $listeners = ['negotiationEnded' => '$refresh'];
 
     public function mount($id)
@@ -62,14 +59,13 @@ class LivraisonAchatdirect extends Component
                 $this->Valuecode_unique = $this->achatdirect->code_unique;
         }
 
-        $countdown = Countdown::where('code_unique', $this->Valuecode_unique)
+        $countdown = Countdown::where('code_unique', $this->Valuecode_unique )
             ->where('is_active', false)
             ->first();
 
         if ($countdown && !$this->achatdirect->count) {
             $this->achatdirect->update(['count' => true]);
         }
-
         // Écouter les messages en temps réel (Livewire/AlpineJS ou autre)
         $this->listenForMessage();
     }
@@ -94,7 +90,7 @@ class LivraisonAchatdirect extends Component
         }
     }
 
-    #[On('echo:comments,CommentSubmitted')]
+    #[On('echo:comments.{Valuecode_unique},CommentSubmitted')]
     public function listenForMessage()
     {
         // Récupérer les commentaires
@@ -139,7 +135,7 @@ class LivraisonAchatdirect extends Component
             );
             return;
         }
-        
+
         DB::beginTransaction();
         try {
             // Récupérer d'abord l'offre initiale pour la validation
@@ -172,16 +168,15 @@ class LivraisonAchatdirect extends Component
                 'id_sender' => json_encode($this->achatdirect->userTrader),
             ]);
 
+
+            event(new CommentSubmitted($this->code_unique, $comment));
+            $this->listenForMessage();
+
             // Réinitialiser le champ du formulaire
             $this->reset(['prixTrade']);
 
-            broadcast(new CommentSubmitted($validatedData['prixTrade'],  $comment->id))->toOthers();
-            $this->listenForMessage();
-
             // Committer la transaction
             DB::commit();
-            // Optionnel: Ajouter une notification ou un message de succès
-            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
         } catch (\Exception $e) {
             // Annuler la transaction en cas d'erreur
             DB::rollBack();

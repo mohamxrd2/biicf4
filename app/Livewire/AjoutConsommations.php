@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\CategorieProduits_Servives;
 use App\Models\Consommation;
+use App\Models\ProduitService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -72,11 +73,17 @@ class AjoutConsommations extends Component
                 // Stocker les noms des catégories sélectionnées
                 $this->categorie = $categories->pluck('categorie_produit_services')->toArray();
 
-                // Update products based on selected categories
-                $this->produits = Consommation::whereIn('categorie_id', $this->selectedCategories)
+                // Récupérer les produits depuis Consommation
+                $produitsConsommation = Consommation::whereIn('categorie_id', $this->selectedCategories)
                     ->orderBy('reference')
-                    ->get()
-                    ->unique('reference'); // Ensure only unique references are taken
+                    ->get();
+                // Récupérer les produits depuis ProduitService
+                $produitsServices = ProduitService::whereIn('categorie_id', $this->selectedCategories)
+                    ->orderBy('reference')
+                    ->get();
+
+                // Fusionner les deux collections et assurer l'unicité des références
+                $this->produits = $produitsConsommation->merge($produitsServices)->unique('reference');
             } else {
                 $this->categorie = [];
                 $this->produits = collect(); // Aucune catégorie trouvée
@@ -90,19 +97,24 @@ class AjoutConsommations extends Component
     {
         $selectedProduct = Consommation::find($productId);
 
+        // Si non trouvé, chercher dans ProduitService
+        if (!$selectedProduct) {
+            $selectedProduct = ProduitService::find($productId);
+        }
+
         if ($selectedProduct) {
             // Remplir les propriétés avec les détails du produit sélectionné
             $this->categorie = $selectedProduct->categorie->categorie_produit_services;
             $this->reference = $selectedProduct->reference;
             $this->type = $selectedProduct->type;
             $this->name = $selectedProduct->name;
-            $this->conditionnement = $selectedProduct->conditionnement;
-            $this->format = $selectedProduct->format;
-            $this->origine = $selectedProduct->origine;
+            $this->conditionnement = $selectedProduct->conditionnement ?? $selectedProduct->condProd ;
+            $this->format = $selectedProduct->format ?? $selectedProduct->formatProd;
+            $this->origine = $selectedProduct->origine ;
 
 
-            $this->qualification = $selectedProduct->qalifServ;
-            $this->specialite = $selectedProduct->sepServ;
+            $this->qualification = $selectedProduct->qalifServ ?? $selectedProduct->experience ;
+            $this->specialite = $selectedProduct->sepServ ?? $selectedProduct->specialite;
             $this->descrip = $selectedProduct->description;
 
             $this->qteProd = '';
