@@ -241,10 +241,10 @@
                                     });
 
                                     // Si plusieurs éléments ont la valeur minimale, appliquer un autre critère (par exemple, en fonction d'un champ `autre_critere`)
-                                    if ($itemsWithMinValue->count() > 1) {
-                                        $selectedItem = $itemsWithMinValue->sortBy('created_at')->first(); // Trier par un autre critère et prendre le premier
-                                    } else {
-                                        $selectedItem = $itemsWithMinValue->first(); // S'il n'y a qu'un seul élément avec la valeur minimale
+if ($itemsWithMinValue->count() > 1) {
+    $selectedItem = $itemsWithMinValue->sortBy('created_at')->first(); // Trier par un autre critère et prendre le premier
+} else {
+    $selectedItem = $itemsWithMinValue->first(); // S'il n'y a qu'un seul élément avec la valeur minimale
                                     }
 
                                     // Vous pouvez maintenant utiliser $selectedItem comme résultat final
@@ -259,10 +259,10 @@
                                     });
 
                                     // Si plusieurs éléments ont la valeur maximale, appliquer un autre critère (par exemple, en fonction d'un champ 'autre_critere')
-                                    if ($itemsWithMaxValue->count() > 1) {
-                                        $selectedItem = $itemsWithMaxValue->sortByDesc('created_at')->first(); // Trier par un autre critère (ordre décroissant) et prendre le premier
-                                    } else {
-                                        $selectedItem = $itemsWithMaxValue->first(); // S'il n'y a qu'un seul élément avec la valeur maximale
+if ($itemsWithMaxValue->count() > 1) {
+    $selectedItem = $itemsWithMaxValue->sortByDesc('created_at')->first(); // Trier par un autre critère (ordre décroissant) et prendre le premier
+} else {
+    $selectedItem = $itemsWithMaxValue->first(); // S'il n'y a qu'un seul élément avec la valeur maximale
                                     }
 
                                     // Vous pouvez maintenant utiliser $selectedItem comme résultat final
@@ -375,15 +375,19 @@
                                                 <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                             @endforeach
 
-                                            <button
-                                                class="px-4 py-2 text-white bg-purple-500 rounded-lg shadow hover:bg-purple-600"
-                                                type="submit" @if ($distinctUserCount <= 1) disabled @endif>
-                                                @if ($distinctUserCount <= 1)
-                                                    Fournisseur insuffisant
-                                                @else
-                                                    Faire un appel d'offre
-                                                @endif
-                                            </button>
+                                            @if (!$appliedZoneValue)
+                                                <p class="text-red-600">Veuillez saisir une zone économique.</p>
+                                            @else
+                                                <button
+                                                    class="px-4 py-2 text-white bg-purple-500 rounded-lg shadow hover:bg-purple-600"
+                                                    type="submit" @if ($distinctUserCount <= 1) disabled @endif>
+                                                    @if ($distinctUserCount <= 1)
+                                                        Fournisseur insuffisant
+                                                    @else
+                                                        Faire un appel d'offre
+                                                    @endif
+                                                </button>
+                                            @endif
                                         </form>
                                     </div>
                                     @if ($distinctUserCount <= 1)
@@ -523,21 +527,27 @@ if ($itemsWithMaxValue->count() > 1) {
                                         <input type="hidden" name="type" value="{{ $type }}">
                                         <input type="hidden" name="lowestPricedProduct" value="{{ $lowestPrice }}">
                                         <input type="hidden" name="reference" value="{{ $reference }}">
-                                        <input type="hidden" name="selectedItemin" value="{{ $selectedItem->qteProd_min }}">
-                                        <input type="hidden" name="selectedItemax" value="{{ $selectedItem->qteProd_max }}">
+                                        <input type="hidden" name="selectedItemin"
+                                            value="{{ $selectedItem->qteProd_min }}">
+                                        <input type="hidden" name="selectedItemax"
+                                            value="{{ $selectedItem->qteProd_max }}">
                                         @foreach ($distinctUserIds as $userId)
                                             <input type="hidden" name="prodUsers[]" value="{{ $userId }}">
                                         @endforeach
-
-                                        <button
-                                            class="px-4 py-2 text-white bg-purple-500 rounded-lg shadow hover:bg-purple-600"
-                                            type="submit" @if ($distinctUserCount <= 1) disabled @endif>
-                                            @if ($distinctUserCount <= 1)
-                                                Fournisseur insuffisant
-                                            @else
-                                                Faire un appel d'offre
-                                            @endif
-                                        </button>
+                                        
+                                        @if (!$appliedZoneValue)
+                                            <p class="text-red-600">Veuillez saisir une zone économique.</p>
+                                        @else
+                                            <button
+                                                class="px-4 py-2 text-white bg-purple-500 rounded-lg shadow hover:bg-purple-600"
+                                                type="submit" @if ($distinctUserCount <= 1) disabled @endif>
+                                                @if ($distinctUserCount <= 1)
+                                                    Fournisseur insuffisant
+                                                @else
+                                                    Faire un appel d'offre
+                                                @endif
+                                            </button>
+                                        @endif
                                     </form>
                                 </div>
                                 @if ($distinctUserCount <= 1)

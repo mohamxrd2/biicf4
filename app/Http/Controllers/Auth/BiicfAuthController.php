@@ -56,6 +56,7 @@ class BiicfAuthController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('web')->logout();
+
         return redirect('/biicf/login');
     }
 }

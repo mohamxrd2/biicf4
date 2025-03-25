@@ -165,7 +165,7 @@ Route::middleware(['user.auth', CacheControlMiddleware::class])
         Route::get('/test-error/{code}', function ($code) {
             abort($code);
         });
-        
+
 
         Route::get('porte-feuille', Walletclient::class)->name('biicf.wallet');
         Route::get('porte-feuille/remboursement', Remboursement::class)->name('biicf.remboursement');
@@ -253,11 +253,6 @@ Route::post('biicf/verify-phone', [UserController::class, 'verifyPhoneCode'])->n
 Route::get('resend-otp', [UserController::class, 'resendOtp'])->name('resend.otp');
 
 
-//Route::post('biicf/logout', [BiicfAuthController::class, 'logout'])->name('biicf.logout');
-
-Route::post('biicf/logout', function () {
-    Auth::logout();
-    session()->invalidate(); // Invalide la session active
-    session()->regenerateToken(); // Regénère le token CSRF pour plus de sécurité
-    return redirect()->route('biicf.login'); // Redirige vers la page de login
-})->name('biicf.logout');
+Route::post('biicf/logout', [BiicfAuthController::class, 'logout'])
+    ->name('biicf.logout')
+    ->middleware(['web', 'auth']);

@@ -35,7 +35,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {{-- Zone économique --}}
-                    <select wire:model.live="zone_economique"
+                    <select wire:model="zone_economique"
                         class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                 focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200">
                         <option value="">Zone économique</option>
@@ -48,7 +48,7 @@
                     </select>
 
                     {{-- Type --}}
-                    <select wire:model.live="type"
+                    <select wire:model="type"
                         class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                 focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200">
                         <option value="">Type</option>
@@ -58,7 +58,7 @@
 
                     {{-- Quantité --}}
                     <div class="relative">
-                        <input type="number" wire:model.live="qte"
+                        <input type="number" wire:model="qte"
                             class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                     focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200"
                             placeholder="Quantité minimale">
@@ -72,7 +72,7 @@
 
                     {{-- Prix --}}
                     <div class="relative">
-                        <input type="number" wire:model.live="prix"
+                        <input type="number" wire:model="prix"
                             class="w-full h-11 pl-4 pr-8 rounded-lg border-2 border-purple-100 focus:border-purple-500
                     focus:ring-2 focus:ring-purple-200 bg-white transition-all duration-200"
                             placeholder="Prix maximum">
@@ -87,7 +87,7 @@
 
                     {{-- Boutons de filtrage optionnels --}}
                     <div class="md:col-span-4 flex flex-wrap gap-2 mt-2">
-                        <button wire:click="resetFilters"
+                        <button
                             class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200
                     text-gray-800 text-sm font-medium rounded-lg transition-colors duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

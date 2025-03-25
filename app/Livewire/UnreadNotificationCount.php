@@ -11,16 +11,24 @@ class UnreadNotificationCount extends Component
     public $unreadCount = 0;
     public $userId;
 
-    protected $listeners = [
-        'echo-private:App.Models.User.{userId},NotificationSent' => 'refreshCount',
-        'notification-received' => 'updateUnreadCount'
-    ];
+    // Suppression de la propriété $listeners avec le placeholder
 
     public function mount()
     {
         $this->userId = Auth::guard('web')->id();
         $this->updateUnreadCount();
     }
+
+    // Nouvelle méthode pour définir les écouteurs dynamiquement
+    public function getListeners()
+    {
+        $userId = Auth::guard('web')->id() ?: $this->userId;
+        return [
+            "echo-private:App.Models.User.{$userId},NotificationSent" => 'refreshCount',
+            'notification-received' => 'updateUnreadCount'
+        ];
+    }
+
     public function refreshCount()
     {
         $this->dispatch('formSubmitted', 'Vous venez de recevoir une notification');
