@@ -177,6 +177,7 @@
 
     </div>
 
+    
     <script>
         function toggleModal() {
             const modal = document.getElementById('modal');

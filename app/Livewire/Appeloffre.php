@@ -108,7 +108,7 @@ class Appeloffre extends Component
     }
 
 
-    public function commentFormLivr()
+    public function soumissionDePrix()
     {
 
         //Vérifier si la négociation est terminée
@@ -119,7 +119,7 @@ class Appeloffre extends Component
             );
             return;
         }
-        
+
         DB::beginTransaction();
         try {
             // Récupérer d'abord l'offre initiale pour la validation

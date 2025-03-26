@@ -59,7 +59,7 @@ class LivraisonAchatdirect extends Component
                 $this->Valuecode_unique = $this->achatdirect->code_unique;
         }
 
-        $countdown = Countdown::where('code_unique', $this->Valuecode_unique )
+        $countdown = Countdown::where('code_unique', $this->Valuecode_unique)
             ->where('is_active', false)
             ->first();
 
@@ -125,7 +125,7 @@ class LivraisonAchatdirect extends Component
     }
 
 
-    public function commentFormLivr()
+    public function soumissionDePrix()
     {
         // Vérifier si la négociation est terminée
         if ($this->achatdirect->count) {
@@ -169,13 +169,13 @@ class LivraisonAchatdirect extends Component
             ]);
 
 
-            event(new CommentSubmitted($this->code_unique, $comment));
+            event(new CommentSubmitted($this->Valuecode_unique, $comment));
             $this->listenForMessage();
 
             // Réinitialiser le champ du formulaire
             $this->reset(['prixTrade']);
 
-            // Committer la transaction
+            //Committer la transaction
             DB::commit();
         } catch (\Exception $e) {
             // Annuler la transaction en cas d'erreur

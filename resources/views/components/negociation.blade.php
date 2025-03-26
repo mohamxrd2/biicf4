@@ -93,7 +93,7 @@
 
                 <!-- Zone de saisie -->
                 <div class="border-t p-4">
-                    <form wire:submit.prevent="commentFormLivr">
+                    <form wire:submit.prevent="soumissionDePrix">
                         @error('prixTrade')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -114,7 +114,7 @@
                                     <span wire:loading.remove>
                                         <i class="fas fa-paper-plane"></i>
                                     </span>
-                                    <span wire:loading>
+                                    <span wire:loading wire:target="soumissionDePrix">
                                         <svg class="w-5 h-5 animate-spin inline-block"
                                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">

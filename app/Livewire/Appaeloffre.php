@@ -228,13 +228,7 @@ class Appaeloffre extends Component
                     event(new NotificationSent($owner));
 
                     Log::info("Notification envoyée à l'utilisateur ID: {$owner->id}");
-                    // Notification pour l'utilisateur actuel
-                    Notification::send(auth()->user(), new Confirmation([
-                        'code_unique' => $this->referenceService->generate(),
-                        'Id' => $appelOffre->id,
-                        'title' => 'Confirmation de commande',
-                        'description' => 'Cliquez pour voir les détails.',
-                    ]));
+
 
                     $notified = true; // Un fournisseur a été notifié
                 } else {
@@ -244,7 +238,14 @@ class Appaeloffre extends Component
                 Log::warning("Utilisateur ID: {$prodUser} introuvable.");
             }
         }
-
+        
+        // Notification pour l'utilisateur actuel
+        Notification::send(auth()->user(), new Confirmation([
+            'code_unique' => $this->referenceService->generate(),
+            'Id' => $appelOffre->id,
+            'title' => 'Confirmation de commande',
+            'description' => 'Cliquez pour voir les détails.',
+        ]));
         // Vérifier si aucun fournisseur n'a été notifié
         if (!$notified) {
             $message = "Aucun fournisseur ne répond aux critères de quantité.";
