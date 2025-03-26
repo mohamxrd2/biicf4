@@ -97,6 +97,16 @@
                         @error('prixTrade')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        @if ($errorMessage)
+                            <div class="alert alert-danger">
+                                {{ $errorMessage }}
+                            </div>
+                        @endif
+                        @if ($successMessage)
+                            <div class="alert alert-success">
+                                {{ $successMessage }}
+                            </div>
+                        @endif
                         @if (!$achatdirect->count)
                             <div class="flex space-x-4">
                                 <div class="flex-1">
@@ -108,10 +118,10 @@
                                             placeholder="Faire une offre..." required>
                                     </div>
                                 </div>
-                                <button type="submit"
+                                <button type="submit" wire:loading.attr="disabled" wire:target="soumissionDePrix"
                                     class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
-                                    <span>Envoyer</span>
-                                    <span wire:loading.remove>
+                                    <span wire:loading.remove wire:target="soumissionDePrix">Envoyer</span>
+                                    <span wire:loading.remove wire:target="soumissionDePrix">
                                         <i class="fas fa-paper-plane"></i>
                                     </span>
                                     <span wire:loading wire:target="soumissionDePrix">

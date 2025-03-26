@@ -1,7 +1,7 @@
 <div class="max-w-5xl mx-auto">
 
     <x-negociation-card name="NÉGOCIATION POUR L'APPEL OFFRE" mot='bas' :lastActivity="$lastActivity" :nombreParticipants="$nombreParticipants"
-    :isNegociationActive="$isNegociationActive" :commentCount="$commentCount" />
+        :isNegociationActive="$isNegociationActive" :commentCount="$commentCount" />
 
     <!-- Informations de la négociation -->
 
@@ -79,7 +79,7 @@
         </div>
 
 
-        <x-negociation :achatdirect="$appeloffre" :comments="$comments" />
+        <x-negociation :achatdirect="$appeloffre" :comments="$comments" :successMessage="$successMessage" :errorMessage="$errorMessage" />
 
     </div>
 
@@ -104,7 +104,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('negotiation', () => ({
-                showDetails: true,
+                showDetails: false,
                 showOffers: true,
             }))
         })

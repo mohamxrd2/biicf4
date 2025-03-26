@@ -10,14 +10,18 @@ class Negociation extends Component
 {
     public $comments;
     public $achatdirect;
+    public $successMessage;
+    public $errorMessage;
 
     /**
      * Create a new component instance.
      */
-    public function __construct($comments, $achatdirect)
+    public function __construct($comments, $achatdirect, $successMessage, $errorMessage)
     {
         $this->comments = $comments;
         $this->achatdirect = $achatdirect;
+        $this->successMessage = $successMessage;
+        $this->errorMessage = $errorMessage;
     }
 
     /**
