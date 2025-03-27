@@ -34,6 +34,7 @@ class Countdown extends Component
     public $offgroupe;
     public $etat;
     public $OffreGroupe;
+    public $message;
     public $countdowns = [];
 
     protected $recuperationTimer;
@@ -63,6 +64,8 @@ class Countdown extends Component
                     'id' => $activeCountdown->id
                 ];
             }
+        } else {
+            $this->message = 'La négociation est terminée';
         }
     }
 
@@ -136,10 +139,6 @@ class Countdown extends Component
                     break;
             }
 
-            Log::warning('Code unique non trouvé pour la notification', [
-                'notification_id' => $id,
-                'type' => $this->notification->type
-            ]);
             return false;
         } catch (\Exception $e) {
             Log::error('Erreur lors du chargement des données de notification', [
