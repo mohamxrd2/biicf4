@@ -72,7 +72,7 @@
                                 <h3 class="text-sm font-medium text-gray-900">Produit : {{ $produit->name }}</h3>
                                 <p class="mt-1 text-sm text-gray-600">Quantité commandée:
                                     {{ $achatdirect->quantité }}({{ $produit->condProd }})</p>
-                                <p class="mt-1 text-sm text-gray-600">Prix unitaire : {{ $produit->prix }} FCFA</p>
+                                <p class="mt-1 text-sm text-gray-600">Prix unitaire : {{ $prix_negociation }} FCFA</p>
                             </div>
                             <div class="text-sm font-medium text-gray-900">
                                 {{ number_format($achatdirect->montantTotal, 2, ',', '.') }} FCFA

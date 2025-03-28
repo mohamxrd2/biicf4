@@ -12,6 +12,7 @@ use App\Models\ProduitService;
 use App\Models\userquantites;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,10 @@ class LivraisonAchatdirect extends Component
     public $commentCount, $produit, $nombreParticipants, $achatdirect, $Valuecode_unique, $prixLePlusBas,
         $offreIniatiale, $time, $error, $timestamp, $lastActivity, $isNegociationActive, $usersLocations,
         $quantite, $idProd, $userSender, $code_livr, $prixProd, $id_trader, $prixTrade, $user;
+
+    public $isLoading = false;
+    public $errorMessage = null;
+    public $successMessage = null;
     protected $listeners = ['negotiationEnded' => '$refresh'];
 
     public function mount($id)
@@ -106,10 +111,12 @@ class LivraisonAchatdirect extends Component
             ->min('prixTrade');
 
         // Offre initiale (la plus ancienne)
-        $this->offreIniatiale = Comment::where('code_unique', $this->Valuecode_unique)
+        $derniereSoumission = Comment::where('code_unique', $this->Valuecode_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('created_at', 'asc')
             ->first();
+        // Offre initiale (la plus ancienne)
+        $this->offreIniatiale = $derniereSoumission->prixTrade;
 
         $this->isNegociationActive = !$this->achatdirect->count;
 
@@ -124,6 +131,38 @@ class LivraisonAchatdirect extends Component
         }
     }
 
+    // Règles de validation
+    protected function rules()
+    {
+        return [
+            'prixTrade' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $dernierePlusBasseOffre = Comment::where('code_unique', $this->Valuecode_unique)
+                        ->whereNotNull('prixTrade')
+                        ->orderBy('prixTrade', 'asc')
+                        ->first();
+
+                    if ($dernierePlusBasseOffre && $value >= $dernierePlusBasseOffre->prixTrade) {
+                        $fail("Le prix proposé doit être inférieur au prix actuel de " . $dernierePlusBasseOffre->prixTrade);
+                    }
+                }
+            ]
+        ];
+    }
+
+    // Messages personnalisés de validation
+    protected function messages()
+    {
+        return [
+            'prixTrade.required' => 'Veuillez saisir un prix.',
+            'prixTrade.numeric' => 'Le prix doit être un nombre valide.',
+            'prixTrade.min' => 'Le prix doit être supérieur à zéro.'
+        ];
+    }
+
 
     public function soumissionDePrix()
     {
@@ -136,51 +175,66 @@ class LivraisonAchatdirect extends Component
             return;
         }
 
-        DB::beginTransaction();
+        // Activer l'état de chargement
+        $this->isLoading = true;
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+
         try {
-            // Récupérer d'abord l'offre initiale pour la validation
-            $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
-                ->whereNotNull('prixTrade')
-                ->orderBy('created_at', 'asc')
-                ->first();
+            $comment = DB::transaction(function () {
 
-            // Valider les données avec une règle personnalisée
-            $validatedData = $this->validate([
-                'prixTrade' => [
-                    'required',
-                    'numeric',
-                    function ($attribute, $value, $fail) use ($offreInitiale) {
-                        if ($offreInitiale && $value > $offreInitiale->prixTrade) {
-                            $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
-                        }
-                    }
-                ]
-            ]);
+                // Récupérer d'abord l'offre initiale pour la validation
+                $offreInitiale = Comment::where('code_unique', $this->Valuecode_unique)
+                    ->whereNotNull('prixTrade')
+                    ->orderBy('created_at', 'asc')
+                    ->first();
+                $achatdirect = AchatDirect::find($this->notification->data['achat_id'])->lockForUpdate()
+                    ->first();;
 
-            // Créer un commentaire
-            $comment = Comment::create([
-                'prixTrade' => $validatedData['prixTrade'],
-                'code_unique' => $this->Valuecode_unique,
-                'id_trader' => Auth::id(),
-                'quantiteC' => $this->achatdirect->quantité,
-                'id_prod' => $this->achatdirect->idProd,
-                'prixProd' => $this->produit->prix,
-                'id_sender' => json_encode($this->achatdirect->userTrader),
-            ]);
+                // Validation des données
+                $validatedData = $this->validate();
+
+                // Créer un commentaire
+                $comment = Comment::create([
+                    'prixTrade' => $validatedData['prixTrade'],
+                    'code_unique' => $this->Valuecode_unique,
+                    'id_trader' => Auth::id(),
+                    'quantiteC' => $this->achatdirect->quantité,
+                    'id_prod' => $this->achatdirect->idProd,
+                    'prixProd' => $this->produit->prix,
+                    'id_sender' => json_encode($this->achatdirect->userTrader),
+                ]);
 
 
-            event(new CommentSubmitted($this->Valuecode_unique, $comment));
+                event(new CommentSubmitted($this->Valuecode_unique, $comment));
+                return $comment;
+            }, 3); // Nombre de tentatives de transaction
+
+            // Actualiser les données
             $this->listenForMessage();
-
-            // Réinitialiser le champ du formulaire
             $this->reset(['prixTrade']);
 
-            //Committer la transaction
-            DB::commit();
-        } catch (\Exception $e) {
-            // Annuler la transaction en cas d'erreur
-            DB::rollBack();
-            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+
+            // Message de succès
+            $this->successMessage = "Votre offre a été soumise avec succès.";
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Gestion des erreurs de validation
+            $this->errorMessage = $e->validator->errors()->first();
+            Log::warning('Erreur de validation', [
+                'errors' => $e->errors(),
+                'user_id' => Auth::id()
+            ]);
+        } catch (Exception $e) {
+            // Gestion des autres erreurs
+            $this->errorMessage = "Une erreur est survenue : " . $e->getMessage();
+            Log::error('Erreur de soumission', [
+                'message' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+        } finally {
+            // Désactiver l'état de chargement
+            $this->isLoading = false;
         }
     }
 

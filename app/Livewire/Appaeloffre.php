@@ -238,7 +238,7 @@ class Appaeloffre extends Component
                 Log::warning("Utilisateur ID: {$prodUser} introuvable.");
             }
         }
-        
+
         // Notification pour l'utilisateur actuel
         Notification::send(auth()->user(), new Confirmation([
             'code_unique' => $this->referenceService->generate(),
@@ -431,6 +431,21 @@ class Appaeloffre extends Component
                 'selectedOption' => 'required|string',
                 'dateTot' => 'required|date|before_or_equal:dateTard',
                 'dateTard' => 'required|date|after_or_equal:dateTot',
+            ],[
+                'quantité.required' => 'La quantité est obligatoire.',
+                'quantité.integer' => 'La quantité doit être un nombre entier.',
+                'quantité.min' => 'La quantité doit être supérieure à 0.',
+                'localite.required' => 'La localité est obligatoire.',
+                'localite.string' => 'La localité doit être une chaîne de caractères.',
+                'localite.max' => 'La localité ne doit pas dépasser 255 caractères.',
+                'selectedOption.required' => 'Le mode de livraison est obligatoire.',
+                'selectedOption.string' => 'Le mode de livraison doit être une chaîne de caractères.',
+                'dateTot.required' => 'La date de début est obligatoire.',
+                'dateTot.date' => 'La date de début doit être une date valide.',
+                'dateTot.before_or_equal' => 'La date de début doit être inférieure ou égale à la date de fin.',
+                'dateTard.required' => 'La date de fin est obligatoire.',
+                'dateTard.date' => 'La date de fin doit être une date valide.',
+                'dateTard.after_or_equal' => 'La date de fin doit être supérieure ou égale à la date de début.',
             ]);
 
             $code_unique = $this->referenceService->generate();

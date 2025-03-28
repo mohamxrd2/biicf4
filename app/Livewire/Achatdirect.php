@@ -8,6 +8,7 @@ use App\Jobs\ProcessCountdown;
 use App\Models\AchatDirect as ModelsAchatDirect;
 use App\Models\Countdown;
 use App\Notifications\VerifUser;
+use App\Services\LivreurCibleService;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use App\Models\User;
@@ -65,12 +66,15 @@ class Achatdirect extends Component
     public $timeRemaining;
     protected $recuperationTimer;
     protected $takeawayService;
+    protected $livreurCibleService;
+
 
     // Injection de la classe RecuperationTimer via le constructe
     public function __construct()
     {
         $this->recuperationTimer = new RecuperationTimer();
         $this->takeawayService = new TakeawayService();
+        $this->livreurCibleService = new LivreurCibleService();
     }
 
     public function mount($id)
@@ -83,8 +87,15 @@ class Achatdirect extends Component
         $this->prixFin = $this->achatdirect->montantTotal - $this->achatdirect->montantTotal * 0.1;
 
 
-        $this->ciblageLivreurs();
+        // Cibler les livreurs pour cet appel d'offre
+        $resultatCiblage = $this->livreurCibleService->targeterLivreurs($this->appeloffre->id_sender);
 
+        if ($resultatCiblage) {
+            // Faire quelque chose avec les livreurs ciblés
+            $this->livreurs = $resultatCiblage['livreurs'];
+            $this->livreursIds = $resultatCiblage['livreurs_ids'];
+            $this->livreursCount = count($this->livreurs);
+        }
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
     }
@@ -96,72 +107,6 @@ class Achatdirect extends Component
         $this->time = $result['time'];
         $this->error = $result['error'];
         $this->timestamp = $result['timestamp'];
-    }
-    
-    public function ciblageLivreurs()
-    {
-
-        // Vérification de l'existence de 'userSender' dans les données de la notification
-        $this->Idsender = $this->achatdirect->userSender ?? null;
-
-        if (!$this->Idsender) {
-            session()->flash('error', 'L\'expéditeur n\'est pas défini.');
-            return;
-        }
-
-        // Récupérer les informations du client
-        $client = User::find($this->Idsender);
-        if (!$client) {
-            session()->flash('error', 'Client introuvable.');
-            return;
-        }
-
-        // Normalisation des données du client pour comparaison
-        $this->clientContinent = strtolower($client->continent);
-        $this->clientSous_Region = strtolower($client->sous_region);
-        $this->clientPays = strtolower($client->country);
-        $this->clientDepartement = strtolower($client->departe);
-        $this->clientCommune = strtolower($client->commune);
-
-        // Préparer les critères de filtrage pour les livreurs
-        $query = Livraisons::query();
-
-        $query->where(function ($q) {
-            $q->where(function ($subQuery) {
-                $subQuery->where('zone', 'proximite')
-                    ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                    ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                    ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                    ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
-                    ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
-            })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'locale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                        ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                        ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'nationale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'sous_regionale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'continentale');
-                });
-        });
-
-        // Filtrer les livreurs acceptés
-        $this->livreurs = $query->where('etat', 'Accepté')->get();
-
-        // Extraire les IDs et compter les livreurs
-        $this->livreursIds = $this->livreurs->pluck('user_id');
-        $this->livreursCount = $this->livreurs->count();
     }
 
     public function accepter()

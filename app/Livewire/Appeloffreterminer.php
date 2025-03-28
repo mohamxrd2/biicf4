@@ -9,6 +9,7 @@ use App\Models\AchatDirect;
 use App\Models\AppelOffreUser;
 use App\Models\Countdown;
 use App\Services\AppelOffreService;
+use App\Services\generateUniqueReference;
 use App\Services\TimeSync\TimeSyncService;
 use Livewire\Component;
 use App\Models\Livraisons;
@@ -20,6 +21,7 @@ use App\Models\Wallet;
 use App\Notifications\CountdownNotificationAd;
 use App\Notifications\livraisonAchatdirect;
 use App\Notifications\RefusAchat;
+use App\Services\LivreurCibleService;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
 use Exception;
@@ -36,43 +38,23 @@ class Appeloffreterminer extends Component
     use WithFileUploads;
 
     public $notification;
-    public $id;
-    public $nombreLivr;
-    public $clients;
-    public $livreurs;
-    public $livreursIds;
-    public $livreursCount;
-    public $modalOpen;
-    public $Idsender;
-    public $prixFin;
-    public $prixTotal;
-    public $appeloffre;
-    public $produit;
+    public $id, $nombreLivr, $clients, $livreurs, $livreursIds;
+    public $livreursCount, $modalOpen, $Idsender, $prixFin, $prixTotal, $appeloffre, $produit;
 
     //ciblage des livreur
-    public $clientPays;
-    public $clientCommune;
-    public $clientContinent;
-    public $clientSous_Region;
-    public $clientDepartement;
-    public $produitService;
-    public $photoProd;
-    public $textareaValue;
-    public $timestamp;
-    public $time;
-    public $error;
-    public $countdownId;
-    public $isRunning;
-    public $timeRemaining;
-    public $isProcessing = false;
+    public $clientPays, $clientCommune, $clientContinent, $clientSous_Region, $clientDepartement;
+    public $produitService, $photoProd, $textareaValue, $timestamp, $time, $error, $countdownId,
+        $isRunning, $timeRemaining, $isProcessing = false;
 
     protected $recuperationTimer;
     protected $appelOffreService;
+    protected $livreurCibleService;
 
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
     {
         $this->recuperationTimer = new RecuperationTimer();
+        $this->livreurCibleService = new LivreurCibleService();
     }
 
     public function boot(AppelOffreService $appelOffreService)
@@ -91,78 +73,23 @@ class Appeloffreterminer extends Component
             ->where('user_id', $this->notification->data['id_trader'])
             ->first();
         $this->prixTotal = $this->notification->data['prixTrade'] * $this->appeloffre->quantity;
-        $this->prixFin = $this->prixTotal - $this->prixTotal * 0.01;
+        $this->prixFin = $this->prixTotal - $this->prixTotal * 0.1;
 
 
-        $this->ciblageLivreurs();
+        // Cibler les livreurs pour cet appel d'offre
+        $resultatCiblage = $this->livreurCibleService->targeterLivreurs($this->appeloffre->id_sender);
+
+        if ($resultatCiblage) {
+            // Faire quelque chose avec les livreurs ciblés
+            $this->livreurs = $resultatCiblage['livreurs'];
+            $this->livreursIds = $resultatCiblage['livreurs_ids'];
+            $this->livreursCount = count($this->livreurs);
+        }
 
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
     }
-    public function ciblageLivreurs()
-    {
-        // Vérification de l'existence de 'userSender' dans les données de la notification
-        $this->Idsender = $this->appeloffre->id_sender ?? null;
 
-        if (!$this->Idsender) {
-            session()->flash('error', 'L\'expéditeur n\'est pas défini.');
-            return;
-        }
-
-        // Récupérer les informations du client
-        $client = User::find($this->Idsender);
-        if (!$client) {
-            session()->flash('error', 'Client introuvable.');
-            return;
-        }
-
-        // Normalisation des données du client pour comparaison
-        $this->clientContinent = strtolower($client->continent);
-        $this->clientSous_Region = strtolower($client->sous_region);
-        $this->clientPays = strtolower($client->country);
-        $this->clientDepartement = strtolower($client->departe);
-        $this->clientCommune = strtolower($client->commune);
-
-        // Préparer les critères de filtrage pour les livreurs
-        $query = Livraisons::query();
-
-        $query->where(function ($q) {
-            $q->where(function ($subQuery) {
-                $subQuery->where('zone', 'proximite')
-                    ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                    ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                    ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                    ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
-                    ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
-            })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'locale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                        ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                        ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'nationale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'sous_regionale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'continentale');
-                });
-        });
-
-        // Filtrer les livreurs acceptés
-        $this->livreurs = $query->where('etat', 'Accepté')->get();
-
-        // Extraire les IDs et compter les livreurs
-        $this->livreursIds = $this->livreurs->pluck('user_id');
-        $this->livreursCount = $this->livreurs->count();
-    }
 
     public function accepter()
     {
@@ -204,6 +131,12 @@ class Appeloffreterminer extends Component
             $achatdirect = AchatDirect::create([
                 'photoProd' => $photoName,  // Quantité récupérée de userquantites
                 'prix' => $this->notification->data['prixTrade'],
+                'data_finance' => json_encode([
+                    'prix_negociation' => $this->notification->data['prixTrade'],
+                    'montantTotal' => $this->prixTotal,
+                    'quantité' => $this->appeloffre->quantity,
+                    'prix_apres_comission' => $this->prixFin,
+                ]),
                 'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
                 'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
                 'montantTotal' => $this->prixTotal,
@@ -217,10 +150,11 @@ class Appeloffreterminer extends Component
                 'code_unique' => $this->appeloffre->code_unique,
             ]);
 
+            $codeUnique = new generateUniqueReference();
             // Préparer les données pour la notification
             $data = [
                 'idProd' => $this->produit->id,
-                'code_livr' => $this->generateUniqueReference(),
+                'code_livr' => $codeUnique->generate(),
                 'textareaContent' => $validated['textareaValue'],
                 'photoProd' => $photoName,
                 'achat_id' => $achatdirect->id ?? null,
@@ -308,6 +242,7 @@ class Appeloffreterminer extends Component
         $this->error = $result['error'];
         $this->timestamp = $result['timestamp'];
     }
+
     public function refuser()
     {
         $userId = Auth::id();
@@ -376,7 +311,6 @@ class Appeloffreterminer extends Component
 
             session()->flash('success', $result['message']);
             $this->dispatch('refreshComponent');
-
         } catch (Exception $e) {
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         } finally {
@@ -384,31 +318,6 @@ class Appeloffreterminer extends Component
         }
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
-    }
-    protected function generateIntegerReference(): int
-    {
-        // Récupère l'horodatage en millisecondes
-        $timestamp = $this->appeloffre->date_->getTimestamp() * 1000 + $this->appeloffre->date_->micro;
-
-        // Retourne l'horodatage comme entier
-        return (int) $timestamp;
-    }
-    protected function generateUniqueReference()
-    {
-        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
-    }
     protected function handlePhotoUpload($photoField)
     {
         if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {

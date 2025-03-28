@@ -16,6 +16,7 @@ class AchatDirect extends Model
         'nameProd',
         'quantité',
         'prix',
+        'data_finance',
         'montantTotal',
         'message',
         'localite',

@@ -72,6 +72,7 @@ class Appeloffre extends Component
         if ($countdown && !$this->appeloffre->count) {
             $this->appeloffre->update(['count' => true]);
         }
+        $this->offreIniatiale  = $this->appeloffre->lowestPricedProduct;
 
         $this->listenForMessage();
     }
@@ -92,12 +93,6 @@ class Appeloffre extends Component
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
-        // Offre initiale (la plus ancienne)
-        $this->offreIniatiale = Comment::where('code_unique', $this->code_unique)
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
         $this->isNegociationActive = !$this->appeloffre->count;
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
@@ -110,41 +105,55 @@ class Appeloffre extends Component
             $this->nombreParticipants = 0;
         }
     }
-// Règles de validation
-protected function rules()
-{
-    return [
-        'prixTrade' => [
-            'required',
-            'numeric',
-            'min:0',
-            function ($attribute, $value, $fail) {
-                $dernierePlusBasseOffre = Comment::where('code_unique', $this->code_unique)
-                    ->whereNotNull('prixTrade')
-                    ->orderBy('prixTrade', 'asc')
-                    ->first();
+    // Règles de validation
+    protected function rules()
+    {
+        return [
+            'prixTrade' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    // Vérifier que le prix ne dépasse pas le prix initial le plus bas
+                    if ($value > $this->offreIniatiale) {
+                        $fail("Le prix proposé doit être inférieur ou égal au prix initial de " . $this->offreIniatiale);
+                    }
 
-                if ($dernierePlusBasseOffre && $value >= $dernierePlusBasseOffre->prixTrade) {
-                    $fail("Le prix proposé doit être inférieur au prix actuel de " . $dernierePlusBasseOffre->prixTrade);
+                    $dernierePlusBasseOffre = Comment::where('code_unique', $this->code_unique)
+                        ->whereNotNull('prixTrade')
+                        ->orderBy('prixTrade', 'asc')
+                        ->first();
+
+                    if ($dernierePlusBasseOffre && $value >= $dernierePlusBasseOffre->prixTrade) {
+                        $fail("Le prix proposé doit être inférieur au prix actuel de " . $dernierePlusBasseOffre->prixTrade);
+                    }
                 }
-            }
-        ]
-    ];
-}
+            ]
+        ];
+    }
 
-// Messages personnalisés de validation
-protected function messages()
-{
-    return [
-        'prixTrade.required' => 'Veuillez saisir un prix.',
-        'prixTrade.numeric' => 'Le prix doit être un nombre valide.',
-        'prixTrade.min' => 'Le prix doit être supérieur à zéro.'
-    ];
-}
+    // Messages personnalisés de validation
+    protected function messages()
+    {
+        return [
+            'prixTrade.required' => 'Veuillez saisir un prix.',
+            'prixTrade.numeric' => 'Le prix doit être un nombre valide.',
+            'prixTrade.min' => 'Le prix doit être supérieur à zéro.'
+        ];
+    }
 
     // Méthode de soumission de prix
     public function soumissionDePrix()
     {
+        // Vérifier si la négociation est terminée
+        if ($this->achatdirect->count) {
+            $this->dispatch(
+                'formSubmitted',
+                'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
+            );
+            return;
+        }
+        
         // Activer l'état de chargement
         $this->isLoading = true;
         $this->errorMessage = null;
@@ -173,8 +182,6 @@ protected function messages()
                 // Événement de soumission
                 event(new CommentSubmitted($this->code_unique, $comment));
 
-                
-
                 return $comment;
             }, 3); // Nombre de tentatives de transaction
 
@@ -184,7 +191,6 @@ protected function messages()
 
             // Message de succès
             $this->successMessage = "Votre offre a été soumise avec succès.";
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Gestion des erreurs de validation
             $this->errorMessage = $e->validator->errors()->first();
@@ -192,7 +198,7 @@ protected function messages()
                 'errors' => $e->errors(),
                 'user_id' => Auth::id()
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Gestion des autres erreurs
             $this->errorMessage = "Une erreur est survenue : " . $e->getMessage();
             Log::error('Erreur de soumission', [

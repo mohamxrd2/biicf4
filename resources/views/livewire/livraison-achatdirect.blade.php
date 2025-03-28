@@ -172,12 +172,12 @@
             </div>
         </div>
 
-        <x-negociation :achatdirect="$achatdirect" :comments="$comments" />
+        <x-negociation :achatdirect="$achatdirect" :comments="$comments" :successMessage="$successMessage" :errorMessage="$errorMessage" />
 
 
     </div>
 
-    
+
     <script>
         function toggleModal() {
             const modal = document.getElementById('modal');

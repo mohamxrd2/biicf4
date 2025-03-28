@@ -45,6 +45,7 @@
                             class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" required />
                     </div>
                 </div>
+
                 <p x-text="errorMessage" class="text-sm text-center text-red-500" x-show="errorMessage"></p>
 
 

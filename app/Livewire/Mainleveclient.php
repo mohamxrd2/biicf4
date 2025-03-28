@@ -159,13 +159,18 @@ class Mainleveclient extends Component
         $prixTrade = $this->notification->data['prixTrade'];
         $valeurGelement = $this->gelement->amount;
 
-        $interetFournisseur = $this->achatdirect->montantTotal * 0.1;
-        $montantPourFournisseur = $this->achatdirect->montantTotal - $interetFournisseur;
+        // Décoder `data_finance` pour éviter l'erreur
+        $dataFinance = json_decode($this->achatdirect->data_finance, true) ?? [];
 
-        $interetLivreur = $prixTrade * 0.1;
-        $montantPourLivreur = $prixTrade - $interetLivreur;
+        // Vérifier si les clés existent avant d'y accéder
+        $interetFournisseur = ($dataFinance['montantTotal'] ?? 0) * 0.1;
+        $montantPourFournisseur = $dataFinance['prix_apres_comission'] ?? 0;
+
+        $interetLivreur = ($dataFinance['prix_livraison'] ?? 0) * 0.1;
+        $montantPourLivreur = ($dataFinance['prix_livraison'] ?? 0) - $interetLivreur;
 
         $totalInterets = $interetFournisseur + $interetLivreur;
+
 
         $walletService->updateBalance($fournisseurId, $montantPourFournisseur);
         $walletService->updateBalance($livreurId, $montantPourLivreur);

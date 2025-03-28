@@ -1,5 +1,4 @@
 <div class="container px-4 py-6 mx-auto">
-
     <div class="overflow-hidden bg-white rounded-lg shadow-md">
         <div class="p-6 border-b border-gray-200">
             <h1 class="text-2xl font-bold text-gray-800">Détails de la Commande
@@ -10,9 +9,8 @@
                 @endif
             </h1>
         </div>
+
         <div class="p-6">
-
-
             <!-- Détails de la Commande -->
             <div class="p-4 mb-6 rounded-lg shadow-sm bg-gray-50">
                 <h2 class="mb-2 text-lg font-semibold text-gray-700">Informations de la Commande</h2>
@@ -61,7 +59,7 @@
             <div class="p-6 rounded-lg ">
                 <h2 class="mb-4 text-xl font-bold text-gray-800">Éléments de la Commande</h2>
                 <p class="mb-6 text-sm text-gray-600">
-                    Vous serez débité de <strong>1%</strong> sur le prix de la marchandise.
+                    Vous serez débité de <strong>10%</strong> sur le prix de la marchandise.
                 </p>
 
                 <!-- Informations sur le produit/service -->

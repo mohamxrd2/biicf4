@@ -29,7 +29,9 @@ use Livewire\Component;
 class CountdownNotificationAd extends Component
 {
 
-    public $notification, $id, $produit, $userFour, $totalPrice, $user, $achatdirect, $livreur, $codeVerification, $fournisseur, $userWallet, $quantite, $qualite, $diversite, $userId, $userWalletFournisseur, $requiredAmount, $statusText, $statusClass;
+    public $notification, $id, $produit, $userFour, $totalPrice, $user, $achatdirect, $livreur, $codeVerification,
+        $fournisseur, $userWallet, $quantite,
+        $qualite, $diversite, $userId, $userWalletFournisseur, $requiredAmount, $statusText, $statusClass, $prix_negociation;
 
     public $showMainlever = false;
     public $isLoading = false;
@@ -54,6 +56,12 @@ class CountdownNotificationAd extends Component
             if (!$this->achatdirect) {
                 throw new Exception("AchatDirect introuvable avec l'ID fourni.");
             }
+
+            // Décoder le JSON stocké dans data_finance
+            $dataFinance = json_decode($this->achatdirect->data_finance, true);
+
+            // Accéder à la valeur de prix_final
+            $this->prix_negociation = $dataFinance['prix_negociation'] ?? 0;
 
             $this->fournisseur = User::find($this->achatdirect->userTrader);
             $this->livreur = User::find($this->notification->data['livreur']);
@@ -166,6 +174,21 @@ class CountdownNotificationAd extends Component
                     ]);
                     break;
             }
+
+
+            // Décoder l'ancien JSON en tableau associatif (éviter l'écrasement)
+            $dataFinance = json_decode($this->achatdirect->data_finance, true) ?? [];
+
+            // Ajouter la nouvelle valeur sans supprimer les anciennes
+            $dataFinance['prix_livraison'] = $this->notification->data['prixTrade'];
+
+            // Mettre à jour la colonne `data_finance`
+            $this->achatdirect->update([
+                'data_finance' => json_encode($dataFinance),
+            ]);
+
+
+
 
             if (isset($result['success'])) {
                 session()->flash('success', $result['message']);
