@@ -146,14 +146,14 @@ class Appeloffre extends Component
     public function soumissionDePrix()
     {
         // Vérifier si la négociation est terminée
-        if ($this->achatdirect->count) {
+        if ($this->appeloffre->count) {
             $this->dispatch(
                 'formSubmitted',
                 'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'
             );
             return;
         }
-        
+
         // Activer l'état de chargement
         $this->isLoading = true;
         $this->errorMessage = null;

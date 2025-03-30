@@ -116,7 +116,7 @@ class LivraisonAchatdirect extends Component
             ->orderBy('created_at', 'asc')
             ->first();
         // Offre initiale (la plus ancienne)
-        $this->offreIniatiale = $derniereSoumission->prixTrade;
+        $this->offreIniatiale = $derniereSoumission->prixTrade ?? null;
 
         $this->isNegociationActive = !$this->achatdirect->count;
 

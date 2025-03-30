@@ -9,17 +9,12 @@ use App\Models\AchatDirect;
 use App\Models\AppelOffreGrouper;
 use App\Models\Countdown;
 use App\Models\Livraisons;
-use App\Models\NotificationEd;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\userquantites;
 use App\Models\Wallet;
-use App\Notifications\AllerChercher;
-use App\Notifications\CountdownNotification;
 use App\Notifications\livraisonAchatdirect;
-use App\Notifications\livraisonAppelOffregrouper;
-use App\Notifications\livraisonVerif;
 use App\Notifications\RefusAchat;
 use App\Services\RecuperationTimer;
 use Carbon\Carbon;
@@ -52,15 +47,8 @@ class Appeloffreterminergrouper extends Component
     public $idProd2;
 
     //ciblage des livreur
-    public $clientPays;
-    public $clientCommune;
-    public $clientContinent;
-    public $clientSous_Region;
-    public $clientDepartement;
-    public $AppelOffreGrouper;
-    public $prixFin;
-    public $produit;
-    public $Quantite;
+    public $clientPays, $clientCommune, $clientContinent, $clientSous_Region, $clientDepartement,
+        $AppelOffreGrouper, $prixFin, $produit, $Quantite;
     public $photoProd;
     public $textareaValue;
     public $groupages;

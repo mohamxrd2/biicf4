@@ -171,6 +171,8 @@ class Mainleveclient extends Component
 
         $totalInterets = $interetFournisseur + $interetLivreur;
 
+        $this->gelement->amount -= $totalInterets + $montantPourFournisseur + $montantPourLivreur;
+
 
         $walletService->updateBalance($fournisseurId, $montantPourFournisseur);
         $walletService->updateBalance($livreurId, $montantPourLivreur);
@@ -216,7 +218,7 @@ class Mainleveclient extends Component
             'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
         ], [$fournisseurId, $livreurId]);
 
-        $this->gelement->status = 'completed';
+        $this->gelement->status = 'OK';
         $this->gelement->save();
 
         return true;

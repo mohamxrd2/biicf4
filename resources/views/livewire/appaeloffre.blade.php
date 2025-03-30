@@ -193,12 +193,16 @@
                         </div>
                     </div>
 
-                    <!-- Afficher les messages d'erreur -->
-                    @if (session()->has('success'))
-                        <div class="bg-red-500 text-white p-2 mt-2 rounded-md">
-                            {{ session('success') }}
+                    @if ($errors->any())
+                        <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
+
 
                     <p class="bg-gray-100 sm:col-span-2 w-full text-gray-700 p-4 rounded-md shadow-md">
                         En soumettant ce formulaire, je certifie que les informations fournies sont exactes et
