@@ -248,6 +248,12 @@ class Appeloffreterminergrouper extends Component
                     'nameProd' => $this->produit->name,
                     'quantité' => $quantite,
                     'montantTotal' => $quantite * $this->notification->data['prixTrade'],
+                    'data_finance' => json_encode([
+                        'prix_negociation' => $this->notification->data['prixTrade'],
+                        'montantTotal' => $quantite * $this->notification->data['prixTrade'],
+                        'quantité' => $quantite,
+                        'prix_apres_comission' => $this->prixFin,
+                    ]),
                     'localite' => $localite,
                     'type_achat' => 'appelOffreGrouper',
                     'date_tot' => $this->AppelOffreGrouper->dateTot,

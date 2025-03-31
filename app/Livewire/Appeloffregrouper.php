@@ -64,8 +64,8 @@ class Appeloffregrouper extends Component
         $countdown = Countdown::where('code_unique', $this->appelOffreGroup->codeunique)
             ->where('is_active', false)
             ->first();
-        if ($countdown && !$this->appelOffreGroup->count) {
-            $this->appelOffreGroup->update(['count' => true]);
+        if ($countdown && !$this->appelOffreGroup->count2) {
+            $this->appelOffreGroup->update(['count2' => true]);
         }
     }
 

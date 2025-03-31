@@ -25,47 +25,50 @@ class Appeloffregroupernegociation extends Component
     public $id;
     public $comments = [], $oldestComment, $oldestCommentDate, $serverTime, $quantite, $idProd, $idsender, $code_unique;
     public $prixProd, $localite, $specificite, $nameprod, $quantiteC, $difference, $id_trader, $prixTrade, $namefourlivr, $id_sender;
-    public $appeloffregrp;
-    public $commentCount;
-    public $nombreParticipants;
-    public $time;
-    public $error;
-    public $timestamp;
-    public $prixLePlusBas;
-    public $offreIniatiale;
-    public $sumquantite;
-    public $appelOffreGroupcount;
+    public $appeloffregrp, $commentCount, $nombreParticipants, $time, $error, $timestamp, $prixLePlusBas, $offreIniatiale, $sumquantite, $appelOffreGroupcount;
     protected $recuperationTimer;
     public $lastActivity;
     public $isNegociationActive;
     public $isLoading = false;
     public $errorMessage = null;
     public $successMessage = null;
-    protected $listeners = [
-        'negotiationEnded' => '$refresh'
-    ];
 
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
     {
         $this->recuperationTimer = new RecuperationTimer();
     }
+
+    protected $listeners = [
+        'negotiationEnded' => '$refresh'
+    ];
+
     public function mount($id)
     {
 
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->id_trader = Auth::user()->id ?? null;
-
         $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelGrouper']);
 
-        $this->offreIniatiale  = $this->appeloffregrp->lowestPricedProduct;
         // Vérifier si 'code_unique' existe dans les données de notification
         $this->code_unique = $this->notification->data['code_unique'];
-        $this->listenForMessage();
 
         $this->sumquantite = userquantites::where('code_unique', $this->appeloffregrp->codeunique)
             ->sum('quantite');
         $this->appelOffreGroupcount = userquantites::where('code_unique', $this->appeloffregrp->codeunique)->distinct('user_id')->count('user_id');
+
+
+        $countdown = Countdown::where('code_unique', $this->code_unique)
+            ->where('is_active', false)
+            ->first();
+
+        if ($countdown && !$this->appeloffregrp->count) {
+            $this->appeloffregrp->update(['count' => true]);
+        }
+
+        $this->offreIniatiale  = $this->appeloffregrp->lowestPricedProduct;
+
+        $this->listenForMessage();
     }
 
     #[On('echo:comments.{code_unique},CommentSubmitted')]
@@ -79,13 +82,11 @@ class Appeloffregroupernegociation extends Component
             ->orderBy('prixTrade', 'asc')
             ->get();
 
-
         $this->prixLePlusBas = Comment::where('code_unique', $this->notification->data['code_livr'])
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
         $this->isNegociationActive = !$this->appeloffregrp->count;
-
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -138,7 +139,7 @@ class Appeloffregroupernegociation extends Component
     {
 
         // Vérifier si la négociation est terminée
-        if ($this->appeloffregrp->count2) {
+        if ($this->appeloffregrp->count) {
             $this->dispatch(
                 'formSubmitted',
                 'La négociation est terminée. Vous ne pouvez plus soumettre d\'offres.'

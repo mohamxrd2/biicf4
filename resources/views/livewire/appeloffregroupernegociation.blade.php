@@ -76,6 +76,7 @@
             </div>
         </div>
 
+        <!-- Tableau des offres -->
         <x-negociation :achatdirect="$appeloffregrp" :comments="$comments" :successMessage="$successMessage" :errorMessage="$errorMessage" />
 
     </div>
