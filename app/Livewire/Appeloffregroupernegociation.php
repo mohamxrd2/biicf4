@@ -51,7 +51,7 @@ class Appeloffregroupernegociation extends Component
         $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelGrouper']);
 
         // Vérifier si 'code_unique' existe dans les données de notification
-        $this->code_unique = $this->notification->data['code_unique'];
+        $this->code_unique = $this->notification->data['code_livr'];
 
         $this->sumquantite = userquantites::where('code_unique', $this->appeloffregrp->codeunique)
             ->sum('quantite');
@@ -153,7 +153,6 @@ class Appeloffregroupernegociation extends Component
         $this->successMessage = null;
 
 
-        DB::beginTransaction();
 
         try {
             // Transaction de base de données
@@ -178,7 +177,7 @@ class Appeloffregroupernegociation extends Component
 
 
                 return $comment;
-            }, 3); // Nombre de tentatives de transaction
+            }, attempts: 3); // Nombre de tentatives de transaction
 
             // Actualiser les données
             $this->listenForMessage();
@@ -186,13 +185,6 @@ class Appeloffregroupernegociation extends Component
 
             // Message de succès
             $this->successMessage = "Votre offre a été soumise avec succès.";
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Gestion des erreurs de validation
-            $this->errorMessage = $e->validator->errors()->first();
-            Log::warning('Erreur de validation', [
-                'errors' => $e->errors(),
-                'user_id' => Auth::id()
-            ]);
         } catch (Exception $e) {
             // Gestion des autres erreurs
             $this->errorMessage = "Une erreur est survenue : " . $e->getMessage();

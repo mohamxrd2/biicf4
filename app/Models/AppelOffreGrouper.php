@@ -26,6 +26,7 @@ class AppelOffreGrouper extends Model
         'notified',
         'prodUsers',
         'codeunique',
+        'codeunique2',
         'count',
         'count2',
         'reference',

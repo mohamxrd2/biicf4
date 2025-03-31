@@ -26,15 +26,7 @@ class Countdown extends Component
     public $achatdirect;
     public $valueCodeUnique;
     public $appelOffreGroup;
-    public $appeloffre;
-    public $time;
-    public $error;
-    public $timestamp;
-    public $appeloffregrp;
-    public $offgroupe;
-    public $etat;
-    public $OffreGroupe;
-    public $message;
+    public $appeloffre, $time, $error, $timestamp, $appeloffregrp, $offgroupe, $etat, $OffreGroupe, $message;
     public $countdowns = [];
 
     protected $recuperationTimer;
@@ -112,17 +104,17 @@ class Countdown extends Component
                     if (isset($this->notification->data['offre_id'])) {
                         $this->appelOffreGroup = AppelOffreGrouper::findOrFail($this->notification->data['offre_id']);
                         $this->valueCodeUnique = $this->appelOffreGroup->codeunique;
-                        $this->etat = $this->appelOffreGroup->count;
+                        $this->etat = $this->appelOffreGroup->count2;
 
                         return true;
                     }
                     break;
 
-                case 'App\Notifications\appeloffregroupernegociation':
+                case 'App\Notifications\AppelOffreGrouperNotification':
                     if (isset($this->notification->data['id_appelGrouper'])) {
                         $this->appeloffregrp = AppelOffreGrouper::findOrFail($this->notification->data['id_appelGrouper']);
-                        $this->valueCodeUnique = $this->appeloffregrp->codeunique;
-                        $this->etat = $this->appeloffregrp->count2;
+                        $this->valueCodeUnique = $this->appeloffregrp->codeunique2;
+                        $this->etat = $this->appeloffregrp->count;
 
                         return true;
                     }
@@ -172,12 +164,12 @@ class Countdown extends Component
                     $this->dispatch('negotiationEnded')->to('offre-groupe-quantite');
                     break;
                 case 'App\Notifications\AOGrouper':
-                    $this->appelOffreGroup->update(['count' => true]);
+                    $this->appelOffreGroup->update(['count2' => true]);
                     $this->dispatch('negotiationEnded')->to('appeloffregrouper');
                     break;
 
                 case 'App\Notifications\AppelOffreGrouperNotification':
-                    $this->appeloffregrp->update(['count2' => true]);
+                    $this->appeloffregrp->update(['count' => true]);
                     $this->dispatch('negotiationEnded')->to('appeloffregroupernegociation');
                     break;
             }

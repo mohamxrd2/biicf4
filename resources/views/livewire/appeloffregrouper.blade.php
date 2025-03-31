@@ -42,7 +42,7 @@
         </div>
 
         <div x-data="{ isOpen: @entangle('isOpen') }" x-cloak>
-            @if (!$appelOffreGroup->count)
+            @if (!$appelOffreGroup->count2)
                 <!-- Button to open modal -->
                 <button @click="isOpen = true"
                     class="block w-full max-w-xs mx-auto text-white bg-gradient-to-r  bg-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-6 py-3 text-center transition-all duration-300">

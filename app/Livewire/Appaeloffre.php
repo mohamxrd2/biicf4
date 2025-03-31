@@ -338,7 +338,6 @@ class Appaeloffre extends Component
                 'Gele pour groupage de ' . $validatedData['name'],
                 'COC'
             );
-            Log::info('Transaction enregistrée.');
 
             // Enregistrer le gel des fonds
             gelement::create([
@@ -444,7 +443,7 @@ class Appaeloffre extends Component
             'dateTard.date' => 'La date de fin doit être une date valide.',
             'dateTard.after_or_equal' => 'La date de fin doit être supérieure ou égale à la date de début.',
         ]);
-        
+
         DB::beginTransaction();
         try {
 

@@ -119,7 +119,10 @@ class AppeloffreCountdown extends Command
         if (!$appelOffreGrouper || !$appelOffreGrouper->user_id) {
             return;
         }
-
+        $appelOffreGrouper->codeunique2 = $code_unique;
+        $appelOffreGrouper->save();
+        $this->timeServer();
+        
         $countdown = Countdown::firstOrCreate(
             ['code_unique' => $code_unique],
             [

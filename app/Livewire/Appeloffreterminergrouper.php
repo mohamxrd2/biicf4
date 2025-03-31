@@ -88,7 +88,7 @@ class Appeloffreterminergrouper extends Component
             ->orderBy('created_at', 'asc')
             ->get();
 
-        $reduction = 0.01;
+        $reduction = 0.1;
         $prixUnitaire = $this->notification->data['prixTrade'];
         $this->prixFin = $this->Quantite * $prixUnitaire * (1 - $reduction);
 
@@ -97,6 +97,7 @@ class Appeloffreterminergrouper extends Component
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
     }
+    
     public function timeServer()
     {
         // Faire plusieurs tentatives de récupération pour plus de précision
