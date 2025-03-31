@@ -86,9 +86,8 @@ class Achatdirect extends Component
         $this->achatdirect = ModelsAchatDirect::find($this->notification->data['achat_id']);
         $this->prixFin = $this->achatdirect->montantTotal - $this->achatdirect->montantTotal * 0.1;
 
-
         // Cibler les livreurs pour cet appel d'offre
-        $resultatCiblage = $this->livreurCibleService->targeterLivreurs($this->appeloffre->id_sender);
+        $resultatCiblage = $this->livreurCibleService->targeterLivreurs($this->achatdirect->userSender);
 
         if ($resultatCiblage) {
             // Faire quelque chose avec les livreurs ciblés

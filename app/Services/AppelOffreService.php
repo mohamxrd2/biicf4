@@ -6,6 +6,7 @@ use App\Events\NotificationSent;
 use App\Models\AchatDirect;
 use App\Models\User;
 use App\Notifications\CountdownNotificationAd;
+use App\Notifications\VerifUser;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,8 +24,12 @@ class AppelOffreService
             // Créer l'achat direct
             $achatdirect = $this->createAchatDirect($data);
 
+            // Génération et mise à jour du code de vérification
+            $codeVerification = $this->generateVerificationCode();
+            $achatdirect->update(['code_verification' => $codeVerification]);
+
             // Gérer les notifications
-            $userSender = $this->handleNotifications($data, $achatdirect);
+            $this->handleNotifications($data, $achatdirect, $codeVerification);
 
             // Mettre à jour le statut de la notification
             $data['notification']->update(['reponse' => 'accepte']);
@@ -35,7 +40,6 @@ class AppelOffreService
                 'message' => 'Commande traitée avec succès',
                 'achatdirect' => $achatdirect
             ];
-
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Erreur lors du traitement de la commande', [
@@ -45,7 +49,10 @@ class AppelOffreService
             throw $e;
         }
     }
-
+    protected function generateVerificationCode(): int
+    {
+        return random_int(1000, 9999);
+    }
     private function validateData($data)
     {
         if (!isset($data['notification']) || !isset($data['appeloffre']) || !isset($data['produit'])) {
@@ -63,6 +70,12 @@ class AppelOffreService
             'nameProd' => $data['produit']->name,
             'quantité' => $data['appeloffre']->quantity,
             'montantTotal' => $data['prixTotal'],
+            'prix' => $data['prixTrade'],
+            'data_finance' => json_encode([
+                'montantTotal' => $data['prixTotal'],
+                'quantité' => $data['appeloffre']->quantity,
+                'prix_apres_comission' => $data['prixFin'],
+            ]),
             'type_achat' => 'achatDirect',
             'localite' => $data['appeloffre']->localite,
             'date_tot' => $data['appeloffre']->date_tot,
@@ -74,7 +87,7 @@ class AppelOffreService
         ]);
     }
 
-    private function handleNotifications($data, $achatdirect)
+    private function handleNotifications($data, $achatdirect, $codeVerification)
     {
         $userSender = User::find($data['appeloffre']->id_sender);
         if (!$userSender) {
@@ -100,6 +113,19 @@ class AppelOffreService
         }
 
         event(new NotificationSent($userSender));
+
+        // Notification au fournisseur
+        $dataFournisseur = [
+            'code_unique' => $achatdirect->code_unique,
+            'CodeVerification' => $codeVerification,
+            'client' => $achatdirect->userSender,
+            'id_achat' => $achatdirect->id,
+        ];
+
+        $userTrader = User::findOrFail($achatdirect->userTrader);
+
+        Notification::send($userTrader, new VerifUser($dataFournisseur));
+        event(new NotificationSent($userTrader));
 
         return $userSender;
     }

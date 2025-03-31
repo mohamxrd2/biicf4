@@ -86,9 +86,9 @@
                         <div class="flex justify-end">
                             <button type="submit"
                                 class="inline-flex items-center justify-center px-6 py-3 text-white bg-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                                wire:loading.attr="disabled">
-                                <span wire:loading.remove>Ajouter votre quantité</span>
-                                <span wire:loading>
+                                wire:loading.attr="disabled" wire:target="storeOffre">
+                                <span wire:loading.remove wire:target="storeOffre">Ajouter votre quantité</span>
+                                <span wire:loading wire:target="storeOffre">
                                     <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                                         fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10"

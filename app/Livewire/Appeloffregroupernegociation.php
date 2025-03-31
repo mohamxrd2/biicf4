@@ -23,24 +23,8 @@ class Appeloffregroupernegociation extends Component
 {
     public $notification;
     public $id;
-    public $comments = [];
-    public $oldestComment;
-    public $oldestCommentDate;
-    public $serverTime;
-    public $quantite;
-    public $idProd;
-    public $idsender;
-    public $code_unique;
-    public $prixProd;
-    public $localite;
-    public $specificite;
-    public $nameprod;
-    public $quantiteC;
-    public $difference;
-    public $id_trader;
-    public $prixTrade;
-    public $namefourlivr;
-    public $id_sender;
+    public $comments = [], $oldestComment, $oldestCommentDate, $serverTime, $quantite, $idProd, $idsender, $code_unique;
+    public $prixProd, $localite, $specificite, $nameprod, $quantiteC, $difference, $id_trader, $prixTrade, $namefourlivr, $id_sender;
     public $appeloffregrp;
     public $commentCount;
     public $nombreParticipants;
@@ -54,8 +38,12 @@ class Appeloffregroupernegociation extends Component
     protected $recuperationTimer;
     public $lastActivity;
     public $isNegociationActive;
-
-    protected $listeners = ['negotiationEnded' => '$refresh'];
+    public $isLoading = false;
+    public $errorMessage = null;
+    public $successMessage = null;
+    protected $listeners = [
+        'negotiationEnded' => '$refresh'
+    ];
 
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
@@ -70,7 +58,9 @@ class Appeloffregroupernegociation extends Component
 
         $this->appeloffregrp = AppelOffreGrouper::find($this->notification->data['id_appelGrouper']);
 
-
+        $this->offreIniatiale  = $this->appeloffregrp->lowestPricedProduct;
+        // Vérifier si 'code_unique' existe dans les données de notification
+        $this->code_unique = $this->notification->data['code_unique'];
         $this->listenForMessage();
 
         $this->sumquantite = userquantites::where('code_unique', $this->appeloffregrp->codeunique)
@@ -78,7 +68,7 @@ class Appeloffregroupernegociation extends Component
         $this->appelOffreGroupcount = userquantites::where('code_unique', $this->appeloffregrp->codeunique)->distinct('user_id')->count('user_id');
     }
 
-    #[On('echo:comments,CommentSubmitted')]
+    #[On('echo:comments.{code_unique},CommentSubmitted')]
     public function listenForMessage()
     {
         // Déboguer pour vérifier la structure de l'événement
@@ -94,10 +84,8 @@ class Appeloffregroupernegociation extends Component
             ->whereNotNull('prixTrade')
             ->min('prixTrade');
 
-        $this->offreIniatiale = Comment::where('code_unique', $this->notification->data['code_livr'])
-            ->whereNotNull('prixTrade')
-            ->orderBy('prixTrade', 'asc')
-            ->first(); // Récupère le premier commentaire trié
+        $this->isNegociationActive = !$this->appeloffregrp->count;
+
 
         // Assurez-vous que 'comments' est bien une collection avant d'appliquer pluck()
         if ($this->comments instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -110,8 +98,43 @@ class Appeloffregroupernegociation extends Component
         }
     }
 
+    // Règles de validation
+    protected function rules()
+    {
+        return [
+            'prixTrade' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    // Vérifier que le prix ne dépasse pas le prix initial le plus bas
+                    if ($value > $this->offreIniatiale) {
+                        $fail("Le prix proposé doit être inférieur ou égal au prix initial de " . $this->offreIniatiale);
+                    }
 
-    public function commentFormLivr()
+                    $dernierePlusBasseOffre = Comment::where('code_unique', $this->code_unique)
+                        ->whereNotNull('prixTrade')
+                        ->orderBy('prixTrade', 'asc')
+                        ->first();
+
+                    if ($dernierePlusBasseOffre && $value >= $dernierePlusBasseOffre->prixTrade) {
+                        $fail("Le prix proposé doit être inférieur au prix actuel de " . $dernierePlusBasseOffre->prixTrade);
+                    }
+                }
+            ]
+        ];
+    }
+
+    // Messages personnalisés de validation
+    protected function messages()
+    {
+        return [
+            'prixTrade.required' => 'Veuillez saisir un prix.',
+            'prixTrade.numeric' => 'Le prix doit être un nombre valide.',
+            'prixTrade.min' => 'Le prix doit être supérieur à zéro.'
+        ];
+    }
+    public function soumissionDePrix()
     {
 
         // Vérifier si la négociation est terminée
@@ -123,49 +146,62 @@ class Appeloffregroupernegociation extends Component
             return;
         }
 
-        // Récupérer d'abord l'offre initiale pour la validation
-        $offreInitiale = Comment::where('code_unique', $this->notification->data['code_livr'])
-            ->whereNotNull('prixTrade')
-            ->orderBy('created_at', 'asc')
-            ->first();
+        // Activer l'état de chargement
+        $this->isLoading = true;
+        $this->errorMessage = null;
+        $this->successMessage = null;
 
-        // Valider les données avec une règle personnalisée
-        $validatedData = $this->validate([
-            'prixTrade' => [
-                'required',
-                'numeric',
-                function ($attribute, $value, $fail) use ($offreInitiale) {
-                    if ($offreInitiale && $value > $offreInitiale->prixTrade) {
-                        $fail("Le prix proposé ne peut pas être supérieur au prix initial de " . $offreInitiale->prixTrade);
-                    }
-                }
-            ]
-        ]);
 
         DB::beginTransaction();
 
         try {
+            // Transaction de base de données
+            $comment = DB::transaction(function () {
+                // Vérifier et verrouiller l'appel d'offre
+                $appeloffregrp = AppelOffreGrouper::where('codeunique', $this->code_unique)
+                    ->lockForUpdate()
+                    ->first();
+
+                // Validation des données
+                $validatedData = $this->validate();
+
+                $comment = Comment::create([
+                    'prixTrade' => $this->prixTrade,
+                    'code_unique' => $this->notification->data['code_livr'],
+                    'id_trader' => Auth::id(),
+                    'quantiteC' => $this->appeloffregrp->quantity,
+                    'id_sender' => json_encode($this->appeloffregrp->prodUsers),
+                ]);
+
+                event(new CommentSubmitted($this->code_unique, $comment));
 
 
-            $comment = Comment::create([
-                'prixTrade' => $this->prixTrade,
-                'code_unique' => $this->notification->data['code_livr'],
-                'id_trader' => Auth::id(),
-                'quantiteC' => $this->appeloffregrp->quantity,
-                'id_sender' => json_encode($this->appeloffregrp->prodUsers),
-            ]);
+                return $comment;
+            }, 3); // Nombre de tentatives de transaction
 
-            broadcast(new CommentSubmitted($this->prixTrade,  $comment->id));
+            // Actualiser les données
             $this->listenForMessage();
+            $this->reset('prixTrade');
 
-            DB::commit();
-            $this->reset(['prixTrade']);
+            // Message de succès
+            $this->successMessage = "Votre offre a été soumise avec succès.";
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Gestion des erreurs de validation
+            $this->errorMessage = $e->validator->errors()->first();
+            Log::warning('Erreur de validation', [
+                'errors' => $e->errors(),
+                'user_id' => Auth::id()
+            ]);
         } catch (Exception $e) {
-            // Gérer l'exception, enregistrer l'erreur dans les logs et afficher un message d'erreur
-            Log::error('Erreur lors de la soummission: ' . $e->getMessage());
-
-            // Vous pouvez ajouter un retour ou une redirection avec un message d'erreur
-            return back()->with('error', 'Une erreur s\'est produite lors du refus de la proposition.');
+            // Gestion des autres erreurs
+            $this->errorMessage = "Une erreur est survenue : " . $e->getMessage();
+            Log::error('Erreur de soumission', [
+                'message' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+        } finally {
+            // Désactiver l'état de chargement
+            $this->isLoading = false;
         }
     }
 

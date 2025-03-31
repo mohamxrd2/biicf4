@@ -76,11 +76,12 @@ class AchatDirectService
 
             // Calcul des montants
             $totalMontantRequis = $achatdirect->montantTotal + $notification->data['prixTrade'];
-            $montantExcédent = $existingGelement->amount + $requiredAmount - $totalMontantRequis;
 
             // Mise à jour du montant gelé
             $existingGelement->amount += $requiredAmount;
             $existingGelement->save();
+
+            $montantExcédent = $existingGelement->amount + $requiredAmount - $totalMontantRequis;
 
             // Traitement de l'excédent
             if ($montantExcédent > 0) {

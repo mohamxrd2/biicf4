@@ -333,6 +333,11 @@ class AchatDirectGroupe extends Component
             'nameProd' => $validated['nameProd'],
             'quantité' => $validated['quantité'],
             'montantTotal' => $montantTotal,
+            'data_finance' => json_encode([
+                'montantTotal' => $montantTotal,
+                'quantité' => $validated['quantité'],
+                'prix_apres_comission' => $montantTotal - ($montantTotal * 0.1),
+            ]),
             'type_achat' => 'achatDirect',
             'localite' => $validated['localite'],
             'date_tot' => $validated['dateTot'] ?? null,

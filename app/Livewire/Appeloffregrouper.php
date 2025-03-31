@@ -23,16 +23,8 @@ use Livewire\Component;
 class Appeloffregrouper extends Component
 {
     public $notification;
-    public $id;
-    public $appelOffreGroup;
-    public $oldestCommentDate;
-    public $sumquantite = 0;
-    public $appelOffreGroupcount = 0;
-    public $quantite;
-    public $localite;
-    public $groupages = [];
-    public $existingQuantite;
-    public $oldestComment;
+    public $id, $appelOffreGroup, $oldestCommentDate, $sumquantite = 0, $appelOffreGroupcount = 0, $quantite,
+        $localite, $groupages = [], $existingQuantite, $oldestComment;
     public $isOpen = false;
     public $time;
     public $error;

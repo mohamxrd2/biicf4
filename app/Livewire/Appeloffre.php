@@ -34,7 +34,8 @@ class Appeloffre extends Component
     public $comments = [];
     public $oldestComment;
     public $oldestCommentDate, $serverTime, $quantite, $idProd, $idsender, $prixProd, $localite, $specificite;
-    public $nameprod, $quantiteC, $difference, $id_trader, $prixTrade, $namefourlivr, $appeloffre, $commentCount, $nombreParticipants, $produit, $code_unique, $ServerTime;
+    public $nameprod, $quantiteC, $difference, $id_trader, $prixTrade, $namefourlivr, $appeloffre, $commentCount,
+        $nombreParticipants, $produit, $code_unique, $ServerTime;
 
 
     public $time, $error, $prixLePlusBas, $offreIniatiale, $timestamp;

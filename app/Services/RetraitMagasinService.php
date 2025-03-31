@@ -48,20 +48,18 @@ class RetraitMagasinService
     public function retraitMagasin()
     {
         $commissionService = new CommissionService();
+        // Décoder `data_finance` pour éviter l'erreur
+        $dataFinance = json_decode($this->achatdirect->data_finance, true) ?? [];
+        // Calcul du montant requis avec une conversion en float
+        $requiredAmount = floatval($dataFinance['prix_apres_comission']);
 
-        // Calcul du montant requis avec une réduction de 10% cest pour le retrait en magasin
-        $requiredAmount = floatval($this->notification->data['prixFin']);
 
         // Vérification de l'existence de l'achat dans les transactions gelées
         $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
             ->first();
 
         if (!$existingGelement || $existingGelement->amount < $requiredAmount) {
-            Log::warning('Montant insuffisant ou aucune transaction gelée trouvée.', [
-                'reference_id' => $this->notification->data['code_unique'],
-                'required_amount' => $requiredAmount,
-                'available_amount' => $existingGelement->amount ?? 0,
-            ]);
+
             session()->flash('error', 'Le montant requis est insuffisant dans les transactions gelées.');
             return;
         }
@@ -70,40 +68,55 @@ class RetraitMagasinService
         try {
 
             // Retirer le montant du gel
-            $existingGelement->amount -= $requiredAmount;
             $existingGelement->status = 'OK';
+            $existingGelement->amount -=  $dataFinance['montantTotal'];
             $existingGelement->save();
 
             // met a jour le portefeuille de l'Fournisseur
             $this->userWalletFournisseur->balance += $requiredAmount;
             $this->userWalletFournisseur->save();
 
-            $this->createTransaction(
+
+            $TransactionService = new TransactionService();
+
+
+            $TransactionService->createTransaction(
                 $this->user,
                 $this->fournisseur->id ?? null,
                 'Envoie',
                 $this->achatdirect->montantTotal,
                 $this->generateIntegerReference(),
                 'Debité pour achat',
-                'effectué',
                 'COC'
             );
-            $this->createTransaction(
+
+            $TransactionService->createTransaction(
                 $this->user,
                 $this->fournisseur->id ?? null,
                 'Réception',
                 $requiredAmount,
                 $this->generateIntegerReference(),
                 'Réception pour achat',
-                'effectué',
                 'COC'
             );
 
             // Calcul des commissions
-            $commissions = $this->achatdirect->montantTotal - $requiredAmount;
+            $commissions = $dataFinance['montantTotal'] - $requiredAmount;
 
             // Paiement des commissions aux parrains
             $commissionService->handleCommissions($commissions, $this->fournisseur->parrain);
+
+            $montantExcédent = $existingGelement->amount;
+
+            // Traitement de l'excédent
+            if ($montantExcédent > 0) {
+                $this->handleExcedent(
+                    $existingGelement->wallet,
+                    $existingGelement,
+                    $montantExcédent,
+                    $this->user
+                );
+            }
 
             // Préparer les données pour le fournisseur
             $dataFournisseur = [
@@ -139,32 +152,25 @@ class RetraitMagasinService
         }
     }
 
-    /**
-     * Crée une nouvelle transaction
-     *
-     * @param int $senderId ID de l'expéditeur
-     * @param int $receiverId ID du destinataire
-     * @param string $type Type de transaction
-     * @param float $amount Montant de la transaction
-     * @param int $reference_id ID de référence
-     * @param string $description Description de la transaction
-     * @param string $status Statut de la transaction
-     * @param string $type_compte Type de compte
-     *
-     * @return void
-     */
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status, string $type_compte): void
+    private function handleExcedent($userWallet, $existingGelement, $montantExcédent, $userId)
     {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
+        $userWallet->balance += $montantExcédent;
+        $userWallet->save();
+
+        $existingGelement->amount -= $montantExcédent;
+        $existingGelement->save();
+
+        $TransactionService = new TransactionService();
+
+        $TransactionService->createTransaction(
+            $userId,
+            $userId,
+            'Réception',
+            $montantExcédent,
+            $this->generateIntegerReference(),
+            'Retour des fonds en plus',
+            'COC'
+        );
     }
 
     /**

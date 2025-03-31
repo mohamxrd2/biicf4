@@ -306,7 +306,8 @@ class Appeloffreterminer extends Component
                 'appeloffre' => $this->appeloffre,
                 'produit' => $this->produit,
                 'prixTotal' => $this->prixTotal,
-                'prixFin' => $this->prixFin
+                'prixFin' => $this->prixFin,
+                'prixTrade' => $this->notification->data['prixTrade'],
             ]);
 
             session()->flash('success', $result['message']);
