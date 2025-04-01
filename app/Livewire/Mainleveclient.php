@@ -218,6 +218,7 @@ class Mainleveclient extends Component
             'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
         ], [$fournisseurId, $livreurId]);
 
+        $this->gelement->amount -= $totalInterets + $montantPourFournisseur + $montantPourLivreur;
         $this->gelement->status = 'OK';
         $this->gelement->save();
 
@@ -229,18 +230,21 @@ class Mainleveclient extends Component
      */
     private function processGroupedPayments($transactionService, $walletService, $commissionService, $notificationService)
     {
+        // Décoder `data_finance` pour éviter l'erreur
+        $dataFinance = json_decode($this->achatdirect->data_finance, true) ?? [];
+
         $prixUnitaire = $this->achatdirect->prix;
         $codeUnique = $this->achatdirect->code_unique;
         $livreurId = $this->notification->data['livreur'] ?? null;
-        $prixTrade = $this->notification->data['prixTrade'] ?? 0;
         $valeurGelement = $this->gelement->amount ?? 0;
 
-        if (!$livreurId || !$prixTrade || !$valeurGelement) {
+        if (!$livreurId || !$valeurGelement) {
             throw new Exception('Données de paiement invalides pour l\'offre groupée.');
         }
 
-        $interetLivreur = $prixTrade * 0.01;
-        $montantPourLivreur = $prixTrade - $interetLivreur;
+        // Calcul de l'intérêt pour le livreur
+        $interetLivreur = $dataFinance['prix_livraison'] * 0.1;
+        $montantPourLivreur = $dataFinance['prix_livraison'] - $interetLivreur;
         $walletService->updateBalance($livreurId, $montantPourLivreur);
 
         $userQuantites = userquantites::where('code_unique', $codeUnique)->get();
@@ -248,13 +252,17 @@ class Mainleveclient extends Component
             throw new Exception('Aucune quantité utilisateur trouvée pour l\'offre groupée.');
         }
 
-        $totalInterets = 0;
+        // Initialiser le total des intérêts avec l'intérêt du livreur
+        $totalInterets = $interetLivreur;
+
+
+
         foreach ($userQuantites as $userQuantite) {
             $userId = $userQuantite->user_id;
             $quantite = $userQuantite->quantite;
 
             $prixTotal = $prixUnitaire * $quantite;
-            $interetFournisseur = ($valeurGelement - $prixTotal) * 0.01;
+            $interetFournisseur = ($valeurGelement - $prixTotal) * 0.1;
             $montantPourFournisseur = $prixTotal - $interetFournisseur;
 
             $walletService->updateBalance($userId, $montantPourFournisseur);
@@ -300,7 +308,8 @@ class Mainleveclient extends Component
             'COC'
         );
 
-        $commissionService->handleCommissions($totalInterets);
+        $fournisseur = User::findOrFail(Auth::id());
+        $commissionService->handleCommissions($totalInterets, $fournisseur->parrain);
 
         // Notification des utilisateurs
         $notificationService->notifyUsers([
@@ -310,8 +319,9 @@ class Mainleveclient extends Component
             'description' => 'Votre paiement a été traité avec succès. Merci pour votre confiance !',
         ], [$livreurId]);
 
-        // $this->gelement->status = 'completed';
-        // $this->gelement->save();
+        $this->gelement->amount -= $dataFinance['montantTotal'];
+        $this->gelement->status = 'OK';
+        $this->gelement->save();
     }
 
     public function refuseColis()

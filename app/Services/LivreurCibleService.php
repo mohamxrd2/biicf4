@@ -75,6 +75,7 @@ class LivreurCibleService
             })
             ->get();
 
+
         // Préparer les résultats
         $resultat = [
             'livreurs' => $livreurs,

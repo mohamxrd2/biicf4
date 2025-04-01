@@ -10,7 +10,9 @@ use App\Models\Countdown;
 use App\Models\offregroupe as ModelsAchatDirect;
 use App\Models\OffreGroupe;
 use App\Notifications\livraisonAppelOffregrouper;
+use App\Services\LivreurCibleService;
 use App\Services\RecuperationTimer;
+use App\Services\TimeSync\TimeSyncService;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Wallet;
@@ -73,10 +75,13 @@ class OffreNegosDone extends Component
     public $timeRemaining;
 
     protected $recuperationTimer;
+    protected $livreurCibleService;
+
     // Injection de la classe RecuperationTimer via le constructeur
     public function __construct()
     {
         $this->recuperationTimer = new RecuperationTimer();
+        $this->livreurCibleService = new LivreurCibleService();
     }
 
     public function mount($id)
@@ -107,118 +112,30 @@ class OffreNegosDone extends Component
         $this->prixFin = $this->prixTotal - ($this->prixTotal * 0.01); // Appliquer la réduction de 1%
 
 
-        $this->ciblageLivreurs();
+        // Cibler les livreurs pour cet appel d'offre
+        $resultatCiblage = $this->livreurCibleService->targeterLivreurs($this->offregroupe->client_id);
 
+        if ($resultatCiblage) {
+            // Faire quelque chose avec les livreurs ciblés
+            $this->livreurs = $resultatCiblage['livreurs'];
+            $this->livreursIds = $resultatCiblage['livreurs_ids'];
+            $this->livreursCount = count($this->livreurs);
+        }
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
     }
-    public function ciblageLivreurs()
-    {
-        // Vérification de l'existence de 'userSender' dans les données de la notification
-        $this->Idsender = $this->offregroupe->user_id ?? null;
 
-        if (!$this->Idsender) {
-            session()->flash('error', 'L\'expéditeur n\'est pas défini.');
-            return;
-        }
-
-        // Récupérer les informations du client
-        $client = User::find($this->Idsender);
-        if (!$client) {
-            session()->flash('error', 'Client introuvable.');
-            return;
-        }
-
-        // Normalisation des données du client pour comparaison
-        $this->clientContinent = strtolower($client->continent);
-        $this->clientSous_Region = strtolower($client->sous_region);
-        $this->clientPays = strtolower($client->country);
-        $this->clientDepartement = strtolower($client->departe);
-        $this->clientCommune = strtolower($client->commune);
-
-        // Préparer les critères de filtrage pour les livreurs
-        $query = Livraisons::query();
-
-        $query->where(function ($q) {
-            $q->where(function ($subQuery) {
-                $subQuery->where('zone', 'proximite')
-                    ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                    ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                    ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                    ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement])
-                    ->whereRaw('LOWER(commune) = ?', [$this->clientCommune]);
-            })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'locale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region])
-                        ->whereRaw('LOWER(pays) = ?', [$this->clientPays])
-                        ->whereRaw('LOWER(departe) = ?', [$this->clientDepartement]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'nationale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent])
-                        ->whereRaw('LOWER(sous_region) = ?', [$this->clientSous_Region]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'sous_regionale')
-                        ->whereRaw('LOWER(continent) = ?', [$this->clientContinent]);
-                })
-                ->orWhere(function ($subQuery) {
-                    $subQuery->where('zone', 'continentale');
-                });
-        });
-
-        // Filtrer les livreurs acceptés
-        $this->livreurs = $query->where('etat', 'Accepté')->get();
-
-        // Extraire les IDs et compter les livreurs
-        $this->livreursIds = $this->livreurs->pluck('user_id');
-        $this->livreursCount = $this->livreurs->count();
-    }
     protected function generateUniqueReference()
     {
         return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
     }
     public function timeServer()
     {
-        // Faire plusieurs tentatives de récupération pour plus de précision
-        $attempts = 3;
-        $times = [];
-
-        for ($i = 0; $i < $attempts; $i++) {
-            // Récupération de l'heure via le service
-            $currentTime = $this->recuperationTimer->getTime();
-            if ($currentTime) {
-                $times[] = $currentTime;
-            }
-            // Petit délai entre chaque tentative
-            usleep(50000); // 50ms
-        }
-
-        if (empty($times)) {
-            // Si aucune tentative n'a réussi, utiliser l'heure système
-            $this->error = "Impossible de synchroniser l'heure. Utilisation de l'heure système.";
-            $this->time = now()->timestamp * 1000;
-        } else {
-            // Utiliser la médiane des temps récupérés pour plus de précision
-            sort($times);
-            $medianIndex = floor(count($times) / 2);
-            $this->time = $times[$medianIndex];
-            $this->error = null;
-        }
-
-        // Convertir en secondes
-        $seconds = intval($this->time / 1000);
-        // Créer un objet Carbon pour le timestamp
-        $this->timestamp = Carbon::createFromTimestamp($seconds);
-
-        // Log pour debug
-        Log::info('Timer actualisé', [
-            'timestamp' => $this->timestamp,
-            'time_ms' => $this->time,
-            'attempts' => count($times)
-        ]);
+        $timeSync = new TimeSyncService($this->recuperationTimer);
+        $result = $timeSync->getSynchronizedTime();
+        $this->time = $result['time'];
+        $this->error = $result['error'];
+        $this->timestamp = $result['timestamp'];
     }
     public function accepter()
     {
@@ -248,6 +165,12 @@ class OffreNegosDone extends Component
             $achatdirect = AchatDirect::create([
                 'photoProd' => $photoName,
                 'prix' => $this->offregroupe->produit->prix,
+                'data_finance' => json_encode([
+                    'prix_negociation' => $this->offregroupe->produit->prix,
+                    'montantTotal' => $this->prixTotal,
+                    'quantité' => $quantiteTotal,
+                    'prix_apres_comission' => $this->prixFin,
+                ]),
                 'nameProd' => $this->produit->name,
                 'quantité' => $quantiteTotal,
                 'montantTotal' => $this->prixTotal,
@@ -273,21 +196,24 @@ class OffreNegosDone extends Component
             ];
 
             $userSender = $this->offregroupe->client_id;
-            // Démarrer le compte à rebours pour chaque utilisateur
-            $this->startCountdown($data['code_livr'], $userSender, $achatdirect->id);
-
+            $userTrader = Auth::id();
 
             // Envoyer les notifications aux livreurs
             if ($this->livreursIds->isNotEmpty()) {
                 foreach ($this->livreursIds as $livreurId) {
-                    $livreur = User::find($livreurId);
-                    if ($livreur) {
-                        Notification::send($livreur, new livraisonAchatdirect($data));
-                        event(new NotificationSent($livreur));
+                    // Vérifier si le livreur n'est ni le client ni le fournisseur
+                    if ($livreurId != $userSender && $livreurId != $userTrader) {
+                        $livreur = User::find($livreurId);
+                        if ($livreur) {
+                            Notification::send($livreur, new livraisonAchatdirect($data));
+                            event(new NotificationSent($livreur));
+                        }
                     }
                 }
             }
 
+            // Démarrer le compte à rebours pour chaque utilisateur
+            $this->startCountdown($data['code_livr'], $userSender, $achatdirect->id);
             // Mettre à jour la notification
             $this->notification->update(['reponse' => 'accepte']);
 
@@ -386,19 +312,7 @@ class OffreNegosDone extends Component
         }
     }
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
-    }
+
     protected function handlePhotoUpload($photoField)
     {
         if ($this->$photoField instanceof \Illuminate\Http\UploadedFile) {
@@ -415,16 +329,6 @@ class OffreNegosDone extends Component
         }
         return null; // Retourne null si aucun fichier valide
     }
-
-    protected function generateIntegerReference(): int
-    {
-        // Récupère l'horodatage en millisecondes
-        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
-
-        // Retourne l'horodatage comme entier
-        return (int) $timestamp;
-    }
-
 
     public function render()
     {

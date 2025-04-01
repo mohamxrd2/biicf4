@@ -4,7 +4,7 @@
             <!-- En-tête -->
             <div class="flex items-center justify-between border-b pb-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">Commande a livrer</h1>
+                    <h1 class="text-3xl font-bold text-gray-800">Commande a Livrer</h1>
                     <p class="mt-1 text-sm text-gray-500">Commande #{{ $notification->data['code_unique'] }}
                     </p>
                 </div>
@@ -134,12 +134,12 @@
                     <div class="flex justify-between text-sm text-gray-600">
                         <span>Frais de service :
                         </span>
-                        <span>1%</span>
+                        <span>10%</span>
                     </div>
                     <div class="flex justify-between font-medium text-gray-900">
                         <span>A recevoir :</span>
                         <span>
-                            {{ number_format($notification->data['prixTrade'] - $notification->data['prixTrade'] * 0.01, 2, ',', '.') }}
+                            {{ number_format($notification->data['prixTrade'] - $notification->data['prixTrade'] * 0.1, 2, ',', '.') }}
                             FCFA</span>
                     </div>
                 </div>

@@ -59,6 +59,7 @@ class MainleveAd extends Component
 
         $this->nombreFournisseurs = $this->usersLocations->count();
     }
+
     private function loadLocations()
     {
         switch ($this->achatdirect->type_achat) {
@@ -115,8 +116,12 @@ class MainleveAd extends Component
             Notification::send($user, new NotificationsMainleveAd($dataFournisseur));
             event(new NotificationSent($user));
 
-            // Mettre à jour type_achat à true après envoi
-            $this->notification->update(['type_achat' => 'block']);
+            if (!$this->achatdirect->type_achat === 'OffreGrouper') {
+                // Mettre à jour type_achat à true après envoi
+                $this->notification->update(['type_achat' => 'block']);
+            }
+
+
 
             session()->flash('success', 'Notification envoyée au fournisseur.');
             DB::commit();
@@ -207,7 +212,6 @@ class MainleveAd extends Component
             Notification::send($this->client, new mainleveclient($data));
             event(new NotificationSent(user: $this->client));
 
-            Log::info('Notification de livraison envoyée avec succès.', $data);
 
             // Mise à jour de la notification
             $this->notification->update(['reponse' => 'mainleveclient']);

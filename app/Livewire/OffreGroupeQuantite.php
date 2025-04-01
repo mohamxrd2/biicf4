@@ -20,20 +20,8 @@ use Livewire\Component;
 class OffreGroupeQuantite extends Component
 {
     public $id;
-    public $notification;
-    public $produit;
-    public $localite;
-    public $selectedOption;
-    public $OffreGroupe;
-    public $participants = 0;
-    public $existingQuantite;
-    public $premierFournisseur;
-    public $quantiteTotale = 0;
-    public $quantite;
-    public $oldestComment;
-    public $oldestCommentDate;
-    public $isOpen;
-    public $groupages = []; // Liste des groupages existants
+    public $notification, $produit, $localite, $selectedOption, $OffreGroupe, $participants = 0, $existingQuantite,
+        $premierFournisseur, $quantiteTotale = 0, $quantite, $oldestComment, $oldestCommentDate, $isOpen, $groupages = []; 
 
     public $time;
     public $error;

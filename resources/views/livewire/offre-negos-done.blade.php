@@ -206,82 +206,121 @@
                         <span wire:loading>Chargement...</span> <!-- Texte affiché pendant le chargement -->
                     </button>
                 @else
-                    <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:..., Dimension:..., Poids:..., Autre:...' }" x-cloak>
-                        <!-- Buttons to open modal and refuse -->
-                        <button @click="isOpen = true"
-                            class="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700">Acheminement pour
-                            négociation</button>
-                        <button wire:click="refuser" id="btn-refuser" type="submit"
-                            class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700">Refuser</button>
+                    <div x-data="{ isOpen: false, open: false, textareaValue: 'Emballage:, Dimension:, Poids:, Autre:' }" x-cloak>
+                        <!-- Main action buttons -->
+                        <div class="flex space-x-4">
+                            <button @click="isOpen = true"
+                                class="flex items-center px-6 py-3 text-white transition-colors bg-green-500 rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-400">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Acheminement pour négociation
+                            </button>
+                            <button wire:click="refuser" id="btn-refuser"
+                                class="px-6 py-3 text-white transition-colors bg-red-500 rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-400">
+                                Refuser
+                            </button>
+                        </div>
 
                         <!-- Modal -->
-                        <div x-show="isOpen" id="hs-basic-modal"
-                            class="fixed top-0 left-0 z-50 w-full h-full overflow-y-auto bg-black bg-opacity-50 hs-overlay hs-overlay-open:opacity-100 hs-overlay-open:duration-500">
-                            <div class="m-3 sm:max-w-lg sm:w-full sm:mx-auto">
-                                <div class="flex flex-col bg-white border shadow-sm pointer-events-auto rounded-xl">
-                                    <div class="flex items-center justify-between px-4 py-3 border-b">
-                                        <h3 class="font-bold text-gray-800">Envoi au livreur</h3>
-                                        <button @click="isOpen = false" class="text-gray-800 hover:text-gray-600">
-                                            <span class="sr-only">Close</span>
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <div x-show="isOpen" x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 transform scale-95"
+                            x-transition:enter-end="opacity-100 transform scale-100"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100 transform scale-100"
+                            x-transition:leave-end="opacity-0 transform scale-95"
+                            class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+                            <div class="flex items-center justify-center min-h-screen p-4">
+                                <div class="w-full max-w-xl bg-white rounded-xl shadow-2xl">
+                                    <!-- Modal Header -->
+                                    <div class="flex items-center justify-between p-6 border-b">
+                                        <h3 class="text-xl font-semibold text-gray-800">Envoi au livreur</h3>
+                                        <button @click="isOpen = false"
+                                            class="p-2 text-gray-600 rounded-lg hover:bg-gray-100">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12"></path>
+                                                    d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="p-4">
-                                        <p class="text-gray-800">
+
+                                    <!-- Modal Body -->
+                                    <div class="p-6">
+                                        <div class="p-4 mb-6 bg-gray-50 rounded-lg">
                                             @if ($nombreLivr)
-                                                <div>
-                                                    <p><strong>Le nombre total de livreurs
-                                                            disponible:</strong>{{ $livreursCount }}</p>
+                                                <div class="flex items-center space-x-2">
+                                                    <svg class="w-5 h-5 text-green-500" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <p class="text-gray-700"><strong>Livreurs disponibles :</strong>
+                                                        {{ $livreursCount }}</p>
                                                 </div>
                                             @else
-                                                Aucun livreur disponible dans la zone
+                                                <div class="flex items-center space-x-2 text-red-600">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <p>Aucun livreur disponible dans la zone</p>
+                                                </div>
                                             @endif
-                                        </p>
-                                    </div>
-                                    @if ($nombreLivr == 0)
-                                    @else
-                                        <div class="flex items-center justify-end px-4 py-3 border-t">
+                                        </div>
+
+                                        @if ($nombreLivr != 0)
                                             <div x-data="{ open: false }">
-                                                <!-- Button to toggle textarea visibility -->
                                                 <button @click="open = !open"
-                                                    class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600">
+                                                    class="w-full px-4 py-3 text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-400">
                                                     Ajouter le nouveau Conditionnement
                                                 </button>
 
-                                                <!-- Textarea and action buttons -->
-                                                <div x-show="open" class="mt-4">
-                                                    <form wire:submit.prevent="accepter"
-                                                        enctype="multipart/form-data">
+                                                <div x-show="open"
+                                                    x-transition:enter="transition ease-out duration-200"
+                                                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                                                    class="mt-4">
+                                                    <form wire:submit.prevent="accepter" class="space-y-4">
+                                                        <div class="space-y-2">
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Détails
+                                                                du conditionnement</label>
+                                                            <textarea wire:model="textareaValue" x-model="textareaValue"
+                                                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                                                                rows="4" required></textarea>
+                                                        </div>
 
-                                                        <textarea wire:model="textareaValue" x-model="textareaValue" class="w-full p-2 border border-gray-300 rounded"
-                                                            rows="6" required>
-                                                        </textarea>
+                                                        <div class="space-y-2">
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Photo
+                                                                du produit</label>
+                                                            <input type="file" wire:model="photoProd"
+                                                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                                                                required />
+                                                        </div>
 
-                                                        <!-- Champ de téléchargement de fichier -->
-                                                        <input type="file" wire:model="photoProd" class="mt-2"
-                                                            required />
-
-                                                        <div class="flex justify-end mt-2 space-x-2">
+                                                        <div class="flex justify-end space-x-3">
+                                                            <button @click="open = false" type="button"
+                                                                class="px-4 py-2 text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200">
+                                                                Annuler
+                                                            </button>
                                                             <button type="submit"
-                                                                class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">
+                                                                class="px-4 py-2 text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                                                                wire:loading.attr="disabled">
                                                                 <span wire:loading.remove>Confirmer</span>
                                                                 <span wire:loading>En cours...</span>
                                                             </button>
-                                                            <button @click="open = false"
-                                                                class="px-4 py-2 text-gray-800 bg-gray-200 rounded hover:bg-gray-300">
-                                                                Annuler
-                                                            </button>
                                                         </div>
                                                     </form>
-
                                                 </div>
                                             </div>
-                                        </div>
-                                    @endif
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
