@@ -22,31 +22,14 @@ class Enchere extends Component
 {
     public $notification;
     public $id;
-    public $comments = [];
-    public $oldestComment;
-    public $oldestCommentDate;
-    public $serverTime;
-    public $quantite;
-    public $idProd;
+    public $comments = [], $oldestComment, $oldestCommentDate, $serverTime, $quantite, $idProd;
     public $idsender;
-    public $code_unique;
-    public $prixProd;
-    public $localite;
-    public $specificite;
-    public $nameprod;
-    public $quantiteC;
-    public $difference;
-    public $id_trader;
-    public $prixTrade;
-    public $namefourlivr;
-    public $commentCount;
-    public $produit, $nombreParticipants, $offgroupe;
-    public $time;
-    public $error;
-    public $lastActivity;
-    public $prixLePlusBas;
-    public $offreIniatiale;
-    public $isNegociationActive;
+    public $code_unique, $prixProd, $localite, $specificite, $nameprod, $quantiteC, $difference, $id_trader, $prixTrade, $namefourlivr, $commentCount;
+    public $produit, $nombreParticipants, $offgroupe, $time, $error, $lastActivity, $prixLePlusBas, $offreIniatiale, $isNegociationActive;
+    public $isLoading = false;
+    public $errorMessage = null;
+    public $successMessage = null;
+
     protected $listeners = ['negotiationEnded' => '$refresh'];
 
 
@@ -63,6 +46,7 @@ class Enchere extends Component
             }
             $this->produit = ProduitService::findOrFail($this->idProd);
             $this->offgroupe = OffreGroupe::where('code_unique', $this->notification->data['code_unique'])->firstOrFail();
+            $this->code_unique = $this->notification->data['code_unique'];
 
             $countdown = Countdown::where('code_unique', $this->offgroupe->code_unique)
                 ->where('is_active', false)
@@ -70,6 +54,8 @@ class Enchere extends Component
             if ($countdown && !$this->offgroupe->count) {
                 $this->offgroupe->update(['count' => true]);
             }
+
+            $this->offreIniatiale =  $this->produit->prix;
 
             $this->listenForMessage();
         } catch (Exception $e) {
@@ -81,23 +67,19 @@ class Enchere extends Component
         }
     }
 
-    #[On('echo:comments,CommentSubmitted')]
+    #[On('echo:comments.{code_unique},CommentSubmitted')]
     public function listenForMessage()
     {
-        $code_unique = $this->notification->data['code_unique'];
 
         $this->comments = Comment::with('user')
-            ->where('code_unique', $code_unique)
+            ->where('code_unique',  $this->code_unique)
             ->whereNotNull('prixTrade')
             ->orderBy('prixTrade', 'desc')
             ->get();
 
-        $this->prixLePlusBas = Comment::where('code_unique', $code_unique)
+        $this->prixLePlusBas = Comment::where('code_unique',  $this->code_unique)
             ->whereNotNull('prixTrade')
             ->max('prixTrade');
-
-        $this->offreIniatiale =  $this->produit->prix;
-
 
         $this->isNegociationActive = !$this->offgroupe->count;
 
@@ -112,8 +94,42 @@ class Enchere extends Component
         }
     }
 
+    // Règles de validation
+    protected function rules()
+    {
+        return [
+            'prixTrade' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    // Vérifier que le prix ne dépasse pas le prix initial le plus bas
+                    if ($value < $this->offreIniatiale) {
+                        $fail("Le prix proposé doit être superieur ou égal au prix initial de " . $this->offreIniatiale);
+                    }
 
-    public function commentFormLivr()
+                    $dernierePlusBasseOffre = Comment::where('code_unique', $this->code_unique)
+                        ->whereNotNull('prixTrade')
+                        ->orderBy('prixTrade', 'asc')
+                        ->first();
+
+                    if ($dernierePlusBasseOffre && $value <= $dernierePlusBasseOffre->prixTrade) {
+                        $fail("Le prix proposé doit être superieur au prix actuel de " . $dernierePlusBasseOffre->prixTrade);
+                    }
+                }
+            ]
+        ];
+    }
+    // Messages personnalisés de validation
+    protected function messages()
+    {
+        return [
+            'prixTrade.required' => 'Veuillez saisir un prix.',
+            'prixTrade.numeric' => 'Le prix doit être un nombre valide.',
+            'prixTrade.min' => 'Le prix doit être supérieur à zéro.'
+        ];
+    }
+    public function soumissionDePrix()
     {
         if ($this->offgroupe->count) {
             $this->dispatch(
@@ -123,48 +139,51 @@ class Enchere extends Component
             return;
         }
 
-        $code_unique = $this->notification->data['code_unique'];
 
-        try {
-            DB::beginTransaction();
+        // Activer l'état de chargement
+        $this->isLoading = true;
+        $this->errorMessage = null;
+        $this->successMessage = null;
 
-            $offreInitiale = $this->produit->prix;
+        // try {
 
-            $validatedData = $this->validate([
-                'prixTrade' => [
-                    'required',
-                    'numeric',
-                    function ($attribute, $value, $fail) use ($offreInitiale) {
+            // Transaction de base de données
+            $comment = DB::transaction(function () {
+                // Vérifier et verrouiller l'appel d'offre
+                $offgroupe = OffreGroupe::where('code_unique', $this->code_unique)
+                    ->lockForUpdate()
+                    ->first();
+                // Validation des données
+                $validatedData = $this->validate();
 
-                        if ($offreInitiale && $value <= $offreInitiale) {
-                            $fail("Le prix doit être supérieur à {$offreInitiale}");
-                        }
-                    }
-                ]
-            ]);
+                $comment = Comment::create([
+                    'prixTrade' => $validatedData['prixTrade'],
+                    'code_unique' => $this->code_unique,
+                    'id_trader' => Auth::id(),
+                    'id_prod' => $this->produit->id,
+                ]);
 
-            $comment = Comment::create([
-                'prixTrade' => $validatedData['prixTrade'],
-                'code_unique' => $code_unique,
-                'id_trader' => Auth::id(),
-                'id_prod' => $this->produit->id,
-            ]);
+                event(new CommentSubmitted($this->code_unique, $comment));
+                return $comment;
+            }, attempts: 3); // Nombre de tentatives de transaction
 
-            $this->reset('prixTrade');
-            broadcast(new CommentSubmitted($validatedData['prixTrade'], $comment->id))->toOthers();
-
-            DB::commit();
-            // Optionnel: Ajouter une notification ou un message de succès
-            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
+            // Actualiser les données
             $this->listenForMessage();
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Erreur lors de l\'enchère', [
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id()
-            ]);
-            session()->flash('error', 'Erreur lors de l\'enchère: ' . $e->getMessage());
-        }
+            $this->reset('prixTrade');
+
+            // Message de succès
+            $this->successMessage = "Votre offre a été soumise avec succès.";
+        // } catch (Exception $e) {
+        //     // Gestion des autres erreurs
+        //     $this->errorMessage = "Une erreur est survenue : " . $e->getMessage();
+        //     Log::error('Erreur de soumission', [
+        //         'message' => $e->getMessage(),
+        //         'user_id' => Auth::id()
+        //     ]);
+        // } finally {
+        //     // Désactiver l'état de chargement
+        //     $this->isLoading = false;
+        // }
     }
 
     public function render()

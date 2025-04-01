@@ -74,8 +74,6 @@ class Appeloffregroupernegociation extends Component
     #[On('echo:comments.{code_unique},CommentSubmitted')]
     public function listenForMessage()
     {
-        // Déboguer pour vérifier la structure de l'événement
-        // Vérifier si 'code_unique' existe dans les données de notification
         $this->comments = Comment::with('user')
             ->where('code_unique', $this->notification->data['code_livr'])
             ->whereNotNull('prixTrade')
@@ -151,9 +149,7 @@ class Appeloffregroupernegociation extends Component
         $this->isLoading = true;
         $this->errorMessage = null;
         $this->successMessage = null;
-
-
-
+        
         try {
             // Transaction de base de données
             $comment = DB::transaction(function () {

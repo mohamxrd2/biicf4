@@ -4,60 +4,35 @@ namespace App\Livewire;
 
 use App\Events\NotificationSent;
 use App\Models\AchatDirect;
-use App\Models\CrediScore;
 use App\Models\gelement;
 use App\Models\ProduitService;
-use App\Models\Transaction;
+use App\Models\Promir;
 use App\Models\User;
-use App\Models\UserPromir;
 use App\Models\Wallet;
 use App\Notifications\AchatBiicf;
 use App\Notifications\Confirmation;
+use App\Services\generateIntegerReference;
+use App\Services\generateUniqueReference;
+use App\Services\TransactionService;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
-use Illuminate\Support\Str;
 
 class Offrenegosterminer extends Component
 {
-    public $notification;
-    public $id;
-    public $produitId;
-    public $produit;
-    public $userId;
-    public $prixProd;
-    public $quantité;
-    public $quantite;
-    public $type;
-    public $idProd;
-    public $photo;
-    public $selectedOption = "";
+    public $notification, $id, $produitId, $produit, $userId, $prixProd, $quantité, $quantite,
+        $type, $idProd, $photo, $selectedOption = "";
 
     //
-    public $dayPeriodFin;
-    public $nameProd;
-    public $localite;
-    public $userTrader;
-    public $userSender;
-    public $selectedSpec = false;
-    public $code_unique;
-    public $dateTard;
-    public $dateTot;
-    public $photoProd;
-    public $timeStart;
-    public $timeEnd;
-    public $prix;
-    public $dayPeriod = "";
-    public $userBalance;
-    public $totalCost;
-    public $isButtonDisabled = false;
-    public $isButtonHidden = false;
-    public $currentPage = 'achat';
-    public $errorMessage = ''; // Add this property
+    public $dayPeriodFin, $nameProd, $localite, $userTrader, $userSender, $selectedSpec = false,
+        $code_unique, $dateTard, $dateTot, $photoProd, $timeStart, $timeEnd, $prix, $dayPeriod = "",
+        $userBalance, $totalCost, $isButtonDisabled = false, $isButtonHidden = false, $currentPage = 'achat',
+        $errorMessage = '', $userInPromir, $userWallet;
     protected $listeners = ['navigate' => 'setPage'];
     public function setPage($page)
     {
@@ -84,11 +59,13 @@ class Offrenegosterminer extends Component
         $userId = Auth::guard('web')->id();
 
         // Récupérer le portefeuille de l'utilisateur
-        $userWallet = Wallet::where('user_id', $userId)->first();
+        $this->userWallet = Wallet::where('user_id', $userId)->first();
 
         // Assume user balance is fetched from the authenticated user
-        $this->userBalance = $userWallet ?? 0;
+        $this->userBalance = $this->userWallet ?? 0;
         $this->totalCost = (int)$this->quantité * $this->prix;
+
+        $this->userInPromir = Promir::where('user_id', Auth::id())->first();
     }
     public function updatedQuantité()
     {
@@ -121,16 +98,11 @@ class Offrenegosterminer extends Component
             $this->isButtonDisabled = false;
         }
     }
-    protected function generateUniqueReference()
-    {
-        return 'REF-' . strtoupper(Str::random(6)); // Exemple de génération de référence
-    }
 
     public function AchatDirectForm()
     {
         // Valider les données
         $validated = $this->validateData();
-
         if ($validated === false) {
             return; // Arrête l'exécution si la validation échoue
         }
@@ -143,51 +115,50 @@ class Offrenegosterminer extends Component
         }
 
         $montantTotal = $this->totalCost;
-        $userWallet = $this->getUserWallet($userId);
 
         $this->updatedQuantité();
         // Vérifier si l'option sélectionnée est vide
         if (empty($this->selectedOption)) {
             $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');
+            return; // Arrête l'exécution si l'option n'est pas sélectionnée
         }
+
         // Commencer la transaction
         DB::beginTransaction();
         try {
-            $codeUnique = $this->generateUniqueReference();
+            // Utilisation :
+            $referenceService = new GenerateUniqueReference();
+            $codeUnique = $referenceService->generate();
             if (!$codeUnique) {
                 throw new \Exception('Code unique non généré.');
             }
 
             // Traiter l'achat
             $achat = $this->createPurchase($validated, $montantTotal, $codeUnique);
+
             // Vérification de l'existence de l'achat dans les transactions gelées
             gelement::create([
                 'reference_id' => $codeUnique,
-                'id_wallet' => $userWallet->id,
+                'id_wallet' => $this->userWallet->id,
                 'amount' => $montantTotal,
             ]);
 
             // Mettre à jour le portefeuille
-            $this->updateWalletBalance($userWallet, $montantTotal);
-
-
+            $this->userWallet->decrement('balance', $montantTotal);
 
             // Créer les transactions
-            $reference_id = $this->generateIntegerReference();
+            $reference_service = new generateIntegerReference();
+            $reference_id = $reference_service->generate();
+
             $description = $this->type === 'Produit'
                 ? 'Gele Pour Achat de ' . $validated['nameProd']
                 : 'Gele Pour Service de ' . $validated['nameProd'];
 
-            $this->createTransaction(
-                $userId,
-                $validated['userTrader'],
-                'Gele',
-                $montantTotal,
-                $reference_id,
-                $description,
-                'effectué',
-                'COC'
-            );
+            $TransactionService = new TransactionService();
+            // Ici vous devez probablement appeler une méthode du TransactionService
+            // Par exemple:
+            $TransactionService->createTransaction($userId, $this->userTrader, $this->type, $montantTotal,  $reference_id, $description, 'COC');
+
             // Gérer les notifications
             $this->sendNotifications($validated, $achat, $codeUnique);
 
@@ -345,15 +316,6 @@ class Offrenegosterminer extends Component
     }
 
 
-    private function getUserWallet($userId)
-    {
-        return Wallet::where('user_id', $userId)->first();
-    }
-
-    private function updateWalletBalance($userWallet, $montantTotal)
-    {
-        $userWallet->decrement('balance', $montantTotal);
-    }
 
     private function createPurchase($validated, $montantTotal, $codeUnique)
     {
@@ -361,6 +323,11 @@ class Offrenegosterminer extends Component
             'nameProd' => $validated['nameProd'],
             'quantité' => $validated['quantité'],
             'montantTotal' => $montantTotal,
+            'data_finance' => json_encode([
+                'montantTotal' => $montantTotal,
+                'quantité' => $validated['quantité'],
+                'prix_apres_comission' => $montantTotal - ($montantTotal * 0.1),
+            ]),
             'type_achat' => 'achatDirect',
             'localite' => $validated['localite'],
             'date_tot' => $validated['dateTot'] ?? null,
@@ -390,8 +357,6 @@ class Offrenegosterminer extends Component
             'description' => 'Cliquez pour voir les détails de votre commande.',
         ]));
 
-        // $this->dispatch('refreshNotifications');
-
         $achatUser = [
             'nameProd' => $validated['nameProd'],
             'idProd' => $validated['idProd'],
@@ -409,56 +374,50 @@ class Offrenegosterminer extends Component
 
 
 
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
-    }
-
-    protected function generateIntegerReference(): int
-    {
-        // Récupère l'horodatage en millisecondes
-        $timestamp = now()->getTimestamp() * 1000 + now()->micro;
-
-        // Retourne l'horodatage comme entier
-        return (int) $timestamp;
-    }
-
     public function credit()
     {
-        // $this->dispatch('navigate', 'credit');
+        $this->dispatch('navigate', 'credit');
 
-        // Récupérer l'utilisateur actuellement connec
-        $user = auth()->user();
-        $userNumber = $user->phone;
+        // Vérifier si l'utilisateur est bien enregistré dans Promir
+        if ($this->userInPromir) {
+            $systemClientId = $this->userInPromir->system_client_id;
+            $moisDepuisCreation = $this->userInPromir->mois_depuis_creation;
 
-        // Vérifier si le numéro de téléphone de l'utilisateur existe dans la table user_promir
-        $userInPromir = UserPromir::where('numero', $userNumber)->first();
+            if (!$systemClientId || !$moisDepuisCreation) {
+                $this->dispatch(
+                    'formSubmitted',
+                    'Les informations de votre compte Promir sont incomplètes.'
+                );
+                return;
+            }
 
-        if ($userInPromir) {
-            // Vérifier si un score de crédit existe pour cet utilisateur
-            $crediScore = CrediScore::where('id_user', $userInPromir->id)->first();
+            // Appel API pour récupérer le score de crédit
+            try {
+                $client = new Client();
+                $response = $client->get("http://promir.toopartoo/api/cote/{$systemClientId}/{$moisDepuisCreation}");
+                $crediScoreData = json_decode($response->getBody()->getContents(), true);
+            } catch (\Exception $e) {
+                $this->dispatch(
+                    'formSubmitted',
+                    'Erreur lors de la récupération de votre score de crédit.'
+                );
+                return;
+            }
 
-            if ($crediScore) {
-                // Vérifier si le score est A+, A, ou A-
-                if (in_array($crediScore->ccc, ['A+', 'A', 'A-'])) {
+            // Vérifier si la réponse contient bien une clé "grade"
+            if (isset($crediScoreData['grade'])) {
+                $crediScore = $crediScoreData['grade']; // Récupérer le grade
+
+                if (in_array($crediScore, ['A+', 'A', 'A-', 'B+', 'B', 'B-'])) {
                     $this->dispatch(
                         'formSubmitted',
-                        'Votre numéro existe dans Promir et votre score de crédit est ' . $crediScore->ccc . ', Alors vous etes éligible au credit'
+                        "Votre numéro existe dans Promir et votre score de crédit est {$crediScore}, vous êtes éligible au crédit."
                     );
                     $this->checkEligibility();
                 } else {
                     $this->dispatch(
                         'formSubmitted',
-                        'Votre numéro existe dans Promir, mais votre score de crédit est ' . $crediScore->ccc . ', ce qui n\'est pas éligible.'
+                        "Votre numéro existe dans Promir, mais votre score de crédit est {$crediScore}, ce qui n'est pas éligible."
                     );
                 }
             } else {
@@ -468,10 +427,9 @@ class Offrenegosterminer extends Component
                 );
             }
         } else {
-            // L'utilisateur n'existe pas dans user_promir, afficher un message d'erreur
             $this->dispatch(
                 'formSubmitted',
-                'Votre numéro n\'existe pas dans la base de données Promir. Vous n\'etes pas eligible.'
+                'Votre numéro n\'existe pas dans la base de données Promir. Vous n\'êtes pas éligible.'
             );
         }
     }

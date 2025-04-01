@@ -83,7 +83,7 @@
             </div>
         </div>
 
-        <x-negociation :achatdirect="$offgroupe" :comments="$comments" />
+        <x-negociation :achatdirect="$offgroupe" :comments="$comments" :successMessage="$successMessage" :errorMessage="$errorMessage" />
 
 
     </div>

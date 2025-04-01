@@ -66,14 +66,14 @@ class AchatDirectGroupe extends Component
         $this->prix = $this->produit->prix;
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionné
 
-        // Récupérer le portefeuille de l'utilisateur
-        $this->userWallet = Wallet::where('user_id', $this->userId)->first();
+         // Récupérer le portefeuille de l'utilisateur
+         $this->userWallet = Wallet::where('user_id', $this->userId)->first();
 
-        // Assume user balance is fetched from the authenticated user
-        $this->userBalance = $this->userWallet ?? 0;
-        $this->totalCost = (int)$this->quantité * $this->prix;
+         // Assume user balance is fetched from the authenticated user
+         $this->userBalance = $this->userWallet ?? 0;
+         $this->totalCost = (int)$this->quantité * $this->prix;
 
-        $this->userInPromir = Promir::where('user_id', Auth::id())->first();
+         $this->userInPromir = Promir::where('user_id', Auth::id())->first();
     }
 
     public function updatedQuantité()
@@ -158,7 +158,6 @@ class AchatDirectGroupe extends Component
             // Créer les transactions
             $reference_service = new generateIntegerReference();
             $reference_id = $reference_service->generate();
-            // Suppression du dd() qui stoppait l'exécution
 
             $description = $this->type === 'Produit'
                 ? 'Gele Pour Achat de ' . $validated['nameProd']
@@ -367,7 +366,6 @@ class AchatDirectGroupe extends Component
             'description' => 'Cliquez pour voir les détails de votre commande.',
         ]));
 
-        // $this->dispatch('refreshNotifications');
 
         $achatUser = [
             'nameProd' => $validated['nameProd'],
@@ -404,7 +402,7 @@ class AchatDirectGroupe extends Component
             // Appel API pour récupérer le score de crédit
             try {
                 $client = new Client();
-                $response = $client->get("http://127.0.0.1:8001/api/cote/{$systemClientId}/{$moisDepuisCreation}");
+                $response = $client->get("http://promir.toopartoo/api/cote/{$systemClientId}/{$moisDepuisCreation}");
                 $crediScoreData = json_decode($response->getBody()->getContents(), true);
             } catch (\Exception $e) {
                 $this->dispatch(

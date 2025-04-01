@@ -32,11 +32,12 @@
                 <span class="font-medium text-white">{{ session('error') }}</span>
             </div>
         @endif
-        <div x-data="{ selectedOption: @entangle('selectedOption'), quantité: 1, localite: '' }">
+        <div x-data="{ selectedOption: @entangle('selectedOption'), quantité: 0, localite: '' }">
 
             <div class="relative md:static p-4 bg-white rounded-lg shadow-lg">
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
                     <!-- Champ de quantité -->
                     <div class="mb-4">
                         <h2 class="text-lg font-bold mb-2">Quantité du produit/service</h2>
@@ -82,8 +83,6 @@
 
                 </div>
 
-
-
                 <!-- Mode de réception -->
                 <div class="mb-4">
                     <h2 class="text-lg font-bold mb-2">Mode de réception</h2>
@@ -102,27 +101,24 @@
                 </div>
 
                 <div class="flex flex-col space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
 
-                        @if ($type == 'Service')
-                            <div x-show="selectedOption === 'Take Away'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
-                                <x-time-picker-form title="Choisir l'horaire de debut" dateId="datePickerStart"
-                                    timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot"
-                                    timeModel="timeStart" periodModel="dayPeriod" dateLabel="Date" />
+                    @if ($type == 'Service')
+                        <div x-show="selectedOption === 'Take Away'"class="col-span-2 grid grid-cols-2 gap-6 mt-4">
+                            <x-time-picker-form title="Choisir l'horaire de debut" dateId="datePickerStart"
+                                timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot" timeModel="timeStart"
+                                periodModel="dayPeriod" dateLabel="Date" />
 
-                                <x-time-picker-form title="Choisir l'horaire de fin" dateId="datePickerEnd"
-                                    timeId="timePickerEnd" periodId="dayPeriodFin" dateModel="dateTard"
-                                    timeModel="timeEnd" periodModel="dayPeriodFin" dateLabel="Date de retrait" />
-                            </div>
-                        @else
-                            <div x-show="selectedOption === 'Take Away'">
-                                <x-time-picker-form title="Choisir la période de retrait" dateId="datePickerStart"
-                                    timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot"
-                                    timeModel="timeStart" periodModel="dayPeriod" dateLabel="Date" />
-                            </div>
-                        @endif
-
-                    </div>
+                            <x-time-picker-form title="Choisir l'horaire de fin" dateId="datePickerEnd"
+                                timeId="timePickerEnd" periodId="dayPeriodFin" dateModel="dateTard" timeModel="timeEnd"
+                                periodModel="dayPeriodFin" dateLabel="Date de retrait" />
+                        </div>
+                    @else
+                        <div x-show="selectedOption === 'Take Away'">
+                            <x-time-picker-form title="Choisir la période de retrait" dateId="datePickerStart"
+                                timeId="timePickerStart" periodId="dayPeriod" dateModel="dateTot" timeModel="timeStart"
+                                periodModel="dayPeriod" dateLabel="Date" />
+                        </div>
+                    @endif
                     @error('time')
                         <span class="text-red-500">{{ $message }}</span>
                     @enderror
@@ -133,15 +129,26 @@
 
 
                     <div class="text-center mt-3">
-                        <button wire:click="credit" wire:loading.attr="disabled"
-                            class="py-2 px-3 w-full inline-flex items-center
-                            justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent
-                            bg-blue-600 text-white hover:bg-blue-700"
-                            :class="{ 'hidden': !$wire.isButtonHidden }">
-                            <span wire:loading.remove>Demander un crédit</span>
-                            <span wire:loading>Envoi en cours...</span>
-                        </button>
+                        @if ($userInPromir)
+                            <!-- Afficher le bouton si l'utilisateur est dans la table Promir -->
+                            <button wire:click="credit" wire:loading.attr="disabled"
+                                class="py-2 px-3 w-full inline-flex items-center
+                                justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent
+                                bg-blue-600 text-white hover:bg-blue-700">
+                                <span wire:loading.remove>Demander un crédit</span>
+                                <span wire:loading>Envoi en cours...</span>
+                            </button>
+                        @else
+                            <!-- Afficher un message avec un lien vers le profil si l'utilisateur n'est pas dans Promir -->
+                            <div class="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+                                <p>Vous devez d'abord lier votre compte à Promir pour être éligible au crédit.</p>
+                                <a href="{{ route('biicf.profile') }}" class="text-blue-600 font-semibold underline">
+                                    Aller à mon profil
+                                </a>
+                            </div>
+                        @endif
                     </div>
+
 
                     <div class="flow-root">
                         <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
@@ -197,104 +204,4 @@
     </form>
 </div>
 
-<script>
-    function togglePeriodSelect() {
-        const timeInput = document.getElementById('timePickerStart');
-        const periodSelect = document.getElementById('dayPeriod');
-        const periodSelect2 = document.getElementById('dayPeriodFin');
-        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-    }
 
-    function togglePeriodSelect2() {
-        const timeInput = document.getElementById('timePickerEnd');
-        const periodSelect = document.getElementById('dayPeriodFin');
-        const periodSelect2 = document.getElementById('dayPeriod');
-        periodSelect.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-        periodSelect2.disabled = timeInput.value !== ""; // Désactiver la période si l'heure est remplie
-    }
-
-    function toggleTimeInput2() {
-        const timeInput = document.getElementById('timePickerEnd');
-        const timeInput2 = document.getElementById('timePickerStart');
-        const periodSelect = document.getElementById('dayPeriodFin');
-        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-    }
-
-    function toggleTimeInput() {
-        const timeInput = document.getElementById('timePickerStart');
-        const timeInput2 = document.getElementById('timePickerEnd');
-        const periodSelect = document.getElementById('dayPeriod');
-        timeInput.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-        timeInput2.disabled = periodSelect.value !== ""; // Désactiver l'heure si la période est sélectionnée
-    }
-</script>
-<script>
-    function toggleVisibility() {
-        const contentDiv = document.getElementById('toggleContent');
-
-        if (contentDiv.classList.contains('hidden')) {
-            contentDiv.classList.remove('hidden');
-            // Forcing reflow to enable   transition
-            contentDiv.offsetHeight;
-            contentDiv.classList.add('show');
-        } else {
-            contentDiv.classList.remove('show');
-            contentDiv.addEventListener('transitionend', () => {
-                contentDiv.classList.add('hidden');
-            }, {
-                once: true
-            });
-        }
-    }
-
-    // Fonction pour mettre à jour le montant total pour l'achat direct
-    function updateMontantTotalDirect() {
-        const quantityInput = document.getElementById('quantityInput');
-        const price = parseFloat({{ $notification->data['prixTrade'] }}); // Récupérer le prix depuis PHP
-        const minQuantity = parseInt(quantityInput.getAttribute('data-min'));
-        const maxQuantity = parseInt(quantityInput.getAttribute('data-max'));
-        const quantity = parseInt(quantityInput.value);
-        const montantTotal = price * (isNaN(quantity) ? 0 : quantity);
-        const montantTotalElement = document.getElementById('montantTotal');
-        const errorMessageElement = document.getElementById('errorMessage');
-        const submitButton = document.getElementById('submitButton');
-        const montantTotalInput = document.getElementById('montant_total_input');
-        const requestCreditButton = document.getElementById('requestCreditButton');
-
-
-
-        const userBalance = {{ $userWallet->balance }};
-
-        if (isNaN(quantity) || quantity === 0 || quantity < minQuantity || quantity > maxQuantity) {
-            errorMessageElement.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = '0 FCFA';
-            submitButton.disabled = true;
-            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-
-            requestCreditButton.classList.add('hidden'); // Masquer le bouton de crédit si autre erreur
-
-        } else if (montantTotal > userBalance) {
-            errorMessageElement.innerText =
-                `Le fond est insuffisant. Votre solde est de ${userBalance.toLocaleString()} FCFA.`;
-            errorMessageElement.classList.remove('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            submitButton.disabled = true;
-            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-            requestCreditButton.classList.remove('hidden'); // Afficher le bouton pour demander un crédit
-
-        } else {
-            errorMessageElement.classList.add('hidden');
-            montantTotalElement.innerText = `${montantTotal.toLocaleString()} FCFA`;
-            montantTotalInput.value = montantTotal; // Met à jour l'input montant_total_input
-            submitButton.disabled = false;
-            requestCreditButton.classList.add('hidden'); // Masquer le bouton si tout est correct
-
-        }
-
-
-
-    }
-</script>
