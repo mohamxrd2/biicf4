@@ -14,20 +14,22 @@ class Profile extends Component
 {
     use WithFileUploads;
 
-    public $user, $parrain, $name, $username, $phonenumber, $current_password,
+    public $user,$parrain, $name, $username, $phonenumber, $current_password,
         $new_password, $new_password_confirmation, $image;
     public $liaison_reussie = false;
     protected $listeners = ['liaisonReussie' => 'mettreAJourLiaison'];
+    protected $with = ['parrain'];
 
     public function mount()
     {
         $this->user = auth()->user();
-        $this->parrain = $this->user->parrain ? User::find($this->user->parrain) : null;
+
+        $this->parrain = User::find(auth()->user()->parrain);
+
         $this->name = $this->user->name;
         $this->username = $this->user->username;
         $this->phonenumber = $this->user->phone;
         $this->liaison_reussie = Promir::where('user_id', Auth::id())->exists();; // Mettre à true si la liaison est réussie
-
     }
 
     // Mise à jour en temps réel après liaison

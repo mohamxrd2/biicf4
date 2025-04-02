@@ -269,8 +269,7 @@
                                             Parrain
                                         </p>
                                         <p class="mt-1 text-base font-semibold text-gray-900 dark:text-white">
-                                            {{ auth()->user()->parrain }}
-                                        </p>
+                                            {{ $parrain->name ?? 'N/A' }}                                        </p>
                                     </div>
                                 </div>
                             </div>
