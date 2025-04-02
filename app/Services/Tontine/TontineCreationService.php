@@ -3,7 +3,7 @@
 namespace App\Services\Tontine;
 
 use App\Models\Tontines;
-use App\Models\gelement;
+use App\Models\Gelement;
 use App\Models\TontineUser;
 use App\Models\Wallet;
 use App\Services\TransactionService;
@@ -60,7 +60,7 @@ class TontineCreationService
 
             // Créer un nouveau gelement spécifique pour cette tontine
             $gelementReference = $this->generateUniqueReference();
-            $gelement = gelement::create([
+            $gelement = Gelement::create([
                 'reference_id' => $gelementReference,
                 'id_wallet' => $userWallet->id,
                 'amount' => $data['amount'],
