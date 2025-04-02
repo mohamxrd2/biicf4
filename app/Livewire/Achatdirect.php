@@ -36,20 +36,8 @@ class Achatdirect extends Component
 {
     use WithFileUploads;
 
-    public $notification;
-    public $id;
-    public $nombreLivr;
-    public $livreurs;
-    public $livreursIds;
-    public $livreursCount;
-    public $Idsender;
-    public $id_sender;
-    public $idsender;
-    public $modalOpen;
-
-    //ciblage des livreur
-    public $clientPays;
-    public $clientCommune;
+    public $notification, $id, $nombreLivr, $livreurs, $livreursIds, $livreursCount, $Idsender, $id_sender,
+     $idsender, $modalOpen, $clientPay, $clientCommune;
     public $clientContinent;
     public $clientSous_Region;
     public $clientDepartement;

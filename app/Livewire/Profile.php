@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Promir;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
@@ -14,14 +15,16 @@ class Profile extends Component
 {
     use WithFileUploads;
 
-    public $user, $parrain, $name, $username, $phonenumber, $current_password, $new_password, $new_password_confirmation, $image;
+    public $user, $parrain, $name, $username, $phonenumber, $current_password,
+        $new_password, $new_password_confirmation, $image;
     public $liaison_reussie = false;
     protected $listeners = ['liaisonReussie' => 'mettreAJourLiaison'];
 
     public function mount()
     {
         $this->user = auth()->user();
-        $this->parrain = $this->user->parrain ? User::find($this->user->parrain) : null;
+        $this->parrain = $this->user->parrain ? User::find($this->user->parrain) : null;w
+        Log::info('Parrain:', ['parrain' => $this->parrain->name ?? 'Aucun']);
         $this->name = $this->user->name;
         $this->username = $this->user->username;
         $this->phonenumber = $this->user->phone;
