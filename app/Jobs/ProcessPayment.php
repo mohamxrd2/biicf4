@@ -50,7 +50,7 @@ class ProcessPayment implements ShouldQueue
 
             if ($this->tontine->statut === '1st') {
                 // Récupérer le gelement spécifique à cette tontine
-                $gelement = gelement::where('reference_id', $this->tontine->gelement_reference)
+                $gelement = Gelement::where('reference_id', $this->tontine->gelement_reference)
                     ->first();
 
                 if (!$gelement || $gelement->amount < $this->tontine->montant_cotisation) {
