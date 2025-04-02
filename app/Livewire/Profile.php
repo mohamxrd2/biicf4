@@ -20,7 +20,7 @@ class Profile extends Component
 
     public function mount()
     {
-        $this->user = User::find(Auth::id());
+        $this->user = auth()->user();
         $this->parrain = $this->user->parrain ? User::find($this->user->parrain) : null;
         $this->name = $this->user->name;
         $this->username = $this->user->username;
