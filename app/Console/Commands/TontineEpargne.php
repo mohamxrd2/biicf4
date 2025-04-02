@@ -16,7 +16,7 @@ use Carbon\Carbon;
 
 class TontineEpargne extends Command
 {
-    protected $signature = 'tontine:process-payments';
+    protected $signature = 'app:process-payments';
     protected $description = 'Prélève les cotisations des tontines en fonction de la période choisie.';
 
     private RecuperationTimer $recuperationTimer;
@@ -39,7 +39,7 @@ class TontineEpargne extends Command
                 return 1;
             }
 
-            $currentDate = Carbon::createFromTimestamp($result['timestamp'])->startOfDay();
+            $currentDate = $result['timestamp'];
 
             Log::info("Traitement des paiements pour le jour : " . $currentDate->toDateString());
 
@@ -65,7 +65,7 @@ class TontineEpargne extends Command
     private function getMinDuration(string $frequency): int
     {
         return match ($frequency) {
-            'quotidienne' => 7,
+            'quotidienne' => 30,
             'hebdomadaire' => 4,
             'mensuelle' => 3,
             default => 1,
@@ -89,8 +89,7 @@ class TontineEpargne extends Command
     private function processTontinePaiements(Tontines $tontine)
     {
         try {
-            // Load users with eager loading to avoid N+1 query problem
-            $users = $tontine->users()->with('wallet')->get();
+            $users = $tontine->users;
 
             foreach ($users as $user) {
                 dispatch(new ProcessPayment($user, $tontine))
@@ -110,7 +109,7 @@ class TontineEpargne extends Command
 
             if ($tontine->isUnlimited) {
                 // Incrémenter la durée de 1
-                $tontine->increment('nombre_cotisations', 1);
+                $tontine->nombre_cotisations++;
 
                 // Vérifier si la durée atteint le minimum requis
                 $minDuration = $this->getMinDuration($tontine->frequence);
