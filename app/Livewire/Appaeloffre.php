@@ -9,7 +9,7 @@ use App\Models\AppelOffreGrouper;
 use App\Models\AppelOffreUser;
 use App\Models\Consommation;
 use App\Models\Countdown;
-use App\Models\gelement;
+use App\Models\Gelement;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
@@ -185,7 +185,7 @@ class Appaeloffre extends Component
         );;
 
         // Mettre à jour la table des gels
-        gelement::create([
+        Gelement::create([
             'id_wallet' => $this->wallet->id,
             'amount' => $totalCost,
             'reference_id' => $code_unique,
@@ -340,7 +340,7 @@ class Appaeloffre extends Component
             );
 
             // Enregistrer le gel des fonds
-            gelement::create([
+            Gelement::create([
                 'id_wallet' => $this->wallet->id,
                 'amount' => $totalCost,
                 'reference_id' => $codeUnique,
