@@ -5,7 +5,7 @@ namespace App\Livewire;
 use App\Models\AchatDirect;
 use App\Models\AppelOffreUser;
 use App\Models\ComissionAdmin;
-use App\Models\gelement;
+use App\Models\Gelement;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;
@@ -56,7 +56,7 @@ class Mainleveclient extends Component
         $this->user = Auth::id(); // Initialisation de $user avec l'utilisateur authentifié
         $this->userWallet = Wallet::where('user_id', $this->user)->first();
 
-        $this->gelement = gelement::where('reference_id', $this->notification->data['code_unique'])
+        $this->gelement = Gelement::where('reference_id', $this->notification->data['code_unique'])
             ->where('id_wallet', $this->userWallet->id)
             ->first();
     }
@@ -335,7 +335,7 @@ class Mainleveclient extends Component
                 throw new Exception('Aucune donnée d\'achat direct ou d\'appel d\'offre n\'est disponible.');
             }
 
-            $gelement = gelement::where('reference_id', $this->notification->data['code_unique'])->first();
+            $gelement = Gelement::where('reference_id', $this->notification->data['code_unique'])->first();
             if (!$gelement) {
                 throw new Exception('Référence introuvable dans la table gelement.');
             }
