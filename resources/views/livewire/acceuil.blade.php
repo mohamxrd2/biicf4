@@ -127,7 +127,6 @@
                 </p>
             </div>
         @elseif ($keyword == '')
-        @livewire('countdown-timer')
 
             {{-- Message de bienvenue --}}
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
