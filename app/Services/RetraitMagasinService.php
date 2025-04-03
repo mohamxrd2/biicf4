@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\gelement;
+use App\Models\Gelement;
 use App\Models\Transaction;
 use App\Services\CommissionService;
 use App\Events\NotificationSent;
@@ -55,7 +55,7 @@ class RetraitMagasinService
 
 
         // Vérification de l'existence de l'achat dans les transactions gelées
-        $existingGelement = gelement::where('reference_id', $this->notification->data['code_unique'])
+        $existingGelement = Gelement::where('reference_id', $this->notification->data['code_unique'])
             ->first();
 
         if (!$existingGelement || $existingGelement->amount < $requiredAmount) {
