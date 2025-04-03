@@ -147,13 +147,14 @@ class Mainleveclient extends Component
             throw new Exception('Référence introuvable dans la table gelement.');
         }
 
+        // Décoder `data_finance` pour éviter l'erreur
+        $dataFinance = json_decode($this->achatdirect->data_finance, true) ?? [];
+
         $fournisseurId = $this->notification->data['fournisseur'];
         $livreurId = $this->notification->data['livreur'];
         $prixTrade = $this->notification->data['prixTrade'];
-        $valeurGelement = $this->gelement->amount;
+        $valeurGelement = $dataFinance['montantTotal'] + $dataFinance['prix_livraison'];
 
-        // Décoder `data_finance` pour éviter l'erreur
-        $dataFinance = json_decode($this->achatdirect->data_finance, true) ?? [];
 
         // Vérifier si les clés existent avant d'y accéder
         $interetFournisseur = ($dataFinance['montantTotal'] ?? 0) * 0.1;
@@ -164,7 +165,7 @@ class Mainleveclient extends Component
 
         $totalInterets = $interetFournisseur + $interetLivreur;
 
-        $this->gelement->amount -=  $montantPourFournisseur + $montantPourLivreur;
+        $this->gelement->amount -=  $dataFinance['montantTotal'] + $dataFinance['prix_livraison'];
 
 
         $walletService->updateBalance($fournisseurId, $montantPourFournisseur);

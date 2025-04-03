@@ -71,11 +71,12 @@
                             <div class="ml-4 flex-1">
                                 <h3 class="text-sm font-medium text-gray-900">Produit : {{ $produit->name }}</h3>
                                 <p class="mt-1 text-sm text-gray-600">Quantité commandée:
-                                    {{ $achatdirect->quantité }}({{ $produit->condProd }})</p>
-                                <p class="mt-1 text-sm text-gray-600">Prix unitaire : {{ $prix_negociation }} FCFA</p>
+                                    {{ $dataFinance['quantité'] }}({{ $produit->condProd }})</p>
+                                <p class="mt-1 text-sm text-gray-600">Prix unitaire : {{ $dataFinance['prix'] }} FCFA
+                                </p>
                             </div>
                             <div class="text-sm font-medium text-gray-900">
-                                {{ number_format($achatdirect->montantTotal, 2, ',', '.') }} FCFA
+                                {{ number_format($dataFinance['montantTotal'], 2, ',', '.') }} FCFA
                             </div>
                         </div>
                     </div>
@@ -87,7 +88,7 @@
                         <div class="mt-4 bg-gray-50 p-4 rounded-lg shadow-inner space-y-3">
                             <div class="flex justify-between text-sm text-gray-600">
                                 <span>Sous-total :</span>
-                                <span>{{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
+                                <span>{{ number_format($dataFinance['montantTotal'], 2, ',', '.') }}
                                     FCFA</span>
                             </div>
                             <div class="flex justify-between text-sm text-gray-600">
@@ -98,7 +99,7 @@
                             </div>
                             <div class="flex justify-between font-medium text-gray-900">
                                 <span>Total :</span>
-                                <span>{{ number_format($achatdirect->montantTotal + $notification->data['prixTrade'], 2, ',', '.') }}
+                                <span>{{ number_format($dataFinance['montantTotal'] + $notification->data['prixTrade'], 2, ',', '.') }}
                                     FCFA</span>
                             </div>
                         </div>

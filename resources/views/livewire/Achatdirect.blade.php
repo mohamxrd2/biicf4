@@ -26,13 +26,13 @@
                         <span>{{ Auth::user()->name }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">date prevue de recuperation:</span>
-                        <span>{{ $achatdirect->date_tot }} - {{ $achatdirect->date_tard }}</span>
+                        <span>{{ $dataFinance["date_tot"] }} - {{ $dataFinance["date_tard"] }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">periode:</span>
-                        <span>{{ $achatdirect->dayPeriod }}</span>
+                        <span>{{ $dataFinance["dayPeriod"] }}</span>
                     </li>
                     <li class="flex justify-between py-1"><span class="font-medium">heure prevue de recuperation:</span>
-                        <span>{{ $achatdirect->timeStart }} - {{ $achatdirect->timeEnd }}</span>
+                        <span>{{ $dataFinance["timeStart"] }} - {{ $dataFinance["timeEnd"] }}</span>
                     </li>
                     <li class="flex justify-between py-1">
                         <span class="font-medium">Statut:</span>
@@ -74,7 +74,7 @@
                                 <div class="ml-4 flex-1">
                                     <h3 class="text-sm font-medium text-gray-900 mb-2">Commande avec livraison</h3>
                                     <p class="text-sm text-gray-600">
-                                        <strong>Lieu de livraison :</strong> {{ $achatdirect->localite }}
+                                        <strong>Lieu de livraison :</strong> {{ $dataFinance["localite"] }}
                                     </p>
                                     <p class="mt-2 text-sm text-gray-600">
                                         <strong>Conditionnement :</strong> {{ $produits->condProd }}
@@ -84,14 +84,14 @@
                                     <h3 class="text-sm font-medium text-gray-900">Produit : {{ $produits->name }}
                                     </h3>
                                     <p class="mt-2 text-sm text-gray-600">
-                                        <strong>Quantité demandée :</strong> {{ $achatdirect->quantité }}
+                                        <strong>Quantité demandée :</strong> {{ $dataFinance["quantité"] }}
                                     </p>
                                     <p class="mt-1 text-sm text-gray-600">
-                                        <strong>Prix Unitaire :</strong> {{ $produits->prix }} FCFA
+                                        <strong>Prix Unitaire :</strong> {{ $dataFinance["prix"] }} FCFA
                                     </p>
                                 </div>
                                 <div class="text-sm font-medium text-gray-900">
-                                    {{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
+                                    {{ number_format($dataFinance["montantTotal"], 2, ',', '.') }}
                                     FCFA</div>
                             </div>
                         </div>
@@ -103,7 +103,7 @@
                         <div class="mt-2 space-y-1 text-sm text-gray-600">
                             <div class="flex justify-between">
                                 <span>Sous-total :</span>
-                                <span>{{ number_format($achatdirect->montantTotal, 2, ',', '.') }}
+                                <span>{{ number_format($dataFinance["montantTotal"], 2, ',', '.') }}
                                     FCFA</span>
                             </div>
 
@@ -113,7 +113,7 @@
                             </div>
                             <div class="flex justify-between font-medium text-gray-900">
                                 <span>Vous recevrez :</span>
-                                <span>{{ number_format($prixFin, 2, ',', '.') }} FCFA</span>
+                                <span>{{ number_format($dataFinance["prix_apres_comission"], 2, ',', '.') }} FCFA</span>
                             </div>
                         </div>
                     </div>

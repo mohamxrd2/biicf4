@@ -18,28 +18,10 @@ use Livewire\Component;
 
 class MainleveAd extends Component
 {
-    public $produit;
-    public $notification;
-    public $id;
-    public $idProd;
-    public $totalPrice;
-    public $produitfat;
-    public $dateLivr;
+    public $produit, $notification, $id, $idProd, $totalPrice, $produitfat, $dateLivr;
     public $time = '';
-    public $client;
-    public $achatdirect;
-    public $fournisseur;
-    public $code_verif;
-    public $quantite;
-    public $qualite;
-    public $diversite;
-    public $notificationSent = false;
-    public $matine; // Ajoutez cette propriété publique
-    public $livreur; // Ajoutez cette propriété publique
-    public $user; // Ajoutez cette propriété publique
-    public $showMainlever = false;
-    public $usersLocations;
-    public $nombreFournisseurs;
+    public $client, $achatdirect, $fournisseur, $code_verif, $quantite, $qualite, $dataFinance, $diversite;
+    public $notificationSent = false, $matine, $livreur, $user, $showMainlever = false, $usersLocations, $nombreFournisseurs;
 
 
     public function mount($id)
@@ -47,6 +29,7 @@ class MainleveAd extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->achatdirect = AchatDirect::find($this->notification->data['achat_id']);
         $this->produit = ProduitService::with('user')->find($this->achatdirect->idProd);
+        $this->dataFinance = json_decode($this->achatdirect->data_finance, true);
 
 
         $this->fournisseur = User::find($this->notification->data['fournisseur']);
@@ -116,12 +99,12 @@ class MainleveAd extends Component
             Notification::send($user, new NotificationsMainleveAd($dataFournisseur));
             event(new NotificationSent($user));
 
-            if (!$this->achatdirect->type_achat === 'OffreGrouper') {
+            if ($this->achatdirect->type_achat === 'OffreGrouper') {
+                dd('OffreGrouper');
+            } else {
                 // Mettre à jour type_achat à true après envoi
                 $this->notification->update(['type_achat' => 'block']);
             }
-
-
 
             session()->flash('success', 'Notification envoyée au fournisseur.');
             DB::commit();

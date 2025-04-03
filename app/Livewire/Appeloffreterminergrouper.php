@@ -97,7 +97,7 @@ class Appeloffreterminergrouper extends Component
         //ciblage de livreur
         $this->nombreLivr = User::where('actor_type', 'livreur')->count();
     }
-    
+
     public function timeServer()
     {
         // Faire plusieurs tentatives de récupération pour plus de précision
@@ -244,23 +244,22 @@ class Appeloffreterminergrouper extends Component
                 }
 
                 $achatdirect = AchatDirect::create([
-                    'photoProd' => $photoName,
-                    'prix' => $this->notification->data['prixTrade'],
-                    'nameProd' => $this->produit->name,
-                    'quantité' => $quantite,
-                    'montantTotal' => $quantite * $this->notification->data['prixTrade'],
+
                     'data_finance' => json_encode([
-                        'prix_negociation' => $this->notification->data['prixTrade'],
+                        'nameProd' => $this->produit->name,
                         'montantTotal' => $quantite * $this->notification->data['prixTrade'],
+                        'prix' => $this->notification->data['prixTrade'],
                         'quantité' => $quantite,
+                        'prix_negociation' => $this->notification->data['prixTrade'],
                         'prix_apres_comission' => $this->prixFin,
+                        'localite' => $localite,
+                        'date_tot' => $this->AppelOffreGrouper->dateTot,
+                        'date_tard' => $this->AppelOffreGrouper->dateTard,
                     ]),
-                    'localite' => $localite,
                     'type_achat' => 'appelOffreGrouper',
-                    'date_tot' => $this->AppelOffreGrouper->dateTot,
-                    'date_tard' => $this->AppelOffreGrouper->dateTard,
                     'userTrader' => Auth::id(),
                     'userSender' => $userId,
+                    'photoProd' => $photoName,
                     'idProd' => $this->produit->id,
                     'code_unique' => $codeUnique,
                 ]);

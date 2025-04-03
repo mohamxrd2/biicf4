@@ -149,9 +149,8 @@ class AchatDirectGroupe extends Component
                 : 'Gele Pour Service de ' . $validated['nameProd'];
 
             $TransactionService = new TransactionService();
-            // Ici vous devez probablement appeler une méthode du TransactionService
-            // Par exemple:
-            $TransactionService->createTransaction($userId, $this->userTrader, $this->type, $montantTotal,  $reference_id, $description, 'COC');
+
+            $TransactionService->createTransaction($userId, $this->userTrader, 'Gele', $montantTotal,  $reference_id, $description, 'COC');
 
             // Gérer les notifications
             $this->sendNotifications($validated, $achat, $codeUnique);
@@ -314,25 +313,23 @@ class AchatDirectGroupe extends Component
     private function createPurchase($validated, $montantTotal, $codeUnique)
     {
         return AchatDirectModel::create([
-            'nameProd' => $validated['nameProd'],
-            'quantité' => $validated['quantité'],
-            'montantTotal' => $montantTotal,
             'data_finance' => json_encode([
+                'nameProd' => $validated['nameProd'],
                 'montantTotal' => $montantTotal,
+                'prix' => $this->produit->prix,
                 'quantité' => $validated['quantité'],
                 'prix_apres_comission' => $montantTotal - ($montantTotal * 0.1),
+                'localite' => $validated['localite'],
+                'date_tot' => $validated['dateTot'] ?? null,
+                'date_tard' => $validated['dateTard'] ?? null,
+                'timeStart' => $validated['timeStart'] ?? null,
+                'timeEnd' => $validated['timeEnd'] ?? null,
+                'dayPeriod' => $validated['dayPeriod'] ?? null,
+                'dayPeriodFin' => $validated['dayPeriodFin'] ?? null,
             ]),
             'type_achat' => 'achatDirect',
-            'localite' => $validated['localite'],
-            'date_tot' => $validated['dateTot'] ?? null,
-            'date_tard' => $validated['dateTard'] ?? null,
-            'timeStart' => $validated['timeStart'] ?? null,
-            'timeEnd' => $validated['timeEnd'] ?? null,
-            'dayPeriod' => $validated['dayPeriod'] ?? null,
-            'dayPeriodFin' => $validated['dayPeriodFin'] ?? null,
             'userTrader' => $validated['userTrader'],
             'userSender' => $validated['userSender'],
-            'specificite' => $this->produit->specification,
             'photoProd' => $validated['photoProd'],
             'idProd' => $validated['idProd'],
             'code_unique' => $codeUnique,

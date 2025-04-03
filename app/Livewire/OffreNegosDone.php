@@ -163,23 +163,21 @@ class OffreNegosDone extends Component
 
             // Créer l'achat direct
             $achatdirect = AchatDirect::create([
-                'photoProd' => $photoName,
-                'prix' => $this->offregroupe->produit->prix,
                 'data_finance' => json_encode([
-                    'prix_negociation' => $this->offregroupe->produit->prix,
+                    'nameProd' => $this->produit->name,
                     'montantTotal' => $this->prixTotal,
+                    'prix' => $this->offregroupe->produit->prix,
                     'quantité' => $quantiteTotal,
+                    'prix_negociation' => $this->offregroupe->produit->prix,
                     'prix_apres_comission' => $this->prixFin,
+                    'localite' => $this->offregroupe->client->commune,
+                    'date_tot' => now(),
+                    'date_tard' => now(),
                 ]),
-                'nameProd' => $this->produit->name,
-                'quantité' => $quantiteTotal,
-                'montantTotal' => $this->prixTotal,
-                'localite' => $this->offregroupe->client->commune,
-                'date_tot' => now(),
-                'date_tard' => now(),
                 'type_achat' => 'OffreGrouper',
                 'userTrader' => Auth::id(),
                 'userSender' => $this->offregroupe->client_id,
+                'photoProd' => $photoName,
                 'idProd' => $this->produit->id,
                 'code_unique' => $codeUnique,
             ]);

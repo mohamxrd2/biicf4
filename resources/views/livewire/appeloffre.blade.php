@@ -78,7 +78,6 @@
             </div>
         </div>
 
-
         <x-negociation :achatdirect="$appeloffre" :comments="$comments" :successMessage="$successMessage" :errorMessage="$errorMessage" />
 
     </div>

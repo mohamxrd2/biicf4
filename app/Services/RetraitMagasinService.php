@@ -84,7 +84,7 @@ class RetraitMagasinService
                 $this->user,
                 $this->fournisseur->id ?? null,
                 'Envoie',
-                $this->achatdirect->montantTotal,
+                $dataFinance['montantTotal'],
                 $this->generateIntegerReference(),
                 'Debité pour achat',
                 'COC'

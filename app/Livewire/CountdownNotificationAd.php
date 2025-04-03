@@ -31,7 +31,7 @@ class CountdownNotificationAd extends Component
 
     public $notification, $id, $produit, $userFour, $totalPrice, $user, $achatdirect, $livreur, $codeVerification,
         $fournisseur, $userWallet, $quantite,
-        $qualite, $diversite, $userId, $userWalletFournisseur, $requiredAmount, $statusText, $statusClass, $prix_negociation;
+        $qualite, $diversite, $userId, $userWalletFournisseur, $requiredAmount, $statusText, $statusClass, $prix_negociation, $dataFinance;
 
     public $showMainlever = false;
     public $isLoading = false;
@@ -58,10 +58,7 @@ class CountdownNotificationAd extends Component
             }
 
             // Décoder le JSON stocké dans data_finance
-            $dataFinance = json_decode($this->achatdirect->data_finance, true);
-
-            // Accéder à la valeur de prix_final
-            $this->prix_negociation = $dataFinance['prix_negociation'] ?? $dataFinance['montantTotal'] / $dataFinance['quantité'];
+            $this->dataFinance = json_decode($this->achatdirect->data_finance, true);
 
             $this->fournisseur = User::find($this->achatdirect->userTrader);
             $this->livreur = User::find($this->notification->data['livreur']);
@@ -154,10 +151,18 @@ class CountdownNotificationAd extends Component
     public function valider()
     {
         $this->isLoading = true;
-        $this->requiredAmount = floatval($this->notification->data['prixTrade']) ?? 0;
 
         DB::beginTransaction();
         try {
+
+            // Ajouter la nouvelle valeur sans supprimer les anciennes
+            $this->dataFinance['prix_livraison'] = $this->notification->data['prixTrade'];
+
+            // Mettre à jour la colonne `data_finance`
+            $this->achatdirect->update([
+                'data_finance' => json_encode($this->dataFinance ),
+            ]);
+
             switch ($this->achatdirect->type_achat) {
                 case 'appelOffreGrouper':
                 case 'appelOffre':
@@ -170,25 +175,9 @@ class CountdownNotificationAd extends Component
                         'notification' => $this->notification,
                         'fournisseur' => $this->fournisseur,
                         'userId' => $this->user,
-                        'requiredAmount' => $this->requiredAmount,
                     ]);
                     break;
             }
-
-
-            // Décoder l'ancien JSON en tableau associatif (éviter l'écrasement)
-            $dataFinance = json_decode($this->achatdirect->data_finance, true) ?? [];
-
-            // Ajouter la nouvelle valeur sans supprimer les anciennes
-            $dataFinance['prix_livraison'] = $this->notification->data['prixTrade'];
-
-            // Mettre à jour la colonne `data_finance`
-            $this->achatdirect->update([
-                'data_finance' => json_encode($dataFinance),
-            ]);
-
-
-
 
             if (isset($result['success'])) {
                 session()->flash('success', $result['message']);

@@ -114,7 +114,7 @@
                         <p class="mt-1 text-sm text-gray-600">Prix unitaire : {{ $produit->prix }} FCFA</p>
                     </div>
                     <div class="text-sm font-medium text-gray-900">
-                        {{ number_format($achatdirect->montantTotal, 2, ',', '.') }} FCFA
+                        {{ number_format($dataFinance['montantTotal'], 2, ',', '.') }} FCFA
                     </div>
                 </div>
             </div>

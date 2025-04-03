@@ -129,23 +129,22 @@ class Appeloffreterminer extends Component
 
             // Enregistrer l'achat dans la table AchatDirectModel
             $achatdirect = AchatDirect::create([
-                'photoProd' => $photoName,  // Quantité récupérée de userquantites
-                'prix' => $this->notification->data['prixTrade'],
                 'data_finance' => json_encode([
-                    'prix_negociation' => $this->notification->data['prixTrade'],
+                    'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
                     'montantTotal' => $this->prixTotal,
+                    'prix' => $this->notification->data['prixTrade'],
                     'quantité' => $this->appeloffre->quantity,
                     'prix_apres_comission' => $this->prixFin,
+                    'prix_negociation' => $this->notification->data['prixTrade'],
+                    'localite' => $this->appeloffre->localite,
+                    'montantTotal' => $this->prixTotal,
+                    'date_tot' => $this->appeloffre->date_tot,
+                    'date_tard' => $this->appeloffre->date_tard,
                 ]),
-                'nameProd' => $this->produit->name,  // Quantité récupérée de userquantites
-                'quantité' => $this->appeloffre->quantity,  // Quantité récupérée de userquantites
-                'montantTotal' => $this->prixTotal,
                 'type_achat' => 'appelOffre',
-                'localite' => $this->appeloffre->localite,
-                'date_tot' => $this->appeloffre->date_tot,
-                'date_tard' => $this->appeloffre->date_tard,
                 'userTrader' => Auth::id(),
-                'userSender' => $this->appeloffre->id_sender,  // Utilisateur qui a saisi l'achat
+                'userSender' => $this->appeloffre->id_sender,
+                'photoProd' => $photoName,  // Quantité récupérée de userquantites
                 'idProd' => $this->produit->id,
                 'code_unique' => $this->appeloffre->code_unique,
             ]);

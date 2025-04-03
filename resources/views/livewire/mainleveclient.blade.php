@@ -25,7 +25,7 @@
                                 </li>
                                 <li class="flex justify-between">
                                     <span class="text-gray-600">Montant</span>
-                                    <span class="font-medium">{{ $gelement->amount ?? 'N/A' }}
+                                    <span class="font-medium">{{ $montantTotal ?? 'N/A' }}
                                         FCFA</span>
                                 </li>
                                 <li class="flex justify-between">

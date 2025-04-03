@@ -37,21 +37,10 @@ class Achatdirect extends Component
     use WithFileUploads;
 
     public $notification, $id, $nombreLivr, $livreurs, $livreursIds, $livreursCount, $Idsender, $id_sender,
-     $idsender, $modalOpen, $clientPay, $clientCommune;
-    public $clientContinent;
-    public $clientSous_Region;
-    public $clientDepartement;
-    public $photoProd;
-    public $textareaValue;
-    public $produits;
-    public $achatdirect;
-    public $prixFin;
-    public $time;
-    public $error;
-    public $timestamp;
-    public $countdownId;
-    public $isRunning;
-    public $timeRemaining;
+        $idsender, $modalOpen, $clientPay, $clientCommune;
+    public $clientContinent, $clientSous_Region, $clientDepartement, $photoProd, $textareaValue, $produits, $achatdirect, $prixFin, $time;
+    public $error, $timestamp, $countdownId, $isRunning, $timeRemaining,
+     $dataFinance;
     protected $recuperationTimer;
     protected $takeawayService;
     protected $livreurCibleService;
@@ -72,7 +61,9 @@ class Achatdirect extends Component
         $this->notification = DatabaseNotification::findOrFail($id);
         $this->produits = ProduitService::find($this->notification->data['idProd']);
         $this->achatdirect = ModelsAchatDirect::find($this->notification->data['achat_id']);
-        $this->prixFin = $this->achatdirect->montantTotal - $this->achatdirect->montantTotal * 0.1;
+        // Décoder le JSON stocké dans data_finance
+        $this->dataFinance = json_decode($this->achatdirect->data_finance, true);
+
 
         // Cibler les livreurs pour cet appel d'offre
         $resultatCiblage = $this->livreurCibleService->targeterLivreurs($this->achatdirect->userSender);

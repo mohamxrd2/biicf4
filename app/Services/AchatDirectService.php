@@ -52,10 +52,10 @@ class AchatDirectService
         $notification = $data['notification'];
         $fournisseur = $data['fournisseur'];
         $userId = $data['userId'];
-        $requiredAmount = $data['requiredAmount'];
+        $dataFinance = json_decode($achatdirect->data_finance, true);
 
         // Vérification des fonds
-        if ($userWallet->balance < $requiredAmount) {
+        if ($userWallet->balance < $dataFinance['prix_livraison']) {
             throw new Exception('Fonds insuffisants dans votre portefeuille pour effectuer cette transaction.');
         }
 
@@ -71,14 +71,14 @@ class AchatDirectService
         DB::beginTransaction();
         try {
             // Débit du portefeuille
-            $userWallet->balance -= $requiredAmount;
+            $userWallet->balance -= $dataFinance['prix_livraison'];
             $userWallet->save();
 
             // Calcul des montants
-            $totalMontantRequis = $achatdirect->montantTotal + $notification->data['prixTrade'];
+            $totalMontantRequis = $dataFinance['montantTotal'] + $notification->data['prixTrade'];
 
             // Mise à jour du montant gelé
-            $existingGelement->amount += $requiredAmount;
+            $existingGelement->amount += $dataFinance['prix_livraison'];
             $existingGelement->save();
 
 
@@ -87,7 +87,7 @@ class AchatDirectService
                 $userId,
                 $userId,
                 'Gele',
-                $requiredAmount,
+                $dataFinance ['prix_livraison'],
                 $this->generateIntegerReference(),
                 'Montant gelé pour la livraison',
                 'effectué',
@@ -122,7 +122,7 @@ class AchatDirectService
             Log::error('Erreur lors du traitement de la livraison.', [
                 'message' => $e->getMessage(),
                 'user_id' => $userWallet->user_id,
-                'required_amount' => $requiredAmount
+                'required_amount' => $dataFinance ['prix_livraison']
             ]);
             throw $e;
         }
@@ -164,7 +164,6 @@ class AchatDirectService
                 $fournisseurId = User::find($id);
                 Notification::send($fournisseurId, new VerifUser($dataFournisseur));
                 event(new NotificationSent($fournisseurId));
-
             }
         } else {
             Notification::send($fournisseur, new VerifUser($dataFournisseur));
