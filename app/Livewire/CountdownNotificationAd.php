@@ -5,7 +5,7 @@ namespace App\Livewire;
 use App\Events\NotificationSent;
 use App\Models\AchatDirect;
 use App\Models\ComissionAdmin;
-use App\Models\gelement;
+use App\Models\Gelement;
 use App\Models\ProduitService;
 use App\Models\Transaction;
 use App\Models\User;

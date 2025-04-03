@@ -13,11 +13,8 @@ use Illuminate\Support\Facades\Notification;
 use App\Models\AchatDirect as AchatDirectModel;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Models\Transaction;
 use App\Events\NotificationSent;
-use App\Models\CrediScore;
-use App\Models\gelement;
-use App\Models\UserPromir;
+use App\Models\Gelement;
 use App\Notifications\AchatBiicf;
 use App\Notifications\Confirmation;
 use App\Services\TransactionService;
@@ -25,27 +22,15 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class AchatDirectGroupe extends Component
 {
 
-    public $selectedOption = "";
+    public $selectedOption = "", $quantité = "", $localite = "", $selectedSpec = false, $dayPeriod = "", $dayPeriodFin = "";
 
-    //
-    public $quantité = "";
-    public $localite = "";
-    public $selectedSpec = false;
-
-
-    public $dayPeriod = "";
-    public $dayPeriodFin = "";
-
-    public $userWallet, $produitId, $produit, $userId, $userTrader, $nameProd, $userSender, $userBalance, $totalCost, $userInPromir, $code_unique, $type, $dateTard, $dateTot, $timeStart, $timeEnd, $photoProd, $idProd, $prix;
-    public $isButtonDisabled = false;
-    public $isButtonHidden = false;
-    public $currentPage = 'achat';
-    public $errorMessage = '';
+    public $userWallet, $produitId, $produit, $userId, $userTrader, $nameProd, $userSender, $userBalance,
+        $totalCost, $userInPromir, $code_unique, $type, $dateTard, $dateTot, $timeStart, $timeEnd, $photoProd,
+        $idProd, $prix, $isButtonDisabled = false, $isButtonHidden = false, $currentPage = 'achat', $errorMessage = '';
     protected $listeners = ['navigate' => 'setPage'];
     public function setPage($page)
     {
@@ -66,14 +51,14 @@ class AchatDirectGroupe extends Component
         $this->prix = $this->produit->prix;
         $this->selectedOption = '';  // Initialiser la valeur de l'option sélectionné
 
-         // Récupérer le portefeuille de l'utilisateur
-         $this->userWallet = Wallet::where('user_id', $this->userId)->first();
+        // Récupérer le portefeuille de l'utilisateur
+        $this->userWallet = Wallet::where('user_id', $this->userId)->first();
 
-         // Assume user balance is fetched from the authenticated user
-         $this->userBalance = $this->userWallet ?? 0;
-         $this->totalCost = (int)$this->quantité * $this->prix;
+        // Assume user balance is fetched from the authenticated user
+        $this->userBalance = $this->userWallet ?? 0;
+        $this->totalCost = (int)$this->quantité * $this->prix;
 
-         $this->userInPromir = Promir::where('user_id', Auth::id())->first();
+        $this->userInPromir = Promir::where('user_id', Auth::id())->first();
     }
 
     public function updatedQuantité()
@@ -146,7 +131,7 @@ class AchatDirectGroupe extends Component
             $achat = $this->createPurchase($validated, $montantTotal, $codeUnique);
 
             // Vérification de l'existence de l'achat dans les transactions gelées
-            gelement::create([
+            Gelement::create([
                 'reference_id' => $codeUnique,
                 'id_wallet' => $this->userWallet->id,
                 'amount' => $montantTotal,
