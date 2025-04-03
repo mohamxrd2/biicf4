@@ -81,12 +81,6 @@ class AchatDirectService
             $existingGelement->amount += $requiredAmount;
             $existingGelement->save();
 
-            $montantExcédent = $existingGelement->amount + $requiredAmount - $totalMontantRequis;
-
-            // Traitement de l'excédent
-            if ($montantExcédent > 0) {
-                $this->handleExcedent($userWallet, $existingGelement, $montantExcédent, $userId);
-            }
 
             // Transaction pour la livraison
             $this->createTransaction(
@@ -99,6 +93,14 @@ class AchatDirectService
                 'effectué',
                 'COC'
             );
+
+            $montantExcédent = $existingGelement->amount - $totalMontantRequis;
+
+            // Traitement de l'excédent
+            if ($montantExcédent > 0) {
+                $this->handleExcedent($userWallet, $existingGelement, $montantExcédent, $userId);
+            }
+
 
             // Générer le code de vérification et notifier
             $codeVerification = random_int(1000, 9999);

@@ -61,7 +61,7 @@ class CountdownNotificationAd extends Component
             $dataFinance = json_decode($this->achatdirect->data_finance, true);
 
             // Accéder à la valeur de prix_final
-            $this->prix_negociation = $dataFinance['prix_negociation'] ?? 0;
+            $this->prix_negociation = $dataFinance['prix_negociation'] ?? $dataFinance['montantTotal'] / $dataFinance['quantité'];
 
             $this->fournisseur = User::find($this->achatdirect->userTrader);
             $this->livreur = User::find($this->notification->data['livreur']);
@@ -154,7 +154,7 @@ class CountdownNotificationAd extends Component
     public function valider()
     {
         $this->isLoading = true;
-        $this->requiredAmount = floatval($this->notification->data['prixTrade']);
+        $this->requiredAmount = floatval($this->notification->data['prixTrade']) ?? 0;
 
         DB::beginTransaction();
         try {

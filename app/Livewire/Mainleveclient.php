@@ -30,21 +30,9 @@ use App\Services\CommissionService;
 class Mainleveclient extends Component
 {
 
-    public $code_verif;
-    public $totalPrice;
-    public $notification;
-    public $id;
-    public $achatdirect;
-    public $appeloffre;
-    public $livreur;
-    public $fournisseurWallet;
-    public $quantite;
-    public $qualite;
-    public $user;
-    public $userWallet;
-    public $diversite;
-    public $gelement;
-    public $showMainlever = false;
+    public $code_verif, $totalPrice, $notification, $id, $achatdirect, $appeloffre, $livreur,
+        $fournisseurWallet, $quantite, $qualite, $user, $userWallet, $diversite, $montantTotal,
+        $gelement, $showMainlever = false;
 
 
     public function mount($id)
@@ -56,6 +44,11 @@ class Mainleveclient extends Component
         $this->user = Auth::id(); // Initialisation de $user avec l'utilisateur authentifié
         $this->userWallet = Wallet::where('user_id', $this->user)->first();
 
+        // Décoder le JSON stocké dans data_finance
+        $dataFinance = json_decode($this->achatdirect->data_finance, true);
+
+        // Accéder à la valeur de prix_final
+        $this->montantTotal = $dataFinance['montantTotal'] + $dataFinance['prix_livraison'];
         $this->gelement = Gelement::where('reference_id', $this->notification->data['code_unique'])
             ->where('id_wallet', $this->userWallet->id)
             ->first();
@@ -171,7 +164,7 @@ class Mainleveclient extends Component
 
         $totalInterets = $interetFournisseur + $interetLivreur;
 
-        $this->gelement->amount -= $totalInterets + $montantPourFournisseur + $montantPourLivreur;
+        $this->gelement->amount -=  $montantPourFournisseur + $montantPourLivreur;
 
 
         $walletService->updateBalance($fournisseurId, $montantPourFournisseur);
