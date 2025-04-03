@@ -158,11 +158,12 @@
 
                                 {{-- Bouton Accepter --}}
                                 <button data-modal-target="popup-modal" data-modal-toggle="popup-modal"
-                                    @class([
+                                    wire:loading.attr="disabled" @class([
                                         'px-4 py-2 text-sm font-medium rounded-lg shadow-md transition-colors',
                                         'opacity-50 cursor-not-allowed' => $isLoading,
                                         'text-white bg-blue-600 hover:bg-blue-700' => !$isLoading,
-                                    ]) {{ $isLoading ? 'disabled' : '' }}>
+                                    ])
+                                    {{ $isLoading ? 'disabled' : '' }}>
                                     Accepter la facture
                                     <span wire:loading wire:target="valider" class="inline-flex items-center">
                                         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -214,11 +215,11 @@
                                             </h3>
                                             <!-- Bouton de confirmation -->
                                             <button data-modal-hide="popup-modal" type="button"
-                                                wire:click.prevent="valider" wire:loading.attr="disabled"
-                                                @class([
+                                                wire:click.prevent="valider" @class([
                                                     'text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center',
                                                     'opacity-50 cursor-not-allowed' => $isLoading,
-                                                ]) {{ $isLoading ? 'disabled' : '' }}>
+                                                ])
+                                                {{ $isLoading ? 'disabled' : '' }}>
                                                 <span wire:loading.remove wire:target="valider">
                                                     Oui, je suis sûr
                                                 </span>

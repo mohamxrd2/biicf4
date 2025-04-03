@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Events\NotificationSent;
 use App\Models\AchatDirect;
-use App\Models\gelement;
+use App\Models\Gelement;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\userquantites;
@@ -60,7 +60,7 @@ class AchatDirectService
         }
 
         // Vérification de l'existence du gel
-        $existingGelement = gelement::where('reference_id', $achatdirect->code_unique)
+        $existingGelement = Gelement::where('reference_id', $achatdirect->code_unique)
             ->where('id_wallet', $userWallet->id)
             ->first();
 
