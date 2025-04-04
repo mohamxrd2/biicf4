@@ -43,7 +43,11 @@ class TontineEpargne extends Command
 
             Log::info("Traitement des paiements pour le jour : " . $currentDate->toDateString());
 
-            $allTontines = Tontines::where('statut', '!=', 'inactive')->get();
+            $allTontines = Tontines::where('statut', '!=', 'inactive')
+            ->whereDate('next_payment_date', $currentDate)
+            ->get();
+
+            // Log::info("Traitement des paiements pour le jour : " .  $allTontines);
 
             if ($allTontines->isEmpty()) {
                 Log::info("Aucune tontine active à traiter.");

@@ -16,21 +16,9 @@ use Livewire\Attributes\On;
 
 class Tontine extends Component
 {
-    public $amount;
-    public $frequency;
-    public $duration;
-    public $tontineStart = false;
-    public $tontineDatas;
-    public $cotisations;
-    public $cotisationsCount;
-    public $cotisationSum;
-    public $pourcentage;
-    public $tontineEnCours;
-    public $serverTime;
-    public $time;
-    public $error;
-    public $timestamp;
-    public $startDay;
+    public $amount, $frequency, $duration, $tontineStart = false, $tontineDatas, $cotisations;
+    public $cotisationsCount, $cotisationSum, $pourcentage, $tontineEnCours, $serverTime, $time,
+        $error, $timestamp, $startDay;
     public $errors = [
         'amount' => '',
         'frequency' => '',
