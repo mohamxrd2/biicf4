@@ -72,7 +72,7 @@ class Profile extends Component
     public function LiaisonPromir()
     {
         $client = new Client();
-        $response = $client->get('http://127.0.0.1:8001/api/users/all');
+        $response = $client->get('https://www.toopartoo.com/promir/public/api/users/all');
         $users = json_decode($response->getBody()->getContents(), true);
 
         // Séparer le numéro de l'utilisateur actuel
@@ -95,7 +95,7 @@ class Profile extends Component
 
         if ($numeroExiste) {
             // Vérifier si le compte a au moins 3 mois d'ancienneté
-            if ($userTrouve['mois_depuis_creation'] >= 3) {
+            // if ($userTrouve['mois_depuis_creation'] >= 3) {
                 // Si l'utilisateur existe et est éligible, insérer dans `promir`
                 Promir::create([
                     'user_id' => Auth::id(),
@@ -109,12 +109,12 @@ class Profile extends Component
                 ]);
 
                 $this->dispatch('liaisonReussie');
-            } else {
-                $this->dispatch(
-                    'formSubmitted',
-                    "Votre compte doit avoir au moins 3 mois d'ancienneté pour être lié."
-                );
-            }
+            // } else {
+            //     $this->dispatch(
+            //         'formSubmitted',
+            //         "Votre compte doit avoir au moins 3 mois d'ancienneté pour être lié."
+            //     );
+            // }
         } else {
             $this->dispatch(
                 'formSubmitted',

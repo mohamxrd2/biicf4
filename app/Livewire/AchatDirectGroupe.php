@@ -366,7 +366,7 @@ class AchatDirectGroupe extends Component
 
     public function credit()
     {
-        $this->dispatch('navigate', 'credit');
+        // $this->dispatch('navigate', 'credit');
 
         // Vérifier si l'utilisateur est bien enregistré dans Promir
         if ($this->userInPromir) {
@@ -383,9 +383,10 @@ class AchatDirectGroupe extends Component
 
             // Appel API pour récupérer le score de crédit
             try {
-                $client = new Client();
-                $response = $client->get("http://promir.toopartoo/api/cote/{$systemClientId}/{$moisDepuisCreation}");
-                $crediScoreData = json_decode($response->getBody()->getContents(), true);
+                // $client = new Client();
+                // $response = $client->get("https://www.toopartoo.com/promir/public/api/cote/8/3");
+                // $crediScoreData = json_decode($response->getBody()->getContents(), true);
+                $crediScoreData = 'A+'; // Simuler une réponse pour le test
             } catch (\Exception $e) {
                 $this->dispatch(
                     'formSubmitted',
@@ -393,10 +394,10 @@ class AchatDirectGroupe extends Component
                 );
                 return;
             }
-
             // Vérifier si la réponse contient bien une clé "grade"
-            if (isset($crediScoreData['grade'])) {
-                $crediScore = $crediScoreData['grade']; // Récupérer le grade
+            // if (isset($crediScoreData['grade'])) {
+            if (isset($crediScoreData)) {
+                $crediScore = $crediScoreData; // Récupérer le grade
 
                 if (in_array($crediScore, ['A+', 'A', 'A-', 'B+', 'B', 'B-'])) {
                     $this->dispatch(
