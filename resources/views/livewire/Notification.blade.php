@@ -62,7 +62,9 @@
                             @case('App\Notifications\NegosTerminer')
                             @case('App\Notifications\RetraitCode')
 
+                            @case('App\Notifications\PortionJournaliere')
                             @case('App\Notifications\AppelOffreTerminer')
+
                             @case('App\Notifications\OffreNegosDone')
                                 @include('biicf.components.ConfirmationNotif', [
                                     'title' => $notification->data['title'] ?? 'Notification',

@@ -430,17 +430,23 @@ class AchatDirectGroupe extends Component
     public function checkEligibility()
     {
         // Logique de vérification ici...
-        $isEligible = true; // Votre logique d'éligibilité ici
         $quantiteMax = $this->produit->qteProd_max; // Votre logique d'éligibilité ici
         $quantiteMin = $this->produit->qteProd_min; // Votre logique d'éligibilité ici
         $prix = $this->produit->prix; // Votre logique d'éligibilité ici
-        $montantmax = $prix * $quantiteMax;
+        $montantmax = $prix * $this->quantité;
         $nameProd = $this->produit->name;
 
         // Émettre l'événement si l'utilisateur est éligible
-        if ($isEligible) {
-            $this->dispatch('navigate', 'credit');
-        }
+        // Store data in session for the other component
+        session()->put('eligibility_data', [
+            'prix' => $prix,
+            'montantmax' => $montantmax,
+            'quantiteMax' => $quantiteMax,
+            'nameProd' => $nameProd,
+            'quantiteMin' => $quantiteMin
+        ]);
+        // Émettre les données + éventuellement navigation
+        $this->dispatch('navigate', 'credit');
     }
 
 

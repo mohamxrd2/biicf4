@@ -11,7 +11,7 @@ use App\Models\Coi;
 use App\Models\CommentTaux;
 use App\Models\Countdown;
 use App\Models\CrediScore;
-use App\Models\credits;
+use App\Services\CreditApprovalService;
 use App\Models\credits_groupé;
 use App\Models\DemandeCredi;
 use App\Models\gelement;
@@ -49,13 +49,7 @@ class DetailsCredit extends Component
     public $montant = ''; // Stocke le montant saisi
     protected $listeners = ['compteReboursFini'];
 
-    public $pourcentageInvesti = 0;
-    public $commentTauxList = [];
-    public $tauxTrade;
-    public $wallet;
-    public $coi;
-    public $user_connecte;
-    public $timeFin;
+    public $pourcentageInvesti = 0, $commentTauxList = [], $lastActivity, $commentCount, $nombreParticipants, $tauxTrade, $wallet, $coi, $user_connecte, $timeFin, $isNegociationActive;
 
 
 
@@ -79,11 +73,17 @@ class DetailsCredit extends Component
             return;
         }
 
+
+
         $this->solde = $this->wallet ? $this->wallet->coi->Solde : 0;
 
         // Récupérer l'ID de la demande de credi du userId
         $demandeId = $this->notification->data['demande_id'];
         $this->demandeCredit = DemandeCredi::where('demande_id', $demandeId)->first();
+
+        $this->isNegociationActive = !$this->demandeCredit->count;
+        $this->nombreParticipants = 1;
+        $this->commentCount = 1;
 
         //Récupérer l'objet COI associé
         $this->coi = $this->wallet->coi; // L'objet `coi`, supposant qu'il est une relation avec le wallet
@@ -233,131 +233,25 @@ class DetailsCredit extends Component
     }
     public function approuver($montant)
     {
-        // Convertir le montant en float
-        $montant = floatval($montant);
+        $service = new CreditApprovalService();
 
-        // Vérification si le montant est valide
-        if ($montant <= 0) {
-            session()->flash('error', 'Montant invalide.');
-            return;
+        $result = $service->approuver(
+            $montant,
+            $this->userId,
+            $this->demandeCredit,
+            $this->coi,
+            $this->notification,
+            fn() => $this->generateIntegerReference(),   // callable
+            fn(...$args) => $this->createTransaction(...$args) // callable
+        );
+
+        if (isset($result['error'])) {
+            session()->flash('error', $result['error']);
+        } else {
+            session()->flash('success', $result['success']);
+            $this->montant = '';
+            $this->insuffisant = false;
         }
-
-
-        // Récupérer le wallet de l'utilisateur demandeur
-        $walletDemandeur = Wallet::where('user_id', $this->userId)->first();
-
-        // Vérifier que l'utilisateur possède un wallet
-        if (!$walletDemandeur) {
-            session()->flash('error', 'Votre portefeuille est introuvable.');
-            return;
-        }
-
-        // Vérifier que le solde du wallet est suffisant
-        if ($this->coi->Solde < $montant) {
-            session()->flash('error', 'Votre solde est insuffisant pour cette transaction.');
-            return;
-        }
-
-        // Utilisation d'une transaction pour garantir la cohérence des données
-        DB::beginTransaction();
-
-        try {
-
-            if ($this->coi) {
-                // Vérifie si le solde est suffisant pour le débit
-                if ($this->coi->Solde >= $montant) {
-                    $this->coi->Solde -= $montant; // Débiter le montant du solde du COI
-                    $this->coi->save();
-                } else {
-                    // Retourne un message ou gère le cas où le solde est insuffisant
-                    session()->flash('error', 'Solde insuffisant dans le COI.');
-                    // Arrête le processus si le solde est insuffisant
-                    return;
-                }
-            } else {
-                // Gérer le cas où le compte COI n'existe pas ou n'est pas trouvé
-                session()->flash('error', 'Compte COI introuvable.');
-            }
-
-
-            // Mettre à jour ou créer un enregistrement dans la table CFA
-            $cfa = Cfa::where('id_wallet', $walletDemandeur->id)->first();
-            // Mettre à jour ou créer un enregistrement dans la table CFA
-
-            if ($cfa) {
-                // Si le compte CFA existe, on additionne le montant
-                $cfa->Solde += $montant; // Ajoute le montant au solde existant dans le CFA
-                $cfa->save();
-            }
-
-            //  Calculer la portion journalière en fonction du montant et de la durée.
-            // Assurez-vous que les dates sont bien des instances de Carbon
-            $debut = Carbon::parse($this->demandeCredit->date_fin);
-            $durer = Carbon::parse($this->demandeCredit->duree);
-            $jours = $debut->diffInDays($durer);
-
-            $montantComission = $montant * 0.01;
-            $montantTotal = ($montant * (1 + $this->demandeCredit->taux / 100)) + $montantComission;
-            $portion_journaliere = ($jours > 0) ? ($montantTotal + $montantComission) / $jours : 0;
-
-
-            $resultatsInvestisseurs = [
-                [
-                    'credit_id' => $this->demandeCredit->id,
-                    'investisseur_id' => Auth::id(),
-                    'montant_finance' => $montant,
-                ],
-            ];
-
-            // Mettre à jour ou créer un enregistrement dans la table credits
-            $creditGrp_id = credits_groupé::create([
-                'emprunteur_id' => $this->userId,
-                'investisseurs' => json_encode($resultatsInvestisseurs),
-                'montant' => $montantTotal,
-                'montan_restantt' => $montantTotal,
-                'taux_interet' => $this->demandeCredit->taux,
-                'date_debut' => $this->demandeCredit->date_fin,
-                'date_fin' => $this->demandeCredit->duree,
-                'portion_journaliere' => $portion_journaliere,
-                'comission' => $montantComission,
-                'statut' => 'en cours',
-                'description' => $this->demandeCredit->objet_financement,
-            ]);
-
-            // Création du remboursement associé
-            Remboursements::create([
-                'creditGrp_id' => $creditGrp_id->id,  // Associe le remboursement au crédit créé
-                'id_user' => Auth::id(),  // Associe le remboursement au crédit créé
-                'montant_capital' => $montant,  // Définissez cette variable en fonction de votre logique métier
-                'montant_interet' => $this->demandeCredit->taux,  // Définissez cette variable en fonction de votre logique métier
-                'date_remboursement' => $this->demandeCredit->duree,  // Définissez cette variable en fonction de votre logique métier
-                'statut' => 'en cours',  // Statut du remboursement
-                'description' => $this->demandeCredit->objet_financement,  // Statut du remboursement
-            ]);
-
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $montant, $this->generateIntegerReference(),  'Financement  de Crédit d\'achat',  'effectué', $this->coi->type_compte);
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Réception', $montant, $this->generateIntegerReference(),  'Réception de Fonds  de Credit d\'achat',  'effectué', $cfa->type_compte);
-
-
-            // Mettre à jour l'état de la notification en approuvé
-            $this->notification->update(['reponse' => 'approved']);
-            $this->demandeCredit->update(['status' => 'terminer']);
-
-            // Committer la transaction
-            DB::commit();
-
-            // Message de succès
-            session()->flash('success', 'Le montant a été ajouté avec succès.');
-        } catch (\Exception $e) {
-            // Annuler la transaction en cas d'erreur
-            DB::rollBack();
-            session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
-            return;
-        }
-
-        // Réinitialiser le montant saisi et le drapeau de solde insuffisant
-        $this->montant = '';
-        $this->insuffisant = false;
     }
 
     public function commentForm()

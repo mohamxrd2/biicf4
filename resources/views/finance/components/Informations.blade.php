@@ -60,7 +60,7 @@
                     </svg>
                     <p class="text-gray-700 font-medium">Cote de Crédit</p>
                 </div>
-                <p class="text-gray-800 font-semibold">{{ $crediScore->ccc }}</p>
+                {{-- <p class="text-gray-800 font-semibold">{{ $crediScore->ccc }}</p> --}}
             </div>
             <!-- Objectif -->
             <div class="flex justify-between items-center">

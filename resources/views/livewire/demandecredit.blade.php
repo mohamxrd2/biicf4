@@ -1,5 +1,58 @@
-<div>
-    <div class="relative md:static  bg-white rounded-lg shadow-lg">
+<div x-data="{
+    quantite: 0,
+    roi: 0,
+    endDate: '',
+    duration: '',
+    financementType: '',
+    search: '',
+    bailleur: '',
+    montantMax: 0,
+    tauxInteret: 0,
+    creditTotal: 0,
+    errorMessage: '',
+    showError: false,
+    quantiteMin: {{ $quantiteMin }},
+    quantiteMax: {{ $quantiteMax }},
+    prixUnitaire: {{ $sommedemnd }},
+
+    updateMontantTotalCredit() {
+        // Convert inputs to numbers and handle NaN cases
+        const quantity = parseInt(this.quantite) || 0;
+        const roiValue = parseFloat(this.roi) || 0;
+
+        // Calculate values
+        this.montantMax = this.prixUnitaire * quantity;
+        this.tauxInteret = this.montantMax * (roiValue / 100);
+        this.creditTotal = this.montantMax + this.tauxInteret;
+
+        // Validate quantity
+        if (quantity < this.quantiteMin || quantity > this.quantiteMax) {
+            this.errorMessage = `La quantité doit être comprise entre ${this.quantiteMin} et ${this.quantiteMax}.`;
+            this.showError = true;
+        } else {
+            this.showError = false;
+        }
+    },
+
+    updateDate() {
+        if (this.endDate && this.duration) {
+            const endDateObj = new Date(this.endDate);
+            const durationObj = new Date(this.duration);
+
+            if (endDateObj >= durationObj) {
+                alert('La date de fin ne doit pas dépasser la durée.');
+                this.endDate = '';
+            }
+        }
+    },
+
+    formatPrice(amount) {
+        return amount.toLocaleString() + ' FCFA';
+    }
+}" x-init="$watch('quantite', () => { updateMontantTotalCredit() });
+$watch('roi', () => { updateMontantTotalCredit() })">
+
+    <div class="relative md:static bg-white rounded-lg shadow-lg">
         <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
             <h1 class="text-lg font-bold"><i class="fas fa-file-alt"></i> Demande de Crédit</h1>
             <span class="text-sm">Ref: 2024-11-21-{{ $referenceCode }}</span>
@@ -24,13 +77,11 @@
                         {{ $nameProd }}</label>
                 </div>
 
-
                 <!-- Type de financement -->
-                <div x-data="{ typeFinancement: '' }" class="flex flex-col space-y-4 sm:col-span-2">
+                <div class="flex flex-col space-y-4 sm:col-span-2">
                     <label for="financement" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type
-                        de
-                        financement</label>
-                    <select wire:model="financementType" id="financement" x-model="typeFinancement"
+                        de financement</label>
+                    <select wire:model="financementType" id="financement" x-model="financementType"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                         <option selected>Choisir un type</option>
                         <option value="demande-directe">Demande Directe</option>
@@ -42,13 +93,13 @@
                     @enderror
 
                     <!-- Conteneur pour l'alignement horizontal -->
-                    <div class="flex space-x-4 mt-4" x-show="typeFinancement">
+                    <div class="flex space-x-4 mt-4" x-show="financementType">
                         <!-- Champ de saisie pour Demande Directe -->
-                        <div x-show="typeFinancement === 'demande-directe'" class="flex flex-col flex-1">
+                        <div x-show="financementType === 'demande-directe'" class="flex flex-col flex-1">
                             <label for="username"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Entrez le
                                 username</label>
-                            <input wire:model.live="search"
+                            <input wire:model.live="search" x-model="search"
                                 class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
                                 type="text" placeholder="Entrez le nom de l'user">
                             @error('search')
@@ -72,17 +123,17 @@
                         </div>
 
                         <!-- Ciblage du bailleur -->
-                        <div x-show="typeFinancement === 'offre-composite' || typeFinancement === 'négocié'"
+                        <div x-show="financementType === 'offre-composite' || financementType === 'négocié'"
                             class="flex flex-col flex-1">
                             <label for="bailleur"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ciblez un
                                 bailleur ou entrez son username</label>
-                            <select wire:model="bailleur" id="bailleur"
+                            <select wire:model="bailleur" id="bailleur" x-model="bailleur"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option selected>Choisir un bailleur</option>
                                 <option value="Bank/IFD">Bank/IFD</option>
                                 <option value="Pgm Public/Para-Public">Pgm Public/Para-Public</option>
-                                <option value="Fonds d’investissement">Fonds d’investissement</option>
+                                <option value="Fonds d'investissement">Fonds d'investissement</option>
                                 <option value="Particulier">Particulier</option>
                             </select>
                             @error('bailleur')
@@ -97,10 +148,9 @@
                     <label for="quantitInput" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         Quelle quantitée voulez-vous acheter?
                     </label>
-                    <input type="number" id="quantitInput" placeholder="" wire:model="quantite"
+                    <input type="number" id="quantitInput" placeholder="" wire:model="quantite" x-model="quantite"
                         class="bg-gray-50 lg:col-span-2 sm:col-span-2 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        data-min="{{ $quantiteMin }}" data-max="{{ $quantiteMax }}"
-                        data-price="{{ $montantmax }}" oninput="updateMontantTotalCredit()" required>
+                        required>
                     @error('quantite')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
@@ -110,76 +160,65 @@
                     <label for="roi" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         Retour sur investissement (%)
                     </label>
-                    <input type="number" id="roi" wire:model="roi"
+                    <input type="number" id="roi" wire:model="roi" x-model="roi"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="12%" oninput="updateMontantTotalCredit()" required>
-
-
+                        placeholder="12%" required>
                 </div>
 
-                <p id="error_Message" class="text-sm text-center text-red-500 hidden"></p>
+                <p x-show="showError" x-text="errorMessage" class="text-sm text-center text-red-500 sm:col-span-2"></p>
 
+                <div class="sm:col-span-2"></div>
 
-
-
-                <div class="sm:col-span-2">
-
-                </div>
                 <!-- Dates et Heures alignées -->
                 <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-
-
                     <div>
                         <label for="Datefin"
                             class="block mb-2 text-xl font-semibold text-gray-900 dark:text-white">Date
                             limite d'attente</label>
-                        <input type="datetime-local" wire:model="endDate" id="Datefin"
+                        <input type="datetime-local" wire:model="endDate" x-model="endDate" id="Datefin"
+                            x-on:change="updateDate()"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                            oninput="updateDate()" required>
+                            required>
                     </div>
 
                     <div>
-                        <!-- Durée du crédit -->
-
-                        <div class="">
-                            <label for="duration"
-                                class="block mb-2 text-lg font-semibold text-gray-900 dark:text-white">Date limite
-                                de remboursement
-                            </label>
-                            <input type="datetime-local" wire:model="duration" id="Periode"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                oninput="updateDate()" required>
-                        </div>
-
+                        <label for="Periode"
+                            class="block mb-2 text-lg font-semibold text-gray-900 dark:text-white">Date limite
+                            de remboursement
+                        </label>
+                        <input type="datetime-local" wire:model="duration" x-model="duration" id="Periode"
+                            x-on:change="updateDate()"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                            required>
                     </div>
                 </div>
-
-
 
                 <div class="sm:col-span-2">
                     <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
                         <dl class="flex items-center justify-between gap-4 py-3">
                             <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Montant recherché
                             </dt>
-                            <dd class="text-base font-medium text-gray-900 dark:text-white" id="montantMax">0 FCFA
+                            <dd class="text-base font-medium text-gray-900 dark:text-white"
+                                x-text="formatPrice(montantMax)">0 FCFA
                             </dd>
-                            <input type="hidden" name="montantMax" id="montant_total">
+                            <input type="hidden" name="montantMax" x-model="montantMax">
                         </dl>
 
                         <dl class="flex items-center justify-between gap-4 py-3">
                             <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Retour sur
                                 investissement/ Taux d'intérêt</dt>
-                            <dd class="text-base font-medium text-gray-900 dark:text-white" id="tauxInteret">0
-                                FCFA
+                            <dd class="text-base font-medium text-gray-900 dark:text-white"
+                                x-text="formatPrice(tauxInteret)">0 FCFA
                             </dd>
-                            <input type="hidden" name="tauxInteret" id="taux_interet" required>
+                            <input type="hidden" name="tauxInteret" x-model="tauxInteret" required>
                         </dl>
 
                         <dl class="flex items-center justify-between gap-4 py-3">
                             <dt class="text-base font-bold text-gray-900 dark:text-white">Crédit Total</dt>
-                            <dd class="text-base font-bold text-purple-600 dark:text-white" id="creditotal">0 FCFA
+                            <dd class="text-base font-bold text-purple-600 dark:text-white"
+                                x-text="formatPrice(creditTotal)">0 FCFA
                             </dd>
-                            <input type="hidden" name="creditotal" id="credi_total">
+                            <input type="hidden" name="creditotal" x-model="creditTotal">
                         </dl>
                         <dl class="flex items-center justify-between gap-4 py-3">
                         </dl>
@@ -201,91 +240,5 @@
                 </div>
             </div>
         </form>
-
-
     </div>
-
-
-
-
-
-    <script>
-        function updateDate() {
-            // Sélectionner les éléments de date
-            const durationInput = document.getElementById("Periode");
-            const Datefin = document.getElementById("Datefin");
-
-            // Récupérer les valeurs de l'input (les dates sélectionnées)
-            const selectedDate = new Date(durationInput.value);
-            const selectedDatefin = new Date(Datefin.value);
-
-            // Afficher les dates sélectionnées dans la console
-            console.log("Date de durée sélectionnée :", durationInput.value);
-            console.log("Date de fin sélectionnée :", Datefin.value);
-
-            // Vérification si la date de fin est supérieure à la durée
-            if (selectedDatefin && selectedDate && selectedDatefin >= selectedDate) {
-                alert('La date de fin ne doit pas dépasser la durée.');
-                Datefin.value = ''; // Réinitialiser la date de fin si la condition est remplie
-                console.log("Condition échouée : la date de fin est supérieure à la durée.");
-            } else {
-                console.log("Condition réussie : la date de fin est inférieure ou égale à la durée.");
-            }
-        }
-
-        // Fonction pour mettre à jour le montant total en fonction de la quantité
-        function updateMontantTotalCredit() {
-            const quantitInput = document.getElementById('quantitInput');
-            const price = parseFloat(quantitInput.getAttribute('data-price'));
-            const minQuantity = parseInt(quantitInput.getAttribute('data-min'));
-            const maxQuantity = parseInt(quantitInput.getAttribute('data-max'));
-            const roiInput = document.getElementById('roi');
-
-
-            const quantity = parseInt(quantitInput.value);
-            const roi = parseFloat(roiInput.value);
-
-            const montantTotalElement = document.getElementById('montantMax');
-            const interestElement = document.getElementById('tauxInteret');
-            const creditotal = document.getElementById('creditotal');
-            const montantTotalInput = document.getElementById('montant_total');
-            const tauxInteret = document.getElementById('taux_interet');
-            const crediTotal = document.getElementById('credi_total');
-            const error_Message = document.getElementById('error_Message');
-            // const submitButton = document.getElementById('submitCredit');
-
-
-
-            let montantMax = price * (isNaN(quantity) ? 0 : quantity);
-            let interet = montantMax * (isNaN(roi) ? 0 : roi / 100);
-            let creditTotal = montantMax + interet;
-
-
-            // Vérifier si la quantité est dans les limites et afficher un message d'erreur si nécessaire
-            if (isNaN(quantity) || quantity < minQuantity || quantity > maxQuantity) {
-                error_Message.innerText = `La quantité doit être comprise entre ${minQuantity} et ${maxQuantity}.`;
-                error_Message.classList.remove('hidden');
-                montantTotalElement.innerText = '0 FCFA';
-                interestElement.innerText = '0 FCFA';
-                creditotal.innerText = '0 FCFA';
-                // submitButton.disabled = true;
-                montantTotalInput.value = 0;
-                tauxInteret.value = 0;
-                crediTotal.value = 0;
-
-            } else {
-                error_Message.classList.add('hidden');
-                montantTotalElement.innerText = `${montantMax.toLocaleString()} FCFA`;
-                interestElement.innerText = `${interet.toLocaleString()} FCFA`;
-                creditotal.innerText = `${creditTotal.toLocaleString()} FCFA`;
-                montantTotalInput.value = montantMax;
-                tauxInteret.value = interet;
-                crediTotal.value = creditTotal;
-                // submitButton.disabled = false;
-            }
-        }
-    </script>
-
-
-
 </div>

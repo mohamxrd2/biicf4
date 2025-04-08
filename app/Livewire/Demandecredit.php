@@ -13,44 +13,35 @@ use Livewire\Component;
 
 class Demandecredit extends Component
 {
-    public $referenceCode;
-    public $price;
-    public $creditotal;
-    public $duration;
-    public $financementType;
-    public $username;
-    public $bailleur;
-    public $startDate;
-    public $startTime;
-    public $endDate;
-    public $endTime;
-    public $roi;
-    public $quantite;
-    public $search = '';   // Champ de recherche
-    public $users = [];    // Liste des utilisateurs trouvés
-    public $user_id, $sommedemnd, $montantmax,  $quantiteMax, $nameProd, $quantiteMin;
-
-    public $messages = [];
+    public $referenceCode, $price, $creditotal, $duration, $financementType,
+        $username, $bailleur, $startDate, $startTime, $endDate, $endTime, $roi,
+        $quantite, $search = '', $users = [], $user_id, $sommedemnd, $montantmax,
+        $quantiteMax, $nameProd, $quantiteMin, $messages = [];
 
 
-    protected $listeners = ['userIsEligible' => 'handleEligibility'];
-
-    public function handleEligibility($isEligible, $prix, $montantmax, $quantiteMax, $nameProd, $quantiteMin)
+    public function mount()
     {
-        // Vérifier si l'utilisateur est éligible
-        if ($isEligible) {
-            // Afficher la section associée
+        $data = session('eligibility_data');
 
-            // Mise à jour des propriétés avec les valeurs transmises
-            $this->sommedemnd = $prix;           // Prix du produit ou montant demandé
-            $this->montantmax = $montantmax;      // Montant maximum de l'investissement ou financement
-            $this->quantiteMax = $quantiteMax;    // Quantité maximale disponible
-            $this->nameProd = $nameProd;          // Nom du produit
-            $this->quantiteMin = $quantiteMin;          // Nom du produit
+        if ($data) {
 
-            // Générer un code de référence aléatoire de 5 chiffres
-            $this->referenceCode = $this->generateReferenceCode();
+            $this->handleEligibility(
+                $data['prix'],
+                $data['montantmax'],
+                $data['quantiteMax'],
+                $data['nameProd'],
+                $data['quantiteMin']
+            );
         }
+    }
+    public function handleEligibility($prix, $montantmax, $quantiteMax, $nameProd, $quantiteMin)
+    {
+        $this->sommedemnd = $prix;
+        $this->nameProd = $nameProd;
+        $this->montantmax = $montantmax;
+        $this->quantiteMax = $quantiteMax;
+        $this->quantiteMin = $quantiteMin;
+        $this->referenceCode = $this->generateReferenceCode();
     }
 
 
@@ -95,9 +86,8 @@ class Demandecredit extends Component
             'endDate' => 'required|date',
             'duration' => 'required|date',
         ]);
+
         try {
-
-
             if ($this->roi < 5) {
                 session()->flash('messages', ['Le retour sur investissement doit être supérieur à 5.']);
                 return; // Stoppe l'exécution de la fonction
