@@ -266,7 +266,6 @@
                         @endif
 
                         {{-- Profil --}}
-                        @if (!$liaison_reussie)
                         <button wire:click="LiaisonPromir" wire:loading.attr="disabled"
                             class="flex relative justify-center items-center px-5 py-2.5 font-semibold text-white rounded-xl shadow-md transition-all duration-300 ease-in-out focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             :class="{
@@ -288,16 +287,9 @@
                                 Patientez, cela ne prendra que quelques instants...
                             </span>
                         </button>
-                        
-                        @else
-                        <div class="flex relative justify-center items-center px-5 py-2.5 font-semibold text-white rounded-xl shadow-md transition-all duration-300 ease-in-out focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">
-                                Votre liaison avec Promir est déjà approuvée.
-                            </p>
-                        </div>
-                            
-                        @endif
-                        
+
+
+
 
 
 

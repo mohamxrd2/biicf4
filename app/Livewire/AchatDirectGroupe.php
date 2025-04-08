@@ -31,6 +31,8 @@ class AchatDirectGroupe extends Component
     public $userWallet, $produitId, $produit, $userId, $userTrader, $nameProd, $userSender, $userBalance,
         $totalCost, $userInPromir, $code_unique, $type, $dateTard, $dateTot, $timeStart, $timeEnd, $photoProd,
         $idProd, $prix, $isButtonDisabled = false, $isButtonHidden = false, $currentPage = 'achat', $errorMessage = '';
+
+
     protected $listeners = ['navigate' => 'setPage'];
     public function setPage($page)
     {
@@ -84,7 +86,7 @@ class AchatDirectGroupe extends Component
             $solde = $this->userBalance->balance;
             $this->errorMessage = "Vous n'avez pas assez de fonds pour procéder. Votre solde est : {$solde} FCFA.";
             $this->isButtonHidden = true;
-            $this->isButtonDisabled = true;
+            $this->isButtonDisabled = false;
         } else {
             // Si toutes les vérifications passent
             $this->errorMessage = ''; // Clear the error message
@@ -384,7 +386,7 @@ class AchatDirectGroupe extends Component
             // Appel API pour récupérer le score de crédit
             try {
                 // $client = new Client();
-                // $response = $client->get("https://www.toopartoo.com/promir/public/api/cote/8/3");
+                // $response = $client->get("https://promi.toopartoo.com/api/cote/{$systemClientId}/{$moisDepuisCreation}");
                 // $crediScoreData = json_decode($response->getBody()->getContents(), true);
                 $crediScoreData = 'A+'; // Simuler une réponse pour le test
             } catch (\Exception $e) {

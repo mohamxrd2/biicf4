@@ -93,7 +93,7 @@ class Profile extends Component
 
     try {
         // Appel avec timeout (max 5 secondes)
-        $response = $client->get('https://toopartoo.com/promi/public/api/users/all', [
+        $response = $client->get('https://promi.toopartoo.com/api/users/all', [
             'timeout' => 5
         ]);
         $users = json_decode($response->getBody()->getContents(), true);
