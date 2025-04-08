@@ -29,7 +29,7 @@ class Profile extends Component
         $this->name = $this->user->name;
         $this->username = $this->user->username;
         $this->phonenumber = $this->user->phone;
-        $this->liaison_reussie = Promir::where('user_id', Auth::id())->exists();; // Mettre à true si la liaison est réussie
+        $this->liaison_reussie = Promir::where('user_id', Auth::id())->exists(); // Mettre à true si la liaison est réussie
     }
 
     // Mise à jour en temps réel après liaison
@@ -68,60 +68,83 @@ class Profile extends Component
             ];
         }
     }
+    private function recupererIndicatif($paysCode)
+{
+    try {
+        $client = new Client(['timeout' => 5]);
+        $response = $client->get("https://restcountries.com/v3.1/alpha/{$paysCode}");
+        $data = json_decode($response->getBody()->getContents(), true);
+
+        $indicatif = $data[0]['idd']['root'] ?? '';
+        if (isset($data[0]['idd']['suffixes'][0])) {
+            $indicatif .= $data[0]['idd']['suffixes'][0];
+        }
+
+        return $indicatif;
+    } catch (\Exception $e) {
+        return '';
+    }
+}
+
 
     public function LiaisonPromir()
-    {
-        $client = new Client();
-        $response = $client->get('https://www.toopartoo.com/promir/public/api/users/all');
+{
+    $client = new Client();
+
+    try {
+        // Appel avec timeout (max 5 secondes)
+        $response = $client->get('https://toopartoo.com/promi/public/api/users/all', [
+            'timeout' => 5
+        ]);
         $users = json_decode($response->getBody()->getContents(), true);
+    } catch (\Exception $e) {
+        $this->dispatch('formSubmitted', "Impossible d'accéder à l'API locale.");
+        return;
+    }
 
-        // Séparer le numéro de l'utilisateur actuel
-        $numeroRecherche = $this->user->phone;
-        $numeroData = $this->separerIndicatif($numeroRecherche);
-        $numeroPrincipal = $numeroData['numero_principal'];
+    // Obtenir l'indicatif de l'utilisateur connecté une seule fois
+    $indicatifPrincipal = $this->recupererIndicatif($this->user->country);
+    $numeroPrincipal = $this->nettoyerNumero($this->user->phone, $indicatifPrincipal);
 
-        $numeroExiste = false;
-        $userTrouve = null;
+    $numeroExiste = false;
+    $userTrouve = null;
 
-        // Recherche de l'utilisateur dans la liste
-        foreach ($users['users'] as $user) {
-            $numeroUserData = $this->separerIndicatif($user['phone_number']);
-            if ($numeroUserData['numero_principal'] === $numeroPrincipal) {
-                $numeroExiste = true;
-                $userTrouve = $user;
-                break;
-            }
-        }
-
-        if ($numeroExiste) {
-            // Vérifier si le compte a au moins 3 mois d'ancienneté
-            // if ($userTrouve['mois_depuis_creation'] >= 3) {
-                // Si l'utilisateur existe et est éligible, insérer dans `promir`
-                Promir::create([
-                    'user_id' => Auth::id(),
-                    'name' => $userTrouve['name'],
-                    'last_stname' => $userTrouve['last_stname'],
-                    'user_name' => $userTrouve['user_name'],
-                    'email' => $userTrouve['email'],
-                    'phone_number' => $userTrouve['phone_number'],
-                    'system_client_id' => $userTrouve['system_client_id'],
-                    'mois_depuis_creation' => $userTrouve['mois_depuis_creation'],
-                ]);
-
-                $this->dispatch('liaisonReussie');
-            // } else {
-            //     $this->dispatch(
-            //         'formSubmitted',
-            //         "Votre compte doit avoir au moins 3 mois d'ancienneté pour être lié."
-            //     );
-            // }
-        } else {
-            $this->dispatch(
-                'formSubmitted',
-                "Le numéro de téléphone {$numeroRecherche} n'existe pas dans la liste."
-            );
+    foreach ($users['users'] as $user) {
+        $numeroUser = $this->nettoyerNumero($user['phone_number'], $indicatifPrincipal);
+        if ($numeroUser === $numeroPrincipal) {
+            $numeroExiste = true;
+            $userTrouve = $user;
+            break;
         }
     }
+
+    if ($numeroExiste) {
+        if ($userTrouve['mois_depuis_creation'] >= 0) {
+            Promir::create([
+                'user_id' => auth()->id(),
+                'name' => $userTrouve['name'],
+                'last_stname' => $userTrouve['last_stname'],
+                'user_name' => $userTrouve['user_name'],
+                'email' => $userTrouve['email'],
+                'phone_number' => $userTrouve['phone_number'],
+                'system_client_id' => $userTrouve['system_client_id'],
+                'mois_depuis_creation' => $userTrouve['mois_depuis_creation'],
+            ]);
+            $this->dispatch('liaisonReussie');
+        } else {
+            $this->dispatch('formSubmitted', "Votre compte doit avoir au moins 3 mois d'ancienneté pour être lié.");
+        }
+    } else {
+        $this->dispatch('formSubmitted', "Le numéro de téléphone {$this->user->phone} n'existe pas dans la liste.");
+    }
+}
+private function nettoyerNumero($numero, $indicatif)
+{
+    if ($indicatif && strpos($numero, $indicatif) === 0) {
+        return substr($numero, strlen($indicatif));
+    }
+    return $numero;
+}
 
 
     public function updateProfile()
