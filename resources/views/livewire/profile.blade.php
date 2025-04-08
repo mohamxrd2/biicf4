@@ -1,30 +1,29 @@
-<div class="max-w-4xl mx-auto p-4">
-    <div class="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg overflow-hidden">
+<div class="p-4 mx-auto max-w-4xl">
+    <div class="overflow-hidden bg-white rounded-2xl shadow-lg dark:bg-neutral-800">
         {{-- Banner --}}
-        <div class="h-48 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 relative">
+        <div class="relative h-48 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
             <div class="absolute inset-0 backdrop-blur-sm"></div>
         </div>
 
         {{-- Profile Header --}}
-        <div class="relative px-6 sm:px-8 -mt-20">
+        <div class="relative px-6 -mt-20 sm:px-8">
             {{-- Photo de profil et informations principales --}}
-            <div class="flex flex-col sm:flex-row items-center sm:items-end space-y-4 sm:space-y-0 sm:space-x-6">
+            <div class="flex flex-col items-center space-y-4 sm:flex-row sm:items-end sm:space-y-0 sm:space-x-6">
                 <form action="" method="post" enctype="multipart/form-data" id="photo-upload-form">
                     @csrf
                     @method('PUT')
                     <div class="relative">
                         <div
-                            class="w-32 h-32 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-neutral-700 shadow-lg">
-                            <img id="img" src="{{ asset($user->photo) }}" class="w-full h-full object-cover"
+                            class="overflow-hidden w-32 h-32 rounded-2xl ring-4 ring-white shadow-lg dark:ring-neutral-700">
+                            <img id="img" src="{{ asset($user->photo) }}" class="object-cover w-full h-full"
                                 alt="{{ $user->name }}" />
                             <input type="file" id="file-upload1" name="image" class="hidden"
                                 onchange="previewImageAndSubmit(this)" />
-                            <img id="image-preview1" class="absolute inset-0 w-full h-full object-cover hidden">
+                            <img id="image-preview1" class="hidden object-cover absolute inset-0 w-full h-full">
                         </div>
                         <label for="file-upload1"
-                            class="absolute bottom-0 right-0 p-2 bg-blue-500 hover:bg-blue-600
-                            text-white rounded-full shadow-lg cursor-pointer transition-colors duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                            class="absolute right-0 bottom-0 p-2 text-white bg-blue-500 rounded-full shadow-lg transition-colors duration-200 cursor-pointer hover:bg-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20"
                                 fill="currentColor">
                                 <path
                                     d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -35,19 +34,19 @@
 
                 <div class="text-center sm:text-left">
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $user->name }}</h1>
-                    <p class="text-blue-500 font-medium">{{ '@' . $user->username }}</p>
+                    <p class="font-medium text-blue-500">{{ '@' . $user->username }}</p>
                 </div>
             </div>
 
             {{-- Messages de notification --}}
             @if (session('success'))
-                <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+                <div class="p-4 mt-6 text-green-700 bg-green-50 rounded-xl border border-green-200">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if ($errors->any())
-                <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                <div class="p-4 mt-6 text-red-700 bg-red-50 rounded-xl border border-red-200">
                     @foreach ($errors->all() as $error)
                         <p>{{ $error }}</p>
                     @endforeach
@@ -58,12 +57,9 @@
             <div class="mt-8 border-b border-gray-200 dark:border-neutral-700">
                 <nav class="flex flex-wrap gap-2 sm:gap-8" aria-label="Tabs">
                     <button type="button"
-                        class="hs-tab-active:text-blue-600 hs-tab-active:border-blue-600 py-4 px-1
-                        inline-flex items-center gap-2 border-b-2 border-transparent text-sm font-medium
-                        text-gray-500 hover:text-blue-600 transition-colors duration-200 whitespace-nowrap
-                        dark:text-gray-400 dark:hover:text-blue-500 active"
+                        class="inline-flex gap-2 items-center px-1 py-4 text-sm font-medium text-gray-500 whitespace-nowrap border-b-2 border-transparent transition-colors duration-200 hs-tab-active:text-blue-600 hs-tab-active:border-blue-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500 active"
                         id="basic-tabs-item-1" data-hs-tab="#basic-tabs-1" aria-controls="basic-tabs-1" role="tab">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -72,12 +68,9 @@
                     </button>
 
                     <button type="button"
-                        class="hs-tab-active:text-blue-600 hs-tab-active:border-blue-600 py-4 px-1
-                        inline-flex items-center gap-2 border-b-2 border-transparent text-sm font-medium
-                        text-gray-500 hover:text-blue-600 transition-colors duration-200 whitespace-nowrap
-                        dark:text-gray-400 dark:hover:text-blue-500"
+                        class="inline-flex gap-2 items-center px-1 py-4 text-sm font-medium text-gray-500 whitespace-nowrap border-b-2 border-transparent transition-colors duration-200 hs-tab-active:text-blue-600 hs-tab-active:border-blue-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500"
                         id="basic-tabs-item-2" data-hs-tab="#basic-tabs-2" aria-controls="basic-tabs-2" role="tab">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -86,12 +79,9 @@
                     </button>
 
                     <button type="button"
-                        class="hs-tab-active:text-blue-600 hs-tab-active:border-blue-600 py-4 px-1
-                        inline-flex items-center gap-2 border-b-2 border-transparent text-sm font-medium
-                        text-gray-500 hover:text-blue-600 transition-colors duration-200 whitespace-nowrap
-                        dark:text-gray-400 dark:hover:text-blue-500"
+                        class="inline-flex gap-2 items-center px-1 py-4 text-sm font-medium text-gray-500 whitespace-nowrap border-b-2 border-transparent transition-colors duration-200 hs-tab-active:text-blue-600 hs-tab-active:border-blue-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500"
                         id="basic-tabs-item-3" data-hs-tab="#basic-tabs-3" aria-controls="basic-tabs-3" role="tab">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -107,8 +97,8 @@
                 <div id="basic-tabs-1" role="tabpanel" aria-labelledby="basic-tabs-item-1">
                     {{-- Section Double Authentification --}}
                     @if ($user->actor_type == 'Institution' && $user->user_joint == null)
-                        <div class="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4">
+                        <div class="p-6 mb-8 bg-blue-50 rounded-xl dark:bg-blue-900/20">
+                            <h3 class="mb-4 text-lg font-semibold text-blue-800 dark:text-blue-300">
                                 Double Verification
                             </h3>
                             <livewire:user-search-profile />
@@ -116,9 +106,9 @@
                     @endif
 
                     @if ($user->user_joint)
-                        <div class="mb-8 p-6 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                            <div class="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none"
+                        <div class="p-6 mb-8 bg-green-50 rounded-xl dark:bg-green-900/20">
+                            <div class="flex gap-3 items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-500" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -136,7 +126,7 @@
                     @endif
 
                     {{-- Informations utilisateur --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         @php
                             $userInfo = [
                                 ['label' => 'Nom et prénom', 'value' => $user->name, 'icon' => 'user'],
@@ -231,11 +221,11 @@
                         @endphp
 
                         @foreach ($userInfo as $info)
-                            <div class="p-4 bg-gray-50 dark:bg-neutral-900/50 rounded-xl">
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                            <div class="p-4 bg-gray-50 rounded-xl dark:bg-neutral-900/50">
+                                <div class="flex gap-3 items-center">
+                                    <div class="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/50">
                                         <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none"
+                                            class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="{{ $iconPaths[$info['icon']] ?? $iconPaths['default'] }}" />
@@ -254,11 +244,11 @@
                         @endforeach
 
                         @if ($user->parrain)
-                            <div class="p-4 bg-gray-50 dark:bg-neutral-900/50 rounded-xl">
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                            <div class="p-4 bg-gray-50 rounded-xl dark:bg-neutral-900/50">
+                                <div class="flex gap-3 items-center">
+                                    <div class="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/50">
                                         <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none"
+                                            class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -276,11 +266,9 @@
                         @endif
 
                         {{-- Profil --}}
+                        @if (!$liaison_reussie)
                         <button wire:click="LiaisonPromir" wire:loading.attr="disabled"
-                            class="px-5 py-2.5 text-white font-semibold rounded-xl
-                              focus:ring-2 focus:ring-opacity-50 flex items-center justify-center
-                              transition-all duration-300 ease-in-out shadow-md disabled:opacity-50
-                              disabled:cursor-not-allowed relative"
+                            class="flex relative justify-center items-center px-5 py-2.5 font-semibold text-white rounded-xl shadow-md transition-all duration-300 ease-in-out focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             :class="{
                                 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500': !@js($liaison_reussie),
                                 'bg-green-600 hover:bg-green-700 focus:ring-green-500': @js($liaison_reussie)
@@ -290,8 +278,8 @@
                                 {{ $liaison_reussie ? 'Liaison approuvée à Promir' : 'Liaison avec Promir' }}
                             </span>
 
-                            <span wire:loading class="flex items-center gap-2">
-                                <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg"
+                            <span wire:loading class="flex gap-2 items-center">
+                                <svg class="mr-2 w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10"
                                         stroke="currentColor" stroke-width="4"></circle>
@@ -300,6 +288,16 @@
                                 Patientez, cela ne prendra que quelques instants...
                             </span>
                         </button>
+                        
+                        @else
+                        <div class="flex relative justify-center items-center px-5 py-2.5 font-semibold text-white rounded-xl shadow-md transition-all duration-300 ease-in-out focus:ring-2 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">
+                                Votre liaison avec Promir est déjà approuvée.
+                            </p>
+                        </div>
+                            
+                        @endif
+                        
 
 
 
@@ -308,58 +306,48 @@
 
                 {{-- Onglet Modifier profil --}}
                 <div id="basic-tabs-2" class="hidden" role="tabpanel" aria-labelledby="basic-tabs-item-2">
-                    <form wire:submit.prevent="updateProfile" class="space-y-6 max-w-2xl mx-auto">
+                    <form wire:submit.prevent="updateProfile" class="mx-auto space-y-6 max-w-2xl">
 
 
                         <div class="space-y-4">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
+                            <div class="grid grid-cols-1 gap-4 items-center sm:grid-cols-3">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Nom complet
                                 </label>
                                 <div class="sm:col-span-2">
                                     <input type="text" name="name" value="{{ $user->name }}"
-                                        class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700
-                                        bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                        dark:text-white transition-colors duration-200">
+                                        class="px-4 py-2 w-full bg-white rounded-xl border border-gray-300 transition-colors duration-200 dark:border-neutral-700 dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
+                            <div class="grid grid-cols-1 gap-4 items-center sm:grid-cols-3">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Nom d'utilisateur
                                 </label>
                                 <div class="sm:col-span-2">
                                     <input type="text" name="username" value="{{ $user->username }}"
-                                        class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700
-                                        bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                        dark:text-white transition-colors duration-200">
+                                        class="px-4 py-2 w-full bg-white rounded-xl border border-gray-300 transition-colors duration-200 dark:border-neutral-700 dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
+                            <div class="grid grid-cols-1 gap-4 items-center sm:grid-cols-3">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Téléphone
                                 </label>
                                 <div class="sm:col-span-2">
                                     <input type="text" name="phonenumber" value="{{ $user->phone }}"
-                                        class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700
-                                        bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                        dark:text-white transition-colors duration-200">
+                                        class="px-4 py-2 w-full bg-white rounded-xl border border-gray-300 transition-colors duration-200 dark:border-neutral-700 dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white">
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end space-x-4">
                             <button type="reset"
-                                class="px-6 py-2 rounded-xl bg-gray-100 hover:bg-gray-200
-                                dark:bg-neutral-800 dark:hover:bg-neutral-700
-                                text-gray-700 dark:text-gray-300 transition-colors duration-200">
+                                class="px-6 py-2 text-gray-700 bg-gray-100 rounded-xl transition-colors duration-200 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-gray-300">
                                 Annuler
                             </button>
                             <button type="submit"
-                                class="px-6 py-2 rounded-xl bg-blue-500 hover:bg-blue-600
-                                text-white shadow-lg hover:shadow-blue-500/50
-                                transition-all duration-200">
+                                class="px-6 py-2 text-white bg-blue-500 rounded-xl shadow-lg transition-all duration-200 hover:bg-blue-600 hover:shadow-blue-500/50">
                                 Enregistrer
                             </button>
                         </div>
@@ -368,45 +356,39 @@
 
                 {{-- Onglet Sécurité --}}
                 <div id="basic-tabs-3" class="hidden" role="tabpanel" aria-labelledby="basic-tabs-item-3">
-                    <form wire:submit.prevent="updatePassword" class="space-y-6 max-w-2xl mx-auto">
+                    <form wire:submit.prevent="updatePassword" class="mx-auto space-y-6 max-w-2xl">
 
 
                         <div class="space-y-4">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
+                            <div class="grid grid-cols-1 gap-4 items-center sm:grid-cols-3">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Mot de passe actuel
                                 </label>
                                 <div class="sm:col-span-2">
                                     <input type="password" name="current_password"
-                                        class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700
-                                        bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                        dark:text-white transition-colors duration-200"
+                                        class="px-4 py-2 w-full bg-white rounded-xl border border-gray-300 transition-colors duration-200 dark:border-neutral-700 dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white"
                                         placeholder="••••••••">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
+                            <div class="grid grid-cols-1 gap-4 items-center sm:grid-cols-3">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Nouveau mot de passe
                                 </label>
                                 <div class="sm:col-span-2">
                                     <input type="password" name="new_password"
-                                        class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700
-                                        bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                        dark:text-white transition-colors duration-200"
+                                        class="px-4 py-2 w-full bg-white rounded-xl border border-gray-300 transition-colors duration-200 dark:border-neutral-700 dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white"
                                         placeholder="••••••••">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
+                            <div class="grid grid-cols-1 gap-4 items-center sm:grid-cols-3">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Confirmer le mot de passe
                                 </label>
                                 <div class="sm:col-span-2">
                                     <input type="password" name="new_password_confirmation"
-                                        class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-neutral-700
-                                        bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                        dark:text-white transition-colors duration-200"
+                                        class="px-4 py-2 w-full bg-white rounded-xl border border-gray-300 transition-colors duration-200 dark:border-neutral-700 dark:bg-neutral-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white"
                                         placeholder="••••••••">
                                 </div>
                             </div>
@@ -414,15 +396,11 @@
 
                         <div class="flex justify-end space-x-4">
                             <button type="reset"
-                                class="px-6 py-2 rounded-xl bg-gray-100 hover:bg-gray-200
-                                dark:bg-neutral-800 dark:hover:bg-neutral-700
-                                text-gray-700 dark:text-gray-300 transition-colors duration-200">
+                                class="px-6 py-2 text-gray-700 bg-gray-100 rounded-xl transition-colors duration-200 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-gray-300">
                                 Annuler
                             </button>
                             <button type="submit"
-                                class="px-6 py-2 rounded-xl bg-blue-500 hover:bg-blue-600
-                                text-white shadow-lg hover:shadow-blue-500/50
-                                transition-all duration-200">
+                                class="px-6 py-2 text-white bg-blue-500 rounded-xl shadow-lg transition-all duration-200 hover:bg-blue-600 hover:shadow-blue-500/50">
                                 Mettre à jour
                             </button>
                         </div>

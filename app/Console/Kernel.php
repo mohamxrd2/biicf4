@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Jobs\Provision;
 use Illuminate\Support\Facades\App;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -27,6 +28,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:finacementCredits')->everyMinute();
             // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
             $schedule->command('app:monitor')->everyMinute();
+            $schedule->command('app:provisison')->everyMinute();
         } else {
             // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
             $schedule->command('check:countdowns')->cron('* * * * *');
@@ -42,6 +44,8 @@ class Kernel extends ConsoleKernel
 
             // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
             $schedule->command('app:monitor')->cron('* * * * *');
+            $schedule->command('app:provisison')->cron('* * * * *');
+
         }
     }
 
