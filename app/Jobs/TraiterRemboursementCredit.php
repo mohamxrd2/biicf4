@@ -86,13 +86,15 @@ class TraiterRemboursementCredit implements ShouldQueue
                 $transactionService->createTransaction($credit->emprunteur_id, $id, 'Réception', $montantTotal, $this->generateIntegerReference(), 'Remboursement de financement', 'effectué', $coi->type_compte);
 
                 $investisseur = User::find($id);
+                $client = User::find($wallet->user_id);
                 Notification::send($investisseur, new remboursement('Paiement de crédit effectué avec succès.'));
+                Notification::send($client, new remboursement('Paiement de crédit effectué avec succès.'));
 
                 $commissionService = new CommissionService();
                 $commissionService->handleCommissions($commission, $investisseur->parrain);
             }
 
-            $credit->statut = 'payé';
+            $credit->statut = 'remboursé';
             $credit->save();
 
             DB::commit();

@@ -77,30 +77,30 @@ class RappelPortionsJournalCredits extends Command
 
                     // Vérifier si le crédit est totalement remplie & remboursement
                     if ($credit->montan_restantt == 0) {
-                        $balanceSuffisante = $wallet->balance >= $SommeApaye;
+                        $balanceSuffisante = $crp->Solde >= $portionCapital;
                         if ($balanceSuffisante) {
-                            $credit->statut = "remboursé";
-
                             dispatch(new TraiterRemboursementCredit($credit, $wallet));
-                        } elseif ($wallet->balance < $SommeApaye) {
+                        } else {
                             dispatch(new EchecDeRemboursement(
                                 $credit,
                                 $portionCapital,
                                 $portionInteret,
-                                'Le solde de votre compte est insuffisant., Veuillez recharger votre compte .'
+                                'Le solde de votre compte CRP est insuffisant., Veuillez recharger votre compte .'
                             ));
                         }
                     }
-
                     $credit->save();
+                    
+                    if (!$credit->montan_restantt == 0) {
 
-                    dispatch(new GérerPortionRemboursement(
-                        $credit,
-                        $this->generateIntegerReference(),
-                        $SommeApaye,
-                        $portionInteret,
-                        $dateDuJour
-                    ));
+                        dispatch(new GérerPortionRemboursement(
+                            $credit,
+                            $this->generateIntegerReference(),
+                            $SommeApaye,
+                            $portionInteret,
+                            $dateDuJour
+                        ));
+                    }
 
                     DB::commit();
                 } catch (Exception $e) {

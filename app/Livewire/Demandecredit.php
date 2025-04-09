@@ -80,6 +80,7 @@ class Demandecredit extends Component
         $this->validate([
             'roi' => 'required|numeric',
             'quantite' => 'required|numeric',
+            'sommedemnd' => 'required|numeric',
             'financementType' => 'required|string',
             'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
             'bailleur' => 'nullable|string',
@@ -94,10 +95,9 @@ class Demandecredit extends Component
             }
 
             // Calculs
-            $montantMax = $this->montantmax * (is_nan($this->quantite) ? 0 : $this->quantite);
-            $interet = $montantMax * (is_nan($this->roi) ? 0 : $this->roi / 100);
+            $montantMax = $this->sommedemnd * $this->quantite;
+            $interet = $montantMax *  $this->roi / 100;
             $creditTotal = $montantMax + $interet;
-
 
             // Vérifie si l'investisseur existe
             if ($this->user_id) {
@@ -210,7 +210,7 @@ class Demandecredit extends Component
                             $borneInferieure = isset($parts[0]) ? (int) $parts[0] : null; // Borne inférieure
                             $borneSuperieure = isset($parts[1]) ? (int) $parts[1] : null; // Borne supérieure
 
-                            Log::info("Tranche pour l'investisseur avec user_id {$userId} : Borne inférieure = {$borneInferieure}, Borne supérieure = {$borneSuperieure}");
+                            Log::info("Tranche pour l'investisseur avec user_id {$userId} : Borne inférieure = {$borneInferieure},creditTotal = {$creditTotal}, Borne supérieure = {$borneSuperieure}");
 
                             // Vérifier si le crédit total se trouve dans la tranche
                             if (
