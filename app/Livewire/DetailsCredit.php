@@ -21,6 +21,8 @@ use App\Models\User;
 use App\Models\UserPromir;
 use App\Models\Wallet;
 use App\Notifications\RefusAchat;
+use App\Services\TauxSubmissionService;
+use App\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -33,23 +35,14 @@ use Livewire\Component;
 class DetailsCredit extends Component
 {
     public $id;
-    public $notification;
-    public $userId;
-    public $userDetails;
-    public $demandeCredit;
-    public $insuffisant = false;
-    public $userInPromir;
-    public $crediScore;
-    public $solde;
-    public $nombreInvestisseursDistinct = 0;
-    public $sommeInvestie = 0;
-    public $investisseurQuiAPayeTout;
-    public $montantVerifie = false;
-    public $sommeRestante = 0;
-    public $montant = ''; // Stocke le montant saisi
+    public $notification, $userId, $userDetails, $demandeCredit, $insuffisant = false, $userInPromir,
+        $crediScore, $solde, $nombreInvestisseursDistinct = 0, $sommeInvestie = 0, $investisseurQuiAPayeTout,
+        $montantVerifie = false, $sommeRestante = 0, $montant = ''; // Stocke le montant saisi
     protected $listeners = ['compteReboursFini'];
 
-    public $pourcentageInvesti = 0, $commentTauxList = [], $lastActivity, $commentCount, $nombreParticipants, $tauxTrade, $wallet, $coi, $user_connecte, $timeFin, $isNegociationActive;
+    public $pourcentageInvesti = 0, $commentTauxList = [], $lastActivity, $commentCount, $nombreParticipants,
+        $tauxTrade, $wallet, $coi, $user_connecte, $timeFin, $isNegociationActive;
+    protected $TransactionService;
 
 
 
@@ -62,6 +55,7 @@ class DetailsCredit extends Component
         // Optionnel : si tu veux faire d'autres actions avec l'utilisateur
         $this->userDetails = User::find($this->userId);
         $userNumber = $this->userDetails->phone;
+        $this->TransactionService = new TransactionService();
 
         // Récupérer l'ID de l'utilisateur connecté
         $this->user_connecte = Auth::id();
@@ -209,9 +203,9 @@ class DetailsCredit extends Component
             $this->debutNegociationSiMontantTotalAtteint();
 
             if ($this->pourcentageInvesti == 100 && $this->investisseurQuiAPayeTout) {
-                $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->montant, $this->generateIntegerReference(),  'Gelement pour negociation financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+                $this->TransactionService->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->montant, $this->generateIntegerReference(),  'Gelement pour negociation financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
             } else {
-                $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
+                $this->TransactionService->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Envoie', $this->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
             }
 
             broadcast(new AjoutMontantF($ajoumontant))->toOthers();
@@ -242,7 +236,7 @@ class DetailsCredit extends Component
             $this->coi,
             $this->notification,
             fn() => $this->generateIntegerReference(),   // callable
-            fn(...$args) => $this->createTransaction(...$args) // callable
+            fn(...$args) => $this->TransactionService->createTransaction(...$args) // callable
         );
 
         if (isset($result['error'])) {
@@ -254,149 +248,35 @@ class DetailsCredit extends Component
         }
     }
 
-    public function commentForm()
+    public function commentForm(TauxSubmissionService $tauxService)
     {
-        // Validation du champ tauxTrade
         $this->validate([
             'tauxTrade' => 'required|numeric|min:0',
         ]);
 
-        // Vérifier si c'est la première soumission pour chaque utilisateur connecté
-        $ajoutMontant = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->where('id_invest', $this->user_connecte)
-            ->first();
+        $success = $tauxService->handleCommentForm(
+            $this->demandeCredit,
+            $this->user_connecte,
+            $this->wallet,
+            $this->coi,
+            $this->tauxTrade,
+            $this->userId
+        );
 
-        if (!$ajoutMontant) {
-            // Vérifier si le wallet existe et si le solde est insuffisant par rapport au montant requis
-            if ($this->coi && $this->coi->Solde < $this->demandeCredit->montant) {
-                // Si le solde est insuffisant, afficher un message d'erreur et arrêter l'exécution
-                session()->flash('error', 'Votre solde est insuffisant pour soumettre une offre. Montant requis : ' . $this->demandeCredit->montant . ' CFA.');
-                return;  // Arrêter l'exécution de la fonction
-            }
-
-            // Si le solde est suffisant, appeler la fonction confirmer2
-            $this->confirmer2();
-        }
-
-
-        // Appeler la fonction pour afficher le formulaire de commentaire
-        $this->ElementcommentForm();
-    }
-    public function confirmer2()
-    {
-        // Utilisation d'une transaction pour garantir la cohérence des données
-        DB::beginTransaction();
-
-        try {
-            // Sauvegarde du montant dans AjoutMontant
-            AjoutMontant::create([
-                'montant' => $this->demandeCredit->montant,
-                'id_invest' => Auth::id(),
-                'id_emp' => $this->demandeCredit->id_user,
-                'id_demnd_credit' => $this->demandeCredit->id,
-            ]);
-
-            // gelement le montant dans la table `gelement`
-            gelement::create([
-                'id_wallet' => $this->wallet->id,
-                'amount' => $this->demandeCredit->montant,
-                'reference_id' => $this->demandeCredit->demande_id,
-            ]);
-
-
-            // Mettre à jour le solde du COI (Compte des Opérations d'Investissement)
-            $coi = $this->wallet->coi;  // Assurez-vous que la relation entre Wallet et COI est correcte
-            if ($coi) {
-                $coi->Solde -= $this->demandeCredit->montant; // Débiter le montant du solde du COI
-                $coi->save();
-            }
-
-            $this->createTransaction(Auth::id(), $this->demandeCredit->id_user, 'Gele', $this->demandeCredit->montant, $this->generateIntegerReference(),  'financement  de credit d\'achat',  'effectué', $this->coi->type_compte);
-
-            DB::commit();
-        } catch (\Exception $e) {
-            // Annuler la transaction en cas d'erreur
-            DB::rollBack();
-            session()->flash('error', 'Erreur lors de l\'ajout du montant : ' . $e->getMessage());
-            return;
-        }
-
-        // Réinitialiser le montant saisi et le drapeau de vérification de solde insuffisant
-        $this->montant = '';
-        $this->insuffisant = false;
-
-
-        // Mettre à jour le nombre d'investisseurs distincts
-        $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
-            ->distinct()
-            ->count('id_invest');
-    }
-    protected function ElementcommentForm()
-    {
-        // Utilisation d'une transaction pour garantir la cohérence des données
-        DB::beginTransaction();
-        // Insérer dans la table commentTaux
-        try {
-
-            $commentTaux = CommentTaux::create([
-                'taux' => $this->tauxTrade,
-                'code_unique' => $this->demandeCredit->demande_id,
-                'id_invest' => auth()->id(),
-                'id_emp' => $this->demandeCredit->id_user,
-            ]);
-
-            // Réinitialiser le champ tauxTrade après l'insertion
+        if ($success) {
+            $this->montant = '';
             $this->tauxTrade = '';
-            broadcast(new CommentSubmittedTaux($this->tauxTrade,  $commentTaux->id))->toOthers();
+            $this->insuffisant = false;
 
-            // Committer la transaction
-            DB::commit();
-            // Optionnel: Ajouter une notification ou un message de succès
-            session()->flash('message', 'Commentaire sur le taux ajouté avec succès.');
-        } catch (\Exception $e) {
-            // Annuler la transaction en cas d'erreur
-            DB::rollBack();
-            session()->flash('error', 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage());
+            $this->commentTauxList = CommentTaux::with('investisseur')
+                ->where('code_unique', $this->demandeCredit->demande_id)
+                ->orderBy('taux', 'asc')
+                ->get();
+
+            $this->nombreInvestisseursDistinct = AjoutMontant::where('id_demnd_credit', $this->demandeCredit->id)
+                ->distinct()
+                ->count('id_invest');
         }
-
-        // Commenter cette ligne une fois que vous avez vérifié
-
-        $this->commentTauxList = CommentTaux::with('investisseur') // Assurez-vous que la relation est définie dans le modèle CommentTaux
-            ->where('code_unique', $this->demandeCredit->demande_id)
-            ->orderBy('taux', 'asc') // Trier par le champ 'taux' en ordre croissant
-            ->get();
-
-        // Vérifier si un compte à rebours est déjà en cours pour cet code unique
-        $existingCountdown = Countdown::where('code_unique',  $this->demandeCredit->demande_id)
-            ->where('notified', false)
-            ->orderBy('start_time', 'desc')
-            ->first();
-
-        if (!$existingCountdown) {
-            // Créer un nouveau compte à rebours s'il n'y en a pas en cours
-            Countdown::create([
-                'user_id' => Auth::id(),
-                'userSender' => $this->userId,
-                // 'start_time' => $this->dateFin,
-                'start_time' => now(),
-                'difference' => 'credit_taux',
-                'code_unique' =>  $this->demandeCredit->demande_id,
-            ]);
-        }
-    }
-
-    protected function createTransaction(int $senderId, int $receiverId, string $type, float $amount, int $reference_id, string $description, string $status,  string $type_compte): void
-    {
-        $transaction = new Transaction();
-        $transaction->sender_user_id = $senderId;
-        $transaction->receiver_user_id = $receiverId;
-        $transaction->type = $type;
-        $transaction->amount = $amount;
-        $transaction->reference_id = $reference_id;
-        $transaction->description = $description;
-        $transaction->type_compte = $type_compte;
-        $transaction->status = $status;
-        $transaction->save();
     }
 
     protected function generateIntegerReference(): int
