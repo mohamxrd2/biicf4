@@ -41,7 +41,6 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:rappel-journalieres-projets')->cron('* * * * *');
             $schedule->command('app:finacementProjetAccorde')->cron('* * * * *');
             $schedule->command('app:finacementCredits')->cron('* * * * *');
-
             // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
             $schedule->command('app:monitor')->cron('* * * * *');
             $schedule->command('app:provisison')->cron('* * * * *');
