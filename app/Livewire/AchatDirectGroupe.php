@@ -385,10 +385,10 @@ class AchatDirectGroupe extends Component
 
             // Appel API pour récupérer le score de crédit
             try {
-                // $client = new Client();
-                // $response = $client->get("https://promi.toopartoo.com/api/cote/{$systemClientId}/{$moisDepuisCreation}");
-                // $crediScoreData = json_decode($response->getBody()->getContents(), true);
-                $crediScoreData = 'A+'; // Simuler une réponse pour le test
+                $client = new Client();
+                $response = $client->get("https://promi.toopartoo.com/api/cote/{$systemClientId}/{$moisDepuisCreation}");
+                $crediScoreData = json_decode($response->getBody()->getContents(), true);
+                // $crediScoreData = 'A+'; // Simuler une réponse pour le test
             } catch (\Exception $e) {
                 $this->dispatch(
                     'formSubmitted',
@@ -397,9 +397,9 @@ class AchatDirectGroupe extends Component
                 return;
             }
             // Vérifier si la réponse contient bien une clé "grade"
-            // if (isset($crediScoreData['grade'])) {
-            if (isset($crediScoreData)) {
-                $crediScore = $crediScoreData; // Récupérer le grade
+            if (isset($crediScoreData['grade'])) {
+                // if (isset($crediScoreData)) {
+                $crediScore = $crediScoreData['grade']; // Récupérer le grade
 
                 if (in_array($crediScore, ['A+', 'A', 'A-', 'B+', 'B', 'B-'])) {
                     $this->dispatch(

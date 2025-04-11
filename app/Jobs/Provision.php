@@ -38,15 +38,15 @@ class Provision implements ShouldQueue
 
         // Étape 1 : Vérification de la liaison
         $liaison_reussie = Promir::where('user_id', $this->userId)->first();
-    
+
         if (!$liaison_reussie) {
             Log::warning("Liaison non trouvée pour l'utilisateur ID {$this->userId}");
             return;
         }
-    
+
         $systemeId = $liaison_reussie->system_client_id;
         Log::info("Liaison réussie. system_client_id = {$systemeId}");
-    
+
         // Étape 2 : Appel API
         $client = new Client();
         $url = "https://toopartoo.com/promi/public/api/provision/{$systemeId}";
@@ -55,9 +55,9 @@ class Provision implements ShouldQueue
         $response = $client->get($url, ['timeout' => 10]);
         $body = $response->getBody()->getContents();
         Log::info("Réponse brute reçue : " . $body);
-    
+
         $data = json_decode($body, true);
-    
+
         // Étape 3 : Vérification des données API
         if (!isset($data['revenu_alloue'])) {
             Log::error("Clé 'revenu_alloue' absente dans la réponse API pour l'utilisateur ID {$this->userId}");
@@ -70,10 +70,10 @@ class Provision implements ShouldQueue
         if($revenu_alloue != 0){
 
             $wallet = Wallet::where('user_id', $this->userId)->first();
-    
+
         if ($wallet) {
             $ancien_solde = $wallet->balance;
-            $wallet->balance += $revenu_alloue;
+            $wallet->balance -= $revenu_alloue;
             $wallet->save();
             Log::info("Wallet mis à jour : Ancien solde = {$ancien_solde}, Nouveau solde = {$wallet->balance}");
         } else {
@@ -84,10 +84,10 @@ class Provision implements ShouldQueue
         $reference_service = new generateIntegerReference();
         $reference_id = $reference_service->generate();
         Log::info("Référence générée pour la transaction : {$reference_id}");
-    
+
         // Étape 6 : Création des transactions
         $TransactionService = new TransactionService();
-    
+
         $TransactionService->createTransaction(
             $this->userId,
             $this->userId,
@@ -113,7 +113,7 @@ class Provision implements ShouldQueue
         $TransactionService->createTransaction(
             $this->userId,
             $this->userId,
-            'Reception',
+            'Réception',
             $revenu_alloue,
             $reference_id,
             'Reception du crp',
@@ -124,14 +124,14 @@ class Provision implements ShouldQueue
         Log::info("✅ Provision terminée avec succès pour l'utilisateur ID {$this->userId}");
 
         }
-    
+
         // Étape 4 : Mise à jour du Wallet
-        
+
 
     } catch (\Exception $e) {
         Log::error("❌ Erreur lors du provision pour l'utilisateur ID {$this->userId} : " . $e->getMessage());
     }
 }
 
-    
+
 }
