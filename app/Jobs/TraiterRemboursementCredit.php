@@ -82,8 +82,24 @@ class TraiterRemboursementCredit implements ShouldQueue
                 }
 
                 $transactionService = new TransactionService();
-                $transactionService->createTransaction($credit->emprunteur_id, $id, 'Envoie', $montantTotal, $this->generateIntegerReference(), 'Remboursement de financement', 'effectué', $crp->type_compte);
-                $transactionService->createTransaction($credit->emprunteur_id, $id, 'Réception', $montantTotal, $this->generateIntegerReference(), 'Remboursement de financement', 'effectué', $coi->type_compte);
+                $transactionService->createTransaction(
+                    $credit->emprunteur_id,
+                    $id,
+                    'Envoie',
+                    $montantTotal,
+                    $this->generateIntegerReference(),
+                    'Remboursement de financement',
+                    $crp->type_compte
+                );
+                $transactionService->createTransaction(
+                    $credit->emprunteur_id,
+                    $id,
+                    'Réception',
+                    $montantTotal,
+                    $this->generateIntegerReference(),
+                    'Remboursement de financement',
+                    $coi->type_compte
+                );
 
                 $investisseur = User::find($id);
                 $client = User::find($wallet->user_id);
