@@ -29,7 +29,6 @@ class Demandecredit extends Component
         $data = session('eligibility_data');
 
         if ($data) {
-
             $this->handleEligibility(
                 $data['prix'],
                 $data['montantmax'],
@@ -39,6 +38,7 @@ class Demandecredit extends Component
             );
         }
     }
+
     public function handleEligibility($prix, $montantmax, $quantiteMax, $quantiteMin, $nameProd)
     {
         $this->sommedemnd = $prix;
@@ -69,7 +69,6 @@ class Demandecredit extends Component
         }
     }
 
-
     // Méthode pour sélectionner un utilisateur
     public function selectUser($userId, $userName)
     {
@@ -77,55 +76,74 @@ class Demandecredit extends Component
         $this->search = $userName;
         $this->users = [];
     }
+
     public function submit()
     {
+        // Validation améliorée avec des règles dynamiques pour quantite
         $this->validate([
-            'roi' => 'required|numeric',
-            'quantite' => 'required|numeric',
+            'roi' => 'required|numeric|min:5',
+            'quantite' => 'required|numeric|min:' . $this->quantiteMin . '|max:' . $this->quantiteMax,
             'sommedemnd' => 'required|numeric',
             'financementType' => 'required|string',
-            'user_id' => 'nullable|exists:investisseurs,user_id', // Assurez-vous que l'utilisateur sélectionné existe
+            'user_id' => 'nullable|exists:users,id',
             'bailleur' => 'nullable|string',
             'endDate' => 'required|date',
             'duration' => 'required|date',
+        ], [
+            'roi.min' => 'Le retour sur investissement doit être supérieur à 5.',
+            'quantite.min' => 'La quantité minimum est de ' . $this->quantiteMin,
+            'quantite.max' => 'La quantité maximum est de ' . $this->quantiteMax,
         ]);
 
         try {
-            if ($this->roi < 5) {
-                session()->flash('messages', ['Le retour sur investissement doit être supérieur à 5.']);
-                return; // Stoppe l'exécution de la fonction
+            // Calculs - déplacés en haut pour être disponibles dans tout le bloc
+            $montantTotal = $this->sommedemnd * $this->quantite;
+            $interet = $montantTotal * $this->roi / 100;
+            $creditTotal = $montantTotal + $interet;
+
+            // Vérifier l'éligibilité du crédit avant de poursuivre
+            if (!$this->verifierEligibiliteCredit($creditTotal)) {
+                // Si l'éligibilité échoue, on sort de la fonction
+                return;
             }
 
-            // Calculs
-            $montantMax = $this->sommedemnd * $this->quantite;
-            $interet = $montantMax *  $this->roi / 100;
-            $creditTotal = $montantMax + $interet;
+            // Préparation des données communes
+            $commonData = [
+                'demande_id' => $this->referenceCode,
+                'objet_financement' => 'Achat du produit ' . $this->nameProd,
+                'montant' => $montantTotal,
+                'duree' => $this->duration,
+                'type_financement' => $this->financementType,
+                'bailleur' => $this->bailleur,
+                'id_user' => auth()->id(),
+                'date_debut' => now()->format('Y-m-d H:i:s'),
+                'date_fin' => $this->endDate,
+                'taux' => $this->roi,
+                'status' => 'en cours',
+            ];
 
-            // Vérifie si l'investisseur existe
+            // Traitement si un investisseur spécifique est sélectionné
             if ($this->user_id) {
                 // Recherche de l'investisseur par user_id
                 $investor = Investisseur::where('user_id', $this->user_id)->first();
-                // Récupère l'id de l'investisseur
-                $investorId = $investor->id ?? null; // ou $investor->id_investisseur selon ton schéma
+
+                if (!$investor) {
+                    session()->flash('error', "L'investisseur sélectionné n'existe pas ou n'est pas un investisseur.");
+                    return;
+                }
+
+                $investorId = $investor->id;
                 Log::info('Investor found.', ['investor_id' => $investorId]);
 
-                // Insérer les données dans la table demande_credi
-                $demande = DemandeCredi::create([
-                    'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
-                    'objet_financement' => 'Achat du produit ' . $this->nameProd,
-                    'montant' => $montantMax,
-                    'duree' => $this->duration,
-                    'type_financement' => $this->financementType,
-                    'bailleur' => $this->bailleur,
-                    'id_user' => auth()->id(), // Utilisateur connecté
-                    'id_investisseurs' => json_encode($investorId), // Utiliser l'id récupéré
-                    'date_debut' => now()->format('Y-m-d H:i:s'),
-                    'date_fin' => $this->endDate,
-                    'taux' => $this->roi, // Le taux de retour sur investissement
-                ]);
+                // Compléter les données spécifiques
+                $commonData['id_investisseurs'] = json_encode($investorId);
 
-                $data = [
-                    'demande_id' => $this->referenceCode, // Accéder aux clés du tableau
+                // Créer la demande
+                $demande = DemandeCredi::create($commonData);
+
+                // Préparer les données pour la notification
+                $notificationData = [
+                    'demande_id' => $this->referenceCode,
                     'id_projet' => null,
                     'montant' => $creditTotal,
                     'duree' => $this->duration,
@@ -135,129 +153,99 @@ class Demandecredit extends Component
                     'id_investisseur' => $investorId,
                 ];
 
-                // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
-                $this->dispatch(
-                    'formSubmitted',
-                    'Demande de Fiancement envoyé avec success'
-                );
-
                 $owner = User::find($this->user_id);
 
                 // Envoyer la notification à l'investisseur
-                Notification::send($owner, new DemandeCreditNotification($data));
+                Notification::send($owner, new DemandeCreditNotification($notificationData));
 
-                // Reset des champs après soumission
-                $this->reset();
-            } else if ($this->bailleur) {
-                // Récupérer l'ID de l'investisseur qui soumet
-                $submitterId = Auth::id(); // ou $this->investisseur_id selon ton contexte
+                $this->dispatch('formSubmitted', 'Demande de Financement envoyée avec succès');
+            }
+            // Traitement si un type de bailleur est sélectionné
+            else if ($this->bailleur) {
+                // Récupérer l'ID de l'utilisateur actuel
+                $currentUserId = Auth::id();
 
-
-                // Récupérer les investisseurs en excluant celui qui soumet
+                // Récupérer les investisseurs correspondant au type de bailleur sauf l'utilisateur actuel
                 $investisseurs = Investisseur::where('invest_type', $this->bailleur)
-                    ->with('user') // Assure-toi que la relation "user" est définie dans le modèle Investisseur
-                    ->where('user_id', '!=', $submitterId) // Exclure l'investisseur qui soumet
+                    ->with('user')
+                    ->whereHas('user', function($query) use ($currentUserId) {
+                        $query->where('id', '!=', $currentUserId);
+                    })
                     ->get();
 
-                // Vérifie s'il y a des investisseurs trouvés
+                // Vérifier si des investisseurs ont été trouvés
                 if ($investisseurs->isEmpty()) {
-                    // Gérer le cas où aucun investisseur n'est trouvé
-                    $this->dispatch('formSubmitted', 'Aucun investeur avec ce type trouver');
-
+                    $this->dispatch('formSubmitted', 'Aucun investisseur avec ce type trouvé');
                     Log::warning('Investors not found for bailleur type.', [
                         'bailleur' => $this->bailleur,
-                        'user_id' => auth()->id(),
+                        'user_id' => $currentUserId,
                     ]);
+                    return;
                 }
+
                 // Récupérer les IDs des utilisateurs associés
                 $userIds = $investisseurs->pluck('user.id')->toArray();
 
-                $demande = DemandeCredi::create([
-                    'demande_id' => $this->referenceCode, // Remplacer par la logique appropriée si nécessaire
-                    'objet_financement' => 'Achat du produit ' . $this->nameProd,
-                    'montant' => $creditTotal,
-                    'duree' => $this->duration,
-                    'type_financement' => $this->financementType,
-                    'bailleur' => $this->bailleur,
-                    'id_user' => auth()->id(), // Utilisateur connecté
-                    'id_investisseurs' =>  json_encode($userIds), // Utilise l'id de l'investisseur actuel
-                    'date_debut' => now()->format('Y-m-d H:i:s'),
-                    'date_fin' => $this->endDate,
-                    'taux' => $this->roi, // Le taux de retour sur investissement
-                    'status' => 'en cours', // Le taux de retour sur investissement
-                ]);
+                // Compléter les données spécifiques
+                $commonData['id_investisseurs'] = json_encode($userIds);
 
+                // Créer la demande
+                $demande = DemandeCredi::create($commonData);
 
-                // Envoi de la notification aux investisseurs concernés
+                // Traitements des notifications aux investisseurs éligibles
                 foreach ($investisseurs as $investisseur) {
-                    // Récupérer 'user_id' de chaque investisseur
                     $userId = $investisseur->user_id;
 
-                    // Rechercher l'investisseur en fonction de 'user_id'
-                    $investissement = Investisseur::where('user_id', $userId)->first();
+                    if ($investisseur->tranche) {
+                        // Nettoyer et diviser la tranche
+                        $trancheCleaned = str_replace('.', '', $investisseur->tranche);
+                        $parts = explode('-', $trancheCleaned);
 
-                    if ($investissement) {
-                        Log::info("Traitement de l'investisseur avec user_id : {$userId}");
+                        // Déterminer les bornes
+                        $borneInferieure = isset($parts[0]) ? (int) $parts[0] : null;
+                        $borneSuperieure = isset($parts[1]) ? (int) $parts[1] : null;
 
-                        if ($investissement->tranche) {
-                            // Initialisation des bornes
-                            $borneInferieure = null;
-                            $borneSuperieure = null;
+                        Log::info("Analyse de tranche: {$borneInferieure}-{$borneSuperieure} pour creditTotal: {$creditTotal}");
 
-                            // Nettoyer et diviser la tranche
-                            $trancheCleaned = str_replace('.', '', $investissement->tranche); // Supprimer les points
-                            $parts = explode('-', $trancheCleaned);
+                        // Vérifier si le montant total se trouve dans la tranche
+                        if (
+                            $borneInferieure !== null &&
+                            $borneSuperieure !== null &&
+                            $creditTotal >= $borneInferieure &&
+                            $creditTotal <= $borneSuperieure
+                        ) {
+                            $investisseurUser = User::find($userId);
 
-                            // Déterminer les bornes
-                            $borneInferieure = isset($parts[0]) ? (int) $parts[0] : null; // Borne inférieure
-                            $borneSuperieure = isset($parts[1]) ? (int) $parts[1] : null; // Borne supérieure
-
-                            Log::info("Tranche pour l'investisseur avec user_id {$userId} : Borne inférieure = {$borneInferieure},creditTotal = {$creditTotal}, Borne supérieure = {$borneSuperieure}");
-
-                            // Vérifier si le crédit total se trouve dans la tranche
-                            if (
-                                $borneInferieure !== null && $borneSuperieure !== null &&
-                                $creditTotal >= $borneInferieure && $creditTotal <= $borneSuperieure
-                            ) {
-                                // Récupérer l'utilisateur associé à l'investisseur
-                                $investisseurUser = $investissement->user;
-
-                                if ($investisseurUser) {
-                                    // Envoyer la notification
-                                    Notification::send($investisseurUser, new DemandeCreditNotification($demande));
-                                    Log::info("Notification envoyée à l'utilisateur ID : {$investisseurUser->id} pour l'investisseur avec user_id : {$userId}");
-                                } else {
-                                    // Log si aucun utilisateur n'est associé
-                                    Log::warning("Aucun utilisateur trouvé pour l'investisseur avec user_id : {$userId}");
-                                }
+                            if ($investisseurUser) {
+                                Notification::send($investisseurUser, new DemandeCreditNotification($demande));
+                                Log::info("Notification envoyée à l'utilisateur ID: {$investisseurUser->id}");
                             } else {
-                                Log::info("Le crédit total ({$creditTotal}) ne correspond pas à la tranche de l'investisseur avec user_id : {$userId}");
+                                Log::warning("Utilisateur non trouvé pour l'ID: {$userId}");
                             }
                         } else {
-                            Log::warning("Tranche non valide ou absente pour l'investisseur avec user_id : {$userId}");
+                            Log::info("Montant {$creditTotal} hors tranche {$borneInferieure}-{$borneSuperieure}");
                         }
                     } else {
-                        Log::error("Investisseur non trouvé avec user_id : {$userId}");
+                        Log::warning("Tranche non définie pour l'investisseur avec user_id: {$userId}");
                     }
                 }
 
-                // Optionnel : Ajouter une notification de succès ou rediriger l'utilisateur
                 $this->dispatch('formSubmitted', 'Demandes de crédit envoyées avec succès');
-
-                // Reset des champs après soumission
-                $this->reset();
-            }
-            // Vérifier l'éligibilité du crédit
-            if ($this->verifierEligibiliteCredit($creditTotal)) {
-                // Si l'éligibilité est vérifiée, vous pouvez continuer avec d'autres actions
-                $this->dispatch('formSubmitted', 'Demande de crédit soumise avec succès.');
             } else {
-                // Gérer le cas où l'éligibilité échoue
-                $this->dispatch('formSubmitted', 'Échec de la demande de crédit : ' . implode(', ', $this->messages));
+                // Aucun investisseur ou bailleur sélectionné
+                $this->dispatch('formSubmitted', 'Veuillez sélectionner un investisseur ou un type de bailleur');
+                return;
             }
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Assurez-vous que $messages est un tableau et ajoutez les nouvelles erreurs
-            $this->messages = array_merge($this->messages, $e->validator->errors()->all());
+
+            // Réinitialiser les champs après soumission réussie
+            $this->reset(['roi', 'quantite', 'endDate', 'duration', 'financementType', 'user_id', 'bailleur', 'search']);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la soumission de la demande: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            $this->dispatch('formSubmitted', 'Une erreur est survenue lors de la soumission: ' . $e->getMessage());
         }
     }
 
@@ -265,6 +253,12 @@ class Demandecredit extends Component
     {
         $user = Auth::user();
         $wallet = Wallet::where('user_id', $user->id)->first();
+
+        if (!$wallet) {
+            $this->addError('eligibilite', "Votre portefeuille n'a pas été trouvé.");
+            return false;
+        }
+
         $cedd = $wallet->cedd->Solde ?? 0;
         $cefp = $wallet->cefp->Solde ?? 0;
 
@@ -294,39 +288,49 @@ class Demandecredit extends Component
             $montantCoupéCEFP = $minimumRequis - $montantCoupéCEDD; // le reste vient du CEFP
         }
 
-        // Geler les montants (tu peux remplacer ça par l'appel aux bons modèles ou services de mise à jour)
-        $wallet->decrement('cedd', $montantCoupéCEDD);
-        $wallet->decrement('cefp', $montantCoupéCEFP);
-        // Générer le code unique pour l'achat
-        $referenceService = new generateUniqueReference();
-        $codeUnique = $referenceService->generate();
+        try {
+            // Générer le code unique pour l'achat
+            $referenceService = new generateUniqueReference();
+            $codeUnique = $referenceService->generate();
 
-        // Enregistrer dans les transactions gelées
-        Gelement::create([
-            'reference_id' => $codeUnique,
-            'id_wallet' => $wallet->id,
-            'amount' => $minimumRequis,
-        ]);
+            // Enregistrer dans les transactions gelées
+            Gelement::create([
+                'reference_id' => $codeUnique,
+                'id_wallet' => $wallet->id,
+                'amount' => $minimumRequis,
+            ]);
 
-        // Créer la transaction
-        $reference_service = new generateIntegerReference();
-        $reference_id = $reference_service->generate();
+            // Décrémenter les soldes du wallet
+            if ($montantCoupéCEDD > 0) {
+                $wallet->cedd->decrement('Solde', $montantCoupéCEDD);
+            }
 
-        $TransactionService = new TransactionService();
-        $TransactionService->createTransaction(
-            $user->id,
-            $user->id,
-            'Gele',
-            $minimumRequis,
-            $reference_id,
-            'Gele pour Demande de crédit (CEDD: ' . number_format($montantCoupéCEDD, 0, ',', ' ') . ' / CEFP: ' . number_format($montantCoupéCEFP, 0, ',', ' ') . ')',
-            'COC'
-        );
+            if ($montantCoupéCEFP > 0) {
+                $wallet->cefp->decrement('Solde', $montantCoupéCEFP);
+            }
 
-        return true;
+            // Créer la transaction
+            $reference_service = new generateIntegerReference();
+            $reference_id = $reference_service->generate();
+
+            $TransactionService = new TransactionService();
+            $TransactionService->createTransaction(
+                $user->id,
+                $user->id,
+                'Gele',
+                $minimumRequis,
+                $reference_id,
+                'Gele pour Demande de crédit (CEDD: ' . number_format($montantCoupéCEDD, 0, ',', ' ') . ' / CEFP: ' . number_format($montantCoupéCEFP, 0, ',', ' ') . ')',
+                'COC'
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du gel des fonds: ' . $e->getMessage());
+            $this->addError('eligibilite', "Une erreur est survenue lors du gel des fonds: " . $e->getMessage());
+            return false;
+        }
     }
-
-
 
     // Fonction pour générer un code de référence de 5 chiffres
     private function generateReferenceCode()
