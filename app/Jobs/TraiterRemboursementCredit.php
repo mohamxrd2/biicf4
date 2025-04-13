@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Crp;
 use App\Models\Coi;
+use App\Models\Gelement;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Services\TransactionService;
@@ -51,7 +52,6 @@ class TraiterRemboursementCredit implements ShouldQueue
             }
         }
 
-        Log::info('Liste des IDs des investisseurs : ' . implode(', ', array_keys($investisseursMontants)));
 
         DB::beginTransaction();
         try {
@@ -113,6 +113,8 @@ class TraiterRemboursementCredit implements ShouldQueue
             $credit->statut = 'remboursé';
             $credit->save();
 
+            // $this->retourMontantGele($credit->emprunteur_id);
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
@@ -120,6 +122,23 @@ class TraiterRemboursementCredit implements ShouldQueue
             throw $e;
         }
     }
+    // private function retourMontantGele($userId)
+    // {
+
+    //     // 1. Recherche du gel (par user_id ou référence, selon ton besoin)
+    //     $gel = Gelement::where('user_id', auth()->id())
+    //         ->where('statut', 'gelé')
+    //         ->first();
+
+    //     if ($gel) {
+    //         $montantGele = $gel->montant;
+
+    //         $coc = $montantGele;
+
+    //         $demande->coc = $coc;
+    //         $demande->save();
+    //     }
+    // }
 
     protected function generateIntegerReference(): int
     {
