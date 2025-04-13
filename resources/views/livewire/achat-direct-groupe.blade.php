@@ -131,13 +131,13 @@
                         <div class="text-center mt-3">
                             @if ($userInPromir)
                                 <!-- Afficher le bouton si l'utilisateur est dans la table Promir -->
-                                <button wire:click="credit" wire:loading.attr="disabled"
+                                <button wire:click="credit" wire:target="credit" wire:loading.attr="disabled"
                                     @if ($isButtonDisabled) disabled @endif
                                     class="py-2 px-3 w-full inline-flex items-center
                                 justify-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent
                                 bg-blue-600 text-white hover:bg-blue-700">
-                                    <span wire:loading.remove>Demander un crédit</span>
-                                    <span wire:loading>Envoi en cours...</span>
+                                    <span wire:loading.remove wire:target="credit">Demander un crédit</span>
+                                    <span wire:loading wire:target="credit">Envoi en cours...</span>
                                 </button>
                             @else
                                 <!-- Afficher un message avec un lien vers le profil si l'utilisateur n'est pas dans Promir -->

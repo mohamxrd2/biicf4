@@ -3,9 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\DemandeCredi;
+use App\Models\Gelement;
 use App\Models\Investisseur;
 use App\Models\User;
+use App\Models\Wallet;
 use App\Notifications\DemandeCreditNotification;
+use App\Services\generateIntegerReference;
+use App\Services\generateUniqueReference;
+use App\Services\TransactionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -29,22 +34,20 @@ class Demandecredit extends Component
                 $data['prix'],
                 $data['montantmax'],
                 $data['quantiteMax'],
-                $data['nameProd'],
-                $data['quantiteMin']
+                $data['quantiteMin'],
+                $data['nameProd']
             );
         }
     }
-    public function handleEligibility($prix, $montantmax, $quantiteMax, $nameProd, $quantiteMin)
+    public function handleEligibility($prix, $montantmax, $quantiteMax, $quantiteMin, $nameProd)
     {
         $this->sommedemnd = $prix;
-        $this->nameProd = $nameProd;
         $this->montantmax = $montantmax;
         $this->quantiteMax = $quantiteMax;
         $this->quantiteMin = $quantiteMin;
+        $this->nameProd = $nameProd;
         $this->referenceCode = $this->generateReferenceCode();
     }
-
-
 
     // Méthode appelée lors de la mise à jour de la recherche
     public function updatedSearch()
@@ -71,9 +74,8 @@ class Demandecredit extends Component
     public function selectUser($userId, $userName)
     {
         $this->user_id = $userId;
-        $this->search = $userName;   // Mettre à jour le champ de recherche avec le nom d'utilisateur sélectionné
-        $this->users = [];           // Vider la liste des résultats
-        Log::info('User selected.', ['user_id' => $userId, 'user_name' => $userName]);
+        $this->search = $userName;
+        $this->users = [];
     }
     public function submit()
     {
@@ -245,11 +247,86 @@ class Demandecredit extends Component
                 // Reset des champs après soumission
                 $this->reset();
             }
+            // Vérifier l'éligibilité du crédit
+            if ($this->verifierEligibiliteCredit($creditTotal)) {
+                // Si l'éligibilité est vérifiée, vous pouvez continuer avec d'autres actions
+                $this->dispatch('formSubmitted', 'Demande de crédit soumise avec succès.');
+            } else {
+                // Gérer le cas où l'éligibilité échoue
+                $this->dispatch('formSubmitted', 'Échec de la demande de crédit : ' . implode(', ', $this->messages));
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Assurez-vous que $messages est un tableau et ajoutez les nouvelles erreurs
             $this->messages = array_merge($this->messages, $e->validator->errors()->all());
         }
     }
+
+    public function verifierEligibiliteCredit($creditTotal)
+    {
+        $user = Auth::user();
+        $wallet = Wallet::where('user_id', $user->id)->first();
+        $cedd = $wallet->cedd->Solde ?? 0;
+        $cefp = $wallet->cefp->Solde ?? 0;
+
+        $garantie = $cedd + $cefp;
+        $minimumRequis = $creditTotal * 0.25;
+
+        if ($garantie < $minimumRequis) {
+            $manque = $minimumRequis - $garantie;
+            $this->addError('eligibilite', "Vous devez avoir au moins 25% du montant demandé en CEDD + CEFP. Il vous manque : " . number_format($manque, 0, ',', ' ') . " FCFA.");
+            return false;
+        }
+
+        // Déterminer comment répartir le gel
+        $montantCoupéCEDD = 0;
+        $montantCoupéCEFP = 0;
+
+        if ($cedd >= $minimumRequis) {
+            // CEDD seul peut couvrir
+            $montantCoupéCEDD = $minimumRequis;
+        } elseif ($cefp >= $minimumRequis) {
+            // CEFP seul peut couvrir
+            $montantCoupéCEFP = $minimumRequis;
+        } else {
+            // Sinon, on répartit en deux parts égales
+            $moitie = $minimumRequis / 2;
+            $montantCoupéCEDD = min($moitie, $cedd);
+            $montantCoupéCEFP = $minimumRequis - $montantCoupéCEDD; // le reste vient du CEFP
+        }
+
+        // Geler les montants (tu peux remplacer ça par l'appel aux bons modèles ou services de mise à jour)
+        $wallet->decrement('cedd', $montantCoupéCEDD);
+        $wallet->decrement('cefp', $montantCoupéCEFP);
+        // Générer le code unique pour l'achat
+        $referenceService = new generateUniqueReference();
+        $codeUnique = $referenceService->generate();
+
+        // Enregistrer dans les transactions gelées
+        Gelement::create([
+            'reference_id' => $codeUnique,
+            'id_wallet' => $wallet->id,
+            'amount' => $minimumRequis,
+        ]);
+
+        // Créer la transaction
+        $reference_service = new generateIntegerReference();
+        $reference_id = $reference_service->generate();
+
+        $TransactionService = new TransactionService();
+        $TransactionService->createTransaction(
+            $user->id,
+            $user->id,
+            'Gele',
+            $minimumRequis,
+            $reference_id,
+            'Gele pour Demande de crédit (CEDD: ' . number_format($montantCoupéCEDD, 0, ',', ' ') . ' / CEFP: ' . number_format($montantCoupéCEFP, 0, ',', ' ') . ')',
+            'COC'
+        );
+
+        return true;
+    }
+
+
 
     // Fonction pour générer un code de référence de 5 chiffres
     private function generateReferenceCode()

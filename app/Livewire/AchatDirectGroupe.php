@@ -97,10 +97,19 @@ class AchatDirectGroupe extends Component
 
     public function AchatDirectForm()
     {
+        // Vérifier le solde utilisateur
+        if ($this->totalCost > $this->userBalance->balance) {
+            $solde = $this->userBalance->balance;
+            $this->errorMessage = "Vous n'avez pas assez de fonds pour procéder. Votre solde est : {$solde} FCFA.";
+            $this->dispatch('formSubmitted', $this->errorMessage);
+
+            return; // Stop ici si solde insuffisant
+        }
+
         // Valider les données
         $validated = $this->validateData();
         if ($validated === false) {
-            return; // Arrête l'exécution si la validation échoue
+            return;
         }
 
         $userId = Auth::id();
@@ -110,70 +119,84 @@ class AchatDirectGroupe extends Component
             return;
         }
 
-        $montantTotal = $this->totalCost;
-
-        $this->updatedQuantité();
-        // Vérifier si l'option sélectionnée est vide
         if (empty($this->selectedOption)) {
             $this->addError('selectedOption', 'Vous devez sélectionner une option de réception.');
-            return; // Arrête l'exécution si l'option n'est pas sélectionnée
+            return;
         }
 
-        // Commencer la transaction
         DB::beginTransaction();
         try {
-            // Utilisation :
+            // Générer le code unique pour l'achat
             $referenceService = new GenerateUniqueReference();
             $codeUnique = $referenceService->generate();
             if (!$codeUnique) {
                 throw new \Exception('Code unique non généré.');
             }
 
-            // Traiter l'achat
+            $montantTotal = $this->totalCost;
+
+            // Créer l'achat
             $achat = $this->createPurchase($validated, $montantTotal, $codeUnique);
 
-            // Vérification de l'existence de l'achat dans les transactions gelées
+            // Enregistrer l'achat dans les transactions gelées
             Gelement::create([
                 'reference_id' => $codeUnique,
                 'id_wallet' => $this->userWallet->id,
                 'amount' => $montantTotal,
             ]);
 
-            // Mettre à jour le portefeuille
+            // Décrémenter le solde utilisateur
             $this->userWallet->decrement('balance', $montantTotal);
 
-            // Créer les transactions
+            // Créer la transaction
             $reference_service = new generateIntegerReference();
             $reference_id = $reference_service->generate();
 
             $description = $this->type === 'Produit'
-                ? 'Gele Pour Achat de ' . $validated['nameProd']
-                : 'Gele Pour Service de ' . $validated['nameProd'];
+                ? 'Gel pour achat de ' . $validated['nameProd']
+                : 'Gel pour service de ' . $validated['nameProd'];
 
             $TransactionService = new TransactionService();
+            $TransactionService->createTransaction(
+                $userId,
+                $this->userTrader,
+                'Gele',
+                $montantTotal,
+                $reference_id,
+                $description,
+                'COC'
+            );
 
-            $TransactionService->createTransaction($userId, $this->userTrader, 'Gele', $montantTotal,  $reference_id, $description, 'COC');
-
-            // Gérer les notifications
+            // Notifications
             $this->sendNotifications($validated, $achat, $codeUnique);
 
             DB::commit();
 
-            // Réinitialiser les champs du formulaire
-            $this->reset(['quantité', 'localite', 'dateTot', 'dateTard', 'timeStart', 'timeEnd', 'dayPeriod', 'dayPeriodFin']);
+            // Réinitialiser les champs
+            $this->reset([
+                'quantité',
+                'localite',
+                'dateTot',
+                'dateTard',
+                'timeStart',
+                'timeEnd',
+                'dayPeriod',
+                'dayPeriodFin'
+            ]);
 
-            // Émettre un événement de succès
-            $this->dispatch('formSubmitted', 'Achat Affectué Avec Succès');
+            // Succès
+            $this->dispatch('formSubmitted', 'Achat effectué avec succès');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erreur lors de l\'achat direct.', [
                 'error' => $e->getMessage(),
-                'userId' => $userId,
-                'data' => $validated,
+                'userId' => $userId ?? null,
+                'data' => $validated ?? [],
             ]);
             session()->flash('error', 'Une erreur est survenue.');
         }
     }
+
 
 
     private function validateData()
@@ -385,10 +408,10 @@ class AchatDirectGroupe extends Component
 
             // Appel API pour récupérer le score de crédit
             try {
-                $client = new Client();
-                $response = $client->get("https://promi.toopartoo.com/api/cote/{$systemClientId}/{$moisDepuisCreation}");
-                $crediScoreData = json_decode($response->getBody()->getContents(), true);
-                // $crediScoreData = 'A+'; // Simuler une réponse pour le test
+                // $client = new Client();
+                // $response = $client->get("https://promi.toopartoo.com/api/cote/{$systemClientId}/{$moisDepuisCreation}");
+                // $crediScoreData = json_decode($response->getBody()->getContents(), true);
+                $crediScoreData = 'A+'; // Simuler une réponse pour le test
             } catch (\Exception $e) {
                 $this->dispatch(
                     'formSubmitted',
@@ -397,9 +420,9 @@ class AchatDirectGroupe extends Component
                 return;
             }
             // Vérifier si la réponse contient bien une clé "grade"
-            if (isset($crediScoreData['grade'])) {
-                // if (isset($crediScoreData)) {
-                $crediScore = $crediScoreData['grade']; // Récupérer le grade
+            // if (isset($crediScoreData['grade'])) {
+            if (isset($crediScoreData)) {
+                $crediScore = $crediScoreData; // Récupérer le grade
 
                 if (in_array($crediScore, ['A+', 'A', 'A-', 'B+', 'B', 'B-'])) {
                     $this->dispatch(

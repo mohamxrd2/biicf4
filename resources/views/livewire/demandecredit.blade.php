@@ -77,6 +77,18 @@ $watch('roi', () => { updateMontantTotalCredit() })">
                         {{ $nameProd }}</label>
                 </div>
 
+                <!-- Prix Unitaire -->
+                <div class=" flex flex-rows p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                        Prix Unitaire
+                    </div>
+                    <div class="mt-4 text-2xl font-bold text-gray-800 dark:text-white">
+                        {{ $sommedemnd }} FCFA
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-300 mt-1">par unité</div>
+                </div>
+
+
                 <!-- Type de financement -->
                 <div class="flex flex-col space-y-4 sm:col-span-2">
                     <label for="financement" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type
@@ -165,7 +177,8 @@ $watch('roi', () => { updateMontantTotalCredit() })">
                         placeholder="12%" required>
                 </div>
 
-                <p x-show="showError" x-text="errorMessage" class="text-sm text-center text-red-500 sm:col-span-2"></p>
+                <p x-show="showError" x-text="errorMessage" class="text-sm text-center text-red-500 sm:col-span-2">
+                </p>
 
                 <div class="sm:col-span-2"></div>
 
