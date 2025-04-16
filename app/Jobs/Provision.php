@@ -99,6 +99,16 @@ class Provision implements ShouldQueue
         );
         Log::info("Transaction d'envoi enregistrée : montant = {$revenu_alloue}, type = Envoie");
 
+        $epargne = floatval($data['epargne']);
+
+        $cedd = $wallet->cedd;
+
+        if($cedd > 0){
+            $cedd->Solde += $epargne;
+            $cedd->save();
+            $revenu_alloue = $revenu_alloue - $epargne;
+        }
+
         // Étape 7 : Mise à jour du CRP
         $crp = $wallet->crp;
         if ($crp) {
