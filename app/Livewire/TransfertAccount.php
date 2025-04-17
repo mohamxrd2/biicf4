@@ -38,6 +38,8 @@ class TransfertAccount extends Component
         $this->coi = Coi::where('id_wallet', $this->userWallet->id)->first();
         $this->cedd = Cedd::where('id_wallet', $this->userWallet->id)->first();
         $this->cefd = Cefp::where('id_wallet', $this->userWallet->id)->first();
+        $this->cfa = Cfa::where('id_wallet', $this->userWallet->id)->first();
+
     }
 
 
@@ -117,6 +119,9 @@ class TransfertAccount extends Component
                 return $this->cedd;
             case 'CEFP':
                 return $this->cefd;
+            case 'CFA':
+                return $this->cfa;
+            
             default:
                 return null;
         }
