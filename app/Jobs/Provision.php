@@ -97,7 +97,6 @@ class Provision implements ShouldQueue
         // Étape 6 : Création des transactions
         $TransactionService = new TransactionService();
 
-        $TransactionService->createTransaction(
 
         // Étape 5 : Enregistrement de la transaction d’envoi
         $transactionService = new TransactionService();
