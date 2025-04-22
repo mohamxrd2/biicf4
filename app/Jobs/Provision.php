@@ -141,7 +141,7 @@ class Provision implements ShouldQueue
                 Log::info("ℹ️ [Provision] Pas d’épargne ou CEDD non trouvé pour user_id={$this->userId}");
             }
 
-            // Étape 7 : Mise à jour du CRP
+            // Étape 7 : Mise à joure du CRP
             if ($revenu_alloue > 0) {
                 $crp = $wallet->crp;
                 if ($crp) {
