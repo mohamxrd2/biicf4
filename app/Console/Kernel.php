@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        if (App::environment('local')) {
+     
             //En local, exécuter la commande toutes les minutes
             $schedule->command('check:countdowns')->everyMinute();
             $schedule->command('app:appeloffreGrouper')->everyMinute();
@@ -28,24 +28,8 @@ class Kernel extends ConsoleKernel
             $schedule->command('app:finacementCredits')->everyMinute();
             // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
             $schedule->command('app:monitor')->everyMinute();
-            $schedule->command('app:provisison')->everyMinute();
-        } else {
-            // Sur le serveur en ligne, exécuter la commande avec une expression cron spécifique
-            $schedule->command('check:countdowns')->cron('* * * * *');
-            $schedule->command('app:appeloffreGrouper')->cron('* * * * *');
-            $schedule->command('app:ajout-qoffre')->cron('* * * * *');
-            $schedule->command('app:process-payments')->cron('* * * * *');
-            $schedule->command('app:credit-countdown')->cron('* * * * *');
-            $schedule->command('app:projet-countdown')->cron('* * * * *');
-            $schedule->command('app:rappel-journalieres-credits')->cron('* * * * *');
-            $schedule->command('app:rappel-journalieres-projets')->cron('* * * * *');
-            $schedule->command('app:finacementProjetAccorde')->cron('* * * * *');
-            $schedule->command('app:finacementCredits')->cron('* * * * *');
-            // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
-            $schedule->command('app:monitor')->cron('* * * * *');
-            $schedule->command('app:provisison')->cron('* * * * *');
-
-        }
+            $schedule->command('app:provision')->everyMinute();
+        
     }
 
 

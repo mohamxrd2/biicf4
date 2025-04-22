@@ -5,6 +5,7 @@ namespace App\Jobs;
 
 use App\Models\Crp;
 use App\Models\Promir;
+use App\Models\User;
 use App\Models\Wallet;
 use GuzzleHttp\Client;
 use Illuminate\Bus\Queueable;
@@ -13,9 +14,11 @@ use App\Services\TransactionService;
 use Illuminate\Queue\SerializesModels;
 
 use Illuminate\Queue\InteractsWithQueue;
+use App\Notifications\PortionJournaliere;
 use App\Services\generateIntegerReference;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Notification;
 
 class Provision implements ShouldQueue
 {
@@ -48,7 +51,7 @@ class Provision implements ShouldQueue
 
         // Étape 2 : Appel API
         $client = new Client();
-        $url = "https://toopartoo.com/promi/public/api/provision/{$systemeId}";
+        $url = "https://promi.toopartoo.com/api/provision/{$systemeId}";
         Log::info("Envoi de la requête GET à l'URL : {$url}");
 
         $response = $client->get($url, ['timeout' => 10]);
@@ -69,13 +72,28 @@ class Provision implements ShouldQueue
             return;
         }
 
+        $emprunteur = User::findOrFail($this->userId);
+
         // Étape 3 : Mise à jour du Wallet
         $wallet = Wallet::where('user_id', $this->userId)->first();
         if ($wallet) {
-            $ancien_solde = $wallet->balance;
-            $wallet->balance += $revenu_alloue;
+            if($wallet->balance < $revenu_alloue){
+                $ancien_solde = $wallet->balance;
+            $wallet->balance -= $revenu_alloue;
             $wallet->save();
-            Log::info("Wallet mis à jour : Ancien solde = {$ancien_solde}, Nouveau solde = {$wallet->balance}");
+            Log::info("Wallet mis à jour : Nouveau solde = {$wallet->balance}");
+
+            }else{
+                $echec = 'Echec de payement';
+                Notification::send($emprunteur, new PortionJournaliere(
+                    $echec,
+                    'Votre solde est insuffisant veillez vus recharger pour recuperer les révenues alloué',
+                   
+                ));
+
+                return;
+            }
+            
         } else {
             Log::warning("Aucun Wallet trouvé pour l'utilisateur ID {$this->userId}");
             return;
@@ -93,7 +111,7 @@ class Provision implements ShouldQueue
             'Envoie',
             $revenu_alloue,
             $reference_id,
-            'Envoie au crp',
+            'Envoie au crp et cedd',
             'COC'
         );
         Log::info("Transaction d'envoi enregistrée : montant = {$revenu_alloue}");
@@ -110,6 +128,17 @@ class Provision implements ShouldQueue
 
             // Mise à jour du revenu à transférer au CRP
             $revenu_alloue -= $epargne;
+
+            // Transaction de réception
+            $transactionService->createTransaction(
+                $this->userId,
+                $this->userId,
+                'Réception',
+                $epargne,
+                $reference_id,
+                'Reception du cedd',
+                'CRP'
+            );
         }
 
         // Étape 7 : Mise à jour du CRP
@@ -128,7 +157,7 @@ class Provision implements ShouldQueue
             $transactionService->createTransaction(
                 $this->userId,
                 $this->userId,
-                'Reception',
+                'Réception',
                 $revenu_alloue,
                 $reference_id,
                 'Reception du crp',

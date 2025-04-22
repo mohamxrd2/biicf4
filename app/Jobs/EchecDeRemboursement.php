@@ -19,12 +19,12 @@ class EchecDeRemboursement implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $credit;
-    protected $portionCapital;
-    protected $portionInteret;
-    protected $message;
+    protected ?credits_groupé $credit;
+    protected ?float $portionCapital;
+    protected ?float $portionInteret;
+    protected string $message;
 
-    public function __construct(credits_groupé $credit, $portionCapital, $portionInteret, $message)
+    public function __construct(?credits_groupé $credit = null, ?float $portionCapital = null, ?float $portionInteret = null, string $message = '')
     {
         $this->credit = $credit;
         $this->portionCapital = $portionCapital;
@@ -34,11 +34,16 @@ class EchecDeRemboursement implements ShouldQueue
 
     public function handle(): void
     {
+        if (!$this->credit) {
+            throw new Exception("Crédit non fourni.");
+        }
+
         $emprunteur = User::find($this->credit->emprunteur_id);
 
         if (!$emprunteur) {
             throw new Exception("Emprunteur non trouvé pour le crédit ID : " . $this->credit->id);
         }
+
         $echec = 'Échec de remboursement';
 
         Notification::send($emprunteur, new PortionJournaliere(
