@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:finacementProjetAccorde')->everyMinute();
         $schedule->command('app:finacementCredits')->everyMinute();
         $schedule->command('app:monitor')->everyMinute();
-        $schedule->command('app:provision')->everyMinute();
+        $schedule->command('app:provision')->dailyAt('19:00');
     }
 
 
