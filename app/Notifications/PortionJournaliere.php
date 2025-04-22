@@ -17,7 +17,7 @@ class PortionJournaliere extends Notification implements ShouldQueue
 
     public $message;
 
-    public function __construct($echec,  $message = null, $credit)
+    public function __construct($echec,  $message = null, $credit = null)
     {
         $this->echec = $echec;
         $this->message = $message;

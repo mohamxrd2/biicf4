@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 
 class Provision extends Command
 {
-    protected $signature = 'app:provisison';
+    protected $signature = 'app:provision';
     protected $description = 'Commande pour retirer les revenu alloué par jour';
 
 

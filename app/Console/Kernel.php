@@ -14,20 +14,22 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        //En local, exécuter la commande toutes les minutes
-        $schedule->command('check:countdowns')->everyMinute();
-        $schedule->command('app:appeloffreGrouper')->everyMinute();
-        $schedule->command('app:ajout-qoffre')->everyMinute();
-        $schedule->command('app:process-payments')->everyMinute();
-        $schedule->command('app:credit-countdown')->everyMinute();
-        $schedule->command('app:projet-countdown')->everyMinute();
-        $schedule->command('app:rappel-journalieres-credits')->everyMinute();
-        $schedule->command('app:rappel-journalieres-projets')->everyMinute();
-        $schedule->command('app:finacementProjetAccorde')->everyMinute();
-        $schedule->command('app:finacementCredits')->everyMinute();
-        // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
-        $schedule->command('app:monitor')->everyMinute();
-        $schedule->command('app:provisison')->dailyAt('18:00');
+
+            //En local, exécuter la commande toutes les minutes
+            $schedule->command('check:countdowns')->everyMinute();
+            $schedule->command('app:appeloffreGrouper')->everyMinute();
+            $schedule->command('app:ajout-qoffre')->everyMinute();
+            $schedule->command('app:process-payments')->everyMinute();
+            $schedule->command('app:credit-countdown')->everyMinute();
+            $schedule->command('app:projet-countdown')->everyMinute();
+            $schedule->command('app:rappel-journalieres-credits')->everyMinute();
+            $schedule->command('app:rappel-journalieres-projets')->everyMinute();
+            $schedule->command('app:finacementProjetAccorde')->everyMinute();
+            $schedule->command('app:finacementCredits')->everyMinute();
+            // Redémarrer les workers chaque minute pour garantir leur bon fonctionnement
+            $schedule->command('app:monitor')->everyMinute();
+            $schedule->command('app:provision')->everyMinute();
+
     }
 
 
