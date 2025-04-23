@@ -82,89 +82,102 @@ class Provision implements ShouldQueue
 
             Log::info("👛 [Provision] Wallet trouvé. Solde actuel = {$wallet->balance}");
 
+            // Génération de la référence pour toutes les transactions (succès ou échec)
+            $reference_id = (new generateIntegerReference())->generate();
+            Log::info("🔑 [Provision] Référence générée : {$reference_id}");
+
+            $transactionService = new TransactionService();
+
             if ($wallet->balance >= $revenu_alloue) {
                 $ancien_solde = $wallet->balance;
                 $wallet->balance -= $revenu_alloue;
                 $wallet->save();
                 Log::info("✅ [Provision] Wallet mis à jour. Ancien solde = {$ancien_solde}, Nouveau solde = {$wallet->balance}");
-            } else {
-                Log::warning("❌ [Provision] Solde insuffisant. Balance = {$wallet->balance}, Requis = {$revenu_alloue}");
 
-                Notification::send($emprunteur, new PortionJournaliere(
-                    'Echec de payement',
-                    'Votre solde est insuffisant, veuillez vous recharger pour récupérer les revenus alloués'
-                ));
-                Log::info("📩 [Provision] Notification d’échec envoyée à user_id={$this->userId}");
-                return;
-            }
-
-            // Étape 4 : Génération de la référence
-            $reference_id = (new generateIntegerReference())->generate();
-            Log::info("🔑 [Provision] Référence générée : {$reference_id}");
-
-            // Étape 5 : Enregistrement de la transaction d’envoi
-            $transactionService = new TransactionService();
-            $transactionService->createTransaction(
-                $this->userId,
-                $this->userId,
-                'Envoie',
-                $revenu_alloue,
-                $reference_id,
-                'Envoie au crp et cedd',
-                'COC'
-            );
-            Log::info("📤 [Provision] Transaction d’envoi enregistrée. Montant = {$revenu_alloue}");
-
-            // Étape 6 : Gestion de l’épargne
-            $epargne = isset($data['epargne']) ? floatval($data['epargne']) : 0;
-            $cedd = $wallet->cedd;
-
-            if ($cedd && $epargne > 0) {
-                $solde_cedd_avant = $cedd->Solde;
-                $cedd->Solde += $epargne;
-                $cedd->save();
-                Log::info("🏦 [Provision] Épargne ajoutée au CEDD. Avant = {$solde_cedd_avant}, Après = {$cedd->Solde}");
-
-                $revenu_alloue -= $epargne;
-
+                // Enregistrement de la transaction d'envoi
                 $transactionService->createTransaction(
                     $this->userId,
                     $this->userId,
-                    'Réception',
-                    $epargne,
+                    'Envoie',
+                    $revenu_alloue,
                     $reference_id,
-                    'Réception du CEDD',
-                    'CRP'
+                    'Envoie au crp et cedd',
+                    'COC'
                 );
-                Log::info("📥 [Provision] Transaction de réception CEDD enregistrée. Montant = {$epargne}");
-            } else {
-                Log::info("ℹ️ [Provision] Pas d’épargne ou CEDD non trouvé pour user_id={$this->userId}");
-            }
+                Log::info("📤 [Provision] Transaction d'envoi enregistrée. Montant = {$revenu_alloue}");
 
-            // Étape 7 : Mise à joure du CRP
-            if ($revenu_alloue > 0) {
-                $crp = $wallet->crp;
-                if ($crp) {
-                    $revenu_crp_avant = $crp->Solde;
-                    $crp->Solde += $revenu_alloue;
-                    $crp->save();
-                    Log::info("📈 [Provision] CRP mis à jour. Avant = {$revenu_crp_avant}, Après = {$crp->Solde}");
+                // Étape 6 : Gestion de l'épargne
+                $epargne = isset($data['epargne']) ? floatval($data['epargne']) : 0;
+                $cedd = $wallet->cedd;
+
+                if ($cedd && $epargne > 0) {
+                    $solde_cedd_avant = $cedd->Solde;
+                    $cedd->Solde += $epargne;
+                    $cedd->save();
+                    Log::info("🏦 [Provision] Épargne ajoutée au CEDD. Avant = {$solde_cedd_avant}, Après = {$cedd->Solde}");
+
+                    $revenu_alloue -= $epargne;
 
                     $transactionService->createTransaction(
                         $this->userId,
                         $this->userId,
                         'Réception',
-                        $revenu_alloue,
+                        $epargne,
                         $reference_id,
-                        'Réception du CRP',
+                        'Réception du CEDD',
                         'CRP'
                     );
-                    Log::info("📥 [Provision] Transaction de réception CRP enregistrée. Montant = {$revenu_alloue}");
+                    Log::info("📥 [Provision] Transaction de réception CEDD enregistrée. Montant = {$epargne}");
                 } else {
-                    Log::warning("⚠️ [Provision] CRP introuvable pour user_id={$this->userId}");
+                    Log::info("ℹ️ [Provision] Pas d'épargne ou CEDD non trouvé pour user_id={$this->userId}");
+                }
+
+                // Étape 7 : Mise à jour du CRP
+                if ($revenu_alloue > 0) {
+                    $crp = $wallet->crp;
+                    if ($crp) {
+                        $revenu_crp_avant = $crp->Solde;
+                        $crp->Solde += $revenu_alloue;
+                        $crp->save();
+                        Log::info("📈 [Provision] CRP mis à jour. Avant = {$revenu_crp_avant}, Après = {$crp->Solde}");
+
+                        $transactionService->createTransaction(
+                            $this->userId,
+                            $this->userId,
+                            'Réception',
+                            $revenu_alloue,
+                            $reference_id,
+                            'Réception du CRP',
+                            'CRP'
+                        );
+                        Log::info("📥 [Provision] Transaction de réception CRP enregistrée. Montant = {$revenu_alloue}");
+                    } else {
+                        Log::warning("⚠️ [Provision] CRP introuvable pour user_id={$this->userId}");
+                    }
+                } else {
+                    Log::info("ℹ️ [Provision] Aucun revenu restant à transférer au CRP");
                 }
             } else {
-                Log::info("ℹ️ [Provision] Aucun revenu restant à transférer au CRP");
+                Log::warning("❌ [Provision] Solde insuffisant. Balance = {$wallet->balance}, Requis = {$revenu_alloue}");
+
+                // Création d'une transaction d'échec pour tracer la tentative
+                // $transactionService->createTransaction(
+                //     $this->userId,
+                //     $this->userId,
+                //     'Échec',
+                //     $revenu_alloue,
+                //     $reference_id,
+                //     'Tentative de provision échouée - Solde insuffisant',
+                //     'COC'
+                // );
+                Log::info("📝 [Provision] Transaction d'échec enregistrée. Montant requis = {$revenu_alloue}");
+
+                Notification::send($emprunteur, new PortionJournaliere(
+                    'Échec de paiement',
+                    'Votre solde est insuffisant, veuillez vous recharger pour récupérer les revenus alloués'
+                ));
+                Log::info("📩 [Provision] Notification d'échec envoyée à user_id={$this->userId}");
+                return;
             }
 
             Log::info("✅ [Provision] Traitement terminé avec succès pour user_id={$this->userId}");
